@@ -27,16 +27,16 @@ namespace runtime {
 constexpr int32_t RT_INVALID_NUMA_NODE_ID = -1;
 
 struct MemsetCallbackStruct {
-    void *ptr;
+    void* ptr;
     uint64_t destMax;
     uint32_t val;
     uint64_t cnt;
 };
 
 struct rtMemcpyCallbackParam {
-    void *dst;
+    void* dst;
     uint64_t destMax;
-    const void *src;
+    const void* src;
     uint64_t cnt;
     rtMemcpyKind_t kind;
     bool checkKind;
@@ -51,37 +51,39 @@ struct PrefetchParams {
 };
 
 class UvmCallback {
-public :
+public:
     UvmCallback() = default;
     virtual ~UvmCallback() = default;
 
-    UvmCallback(const UvmCallback &) = delete;
-    UvmCallback &operator=(const UvmCallback &) = delete;
-    UvmCallback(UvmCallback &&) = delete;
-    UvmCallback &operator=(UvmCallback &&) = delete;
+    UvmCallback(const UvmCallback&) = delete;
+    UvmCallback& operator=(const UvmCallback&) = delete;
+    UvmCallback(UvmCallback&&) = delete;
+    UvmCallback& operator=(UvmCallback&&) = delete;
 
     // UVM Callback
-    static void MemsetAsyncCallback(void *fnData);
-    static void MemcpyAsyncCallback(void *userData);
+    static void MemsetAsyncCallback(void* fnData);
+    static void MemcpyAsyncCallback(void* userData);
 
-    static bool IsUvmMem(const void * const ptr, const uint64_t cnt);
-    static void CreateMemcpyCallbackParam(void * const dst, const uint64_t destMax, const void * const src, const uint64_t cnt,
-    const rtMemcpyKind_t kind, bool checkKind, Stream * const curStm, rtMemcpyCallbackParam* memcpyCallbackParam);
+    static bool IsUvmMem(const void* const ptr, const uint64_t cnt);
+    static void CreateMemcpyCallbackParam(
+        void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind_t kind,
+        bool checkKind, Stream* const curStm, rtMemcpyCallbackParam* memcpyCallbackParam);
 
     // UVM Prefetch
-    static void PrefetchCallbackWrapper(void *userData);
-    static void PrefetchBatchCallbackWrapper(void *userData);
-    static rtError_t GetCurrentThreadNumaNode(int32_t &currentNumaNode);
+    static void PrefetchCallbackWrapper(void* userData);
+    static void PrefetchBatchCallbackWrapper(void* userData);
+    static rtError_t GetCurrentThreadNumaNode(int32_t& currentNumaNode);
     static drv_uvm_location_type ConvertUvmLocTypeToDrvUvmLocType(rtMemManagedLocationType const uvmLocType);
     static rtError_t ConvertUvmLocationStruct(drv_uvm_location& drvUvmLoc, rtMemManagedLocation& memManagedLoc);
 
     template <typename T>
-    static rtError_t FillIntParaIntoMemBuffer(const T intPara, uint8_t *const memBuffer, size_t memBufferSize, size_t& offset)
+    static rtError_t FillIntParaIntoMemBuffer(
+        const T intPara, uint8_t* const memBuffer, size_t memBufferSize, size_t& offset)
     {
         NULL_PTR_RETURN_NOLOG(memBuffer, RT_ERROR_INVALID_VALUE);
         COND_RETURN_WITH_NOLOG((memBufferSize == 0), RT_ERROR_INVALID_VALUE);
-        COND_RETURN_WITH_NOLOG(((offset >= memBufferSize) || (offset + sizeof(T) >= memBufferSize)),
-            RT_ERROR_INVALID_VALUE);
+        COND_RETURN_WITH_NOLOG(
+            ((offset >= memBufferSize) || (offset + sizeof(T) >= memBufferSize)), RT_ERROR_INVALID_VALUE);
         T* tmpPtr = RtPtrToPtr<T*>(memBuffer + offset);
         *tmpPtr = intPara;
         offset += sizeof(T);
@@ -89,7 +91,7 @@ public :
     }
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_UVM_CALLBACK_HPP
+#endif // CCE_RUNTIME_UVM_CALLBACK_HPP

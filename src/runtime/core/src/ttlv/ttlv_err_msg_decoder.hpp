@@ -18,100 +18,52 @@ namespace runtime {
 // defined for error message
 class TTLVErrMsgDecoder {
 public:
-    TTLVErrMsgDecoder() : timeStampSec_(MAX_UINT64_NUM),
-                          timeStampUsec_(MAX_UINT64_NUM),
-                          line_(MAX_UINT16_NUM),
-                          retErrCode_(MAX_UINT16_NUM) {}
-    void SetTimestampSec(uint64_t timeStamp)
-    {
-        timeStampSec_ = timeStamp;
-    }
+    TTLVErrMsgDecoder()
+        : timeStampSec_(MAX_UINT64_NUM),
+          timeStampUsec_(MAX_UINT64_NUM),
+          line_(MAX_UINT16_NUM),
+          retErrCode_(MAX_UINT16_NUM)
+    {}
+    void SetTimestampSec(uint64_t timeStamp) { timeStampSec_ = timeStamp; }
 
-    void SetTimestampUsec(uint64_t timeStamp)
-    {
-        timeStampUsec_ = timeStamp;
-    }
+    void SetTimestampUsec(uint64_t timeStamp) { timeStampUsec_ = timeStamp; }
 
-    void SetCurrentTime(const std::string &currentTime)
-    {
-        currentTime_ = currentTime;
-    }
+    void SetCurrentTime(const std::string& currentTime) { currentTime_ = currentTime; }
 
-    void SetFuncCode(const std::string &funcCode)
-    {
-        funcCode_ = funcCode;
-    }
+    void SetFuncCode(const std::string& funcCode) { funcCode_ = funcCode; }
 
-    void SetLine(uint16_t line)
-    {
-        line_ = line;
-    }
+    void SetLine(uint16_t line) { line_ = line; }
 
-    void SetRetErrCode(uint16_t retErrCode)
-    {
-        retErrCode_ = retErrCode;
-    }
+    void SetRetErrCode(uint16_t retErrCode) { retErrCode_ = retErrCode; }
 
-    void SetErrMsgSting(const std::string &str)
-    {
-        errMsg_ = str;
-    }
+    void SetErrMsgSting(const std::string& str) { errMsg_ = str; }
 
-    void SetErrCode(const std::string &str)
-    {
-        errCode_ = str;
-    }
+    void SetErrCode(const std::string& str) { errCode_ = str; }
 
-    void AddWord(TTLVWordDecoder &word)
-    {
-        decoderWord_.emplace_back(word);
-    }
+    void AddWord(TTLVWordDecoder& word) { decoderWord_.emplace_back(word); }
 
-    const std::string &GetErrMsgSting() const
-    {
-        return errMsg_;
-    }
+    const std::string& GetErrMsgSting() const { return errMsg_; }
 
-    const std::string &GetErrCode() const
-    {
-        return errCode_;
-    }
+    const std::string& GetErrCode() const { return errCode_; }
 
-    uint64_t GetTimestampSec() const
-    {
-        return timeStampSec_;
-    }
+    uint64_t GetTimestampSec() const { return timeStampSec_; }
 
-    uint64_t GetTimestampUsec() const
-    {
-        return timeStampUsec_;
-    }
+    uint64_t GetTimestampUsec() const { return timeStampUsec_; }
 
-    const std::string &GetCurTime() const
-    {
-        return currentTime_;
-    }
+    const std::string& GetCurTime() const { return currentTime_; }
 
-    const std::string &GetFuncCode() const
-    {
-        return funcCode_;
-    }
+    const std::string& GetFuncCode() const { return funcCode_; }
 
-    uint16_t GetLine() const
-    {
-        return line_;
-    }
+    uint16_t GetLine() const { return line_; }
 
-    uint16_t GetRetErrCode() const
-    {
-        return retErrCode_;
-    }
+    uint16_t GetRetErrCode() const { return retErrCode_; }
 
     virtual ~TTLVErrMsgDecoder() = default;
+
 private:
     std::vector<TTLVWordDecoder> decoderWord_; // for extention
-    uint64_t timeStampSec_;  // define for error message seq
-    uint64_t timeStampUsec_;  // define for error message seq
+    uint64_t timeStampSec_;                    // define for error message seq
+    uint64_t timeStampUsec_;                   // define for error message seq
     std::string funcCode_;
     std::string currentTime_;
     uint16_t line_;
@@ -119,6 +71,6 @@ private:
     std::string errCode_; // defined for judge inner error or input error
     std::string errMsg_;  // define for error message info
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // RT_RUNTIME_TTLV_ERR_MSG_DECODER_HPP

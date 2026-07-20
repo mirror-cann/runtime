@@ -20,7 +20,7 @@ namespace runtime {
 rtError_t Runtime::PrimaryXpuContextRelease(const uint32_t devId)
 {
     const std::unique_lock<std::mutex> xpuSetDevLock(XpuSetDevMutex());
-    Context *ctx = GetXpuCtxt();
+    Context* ctx = GetXpuCtxt();
     COND_RETURN_WARN((ctx == nullptr), RT_ERROR_NONE, "context is null");
     if (unlikely(!ContextManage::CheckContextIsValid(ctx, ContextAccessMode::INTERNAL))) {
         RT_LOG(RT_LOG_ERROR, "context is deleted.");
@@ -32,7 +32,7 @@ rtError_t Runtime::PrimaryXpuContextRelease(const uint32_t devId)
     if (!ctx->TearDownIsCanExecute()) {
         return RT_ERROR_NONE;
     }
-    Context * const previousCtx = InnerThreadLocalContainer::GetCurCtx();
+    Context* const previousCtx = InnerThreadLocalContainer::GetCurCtx();
     const bool previousInternalAccess = InnerThreadLocalContainer::IsInternalContextAccess();
     SetInternalThreadContext(ctx);
     ScopeGuard internalCtxGuard([previousCtx, previousInternalAccess, ctx]() {
@@ -56,7 +56,7 @@ rtError_t Runtime::PrimaryXpuContextRelease(const uint32_t devId)
     return RT_ERROR_NONE;
 }
 
-void Runtime::XpuDeviceRelease(Device *dev) const
+void Runtime::XpuDeviceRelease(Device* dev) const
 {
     COND_RETURN_VOID(dev == nullptr, "ptr device is NULL!");
     dev->SetDeviceRelease();
@@ -64,9 +64,9 @@ void Runtime::XpuDeviceRelease(Device *dev) const
     DELETE_O(dev)
 }
 
-Device *Runtime::XpuDeviceRetain(const uint32_t devId) const
+Device* Runtime::XpuDeviceRetain(const uint32_t devId) const
 {
-    Device *dev = nullptr;
+    Device* dev = nullptr;
     rtError_t error = RT_ERROR_NONE;
     dev = new (std::nothrow) XpuDevice(devId);
     if (dev == nullptr) {
@@ -74,9 +74,7 @@ Device *Runtime::XpuDeviceRetain(const uint32_t devId) const
         return nullptr;
     }
 
-    std::function<void()> const errRecycle = [&dev]() {
-        DELETE_O(dev);
-    };
+    std::function<void()> const errRecycle = [&dev]() { DELETE_O(dev); };
     ScopeGuard tskErrRecycle(errRecycle);
     error = dev->Init();
     if (error != RT_ERROR_NONE) {
@@ -93,16 +91,16 @@ Device *Runtime::XpuDeviceRetain(const uint32_t devId) const
     return dev;
 }
 
-Context *Runtime::PrimaryXpuContextRetain(const uint32_t devId)
+Context* Runtime::PrimaryXpuContextRetain(const uint32_t devId)
 {
     rtError_t err = RT_ERROR_NONE;
-    Device *dev = XpuDeviceRetain(devId);
+    Device* dev = XpuDeviceRetain(devId);
     if (dev == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Xpu device is null, device_id=%u.", devId);
         return nullptr;
     }
 
-    Context *ctx = GetXpuCtxt();
+    Context* ctx = GetXpuCtxt();
     const bool reusedCtx = (ctx != nullptr);
     if (!reusedCtx) {
         ctx = new (std::nothrow) XpuContext(dev, true);
@@ -133,5 +131,5 @@ Context *Runtime::PrimaryXpuContextRetain(const uint32_t devId)
     return ctx;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

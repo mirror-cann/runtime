@@ -17,8 +17,8 @@
 namespace cce {
 namespace runtime {
 
-rtError_t KernelFusionTaskInit(TaskInfo * const taskInfo, const FusionFlag fusFlag);
-void ToCommandBodyForKernelFusionTask(TaskInfo * const taskInfo, rtCommand_t *const command);
+rtError_t KernelFusionTaskInit(TaskInfo* const taskInfo, const FusionFlag fusFlag);
+void ToCommandBodyForKernelFusionTask(TaskInfo* const taskInfo, rtCommand_t* const command);
 } // namespace runtime
 } // namespace cce
 

@@ -10,13 +10,13 @@
 #include "dev_info_manage.h"
 namespace cce {
 namespace runtime {
-DevInfoManage &DevInfoManage::Instance()
+DevInfoManage& DevInfoManage::Instance()
 {
     static DevInfoManage devInfo;
     return devInfo;
 }
 
-bool DevInfoManage::RegPlatformSoNameInfo(rtChipType_t chip, const std::string &soName)
+bool DevInfoManage::RegPlatformSoNameInfo(rtChipType_t chip, const std::string& soName)
 {
     if (isDestroy) {
         return false;
@@ -27,7 +27,7 @@ bool DevInfoManage::RegPlatformSoNameInfo(rtChipType_t chip, const std::string &
     return true;
 }
 
-rtError_t DevInfoManage::GetPlatformSoName(rtChipType_t chip, std::string &soName)
+rtError_t DevInfoManage::GetPlatformSoName(rtChipType_t chip, std::string& soName)
 {
     if (isDestroy) {
         return RT_ERROR_INVALID_VALUE;
@@ -41,20 +41,20 @@ rtError_t DevInfoManage::GetPlatformSoName(rtChipType_t chip, std::string &soNam
     return RT_ERROR_INVALID_VALUE;
 }
 
-bool DevInfoManage::RegChipFeatureSet(rtChipType_t chip, const std::unordered_set<RtOptionalFeatureType> &f)
+bool DevInfoManage::RegChipFeatureSet(rtChipType_t chip, const std::unordered_set<RtOptionalFeatureType>& f)
 {
     if (isDestroy || (chip < CHIP_BEGIN)) {
         return false;
     }
-    
+
     std::array<bool, FEATURE_MAX_VALUE> feature = {false};
-    for (auto &i : f) {
+    for (auto& i : f) {
         const uint32_t index = static_cast<uint32_t>(i);
         if (index < FEATURE_MAX_VALUE) {
             feature[index] = true;
         }
     }
-    
+
     // for high performance, no lock.
     // each chip must be registered only once. Dynamic registration is prohibited.
     if (chip < CHIP_END) {
@@ -67,7 +67,7 @@ bool DevInfoManage::RegChipFeatureSet(rtChipType_t chip, const std::unordered_se
     return true;
 }
 
-rtError_t DevInfoManage::GetChipFeatureSet(rtChipType_t chip, std::array<bool, FEATURE_MAX_VALUE> &f)
+rtError_t DevInfoManage::GetChipFeatureSet(rtChipType_t chip, std::array<bool, FEATURE_MAX_VALUE>& f)
 {
     if (isDestroy || (chip < CHIP_BEGIN)) {
         return RT_ERROR_INVALID_VALUE;
@@ -93,11 +93,11 @@ bool DevInfoManage::IsSupportChipFeature(rtChipType_t chip, RtOptionalFeatureTyp
     if (isDestroy || (chip < CHIP_BEGIN) || (index >= FEATURE_MAX_VALUE)) {
         return false;
     }
-    
+
     if (chip < CHIP_END) {
         return chipFeatureSet[chip][index];
     }
-    
+
     if ((chip >= CHIP_EXT_BEGIN) && (chip < CHIP_EXT_END)) {
         auto it = extChipFeatureSet.find(chip);
         return it != extChipFeatureSet.end() ? it->second[index] : false;
@@ -143,16 +143,16 @@ rtError_t DevInfoManage::GetDevProperties(const rtChipType_t chip, DevProperties
         properties = it->second;
         return RT_ERROR_NONE;
     }
- 
+
     return RT_ERROR_INVALID_VALUE;
 }
 
-rtError_t DevInfoManage::GetAllDevProperties(std::unordered_map<rtChipType_t, DevProperties> &properties)
+rtError_t DevInfoManage::GetAllDevProperties(std::unordered_map<rtChipType_t, DevProperties>& properties)
 {
     if (isDestroy) {
         return RT_ERROR_INVALID_VALUE;
     }
- 
+
     const ReadProtect lk(&propertiesLock);
     properties = propertiesMap;
     return RT_ERROR_NONE;
@@ -167,7 +167,7 @@ bool DevInfoManage::RegDevInfoProcFunc(const rtChipType_t chip, const DevDynInfo
     devInfoProcMap[chip] = func;
     return true;
 }
- 
+
 rtError_t DevInfoManage::GetDevInfoProcFunc(const rtChipType_t chip, DevDynInfoProcFunc& func)
 {
     if (isDestroy) {
@@ -183,5 +183,5 @@ rtError_t DevInfoManage::GetDevInfoProcFunc(const rtChipType_t chip, DevDynInfoP
 
     return RT_ERROR_INVALID_VALUE;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

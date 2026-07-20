@@ -11,12 +11,12 @@
 
 namespace cce {
 namespace runtime {
-typedef rtError_t (*pfnAtraceSubmit)(const AtraceParams &atraceParams);
+typedef rtError_t (*pfnAtraceSubmit)(const AtraceParams& atraceParams);
 
 pfnAtraceSubmit g_atraceSubmitFunc[TYPE_RESERVED] = {nullptr};
 std::string recycleTypeStr[TYPE_FUNC_RESERVED] = {};
 
-void TrySubmitAtraceLog(TraHandle atraceHandle, const void *buffer, uint32_t bufSize)
+void TrySubmitAtraceLog(TraHandle atraceHandle, const void* buffer, uint32_t bufSize)
 {
     // some soc don't have atrace, so need check nullptr
     if (AtraceSubmit == nullptr) {
@@ -28,119 +28,111 @@ void TrySubmitAtraceLog(TraHandle atraceHandle, const void *buffer, uint32_t buf
     }
 }
 
-rtError_t AtraceSubmitForLogicCqRecord(const AtraceParams &atraceParams)
+rtError_t AtraceSubmitForLogicCqRecord(const AtraceParams& atraceParams)
 {
     char buff[PER_ATRACE_LOG_LEN] = {};
-    const CqReportParams *cqReport = &(atraceParams.u.cqReportParams);
-    int32_t ret = snprintf_s(buff, PER_ATRACE_LOG_LEN, PER_ATRACE_LOG_LEN - 1, "CqReport:devId=%d,stmId=%u,"
-        "tskId=%hu,cqId=%u,errCode=%u,cqType=%hhu,tid=%d", atraceParams.deviceId, atraceParams.streamId,
-        atraceParams.taskId, cqReport->cqId, cqReport->errCode, cqReport->cqType, atraceParams.tid);
+    const CqReportParams* cqReport = &(atraceParams.u.cqReportParams);
+    int32_t ret = snprintf_s(
+        buff, PER_ATRACE_LOG_LEN, PER_ATRACE_LOG_LEN - 1,
+        "CqReport:devId=%d,stmId=%u,"
+        "tskId=%hu,cqId=%u,errCode=%u,cqType=%hhu,tid=%d",
+        atraceParams.deviceId, atraceParams.streamId, atraceParams.taskId, cqReport->cqId, cqReport->errCode,
+        cqReport->cqType, atraceParams.tid);
     COND_RETURN_WARN(ret < 0, RT_ERROR_SEC_HANDLE, "Snprintf_s for generating runtime atrace msg abnormally.");
     TrySubmitAtraceLog(atraceParams.handle, buff, PER_ATRACE_LOG_LEN);
     return RT_ERROR_NONE;
 }
 
-rtError_t AtraceSubmitForRecycleTask(const AtraceParams &atraceParams)
+rtError_t AtraceSubmitForRecycleTask(const AtraceParams& atraceParams)
 {
     char buff[PER_ATRACE_LOG_LEN] = {};
-    const TaskRecycleParams *taskRecycle = &(atraceParams.u.taskRecycleParams);
-    int32_t ret = snprintf_s(buff, PER_ATRACE_LOG_LEN, PER_ATRACE_LOG_LEN - 1, "%s:devId=%u,"
-        "stmId=%u,lastTaskId=%u,exeTaskId=%u,tid=%u", recycleTypeStr[taskRecycle->funcType].c_str(),
-        atraceParams.deviceId, atraceParams.streamId, taskRecycle->lastTaskId, taskRecycle->exeTaskId,
-        atraceParams.tid);
+    const TaskRecycleParams* taskRecycle = &(atraceParams.u.taskRecycleParams);
+    int32_t ret = snprintf_s(
+        buff, PER_ATRACE_LOG_LEN, PER_ATRACE_LOG_LEN - 1,
+        "%s:devId=%u,"
+        "stmId=%u,lastTaskId=%u,exeTaskId=%u,tid=%u",
+        recycleTypeStr[taskRecycle->funcType].c_str(), atraceParams.deviceId, atraceParams.streamId,
+        taskRecycle->lastTaskId, taskRecycle->exeTaskId, atraceParams.tid);
     COND_RETURN_WARN(ret < 0, RT_ERROR_SEC_HANDLE, "Snprintf_s for generating runtime atrace msg abnormally.");
     TrySubmitAtraceLog(atraceParams.handle, buff, PER_ATRACE_LOG_LEN);
     return RT_ERROR_NONE;
 }
 
-rtError_t AtraceSubmitForEventRecord(const AtraceParams &atraceParams)
+rtError_t AtraceSubmitForEventRecord(const AtraceParams& atraceParams)
 {
     char buff[PER_ATRACE_LOG_LEN] = {};
-    const EventRecordParams *eventRecord = &(atraceParams.u.eventRecordParams);
-    const int32_t ret = snprintf_s(&(buff[0]), PER_ATRACE_LOG_LEN, PER_ATRACE_LOG_LEN - 1, "eventRecord:devId=%u,"
-        "stmId=%u,tskId=%hu,eventId=%d,waitCqFlag=%u,waitCqId=%hu,addr=0x%lx,tid=%u", atraceParams.deviceId,
-        atraceParams.streamId, atraceParams.taskId, eventRecord->eventId, eventRecord->waitCqFlag,
-        eventRecord->waitCqId, eventRecord->eventAddrLowEightBit, atraceParams.tid);
+    const EventRecordParams* eventRecord = &(atraceParams.u.eventRecordParams);
+    const int32_t ret = snprintf_s(
+        &(buff[0]), PER_ATRACE_LOG_LEN, PER_ATRACE_LOG_LEN - 1,
+        "eventRecord:devId=%u,"
+        "stmId=%u,tskId=%hu,eventId=%d,waitCqFlag=%u,waitCqId=%hu,addr=0x%lx,tid=%u",
+        atraceParams.deviceId, atraceParams.streamId, atraceParams.taskId, eventRecord->eventId,
+        eventRecord->waitCqFlag, eventRecord->waitCqId, eventRecord->eventAddrLowEightBit, atraceParams.tid);
     COND_RETURN_WARN(ret < 0, RT_ERROR_SEC_HANDLE, "Snprintf_s for generating runtime atrace msg abnormally.");
     TrySubmitAtraceLog(atraceParams.handle, &(buff[0]), PER_ATRACE_LOG_LEN);
     return RT_ERROR_NONE;
 }
 
-rtError_t AtraceSubmitForEventReset(const AtraceParams &atraceParams)
+rtError_t AtraceSubmitForEventReset(const AtraceParams& atraceParams)
 {
     char buff[PER_ATRACE_LOG_LEN] = {};
-    const EventResetParams *eventReset = &(atraceParams.u.eventResetParams);
-    const int32_t ret = snprintf_s(&(buff[0]),
-        PER_ATRACE_LOG_LEN,
-        PER_ATRACE_LOG_LEN - 1,
+    const EventResetParams* eventReset = &(atraceParams.u.eventResetParams);
+    const int32_t ret = snprintf_s(
+        &(buff[0]), PER_ATRACE_LOG_LEN, PER_ATRACE_LOG_LEN - 1,
         "eventReset:devId=%u,"
         "stmId=%u,tskId=%hu,eventId=%d,isNotify=%hu,addr=0x%lx,tid=%d",
-        atraceParams.deviceId,
-        atraceParams.streamId,
-        atraceParams.taskId,
-        eventReset->eventId,
-        eventReset->isNotify,
-        eventReset->eventAddrLowEightBit,
-        atraceParams.tid);
+        atraceParams.deviceId, atraceParams.streamId, atraceParams.taskId, eventReset->eventId, eventReset->isNotify,
+        eventReset->eventAddrLowEightBit, atraceParams.tid);
     COND_RETURN_WARN(ret < 0, RT_ERROR_SEC_HANDLE, "Snprintf_s for generating runtime atrace msg abnormally.");
     TrySubmitAtraceLog(atraceParams.handle, &(buff[0]), PER_ATRACE_LOG_LEN);
     return RT_ERROR_NONE;
 }
 
-rtError_t AtraceSubmitForEventWait(const AtraceParams &atraceParams)
+rtError_t AtraceSubmitForEventWait(const AtraceParams& atraceParams)
 {
     char buff[PER_ATRACE_LOG_LEN] = {};
-    const int32_t ret = snprintf_s(&(buff[0]),
-        PER_ATRACE_LOG_LEN,
-        PER_ATRACE_LOG_LEN - 1,
+    const int32_t ret = snprintf_s(
+        &(buff[0]), PER_ATRACE_LOG_LEN, PER_ATRACE_LOG_LEN - 1,
         "eventWait:devId=%u,"
         "stmId=%u,tskId=%hu,eventId=%d,addr=0x%lx,tid=%u",
-        atraceParams.deviceId,
-        atraceParams.streamId,
-        atraceParams.taskId,
-        atraceParams.u.eventWaitParams.eventId,
-        atraceParams.u.eventWaitParams.eventAddrLowEightBit,
-        atraceParams.tid);
+        atraceParams.deviceId, atraceParams.streamId, atraceParams.taskId, atraceParams.u.eventWaitParams.eventId,
+        atraceParams.u.eventWaitParams.eventAddrLowEightBit, atraceParams.tid);
     COND_RETURN_WARN(ret < 0, RT_ERROR_SEC_HANDLE, "Snprintf_s for generating runtime atrace msg abnormally.");
     TrySubmitAtraceLog(atraceParams.handle, &(buff[0]), PER_ATRACE_LOG_LEN);
     return RT_ERROR_NONE;
 }
 
-rtError_t AtraceSubmitForNotifyWait(const AtraceParams &atraceParams)
+rtError_t AtraceSubmitForNotifyWait(const AtraceParams& atraceParams)
 {
     char buff[PER_ATRACE_LOG_LEN] = {};
-    const NotifyWaitParams *notifyWait = &(atraceParams.u.notifyWaitParams);
-    const int32_t ret = snprintf_s(&(buff[0]),
-        PER_ATRACE_LOG_LEN,
-        PER_ATRACE_LOG_LEN - 1,
+    const NotifyWaitParams* notifyWait = &(atraceParams.u.notifyWaitParams);
+    const int32_t ret = snprintf_s(
+        &(buff[0]), PER_ATRACE_LOG_LEN, PER_ATRACE_LOG_LEN - 1,
         "notifyWait:devId=%u, stmId=%u, "
         "tskId=%hu, notifyId=%u, timeout=%us, addr=0x%lx, tid=%d",
-        atraceParams.deviceId,
-        atraceParams.streamId,
-        atraceParams.taskId,
-        notifyWait->notifyId,
-        notifyWait->timeout,
-        notifyWait->notifyWaitAddrLowEightBit,
-        atraceParams.tid);
+        atraceParams.deviceId, atraceParams.streamId, atraceParams.taskId, notifyWait->notifyId, notifyWait->timeout,
+        notifyWait->notifyWaitAddrLowEightBit, atraceParams.tid);
     COND_RETURN_WARN(ret < 0, RT_ERROR_SEC_HANDLE, "Snprintf_s for generating runtime atrace msg abnormally.");
     TrySubmitAtraceLog(atraceParams.handle, &(buff[0]), PER_ATRACE_LOG_LEN);
     return RT_ERROR_NONE;
 }
 
-rtError_t AtraceSubmitForNotifyRecord(const AtraceParams &atraceParams)
+rtError_t AtraceSubmitForNotifyRecord(const AtraceParams& atraceParams)
 {
     char buff[PER_ATRACE_LOG_LEN] = {};
-    const NotifyRecordParams *notifyRecord = &(atraceParams.u.notifyRecordParams);
-    const int32_t ret = snprintf_s(&(buff[0]), PER_ATRACE_LOG_LEN, PER_ATRACE_LOG_LEN - 1, "notifyRecord:devId=%u,"
-        "stmId=%u,tskId=%hu,notifyId=%u,isIpc=%hu,remoteDev=%u,addr=0x%lx,tid=%d", atraceParams.deviceId,
-        atraceParams.streamId, atraceParams.taskId, notifyRecord->notifyId, notifyRecord->isIpc,
+    const NotifyRecordParams* notifyRecord = &(atraceParams.u.notifyRecordParams);
+    const int32_t ret = snprintf_s(
+        &(buff[0]), PER_ATRACE_LOG_LEN, PER_ATRACE_LOG_LEN - 1,
+        "notifyRecord:devId=%u,"
+        "stmId=%u,tskId=%hu,notifyId=%u,isIpc=%hu,remoteDev=%u,addr=0x%lx,tid=%d",
+        atraceParams.deviceId, atraceParams.streamId, atraceParams.taskId, notifyRecord->notifyId, notifyRecord->isIpc,
         notifyRecord->remoteDevice, notifyRecord->notifyWaitAddrLowEightBit, atraceParams.tid);
     COND_RETURN_WARN(ret < 0, RT_ERROR_SEC_HANDLE, "Snprintf_s for generating runtime atrace msg abnormally.");
     TrySubmitAtraceLog(atraceParams.handle, &(buff[0]), PER_ATRACE_LOG_LEN);
     return RT_ERROR_NONE;
 }
 
-void AtraceSubmitLog(AtraceSubmitType type, const AtraceParams &atraceParams)
+void AtraceSubmitLog(AtraceSubmitType type, const AtraceParams& atraceParams)
 {
     if (atraceParams.handle < 0) {
         return;
@@ -178,5 +170,5 @@ void RegAtraceInfoInit(void)
     recycleTypeStr[TYPE_TRYRECYCLETASK] = std::string("TryReclyTask");
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

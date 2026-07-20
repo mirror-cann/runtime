@@ -21,7 +21,7 @@ VISIBILITY_DEFAULT cce::runtime::Runtime* ConstructRuntimeImpl()
     return rt;
 }
 
-VISIBILITY_DEFAULT void DestructorRuntimeImpl(cce::runtime::Runtime *rt)
+VISIBILITY_DEFAULT void DestructorRuntimeImpl(cce::runtime::Runtime* rt)
 {
     delete rt;
     cce::runtime::Runtime::runtime_ = nullptr;
@@ -29,7 +29,7 @@ VISIBILITY_DEFAULT void DestructorRuntimeImpl(cce::runtime::Runtime *rt)
     return;
 }
 
-VISIBILITY_DEFAULT void PrepareRuntimeProcessExitImpl(cce::runtime::Runtime *rt)
+VISIBILITY_DEFAULT void PrepareRuntimeProcessExitImpl(cce::runtime::Runtime* rt)
 {
     if (rt != nullptr) {
         rt->PrepareProcessExitNoThrow();
@@ -38,8 +38,5 @@ VISIBILITY_DEFAULT void PrepareRuntimeProcessExitImpl(cce::runtime::Runtime *rt)
     return;
 }
 
-VISIBILITY_DEFAULT void DestroyPoolRegistryImpl()
-{
-    PoolRegistry::DestroyPoolRegistry();
-}
+VISIBILITY_DEFAULT void DestroyPoolRegistryImpl() { PoolRegistry::DestroyPoolRegistry(); }
 }

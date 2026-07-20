@@ -16,9 +16,9 @@
 namespace cce {
 namespace runtime {
 #if F_DESC("StarsCommonTask")
-void StarsCommonTaskUnInit(TaskInfo * const taskInfo)
+void StarsCommonTaskUnInit(TaskInfo* const taskInfo)
 {
-    StarsCommonTaskInfo *starsCommTask = &taskInfo->u.starsCommTask;
+    StarsCommonTaskInfo* starsCommTask = &taskInfo->u.starsCommTask;
     const auto dev = taskInfo->stream->Device_();
     // randomDevAddr内存需要释放
     if (starsCommTask->randomDevAddr != nullptr) {
@@ -41,60 +41,66 @@ void StarsCommonTaskUnInit(TaskInfo * const taskInfo)
 
 void PrintDsaErrorInfoForStarsCommonTask(TaskInfo* taskInfo)
 {
-    StarsCommonTaskInfo *starsCommTask = &taskInfo->u.starsCommTask;
-    rtStarsDsaSqe_t *sqe = RtPtrToPtr<rtStarsDsaSqe_t*, rtStarsCommonSqe_t*>(&starsCommTask->commonStarsSqe.commonSqe);
+    StarsCommonTaskInfo* starsCommTask = &taskInfo->u.starsCommTask;
+    rtStarsDsaSqe_t* sqe = RtPtrToPtr<rtStarsDsaSqe_t*, rtStarsCommonSqe_t*>(&starsCommTask->commonStarsSqe.commonSqe);
     rtDsaCfgParam param = {};
     param.u8 = static_cast<uint8_t>(sqe->paramAddrValBitmap);
     uint64_t value = 0UL;
-    void *devPtr = nullptr;
+    void* devPtr = nullptr;
     std::stringstream debugInfo;
     rtError_t ret = RT_ERROR_NONE;
 
     debugInfo << "stream_id=" << sqe->sqeHeader.rtStreamId << ",task_id=" << sqe->sqeHeader.taskId;
     if (param.bits.seed == 0U) {
-        devPtr = RtValueToPtr<void *>((static_cast<uint64_t>(sqe->dsaCfgSeedHigh) << UINT32_BIT_NUM) |
-            static_cast<uint64_t>(sqe->dsaCfgSeedLow));
+        devPtr = RtValueToPtr<void*>(
+            (static_cast<uint64_t>(sqe->dsaCfgSeedHigh) << UINT32_BIT_NUM) | static_cast<uint64_t>(sqe->dsaCfgSeedLow));
         rtPtrAttributes_t attr = {};
         ret = taskInfo->stream->Device_()->Driver_()->PtrGetAttributes(devPtr, &attr);
         if ((ret == RT_ERROR_NONE) && (attr.location.type == RT_MEMORY_LOC_DEVICE)) {
-            (void)taskInfo->stream->Device_()->Driver_()->MemCopySync(&value, sizeof(value), devPtr, sizeof(value), RT_MEMCPY_DEVICE_TO_HOST);
+            (void)taskInfo->stream->Device_()->Driver_()->MemCopySync(
+                &value, sizeof(value), devPtr, sizeof(value), RT_MEMCPY_DEVICE_TO_HOST);
             debugInfo << ", dsa_cfg_seed addr=" << devPtr << ",value=0x" << std::hex << value;
         } else {
             debugInfo << ", dsa_cfg_seed addr=" << devPtr << " is invalid";
         }
     }
     if (param.bits.randomNumber == 0U) {
-        devPtr = RtValueToPtr<void *>((static_cast<uint64_t>(sqe->dsaCfgNumberHigh) << UINT32_BIT_NUM) |
+        devPtr = RtValueToPtr<void*>(
+            (static_cast<uint64_t>(sqe->dsaCfgNumberHigh) << UINT32_BIT_NUM) |
             static_cast<uint64_t>(sqe->dsaCfgNumberLow));
         rtPtrAttributes_t attr = {};
         ret = taskInfo->stream->Device_()->Driver_()->PtrGetAttributes(devPtr, &attr);
         if ((ret == RT_ERROR_NONE) && (attr.location.type == RT_MEMORY_LOC_DEVICE)) {
-            (void)taskInfo->stream->Device_()->Driver_()->MemCopySync(&value, sizeof(value), devPtr, sizeof(value), RT_MEMCPY_DEVICE_TO_HOST);
+            (void)taskInfo->stream->Device_()->Driver_()->MemCopySync(
+                &value, sizeof(value), devPtr, sizeof(value), RT_MEMCPY_DEVICE_TO_HOST);
             debugInfo << ", dsa_cfg_random_number addr=" << devPtr << ", value=0x" << std::hex << value;
         } else {
             debugInfo << ", dsa_cfg_random_number addr=" << devPtr << " is invalid";
         }
     }
     RT_LOG(RT_LOG_ERROR, "%s", debugInfo.str().c_str());
-    PrintErrorSqe(RtPtrToPtr<rtStarsSqe_t*, rtStarsDsaSqe_t* >(sqe), "dsaTask");
+    PrintErrorSqe(RtPtrToPtr<rtStarsSqe_t*, rtStarsDsaSqe_t*>(sqe), "dsaTask");
 }
 
 void PrintErrorInfoForStarsCommonTask(TaskInfo* taskInfo, const uint32_t devId)
 {
     const int32_t streamId = taskInfo->stream->Id_();
-    StarsCommonTaskInfo *starsCommTask = &taskInfo->u.starsCommTask;
-    Stream *const reportStream = GetReportStream(taskInfo->stream);
+    StarsCommonTaskInfo* starsCommTask = &taskInfo->u.starsCommTask;
+    Stream* const reportStream = GetReportStream(taskInfo->stream);
     RtErrModuleType errModule = ERR_MODULE_RTS;
     if (starsCommTask->commonStarsSqe.commonSqe.sqeHeader.type == RT_STARS_SQE_TYPE_DSA) {
         errModule = ERR_MODULE_FE;
         PrintDsaErrorInfoForStarsCommonTask(taskInfo);
     }
-    STREAM_REPORT_ERR_MSG(reportStream, errModule, "Task execution failed, device_id=%u, stream_id=%d, %s=%hu,"
-        "flip_num=%hu, task_type=%d(%s).", devId, streamId, TaskIdDesc(), taskInfo->id, taskInfo->flipNum,
-        static_cast<int32_t>(taskInfo->type), taskInfo->typeName);
+    STREAM_REPORT_ERR_MSG(
+        reportStream, errModule,
+        "Task execution failed, device_id=%u, stream_id=%d, %s=%hu,"
+        "flip_num=%hu, task_type=%d(%s).",
+        devId, streamId, TaskIdDesc(), taskInfo->id, taskInfo->flipNum, static_cast<int32_t>(taskInfo->type),
+        taskInfo->typeName);
 }
 
-rtError_t GetIsCmdListNotFreeValByDvppCfg(rtDvppCfg_t *cfg, bool &isCmdListNotFree)
+rtError_t GetIsCmdListNotFreeValByDvppCfg(rtDvppCfg_t* cfg, bool& isCmdListNotFree)
 {
     // cfg support nullptr, no need process
     NULL_PTR_RETURN_NOLOG(cfg, RT_ERROR_NONE);
@@ -106,8 +112,9 @@ rtError_t GetIsCmdListNotFreeValByDvppCfg(rtDvppCfg_t *cfg, bool &isCmdListNotFr
                 isCmdListNotFree = cfg->attrs[idx].value.isCmdListNotFree;
                 break;
             default:
-                RT_LOG(RT_LOG_ERROR, "dvpp cfg attr id[%u] is invalid, should be [1, %u)",
-                    cfg->attrs[idx].id, RT_DVPP_MAX);
+                RT_LOG(
+                    RT_LOG_ERROR, "dvpp cfg attr id[%u] is invalid, should be [1, %u)", cfg->attrs[idx].id,
+                    RT_DVPP_MAX);
                 return RT_ERROR_INVALID_VALUE;
         }
     }
@@ -145,14 +152,14 @@ rtError_t CaptureRecordExternalTaskInit(TaskInfo* taskInfo, const void* const re
 #endif
 
 #if F_DESC("WriteValueTask")
-rtError_t WriteValueTaskInit(TaskInfo *taskInfo, uint64_t addr, WriteValueSize size,
-                             uint8_t *value, TaskWrCqeFlag cqeFlag)
+rtError_t WriteValueTaskInit(
+    TaskInfo* taskInfo, uint64_t addr, WriteValueSize size, uint8_t* value, TaskWrCqeFlag cqeFlag)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->typeName = "WriteValueTask";
     taskInfo->type = TS_TASK_TYPE_WRITE_VALUE;
 
-    WriteValueTaskInfo *writeValTsk = &taskInfo->u.writeValTask;
+    WriteValueTaskInfo* writeValTsk = &taskInfo->u.writeValTask;
     writeValTsk->addr = addr;
     writeValTsk->awSize = size;
     writeValTsk->cqeFlag = cqeFlag;
@@ -167,9 +174,9 @@ rtError_t WriteValueTaskInit(TaskInfo *taskInfo, uint64_t addr, WriteValueSize s
 #endif
 
 #if F_DESC("CommonCmdTask")
-void CommonCmdTaskInit(TaskInfo * const taskInfo, const PhCmdType cmdType, const CommonCmdTaskInfo * cmdInfo)
+void CommonCmdTaskInit(TaskInfo* const taskInfo, const PhCmdType cmdType, const CommonCmdTaskInfo* cmdInfo)
 {
-    CommonCmdTaskInfo *commonCmdTaskInfo = &(taskInfo->u.commonCmdTask);
+    CommonCmdTaskInfo* commonCmdTaskInfo = &(taskInfo->u.commonCmdTask);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_COMMON_CMD;
@@ -188,5 +195,5 @@ void CommonCmdTaskInit(TaskInfo * const taskInfo, const PhCmdType cmdType, const
 }
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

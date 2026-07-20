@@ -15,15 +15,14 @@
 namespace cce {
 namespace runtime {
 
-    rtError_t MemWriteValue(const void * const devAddr, const uint64_t value, const uint32_t flag,
-        Stream * const stm);
-    rtError_t MemWaitValue(const void * const devAddr, const uint64_t value, const uint32_t flag,
-        Stream * const stm);
-    rtError_t ReduceAsync(void * const dst, const void * const src, const uint64_t cpySize,
-        const rtRecudeKind_t kind, const rtDataType_t type, Stream * const stm,
-        const rtTaskCfgInfo_t * const cfgInfo = nullptr);
-    rtError_t ReduceAsyncV2(void * const dst, const void * const src, const uint64_t cpySize,
-        const rtRecudeKind_t kind, const rtDataType_t type, Stream * const stm, void * const overflowAddr);
+rtError_t MemWriteValue(const void* const devAddr, const uint64_t value, const uint32_t flag, Stream* const stm);
+rtError_t MemWaitValue(const void* const devAddr, const uint64_t value, const uint32_t flag, Stream* const stm);
+rtError_t ReduceAsync(
+    void* const dst, const void* const src, const uint64_t cpySize, const rtRecudeKind_t kind, const rtDataType_t type,
+    Stream* const stm, const rtTaskCfgInfo_t* const cfgInfo = nullptr);
+rtError_t ReduceAsyncV2(
+    void* const dst, const void* const src, const uint64_t cpySize, const rtRecudeKind_t kind, const rtDataType_t type,
+    Stream* const stm, void* const overflowAddr);
 
 } // namespace runtime
 } // namespace cce

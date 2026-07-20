@@ -12,23 +12,23 @@
 namespace cce {
 namespace runtime {
 
-rtError_t Event::RecordSoftwareEvent(Stream * const stm)
+rtError_t Event::RecordSoftwareEvent(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t Event::CaptureWaitProcess(Stream * const stm)
+rtError_t Event::CaptureWaitProcess(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t Event::ResetSoftwareEvent(Stream * const stm)
+rtError_t Event::ResetSoftwareEvent(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -16,7 +16,7 @@
 namespace cce {
 namespace runtime {
 
-ProfMapGeModelDevice &ProfMapGeModelDevice::Instance()
+ProfMapGeModelDevice& ProfMapGeModelDevice::Instance()
 {
     static ProfMapGeModelDevice instance;
     return instance;
@@ -36,15 +36,14 @@ void ProfMapGeModelDevice::UnsetDeviceIdByGeModelIdx(const uint32_t geModelIdx, 
     (void)modelDeviceMap_.erase(geModelIdx);
 }
 
-rtError_t ProfMapGeModelDevice::GetDeviceIdByGeModelIdx(const uint32_t geModelIdx, uint32_t * const deviceId)
+rtError_t ProfMapGeModelDevice::GetDeviceIdByGeModelIdx(const uint32_t geModelIdx, uint32_t* const deviceId)
 {
     RT_LOG(RT_LOG_DEBUG, "get deviceId by geModelIdx:%u.", geModelIdx);
     const std::unique_lock<std::mutex> lk(mapMutex_);
     const auto iter = modelDeviceMap_.find(geModelIdx);
     if (iter != modelDeviceMap_.end()) {
         *deviceId = iter->second;
-        RT_LOG(RT_LOG_DEBUG, "get deviceId by geModelIdx:%u, deviceId:%u",
-            geModelIdx, *deviceId);
+        RT_LOG(RT_LOG_DEBUG, "get deviceId by geModelIdx:%u, deviceId:%u", geModelIdx, *deviceId);
         return RT_ERROR_NONE;
     }
     RT_LOG(RT_LOG_ERROR, "Device of geModelIdx:%u does not exist.", geModelIdx);
@@ -58,5 +57,5 @@ void ProfMapGeModelDevice::DelAllData()
     modelDeviceMap_.clear();
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

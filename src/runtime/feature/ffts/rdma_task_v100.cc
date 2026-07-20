@@ -27,7 +27,7 @@ static bool RdmaPiValueModifyTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommon,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_RDMA_PI_VALUE_MODIFY, funcs);
     }
@@ -37,5 +37,5 @@ static bool RdmaPiValueModifyTaskRegister()
 
 static bool g_rdmaPiValueModifyTaskRegister = RdmaPiValueModifyTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

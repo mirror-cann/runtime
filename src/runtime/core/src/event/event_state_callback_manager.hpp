@@ -18,10 +18,7 @@
 namespace cce {
 namespace runtime {
 
-enum class EventStateCallbackType : uint8_t {
-    RT_EVENT_STATE_CALLBACK = 0,
-    RT_EVENT_STATE_CALLBACK_TYPE_MAX
-};
+enum class EventStateCallbackType : uint8_t { RT_EVENT_STATE_CALLBACK = 0, RT_EVENT_STATE_CALLBACK_TYPE_MAX };
 
 enum class EventStatePeriod : uint8_t {
     EVENT_STATE_PERIOD_RECORD = 0,
@@ -30,7 +27,7 @@ enum class EventStatePeriod : uint8_t {
     EVENT_STATE_PERIOD_TYPE_MAX
 };
 
-typedef void (*rtEventStateCallback)(Stream* stream, Event* event, EventStatePeriod period, void *args);
+typedef void (*rtEventStateCallback)(Stream* stream, Event* event, EventStatePeriod period, void* args);
 
 struct EventStateCallbackInfo {
     EventStateCallbackType type;
@@ -40,24 +37,24 @@ struct EventStateCallbackInfo {
 
 class EventStateCallbackManager {
 public:
-    static EventStateCallbackManager &Instance();
-    rtError_t RegEventStateCallback(const char_t *regName, void *callback, void *args, EventStateCallbackType cbType);
+    static EventStateCallbackManager& Instance();
+    rtError_t RegEventStateCallback(const char_t* regName, void* callback, void* args, EventStateCallbackType cbType);
     void Notify(Stream* stream, Event* event, EventStatePeriod period);
 
 private:
     EventStateCallbackManager() = default;
     ~EventStateCallbackManager() = default;
-    EventStateCallbackManager(const EventStateCallbackManager &other) = delete;
-    EventStateCallbackManager &operator=(const EventStateCallbackManager &other) = delete;
-    EventStateCallbackManager(EventStateCallbackManager &&other) = delete;
-    EventStateCallbackManager &operator=(EventStateCallbackManager &&other) = delete;
+    EventStateCallbackManager(const EventStateCallbackManager& other) = delete;
+    EventStateCallbackManager& operator=(const EventStateCallbackManager& other) = delete;
+    EventStateCallbackManager(EventStateCallbackManager&& other) = delete;
+    EventStateCallbackManager& operator=(EventStateCallbackManager&& other) = delete;
 
 private:
     std::unordered_map<std::string, EventStateCallbackInfo> callbackMap_;
     std::mutex mapMutex_;
 };
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_EVENT_STATE_CALLBACK_MANAGER_HPP

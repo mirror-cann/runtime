@@ -38,9 +38,9 @@ int32_t StarsArgManager::GetStmId() const { return stream_->Id_(); }
 
 bool StarsArgManager::CreateArgRes()
 {
-    Device * const dev = stream_->Device_();
-    void *devAddr = nullptr;
-    void *hostAddr = nullptr;
+    Device* const dev = stream_->Device_();
+    void* devAddr = nullptr;
+    void* hostAddr = nullptr;
     const uint64_t size = STARS_ARG_POOL_SQ_SIZE * dev->GetDevProperties().rtsqDepth;
     argPoolSize_ = static_cast<uint32_t>(size & UINT32_MAX);
 
@@ -72,7 +72,7 @@ void StarsArgManager::ReleaseArgRes()
 {
     if (devArgResBaseAddr_ != nullptr) {
         FreeArgMem();
-        Device * const dev = stream_->Device_();
+        Device* const dev = stream_->Device_();
         RT_LOG(RT_LOG_DEBUG, "Release args stm pool mem, stream_id=%d, device_id=%u.", stream_->Id_(), dev->Id_());
         devArgResBaseAddr_ = nullptr;
         hostArgResBaseAddr_ = nullptr;
@@ -102,14 +102,20 @@ bool StarsArgManager::RecycleStmArgPos(const uint32_t taskId, const uint32_t stm
     const bool flag2 = (head > tail) && ((stmArgPos <= tail) || ((stmArgPos > head) && (stmArgPos < argPoolSize_)));
     if (!flag1 && !flag2) {
         stmArgHeadMutex_.unlock();
-        RT_LOG(RT_LOG_DEBUG, "stmArgPos is invalid, device_id=%u, stream_id=%d, task_id=%u, stmArgPos=%u, "
-            "stmArgHead_=%u, stmArgTail_=%u", devId, stmId, taskId, stmArgPos, head, tail);
+        RT_LOG(
+            RT_LOG_DEBUG,
+            "stmArgPos is invalid, device_id=%u, stream_id=%d, task_id=%u, stmArgPos=%u, "
+            "stmArgHead_=%u, stmArgTail_=%u",
+            devId, stmId, taskId, stmArgPos, head, tail);
         return false;
     }
 
     stmArgHead_.Set(stmArgPos);
-    RT_LOG(RT_LOG_DEBUG, "Recycle args stm pool mem success, device_id=%u, stream_id=%d, task_id=%u, stmArgPos=%u, "
-        "stmArgHead_=%u, stmArgTail_=%u", devId, stmId, taskId, stmArgPos, stmArgHead_.Value(), stmArgTail_.Value());
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "Recycle args stm pool mem success, device_id=%u, stream_id=%d, task_id=%u, stmArgPos=%u, "
+        "stmArgHead_=%u, stmArgTail_=%u",
+        devId, stmId, taskId, stmArgPos, stmArgHead_.Value(), stmArgTail_.Value());
 
     stmArgHeadMutex_.unlock();
     return true;
@@ -129,7 +135,9 @@ bool StarsArgManager::AllocStmArgPos(const uint32_t argsSize, uint32_t& startPos
     const bool flag3 = (head > tail) && ((tail + alignArgSize) < head);
     if (!flag1 && !flag2 && !flag3) {
         stmArgTailMutex_.unlock();
-        RT_LOG(RT_LOG_DEBUG, "Alloc args stm pool mem failed, size=%u, alignSize=%u, "
+        RT_LOG(
+            RT_LOG_DEBUG,
+            "Alloc args stm pool mem failed, size=%u, alignSize=%u, "
             "stream_id=%d, device_id=%u, stmArgHead_=%u, stmArgTail_=%u",
             argsSize, alignArgSize, stmId, devId, head, tail);
         return false;
@@ -145,7 +153,9 @@ bool StarsArgManager::AllocStmArgPos(const uint32_t argsSize, uint32_t& startPos
     stmArgTailMutex_.unlock();
     endPos = tail;
 
-    RT_LOG(RT_LOG_DEBUG, "Alloc args stm pool mem success, size=%u, alignSize=%u, "
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "Alloc args stm pool mem success, size=%u, alignSize=%u, "
         "stream_id=%d, device_id=%u, stmArgHead_=%u, stmArgTail_=%u",
         argsSize, alignArgSize, stmId, devId, stmArgHead_.Value(), stmArgTail_.Value());
     return true;
@@ -167,8 +177,8 @@ rtError_t StarsArgManager::LoadInputOutputArgs(
 {
     if (argsInfo->hasTiling != 0U) {
         // set tiling data offset to tiling addr
-        *(RtPtrToPtr<uint64_t *, char_t *>(RtPtrToPtr<char_t *, void *>(argsInfo->args) + argsInfo->tilingAddrOffset)) =
-            RtPtrToValue<const void *>(result->kerArgs) + argsInfo->tilingDataOffset;
+        *(RtPtrToPtr<uint64_t*, char_t*>(RtPtrToPtr<char_t*, void*>(argsInfo->args) + argsInfo->tilingAddrOffset)) =
+            RtPtrToValue<const void*>(result->kerArgs) + argsInfo->tilingDataOffset;
     }
     UpdateAddrField(result->kerArgs, argsInfo->args, argsInfo->hostInputInfoNum, argsInfo->hostInputInfoPtr);
     return H2DArgCopy(result, argsInfo->args, GetClampedCpySize(result, argsInfo->argsSize));
@@ -200,5 +210,5 @@ uint32_t StarsArgManager::GetStmArgPos()
     return tail;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

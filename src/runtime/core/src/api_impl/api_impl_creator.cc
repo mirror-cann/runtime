@@ -16,14 +16,8 @@
 namespace cce {
 namespace runtime {
 
-ApiMbuf *CreateImplMbufAndGet()
-{
-    return new (std::nothrow) ApiImplMbuf();
-}
+ApiMbuf* CreateImplMbufAndGet() { return new (std::nothrow) ApiImplMbuf(); }
 
-ApiSoma *CreateImplSomaAndGet()
-{
-    return new (std::nothrow) ApiImplSoma();
-}
-}  // namespace runtime
-}  // namespace cce
+ApiSoma* CreateImplSomaAndGet() { return new (std::nothrow) ApiImplSoma(); }
+} // namespace runtime
+} // namespace cce

@@ -16,10 +16,10 @@
 namespace cce {
 namespace runtime {
 
-void ConstructSqeForBarrierTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForBarrierTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     BarrierTaskInfo* barrierTsk = &taskInfo->u.barrierTask;
-    RtBarrierKernelSqe *const sqe = &(command->barrierKernelSqe);
+    RtBarrierKernelSqe* const sqe = &(command->barrierKernelSqe);
     sqe->header.ie = 0U;
     sqe->header.type = RT_STARS_SQE_TYPE_FFTS;
     sqe->header.post_p = 0U;
@@ -75,7 +75,7 @@ static bool BarrierTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommon,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_BARRIER, funcs);
     }
@@ -85,5 +85,5 @@ static bool BarrierTaskRegister()
 
 static bool g_barrierTaskRegister = BarrierTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -29,7 +29,7 @@
 namespace {
 constexpr int64_t RTS_INVALID_HARDWARE_VERSION = 0xFFFFFFFFFFFFFFFFLL;
 
-}  // namespace
+} // namespace
 
 namespace cce {
 namespace runtime {
@@ -41,23 +41,23 @@ namespace runtime {
 static __THREAD_LOCAL__ uint32_t g_unusedThreadEnv = 0;
 #endif
 #if RUNTIME_API
-Runtime *Runtime::runtime_ = nullptr;
+Runtime* Runtime::runtime_ = nullptr;
 #endif
 static bool g_isRuntimeKeeperExiting = false;
 static RuntimeKeeper g_runtimeKeeper;
 
 /**
  * 获取设备硬件版本信息
- * 
+ *
  * 在无 NPU 卡的服务器上：
  * - 不安装驱动包，hal 等驱动接口在 devlib 中提供（打桩处理）
  * - 直接返回 0（成功），但硬件版本为无效值
  * - 所有出参一定要有默认无效值
- * 
+ *
  * @param hwVersion 硬件版本输出参数（必须初始化为无效值）
  * @return rtError_t 错误码
  */
-rtError_t GetDeviceType(int64_t *hwVersion)
+rtError_t GetDeviceType(int64_t* hwVersion)
 {
     int64_t hardwareVersion = RTS_INVALID_HARDWARE_VERSION;
     drvError_t drvRet = halGetDeviceInfo(RT_DEV_ZERO, MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION, &hardwareVersion);
@@ -79,17 +79,15 @@ rtError_t GetDeviceType(int64_t *hwVersion)
 
     if (drvRet != DRV_ERROR_NONE) {
         if (drvRet != DRV_ERROR_NOT_SUPPORT) {
-            DRV_ERROR_PROCESS(drvRet,
-                "Call halGetDeviceInfo failed: drvRet=%d, module type=%d, info type=%d.",
-                drvRet,
-                MODULE_TYPE_SYSTEM,
-                INFO_TYPE_VERSION);
+            DRV_ERROR_PROCESS(
+                drvRet, "Call halGetDeviceInfo failed: drvRet=%d, module type=%d, info type=%d.", drvRet,
+                MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION);
         } else {
-            RT_LOG(RT_LOG_WARNING,
+            RT_LOG(
+                RT_LOG_WARNING,
                 "[Call][halGetDeviceInfo] failed, function does not support, module type=%d,"
                 " info type=%d.",
-                MODULE_TYPE_SYSTEM,
-                INFO_TYPE_VERSION);
+                MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION);
         }
     } else {
         *hwVersion = hardwareVersion;
@@ -100,7 +98,7 @@ rtError_t GetDeviceType(int64_t *hwVersion)
 }
 
 #if STATIC_RT_LIB
-static Runtime *CreateRuntimeImpl(void **soHandle)
+static Runtime* CreateRuntimeImpl(void** soHandle)
 {
     UNUSED(soHandle);
     cce::runtime::Runtime* rt = new (std::nothrow) cce::runtime::Runtime();
@@ -113,7 +111,7 @@ static Runtime *CreateRuntimeImpl(void **soHandle)
     return rt;
 }
 
-static void DestroyRuntimeImpl(Runtime *rt, const void *soHandle)
+static void DestroyRuntimeImpl(Runtime* rt, const void* soHandle)
 {
     UNUSED(soHandle);
     DELETE_O(rt);
@@ -123,7 +121,7 @@ static void DestroyRuntimeImpl(Runtime *rt, const void *soHandle)
 #endif
 }
 
-static void PrepareRuntimeProcessExitImpl(Runtime *rt, const void *soHandle)
+static void PrepareRuntimeProcessExitImpl(Runtime* rt, const void* soHandle)
 {
     UNUSED(soHandle);
     if (rt != nullptr) {
@@ -136,10 +134,10 @@ static void PrepareRuntimeProcessExitImpl(Runtime *rt, const void *soHandle)
 }
 
 #else
-static const std::string LIBRUNTIME_SO_NAME = "libruntime_v100.so";  // default so name
-using ConstructFunc = Runtime *(*)();
-using DesConstructFunc = void (*)(Runtime *);
-using PrepareProcessExitFunc = void (*)(Runtime *);
+static const std::string LIBRUNTIME_SO_NAME = "libruntime_v100.so"; // default so name
+using ConstructFunc = Runtime* (*)();
+using DesConstructFunc = void (*)(Runtime*);
+using PrepareProcessExitFunc = void (*)(Runtime*);
 
 static rtChipType_t g_chipType = CHIP_BEGIN;
 rtChipType_t Runtime::GetChipType()
@@ -154,10 +152,10 @@ static rtChipType_t GetChipType()
 {
     int64_t hwVersion = RTS_INVALID_HARDWARE_VERSION;
     rtChipType_t chipType = GlobalContainer::GetRtChipType();
-    const bool isRuntimeChipType = (chipType != CHIP_NO_DEVICE) &&
-        (((chipType >= CHIP_BEGIN) && (chipType < CHIP_END)) ||
-        ((chipType >= CHIP_EXT_BEGIN) && (chipType < CHIP_EXT_END)));
-        
+    const bool isRuntimeChipType =
+        (chipType != CHIP_NO_DEVICE) && (((chipType >= CHIP_BEGIN) && (chipType < CHIP_END)) ||
+                                         ((chipType >= CHIP_EXT_BEGIN) && (chipType < CHIP_EXT_END)));
+
     // rtSetSocVersion may call Runtime::Instance before the Runtime object is fully booted.
     // In that path, select libruntime by the user target soc instead of the local hardware.
     if (!GlobalContainer::GetUserSocVersion().empty() && isRuntimeChipType) {
@@ -188,16 +186,15 @@ static const std::string GetLibRuntimeSoName()
     return soName;
 }
 
-static Runtime *CreateRuntimeImpl(void **soHandle)
+static Runtime* CreateRuntimeImpl(void** soHandle)
 {
     const std::string libSoName = GetLibRuntimeSoName();
     constexpr const int32_t flags = static_cast<int32_t>(static_cast<uint32_t>(MMPA_RTLD_NOW));
-    void *const handlePtr = mmDlopen(libSoName.c_str(), flags);
+    void* const handlePtr = mmDlopen(libSoName.c_str(), flags);
     if (handlePtr == nullptr) {
-        const char_t *const dlRet = mmDlerror();
-        const char_t *const dlError = (dlRet == nullptr) ? "unknown" : dlRet;
-        RT_LOG_CALL_MSG(ERR_MODULE_SYSTEM, "Failed to open library %s, dlerror=%s.",
-            libSoName.c_str(), dlError);
+        const char_t* const dlRet = mmDlerror();
+        const char_t* const dlError = (dlRet == nullptr) ? "unknown" : dlRet;
+        RT_LOG_CALL_MSG(ERR_MODULE_SYSTEM, "Failed to open library %s, dlerror=%s.", libSoName.c_str(), dlError);
         return nullptr;
     }
     ConstructFunc const func = RtPtrToPtr<ConstructFunc>(mmDlsym(handlePtr, "ConstructRuntimeImpl"));
@@ -206,7 +203,7 @@ static Runtime *CreateRuntimeImpl(void **soHandle)
         (void)mmDlclose(handlePtr);
         return nullptr;
     }
-    Runtime *rt = func();
+    Runtime* rt = func();
     if (rt == nullptr) {
         (void)mmDlclose(handlePtr);
         RT_LOG(RT_LOG_ERROR, "From %s Create Runtime Instance fail", libSoName.c_str());
@@ -217,13 +214,13 @@ static Runtime *CreateRuntimeImpl(void **soHandle)
     return rt;
 }
 
-static void DestroyRuntimeImpl(Runtime *rt, void *soHandle)
+static void DestroyRuntimeImpl(Runtime* rt, void* soHandle)
 {
     if ((soHandle == nullptr) || (rt == nullptr)) {
         RT_LOG(RT_LOG_INFO, "soHandle or rt is nullptr");
         return;
     }
-    DesConstructFunc const func = RtPtrToPtr<DesConstructFunc, void *>(mmDlsym(soHandle, "DestructorRuntimeImpl"));
+    DesConstructFunc const func = RtPtrToPtr<DesConstructFunc, void*>(mmDlsym(soHandle, "DestructorRuntimeImpl"));
     if (func == nullptr) {
         const std::string libSoName = GetLibRuntimeSoName();
         RT_LOG(RT_LOG_ERROR, "No symbol found in %s.", libSoName.c_str());
@@ -234,14 +231,14 @@ static void DestroyRuntimeImpl(Runtime *rt, void *soHandle)
     return;
 }
 
-static void PrepareRuntimeProcessExitImpl(Runtime *rt, void *soHandle)
+static void PrepareRuntimeProcessExitImpl(Runtime* rt, void* soHandle)
 {
     if ((soHandle == nullptr) || (rt == nullptr)) {
         RT_LOG(RT_LOG_INFO, "soHandle or rt is nullptr");
         return;
     }
     PrepareProcessExitFunc const func =
-        RtPtrToPtr<PrepareProcessExitFunc, void *>(mmDlsym(soHandle, "PrepareRuntimeProcessExitImpl"));
+        RtPtrToPtr<PrepareProcessExitFunc, void*>(mmDlsym(soHandle, "PrepareRuntimeProcessExitImpl"));
     if (func == nullptr) {
         const std::string libSoName = GetLibRuntimeSoName();
         RT_LOG(RT_LOG_ERROR, "No process exit prepare symbol found in %s.", libSoName.c_str());
@@ -260,7 +257,8 @@ ErrorManager& RuntimeKeeper::errManager_ = ErrorManager::GetInstance();
 static void RegisterDrvErrMsgHandle(void)
 {
     if (&drv_log_report_err_msg_handle_register == nullptr) {
-        RT_LOG(RT_LOG_WARNING,
+        RT_LOG(
+            RT_LOG_WARNING,
             "[drv api] drv_log_report_err_msg_handle_register does not exist, skip register err msg handle.");
         return;
     }
@@ -278,7 +276,8 @@ static void UnregisterDrvErrMsgHandle(void)
     if (&drv_log_report_err_msg_handle_unregister != nullptr) {
         const int32_t ret = drv_log_report_err_msg_handle_unregister();
         if (ret != DRV_ERROR_NONE) {
-            RT_LOG(RT_LOG_ERROR, "Call driver api drv_log_report_err_msg_handle_unregister failed, drvRetCode=%d.", ret);
+            RT_LOG(
+                RT_LOG_ERROR, "Call driver api drv_log_report_err_msg_handle_unregister failed, drvRetCode=%d.", ret);
         }
     }
 }
@@ -311,7 +310,8 @@ RuntimeKeeper::~RuntimeKeeper()
         (void)UnregisterDrvErrMsgHandle();
 #endif
         PrepareRuntimeProcessExitImpl(runtime_, soHandle_);
-    } catch (...) {}
+    } catch (...) {
+    }
 
     Runtime::runtime_ = nullptr;
     runtime_ = nullptr;
@@ -320,7 +320,7 @@ RuntimeKeeper::~RuntimeKeeper()
     soHandle_ = nullptr;
 }
 
-Runtime *RuntimeKeeper::BootRuntime()
+Runtime* RuntimeKeeper::BootRuntime()
 {
     if (IsRuntimeKeeperExiting()) {
         RT_LOG(RT_LOG_WARNING, "RuntimeKeeper is exiting, skip runtime boot.");
@@ -328,7 +328,7 @@ Runtime *RuntimeKeeper::BootRuntime()
     }
     if (bootStage_.CompareExchange(BOOT_INIT, BOOT_ON)) {
         // get chip type and dlopen different so
-        void *handle = nullptr;
+        void* handle = nullptr;
         runtime_ = CreateRuntimeImpl(&handle);
         if (runtime_ == nullptr) {
             bootStage_.Set(BOOT_INIT);
@@ -367,7 +367,7 @@ Runtime *RuntimeKeeper::BootRuntime()
     return runtime_;
 }
 
-Runtime *RuntimeKeeperGetRuntime()
+Runtime* RuntimeKeeperGetRuntime()
 {
     if (IsRuntimeKeeperExiting()) {
         RT_LOG(RT_LOG_WARNING, "RuntimeKeeper is exiting, runtime instance is unavailable.");
@@ -376,9 +376,6 @@ Runtime *RuntimeKeeperGetRuntime()
     return (g_runtimeKeeper.BootRuntime());
 }
 
-bool IsRuntimeKeeperExiting(void)
-{
-    return g_isRuntimeKeeperExiting;
-}
-}  // namespace runtime
-}  // namespace cce
+bool IsRuntimeKeeperExiting(void) { return g_isRuntimeKeeperExiting; }
+} // namespace runtime
+} // namespace cce

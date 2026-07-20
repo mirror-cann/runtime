@@ -15,41 +15,38 @@
 
 namespace cce {
 namespace runtime {
-rtError_t StreamCCULaunch(Stream *stm, rtCcuTaskInfo_t *taskInfo)
+rtError_t StreamCCULaunch(Stream* stm, rtCcuTaskInfo_t* taskInfo)
 {
     rtError_t error = RT_ERROR_NONE;
-    TaskInfo *ccuLaunchTask = nullptr;
+    TaskInfo* ccuLaunchTask = nullptr;
     uint32_t pos = 0xFFFFU;
     constexpr uint32_t sqeNum = 2U;
     const int32_t streamId = stm->Id_();
     error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "stream_id=%d check failed, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(error, "stream_id=%d check failed, retCode=%#x.", streamId, static_cast<uint32_t>(error));
 
     const uint8_t devDieNum = stm->Device_()->GetDevProperties().ioDieNum;
     const uint8_t dieNum = (devDieNum != 0) ? devDieNum : 2U;
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((taskInfo->dieId >= dieNum), RT_ERROR_INVALID_VALUE, 
-        taskInfo->dieId, "[0, " + std::to_string(dieNum) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+        (taskInfo->dieId >= dieNum), RT_ERROR_INVALID_VALUE, taskInfo->dieId, "[0, " + std::to_string(dieNum) + ")");
 
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&ccuLaunchTask, stm, pos, dstStm, sqeNum);
-    ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();,
-        "stream_id=%d alloc ccuLaunch task failed, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "stream_id=%d alloc ccuLaunch task failed, retCode=%#x.",
+                                                           stm->Id_(), static_cast<uint32_t>(error));
     SaveTaskCommonInfo(ccuLaunchTask, dstStm, pos, sqeNum);
     CcuLaunchTaskInit(ccuLaunchTask, taskInfo);
-    ccuLaunchTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    ccuLaunchTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(ccuLaunchTask, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, 
-                                TaskUnInitProc(ccuLaunchTask); TaskRollBack(dstStm, pos); stm->StreamUnLock();,
-                                "ccuLaunchTask submit failed, stream_id=%d, retCode=%#x.",
-                                stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(ccuLaunchTask); TaskRollBack(dstStm, pos); stm->StreamUnLock();
+                                , "ccuLaunchTask submit failed, stream_id=%d, retCode=%#x.", stm->Id_(),
+                                static_cast<uint32_t>(error));
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), ccuLaunchTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "recycle fail, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(error, "recycle fail, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

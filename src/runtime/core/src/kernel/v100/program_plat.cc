@@ -11,12 +11,12 @@
 namespace cce {
 namespace runtime {
 
-rtError_t Program::XpuSetKernelLiteralNameDevAddr(Kernel *kernel, const uint32_t devId)
+rtError_t Program::XpuSetKernelLiteralNameDevAddr(Kernel* kernel, const uint32_t devId)
 {
     UNUSED(kernel);
     UNUSED(devId);
     return RT_ERROR_NONE;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

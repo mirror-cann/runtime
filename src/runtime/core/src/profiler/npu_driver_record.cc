@@ -15,7 +15,7 @@ namespace cce {
 namespace runtime {
 NpuDriverRecord::NpuDriverRecord(const uint16_t opType)
 {
-    const Profiler * const curProfiler = Runtime::Instance()->Profiler_();
+    const Profiler* const curProfiler = Runtime::Instance()->Profiler_();
     needSave_ = false;
     if (curProfiler == nullptr) {
         return;
@@ -32,12 +32,13 @@ NpuDriverRecord::NpuDriverRecord(const uint16_t opType)
     return;
 }
 
-void NpuDriverRecord::PrintRecord(const rtProfileRecordSyncDrv_t &recordSyncDrv) const
+void NpuDriverRecord::PrintRecord(const rtProfileRecordSyncDrv_t& recordSyncDrv) const
 {
-    RT_LOG(RT_LOG_INFO, "DrvApiCall: RecordType=%hu OperationType=%hu"
+    RT_LOG(
+        RT_LOG_INFO,
+        "DrvApiCall: RecordType=%hu OperationType=%hu"
         " pid=%u tid=%u seq=%u start=%" PRIu64 " end=%" PRIu64 "",
-        recordSyncDrv.type, recordSyncDrv.drvOpType,
-        recordSyncDrv.pid, recordSyncDrv.tid, recordSyncDrv.seqId,
+        recordSyncDrv.type, recordSyncDrv.drvOpType, recordSyncDrv.pid, recordSyncDrv.tid, recordSyncDrv.seqId,
         recordSyncDrv.startStamp, recordSyncDrv.endStamp);
     return;
 }
@@ -51,5 +52,5 @@ void NpuDriverRecord::SaveRecord()
     return;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

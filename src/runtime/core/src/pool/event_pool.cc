@@ -13,7 +13,7 @@
 
 namespace cce {
 namespace runtime {
-EventPool::EventPool(Device *device, uint32_t tsId)
+EventPool::EventPool(Device* device, uint32_t tsId)
     : NoCopy(), device_(device), poolSize_(0U), tsId_(tsId), isAging_(false)
 {
     poolSize_ = device->GetDevProperties().eventPoolSize;
@@ -29,12 +29,10 @@ EventPool::~EventPool() noexcept
     DELETE_A(eventQueue_);
 }
 
-uint32_t EventPool::GetQueueAvilableNum() const
-{
-     return (eventQueueTail_ + poolSize_ - eventQueueHead_) % poolSize_;
-}
+uint32_t EventPool::GetQueueAvilableNum() const { return (eventQueueTail_ + poolSize_ - eventQueueHead_) % poolSize_; }
 
-bool EventPool::IsNeedAllocIdForPool() const {
+bool EventPool::IsNeedAllocIdForPool() const
+{
     if (isAging_) {
         RT_LOG(RT_LOG_INFO, "already aging, pool_size=%d.", GetQueueAvilableNum());
         return false;
@@ -46,11 +44,11 @@ bool EventPool::IsNeedAllocIdForPool() const {
     return true;
 }
 
-rtError_t EventPool::AllocEventIdFromDrv(int32_t * const eventId)
+rtError_t EventPool::AllocEventIdFromDrv(int32_t* const eventId)
 {
     if (device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_NOTIFY_ONLY)) {
-        return device_->Driver_()->NotifyIdAlloc(static_cast<int32_t>(device_->Id_()),
-            RtPtrToPtr<uint32_t *>(eventId), tsId_, 0U, false, true);
+        return device_->Driver_()->NotifyIdAlloc(
+            static_cast<int32_t>(device_->Id_()), RtPtrToPtr<uint32_t*>(eventId), tsId_, 0U, false, true);
     } else {
         return device_->Driver_()->EventIdAlloc(eventId, device_->Id_(), tsId_);
     }
@@ -78,11 +76,13 @@ void EventPool::TryAllocEventIdForPool()
 rtError_t EventPool::FreeEventId(const int32_t eventId)
 {
     const rtError_t error = device_->FreeEventIdFromDrv(eventId);
-    COND_RETURN_ERROR_MSG_INNER((error != RT_ERROR_NONE), error, "Failed to free event id from driver, retCode=%#x.",
-                                static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        (error != RT_ERROR_NONE), error, "Failed to free event id from driver, retCode=%#x.",
+        static_cast<uint32_t>(error));
     (void)TryAllocEventIdForPool();
-    RT_LOG(RT_LOG_INFO, "device_id=%u, free event_id=%d, pool event_num =%d", device_->Id_(), eventId,
-           GetQueueAvilableNum());
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%u, free event_id=%d, pool event_num =%d", device_->Id_(), eventId,
+        GetQueueAvilableNum());
     return RT_ERROR_NONE;
 }
 
@@ -97,7 +97,7 @@ rtError_t EventPool::FreeAllEvent() noexcept
             eventQueueHead_ = (eventQueueHead_ + 1) % poolSize_;
         }
     }
-    for (auto &id: tempEventBuffer) {
+    for (auto& id : tempEventBuffer) {
         const rtError_t error = device_->FreeEventIdFromDrv(id);
         COND_LOG_ERROR((error != RT_ERROR_NONE), "Event Id Free failed, retCode=%#x.", error);
         RT_LOG(RT_LOG_INFO, "free pool event_id=%d", id);
@@ -105,7 +105,7 @@ rtError_t EventPool::FreeAllEvent() noexcept
     return RT_ERROR_NONE;
 }
 
-bool EventPool::AllocEventIdFromPool(int32_t *eventId)
+bool EventPool::AllocEventIdFromPool(int32_t* eventId)
 {
     const std::lock_guard<std::mutex> lock(lk_);
     device_->SetLastUsagePoolTimeStamp();
@@ -126,17 +126,15 @@ rtError_t EventPool::EventIdReAlloc()
     }
 
     const std::lock_guard<std::mutex> lock(lk_);
-    Driver *devDrv = device_->Driver_();
+    Driver* devDrv = device_->Driver_();
     NULL_PTR_RETURN(devDrv, RT_ERROR_DRV_NULL);
     uint32_t index = eventQueueHead_;
     while (index != eventQueueTail_) {
         const int32_t eventId = eventQueue_[index];
         const rtError_t error = devDrv->ReAllocResourceId(
             device_->Id_(), device_->DevGetTsId(), 0U, static_cast<uint32_t>(eventId), DRV_EVENT_ID);
-        ERROR_RETURN(error,
-            "Failed to reallocate event id, eventId=%d, drv devId=%u, retCode=%#x.",
-            eventId,
-            device_->Id_(),
+        ERROR_RETURN(
+            error, "Failed to reallocate event id, eventId=%d, drv devId=%u, retCode=%#x.", eventId, device_->Id_(),
             error);
         RT_LOG(RT_LOG_INFO, "Reallocate event id successfully, drv devId=%u, eventId=%d", device_->Id_(), eventId);
         index = (index + 1) % poolSize_;
@@ -144,7 +142,7 @@ rtError_t EventPool::EventIdReAlloc()
     return RT_ERROR_NONE;
 }
 
-rtError_t EventPool::AllocEventId(int32_t *eventId)
+rtError_t EventPool::AllocEventId(int32_t* eventId)
 {
     if (AllocEventIdFromPool(eventId)) { // pool not empty，pop event queue;
         RT_LOG(RT_LOG_INFO, "alloc from pool, event_id=%d.", *eventId);
@@ -153,5 +151,5 @@ rtError_t EventPool::AllocEventId(int32_t *eventId)
     return AllocEventIdFromDrv(eventId); // pool empty, alloc from drv
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

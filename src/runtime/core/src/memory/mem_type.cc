@@ -32,5 +32,5 @@ const char_t* MemLocationTypeToStr(const rtMemLocationType type)
     }
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

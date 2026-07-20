@@ -65,37 +65,37 @@ namespace runtime {
 namespace {
 constexpr uint32_t TSD_OK = 0U;
 constexpr int64_t RTS_INVALID_HARDWARE_VERSION = 0xFFFFFFFFFFFFFFFFLL;
-constexpr uint32_t  TSD_SUBPROCESS_NUM_EXCEED_THE_LIMIT = 100U;
-constexpr uint32_t  TSD_SUBPROCESS_BINARY_FILE_DAMAGED = 101U;
-constexpr uint32_t  TSD_DEVICE_DISCONNECTED = 102U;
-constexpr uint32_t  TSD_DRV_HDC_SEND_FILE_FAILED = 103U;
-constexpr uint32_t  TSD_ADD_AICPUSD_TO_CGROUP_FAILED = 104;
-constexpr uint32_t  TSD_OPEN_NOT_SUPPORT_FOR_MDC = 200U;
-constexpr uint32_t  MONITOR_THREAD_MAX_WAIT_TIMES = 10U;
-constexpr uint32_t  TSD_CLOSE_EX_FLAG_QUICK_CLOSE = 1U;
-constexpr uint32_t  PAGE_FAULT_CNT_THRESHOLD = 5000U; // 单次aicore可能发生最多缺页数量48*48
-constexpr uint64_t  PAGE_FAULT_TIME_THRESHOLD = 2000U;
+constexpr uint32_t TSD_SUBPROCESS_NUM_EXCEED_THE_LIMIT = 100U;
+constexpr uint32_t TSD_SUBPROCESS_BINARY_FILE_DAMAGED = 101U;
+constexpr uint32_t TSD_DEVICE_DISCONNECTED = 102U;
+constexpr uint32_t TSD_DRV_HDC_SEND_FILE_FAILED = 103U;
+constexpr uint32_t TSD_ADD_AICPUSD_TO_CGROUP_FAILED = 104;
+constexpr uint32_t TSD_OPEN_NOT_SUPPORT_FOR_MDC = 200U;
+constexpr uint32_t MONITOR_THREAD_MAX_WAIT_TIMES = 10U;
+constexpr uint32_t TSD_CLOSE_EX_FLAG_QUICK_CLOSE = 1U;
+constexpr uint32_t PAGE_FAULT_CNT_THRESHOLD = 5000U; // 单次aicore可能发生最多缺页数量48*48
+constexpr uint64_t PAGE_FAULT_TIME_THRESHOLD = 2000U;
 constexpr uint32_t KERNEL_INFO_EXT_MAX = 4096U;
 enum AiCpuProfilingConfig : uint32_t {
-    PROFILING_FEATURE_SWITCH = 0U,       // bit0 means profiling start or profiling stop
-    PROFILING_FEATURE_KERNEL_MODE = 1U,  // bit1 means profiling mode of kernel
-    PROFILING_FEATURE_MODEL_MODE = 2U,   // bit2 means profiling mode of model
-    PROFILING_FEATURE_TIME = 3U,         // bit3 means l0
-    PROFILING_FEATURE_TIME_L1 = 4U,      // bit4 means l1
-    PROFILING_FEATURE_TIME_L2 = 5U,      // bit5 means l2
-    PROFILING_FEATURE_TIME_L3 = 6U,      // bit6 means l3
+    PROFILING_FEATURE_SWITCH = 0U,      // bit0 means profiling start or profiling stop
+    PROFILING_FEATURE_KERNEL_MODE = 1U, // bit1 means profiling mode of kernel
+    PROFILING_FEATURE_MODEL_MODE = 2U,  // bit2 means profiling mode of model
+    PROFILING_FEATURE_TIME = 3U,        // bit3 means l0
+    PROFILING_FEATURE_TIME_L1 = 4U,     // bit4 means l1
+    PROFILING_FEATURE_TIME_L2 = 5U,     // bit5 means l2
+    PROFILING_FEATURE_TIME_L3 = 6U,     // bit6 means l3
 };
 
 struct PrimaryContextInitInfo {
-    Context *ctx = nullptr;
-    Device *dev = nullptr;
+    Context* ctx = nullptr;
+    Device* dev = nullptr;
     bool reusedCtx = false;
     bool attachedDevice = false;
     rtError_t err = RT_ERROR_NONE;
 };
 
-PrimaryContextInitInfo PreparePrimaryContext(Runtime * const runtime, RefObject<Context *> &refObj,
-    const uint32_t devId, const uint32_t tsId)
+PrimaryContextInitInfo PreparePrimaryContext(
+    Runtime* const runtime, RefObject<Context*>& refObj, const uint32_t devId, const uint32_t tsId)
 {
     PrimaryContextInitInfo initInfo;
     initInfo.ctx = refObj.GetVal(false);
@@ -107,7 +107,7 @@ PrimaryContextInitInfo PreparePrimaryContext(Runtime * const runtime, RefObject<
     }
 
     if (!initInfo.reusedCtx) {
-        initInfo.ctx = new(std::nothrow) Context(initInfo.dev, true);
+        initInfo.ctx = new (std::nothrow) Context(initInfo.dev, true);
         if (initInfo.ctx == nullptr) {
             initInfo.err = RT_ERROR_CONTEXT_NEW;
             return initInfo;
@@ -117,12 +117,12 @@ PrimaryContextInitInfo PreparePrimaryContext(Runtime * const runtime, RefObject<
     return initInfo;
 }
 
-rtError_t InitializePrimaryContext(PrimaryContextInitInfo &initInfo)
+rtError_t InitializePrimaryContext(PrimaryContextInitInfo& initInfo)
 {
     initInfo.ctx->AttachDevice(initInfo.dev);
     initInfo.attachedDevice = true;
     initInfo.ctx->SetContextForceReset(false);
-    Context * const previousCtx = InnerThreadLocalContainer::GetCurCtx();
+    Context* const previousCtx = InnerThreadLocalContainer::GetCurCtx();
     const bool previousInternalAccess = InnerThreadLocalContainer::IsInternalContextAccess();
     InnerThreadLocalContainer::SetCurCtx(initInfo.ctx, true);
     const ScopeGuard internalCtxGuard([previousCtx, previousInternalAccess]() {
@@ -130,24 +130,25 @@ rtError_t InitializePrimaryContext(PrimaryContextInitInfo &initInfo)
     });
 
     rtError_t err = initInfo.ctx->Setup();
-    ERROR_RETURN_MSG_INNER(err, "Primary context setup failed, devId=%u, retCode=%#x.",
-        initInfo.dev->Id_(), static_cast<uint32_t>(err));
+    ERROR_RETURN_MSG_INNER(
+        err, "Primary context setup failed, devId=%u, retCode=%#x.", initInfo.dev->Id_(), static_cast<uint32_t>(err));
 
     err = initInfo.dev->UpdateTimeoutConfig();
-    ERROR_RETURN_MSG_INNER(err, "Primary context update timeout config failed, devId=%u, retCode=%#x.",
-        initInfo.dev->Id_(), static_cast<uint32_t>(err));
+    ERROR_RETURN_MSG_INNER(
+        err, "Primary context update timeout config failed, devId=%u, retCode=%#x.", initInfo.dev->Id_(),
+        static_cast<uint32_t>(err));
 
     err = initInfo.dev->RegisterAndLaunchDcacheLockOp(initInfo.ctx);
-    ERROR_RETURN_MSG_INNER(err, "Primary context register dcache lock op failed, devId=%u, retCode=%#x.",
-        initInfo.dev->Id_(), static_cast<uint32_t>(err));
+    ERROR_RETURN_MSG_INNER(
+        err, "Primary context register dcache lock op failed, devId=%u, retCode=%#x.", initInfo.dev->Id_(),
+        static_cast<uint32_t>(err));
     return RT_ERROR_NONE;
 }
 
-void RollbackPrimaryContextInit(Runtime * const runtime, RefObject<Context *> &refObj,
-    PrimaryContextInitInfo &initInfo)
+void RollbackPrimaryContextInit(Runtime* const runtime, RefObject<Context*>& refObj, PrimaryContextInitInfo& initInfo)
 {
     if ((initInfo.ctx != nullptr) && initInfo.attachedDevice) {
-        Context * const previousCtx = InnerThreadLocalContainer::GetCurCtx();
+        Context* const previousCtx = InnerThreadLocalContainer::GetCurCtx();
         const bool previousInternalAccess = InnerThreadLocalContainer::IsInternalContextAccess();
         InnerThreadLocalContainer::SetCurCtx(initInfo.ctx, true);
         const ScopeGuard internalCtxGuard([previousCtx, previousInternalAccess]() {
@@ -170,9 +171,9 @@ void RollbackPrimaryContextInit(Runtime * const runtime, RefObject<Context *> &r
     refObj.SetPrimaryCtxCallBackFlag(false);
 }
 
-void RestorePrimaryContextRef(RefObject<Context *> &refObj)
+void RestorePrimaryContextRef(RefObject<Context*>& refObj)
 {
-    Context * const ctx = refObj.GetVal(false);
+    Context* const ctx = refObj.GetVal(false);
     const uint64_t refCount = refObj.GetRefCount();
     if (refCount > 1ULL) {
         (void)refObj.DecRef();
@@ -191,7 +192,7 @@ void RestorePrimaryContextRef(RefObject<Context *> &refObj)
     refObj.SetPrimaryCtxCallBackFlag(false);
 }
 
-bool MarkPrimaryRefUpdatingForForceReset(RefObject<Context *> &refObj, uint64_t &releasedRetainCount)
+bool MarkPrimaryRefUpdatingForForceReset(RefObject<Context*>& refObj, uint64_t& releasedRetainCount)
 {
     releasedRetainCount = 0ULL;
     bool reset = false;
@@ -207,27 +208,25 @@ bool MarkPrimaryRefUpdatingForForceReset(RefObject<Context *> &refObj, uint64_t 
 }
 
 enum class PrimaryReleaseAction : uint32_t {
-    SKIP_SLOT,       // No teardown is needed for this primary slot.
-    TEAR_DOWN_SLOT,  // This slot should enter teardown.
-    RETURN_ERROR,    // Release decision failed before teardown can start.
+    SKIP_SLOT,      // No teardown is needed for this primary slot.
+    TEAR_DOWN_SLOT, // This slot should enter teardown.
+    RETURN_ERROR,   // Release decision failed before teardown can start.
 };
 
 struct PrimaryReleaseDecision {
-    PrimaryReleaseAction action;   // Next operation for the primary slot.
-    uint64_t retainRestoreCount;   // Retain references to restore if teardown fails.
-    bool originForceReset;         // Original force-reset flag saved before teardown.
+    PrimaryReleaseAction action; // Next operation for the primary slot.
+    uint64_t retainRestoreCount; // Retain references to restore if teardown fails.
+    bool originForceReset;       // Original force-reset flag saved before teardown.
 };
 
-PrimaryReleaseDecision DecideOrdinaryPrimaryReleaseAction(RefObject<Context *> &refObj, const uint32_t tsId,
-    bool &ret)
+PrimaryReleaseDecision DecideOrdinaryPrimaryReleaseAction(RefObject<Context*>& refObj, const uint32_t tsId, bool& ret)
 {
     PrimaryReleaseDecision decision{PrimaryReleaseAction::TEAR_DOWN_SLOT, 0ULL, false};
-    bool reset = false;  // must be false.
+    bool reset = false; // must be false.
     const bool isRetainReleased = refObj.TryDecRef(reset);
     ret = ret || isRetainReleased;
     const uint64_t refObjValue = refObj.GetRef();
-    RT_LOG(RT_LOG_INFO, "Context TryDecRef, ts_id=%u, count=0x%llx, reset:%hhu",
-        tsId, refObjValue, reset);
+    RT_LOG(RT_LOG_INFO, "Context TryDecRef, ts_id=%u, count=0x%llx, reset:%hhu", tsId, refObjValue, reset);
     if (!isRetainReleased) {
         decision.action = PrimaryReleaseAction::SKIP_SLOT;
         return decision;
@@ -240,8 +239,7 @@ PrimaryReleaseDecision DecideOrdinaryPrimaryReleaseAction(RefObject<Context *> &
     return decision;
 }
 
-PrimaryReleaseDecision DecideForcePrimaryReleaseAction(RefObject<Context *> &refObj, Context * const ctx,
-    bool &ret)
+PrimaryReleaseDecision DecideForcePrimaryReleaseAction(RefObject<Context*>& refObj, Context* const ctx, bool& ret)
 {
     PrimaryReleaseDecision decision{PrimaryReleaseAction::TEAR_DOWN_SLOT, 0ULL, false};
     if (ctx == nullptr) {
@@ -252,8 +250,7 @@ PrimaryReleaseDecision DecideForcePrimaryReleaseAction(RefObject<Context *> &ref
     uint64_t releasedRetainCount = 0ULL;
     // Force reset drains retain refs before teardown.
     if (!MarkPrimaryRefUpdatingForForceReset(refObj, releasedRetainCount)) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR,
-            "PrimaryContextRelease failed during force reset, retain count is 0.");
+        RT_LOG_INNER_MSG(RT_LOG_ERROR, "PrimaryContextRelease failed during force reset, retain count is 0.");
         decision.action = PrimaryReleaseAction::RETURN_ERROR;
         return decision;
     }
@@ -262,8 +259,8 @@ PrimaryReleaseDecision DecideForcePrimaryReleaseAction(RefObject<Context *> &ref
     return decision;
 }
 
-PrimaryReleaseDecision DecidePrimaryReleaseAction(RefObject<Context *> &refObj, Context * const ctx,
-    const bool isForceReset, const uint32_t tsId, bool &ret)
+PrimaryReleaseDecision DecidePrimaryReleaseAction(
+    RefObject<Context*>& refObj, Context* const ctx, const bool isForceReset, const uint32_t tsId, bool& ret)
 {
     if (isForceReset) {
         return DecideForcePrimaryReleaseAction(refObj, ctx, ret);
@@ -271,8 +268,9 @@ PrimaryReleaseDecision DecidePrimaryReleaseAction(RefObject<Context *> &refObj, 
     return DecideOrdinaryPrimaryReleaseAction(refObj, tsId, ret);
 }
 
-rtError_t RollbackPrimaryTearDown(RefObject<Context *> &refObj, Context * const ctx, const uint32_t devId,
-    const rtError_t tearDownRet, const uint64_t retainRestoreCount, const bool originForceReset)
+rtError_t RollbackPrimaryTearDown(
+    RefObject<Context*>& refObj, Context* const ctx, const uint32_t devId, const rtError_t tearDownRet,
+    const uint64_t retainRestoreCount, const bool originForceReset)
 {
     refObj.SetPrimaryCtxCallBackFlag(false);
     // Make the primary slot visible again with its original force-reset mode.
@@ -283,11 +281,12 @@ rtError_t RollbackPrimaryTearDown(RefObject<Context *> &refObj, Context * const 
             RT_LOG(RT_LOG_ERROR, "Primary context teardown failed and retain restore failed, devId=%u.", devId);
         }
     }
-    RT_LOG(RT_LOG_ERROR, "Primary context teardown failed, devId=%u, retCode=%#x.",
-        devId, static_cast<uint32_t>(tearDownRet));
+    RT_LOG(
+        RT_LOG_ERROR, "Primary context teardown failed, devId=%u, retCode=%#x.", devId,
+        static_cast<uint32_t>(tearDownRet));
     return tearDownRet;
 }
-}
+} // namespace
 
 TIMESTAMP_EXTERN(rtBinaryLoad_DevMemAlloc);
 TIMESTAMP_EXTERN(rtBinaryLoad_MemCopySync);
@@ -347,11 +346,11 @@ Runtime::Runtime() : RuntimeIntf()
     timeoutConfig_.opWaitTaskTimeout = 0ULL;
     timeoutConfig_.opExcTaskTimeout = 0ULL;
     isHaveDevice_ = false;
-    profileEnabled_ =0U;
+    profileEnabled_ = 0U;
     rasInfo_ = {.devId = MAX_UINT32_NUM, .eventId = 0U, .sysCnt = 0U};
 }
 
-Runtime *Runtime::runtime_ = nullptr;
+Runtime* Runtime::runtime_ = nullptr;
 
 /*
  *   aicore level  1:32    2:30
@@ -400,10 +399,7 @@ std::string Runtime::GetSocVersion() const
     return socVersion_;
 }
 
-std::string Runtime::GetRawSocVersion() const
-{
-    return socVersion_;
-}
+std::string Runtime::GetRawSocVersion() const { return socVersion_; }
 
 rtChipType_t Runtime::GetChipType() const
 {
@@ -452,8 +448,8 @@ void Runtime::UpdateDevPropertiesFromIniAttrs(const rtChipType_t chipTypeValue, 
 
     if ((iniAttrs.normalStreamDepth != 0U) && (props.rtsqReservedTaskNum > 0U)) {
         if (iniAttrs.normalStreamDepth <= props.rtsqReservedTaskNum) {
-            RT_LOG(RT_LOG_WARNING,
-                "normalStreamDepth[%u] <= rtsqReservedTaskNum[%u], skip maxTaskNumPerStream update.",
+            RT_LOG(
+                RT_LOG_WARNING, "normalStreamDepth[%u] <= rtsqReservedTaskNum[%u], skip maxTaskNumPerStream update.",
                 iniAttrs.normalStreamDepth, props.rtsqReservedTaskNum);
         } else {
             props.maxTaskNumPerStream = iniAttrs.normalStreamDepth - props.rtsqReservedTaskNum;
@@ -506,17 +502,16 @@ void Runtime::TsdClientInit()
 {
 #if (!defined CFG_DEV_PLATFORM_PC)
     // unsupport in lhisi & nezha
-    if (!isHaveDevice_ ||
-        !IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_DEVICE_HAS_TS_DEAMON)) {
+    if (!isHaveDevice_ || !IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_DEVICE_HAS_TS_DEAMON)) {
         return;
     }
-    constexpr const char_t *libSoName = "libtsdclient.so";
+    constexpr const char_t* libSoName = "libtsdclient.so";
     // global so should be set nodelete flag in case of core dump in dlclose func at singleton destructor
-    constexpr const int32_t flags = static_cast<int32_t>(static_cast<uint32_t>(MMPA_RTLD_LAZY) |
-        static_cast<uint32_t>(MMPA_RTLD_NODELETE));
-    void * const handlePtr = mmDlopen(libSoName, flags);
+    constexpr const int32_t flags =
+        static_cast<int32_t>(static_cast<uint32_t>(MMPA_RTLD_LAZY) | static_cast<uint32_t>(MMPA_RTLD_NODELETE));
+    void* const handlePtr = mmDlopen(libSoName, flags);
     if (handlePtr == nullptr) {
-        const char_t * const dlRet = mmDlerror();
+        const char_t* const dlRet = mmDlerror();
         RT_LOG_CALL_MSG(ERR_MODULE_AICPU, "Open %s failed, dlerror() = %s.", libSoName, dlRet);
         return;
     }
@@ -525,7 +520,7 @@ void Runtime::TsdClientInit()
     FUNC_TDT_OPEN_EX openFuncEx = nullptr;
 
     if (IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_DEVICE_TS_DEAMON_OPEN_EX)) {
-        openFuncEx = RtPtrToPtr<FUNC_TDT_OPEN_EX, void *>(mmDlsym(handlePtr, "TsdOpenEx"));
+        openFuncEx = RtPtrToPtr<FUNC_TDT_OPEN_EX, void*>(mmDlsym(handlePtr, "TsdOpenEx"));
         if (openFuncEx == nullptr) {
             RT_LOG_CALL_MSG(ERR_MODULE_AICPU, "No TsdOpenEx symbol found in %s.", libSoName);
             (void)mmDlclose(handlePtr);
@@ -559,7 +554,7 @@ void Runtime::TsdClientInit()
     }
 
     FUNC_TDT_SET_PROF_CALLBACK const setProfCallback =
-            RtPtrToPtr<FUNC_TDT_SET_PROF_CALLBACK>(mmDlsym(handlePtr, "TsdSetMsprofReporterCallback"));
+        RtPtrToPtr<FUNC_TDT_SET_PROF_CALLBACK>(mmDlsym(handlePtr, "TsdSetMsprofReporterCallback"));
     if (setProfCallback == nullptr) {
         // if runtime could not find new api, allow continuing set device and not dlclose
         RT_LOG(RT_LOG_WARNING, "No TsdSetMsprofReporterCallback symbol found in %s.", libSoName);
@@ -575,27 +570,26 @@ void Runtime::TsdClientInit()
         // if runtime cannot find callback, allow continuing
         RT_LOG(RT_LOG_WARNING, "No SetAttr symbol found in %s.", libSoName);
     }
-    FUNC_TDT_GET_QOS const capabilityGetFunc = RtPtrToPtr<FUNC_TDT_GET_QOS>(mmDlsym(handlePtr,
-        "TsdCapabilityGet"));
+    FUNC_TDT_GET_QOS const capabilityGetFunc = RtPtrToPtr<FUNC_TDT_GET_QOS>(mmDlsym(handlePtr, "TsdCapabilityGet"));
     if (capabilityGetFunc == nullptr) {
         // if runtime could not find new api, allow continuing
         RT_LOG(RT_LOG_WARNING, "No TsdCapabilityGet symbol found in %s.", libSoName);
     }
 
-    FUNC_TDT_OPEN_AICPU_SD const openAicpuSdFunc = RtPtrToPtr<FUNC_TDT_OPEN_AICPU_SD>(mmDlsym(handlePtr,
-        "TsdOpenAicpuSd"));
+    FUNC_TDT_OPEN_AICPU_SD const openAicpuSdFunc =
+        RtPtrToPtr<FUNC_TDT_OPEN_AICPU_SD>(mmDlsym(handlePtr, "TsdOpenAicpuSd"));
     if (openAicpuSdFunc == nullptr) {
         RT_LOG(RT_LOG_WARNING, "No TsdOpenAicpuSd symbol found in %s.", libSoName);
     }
 
-    FUNC_TDT_OPEN_NET_SERVICE const openNetServiceFunc = RtPtrToPtr<FUNC_TDT_OPEN_NET_SERVICE>(mmDlsym(handlePtr,
-        "TsdOpenNetService"));
+    FUNC_TDT_OPEN_NET_SERVICE const openNetServiceFunc =
+        RtPtrToPtr<FUNC_TDT_OPEN_NET_SERVICE>(mmDlsym(handlePtr, "TsdOpenNetService"));
     if (openNetServiceFunc == nullptr) {
         RT_LOG(RT_LOG_WARNING, "No TsdOpenNetService symbol found in %s.", libSoName);
     }
 
-    FUNC_TDT_CLOSE_NET_SERVICE const closeNetServiceFunc = RtPtrToPtr<FUNC_TDT_CLOSE_NET_SERVICE>(mmDlsym(handlePtr,
-        "TsdCloseNetService"));
+    FUNC_TDT_CLOSE_NET_SERVICE const closeNetServiceFunc =
+        RtPtrToPtr<FUNC_TDT_CLOSE_NET_SERVICE>(mmDlsym(handlePtr, "TsdCloseNetService"));
     if (closeNetServiceFunc == nullptr) {
         RT_LOG(RT_LOG_WARNING, "No TsdCloseNetService symbol found in %s.", libSoName);
     }
@@ -618,10 +612,10 @@ void Runtime::TsdClientInit()
 #endif
 }
 
-void Runtime::LoadFunction(void * const handlePtr, const char_t * const libSoName)
+void Runtime::LoadFunction(void* const handlePtr, const char_t* const libSoName)
 {
     FUNC_TDT_INIT_FLOW_GW const tsdInitFlowGwFunc =
-            RtPtrToPtr<FUNC_TDT_INIT_FLOW_GW>(mmDlsym(handlePtr, "TsdInitFlowGw"));
+        RtPtrToPtr<FUNC_TDT_INIT_FLOW_GW>(mmDlsym(handlePtr, "TsdInitFlowGw"));
     if (tsdInitFlowGwFunc == nullptr) {
         // if runtime could not find new api, allow continuing set device and not dlclose
         RT_LOG(RT_LOG_WARNING, "No TsdInitFlowGw symbol found in %s.", libSoName);
@@ -629,7 +623,7 @@ void Runtime::LoadFunction(void * const handlePtr, const char_t * const libSoNam
     tsdInitFlowGw_ = tsdInitFlowGwFunc;
 
     FUNC_TDT_GET_HDC_CON_STA const getHdcConctStatus =
-            RtPtrToPtr<FUNC_TDT_GET_HDC_CON_STA>(mmDlsym(handlePtr, "GetHdcConctStatus"));
+        RtPtrToPtr<FUNC_TDT_GET_HDC_CON_STA>(mmDlsym(handlePtr, "GetHdcConctStatus"));
     if (getHdcConctStatus == nullptr) {
         // if runtime cannot find callback, allow continuing
         RT_LOG(RT_LOG_WARNING, "No GetHdcConctStatus symbol found in %s.", libSoName);
@@ -637,8 +631,7 @@ void Runtime::LoadFunction(void * const handlePtr, const char_t * const libSoNam
     tsdGetHdcConctStatus_ = getHdcConctStatus;
 }
 
-rtError_t Runtime::GetAicoreNumByLevel(const rtChipType_t chipTypeValue, int64_t &aicoreNumLevel,
-    uint32_t &aicoreNum)
+rtError_t Runtime::GetAicoreNumByLevel(const rtChipType_t chipTypeValue, int64_t& aicoreNumLevel, uint32_t& aicoreNum)
 {
     if (IS_SUPPORT_CHIP_FEATURE(chipTypeValue, RtOptionalFeatureType::RT_FEATURE_DEVICE_AICORE_NUM_BY_LEVEL)) {
         uint32_t devCnt = 0U;
@@ -660,7 +653,8 @@ rtError_t Runtime::GetAicoreNumByLevel(const rtChipType_t chipTypeValue, int64_t
         UNUSED(chipTypeValue);
 
         if (drvRet != DRV_ERROR_NONE) {
-            DRV_ERROR_PROCESS(drvRet, "Call halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
+            DRV_ERROR_PROCESS(
+                drvRet, "Call halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
                 static_cast<uint32_t>(drvRet), MODULE_TYPE_AICORE, INFO_TYPE_CORE_NUM_LEVEL);
             return RT_GET_DRV_ERRCODE(drvRet);
         }
@@ -670,14 +664,16 @@ rtError_t Runtime::GetAicoreNumByLevel(const rtChipType_t chipTypeValue, int64_t
         } else if (aicoreNumLevel == AICORE_NUM_LEVEL_PG) {
             aicoreNum = RT_AICORE_NUM_30;
         } else {
-            RT_LOG_INNER_MSG(RT_LOG_ERROR, "AI Core number level not supported, aicoreNumLevel=%" PRId64 ", chipType=%d.", aicoreNumLevel, chipType_);
+            RT_LOG_INNER_MSG(
+                RT_LOG_ERROR, "AI Core number level not supported, aicoreNumLevel=%" PRId64 ", chipType=%d.",
+                aicoreNumLevel, chipType_);
             return RT_ERROR_DRV_ERR;
         }
     }
     return RT_ERROR_NONE;
 }
 
-void Runtime::CheckVirtualMachineMode(uint32_t &aicoreNum, int64_t &vmAicoreNum)
+void Runtime::CheckVirtualMachineMode(uint32_t& aicoreNum, int64_t& vmAicoreNum)
 {
     if (IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_DEVICE_VIRTUAL_MODE_CHECK) &&
         (aicoreNum != static_cast<uint32_t>(vmAicoreNum))) {
@@ -685,8 +681,9 @@ void Runtime::CheckVirtualMachineMode(uint32_t &aicoreNum, int64_t &vmAicoreNum)
         isVirtualMode_ = true;
 #endif
         virAicoreNum_ = static_cast<uint32_t>(vmAicoreNum);
-        RT_LOG(RT_LOG_INFO, "Check virtual machine mode, vir aicore num=%" PRId64 ", phyc aicore num=%u.",
-               vmAicoreNum, aicoreNum);
+        RT_LOG(
+            RT_LOG_INFO, "Check virtual machine mode, vir aicore num=%" PRId64 ", phyc aicore num=%u.", vmAicoreNum,
+            aicoreNum);
     }
 }
 
@@ -702,7 +699,8 @@ void Runtime::InitSocTypeFrom310BVersion(const int64_t hardwareVersion)
     } else if (pgVer == RT_VER_BIN4) {
         socVersion_ = "Ascend310B4";
     } else {
-        RT_LOG_CALL_MSG(ERR_MODULE_GE, "The hardwareVersion (%#" PRIx64 ") reported by the driver is invalid.",
+        RT_LOG_CALL_MSG(
+            ERR_MODULE_GE, "The hardwareVersion (%#" PRIx64 ") reported by the driver is invalid.",
             static_cast<uint64_t>(hardwareVersion));
     }
 }
@@ -723,8 +721,10 @@ void Runtime::InitSocTypeFrom910BVersion(int64_t hardwareVersion)
     } else if (pgVer == RT_VER_BIN10) {
         socVersion_ = "Ascend910B4-1";
     } else {
-        RT_LOG_CALL_MSG(ERR_MODULE_RTS,
-            "The hardwareVersion (%#" PRIx64 ") reported by the driver indicates that CANN and HDK may not be compatible.",
+        RT_LOG_CALL_MSG(
+            ERR_MODULE_RTS,
+            "The hardwareVersion (%#" PRIx64
+            ") reported by the driver indicates that CANN and HDK may not be compatible.",
             static_cast<uint64_t>(hardwareVersion));
     }
 }
@@ -738,14 +738,16 @@ void Runtime::InitSocTypeFromBS9SX1AXVersion()
     socVersion_ = "BS9SX1AA";
     drvRet = halGetDeviceInfo(RT_DEV_ZERO, MODULE_TYPE_AICORE, INFO_TYPE_CORE_NUM, &aicNum);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
             static_cast<uint32_t>(drvRet), MODULE_TYPE_AICORE, INFO_TYPE_CORE_NUM);
         return;
     }
 
     drvRet = halGetDeviceInfo(RT_DEV_ZERO, MODULE_TYPE_VECTOR_CORE, INFO_TYPE_CORE_NUM, &aivNum);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
             static_cast<uint32_t>(drvRet), MODULE_TYPE_VECTOR_CORE, INFO_TYPE_CORE_NUM);
         return;
     }
@@ -755,9 +757,13 @@ void Runtime::InitSocTypeFromBS9SX1AXVersion()
     if (((aicNum == RT_BS9SX1AA_AICORE_NUM_AG) && (aivNum == RT_BS9SX1AA_AIVECTOR_NUM_AG)) ||
         ((aicNum == RT_BS9SX1AA_AICORE_NUM) && (aivNum == RT_BS9SX1AA_AIVECTOR_NUM))) {
         socVersion_ = "BS9SX1AA";
-    } else if ((aicNum == static_cast<int64_t>(RT_BS9SX1AB_AICORE_NUM)) && (aivNum == static_cast<int64_t>(RT_BS9SX1AB_AIVECTOR_NUM))) {
+    } else if (
+        (aicNum == static_cast<int64_t>(RT_BS9SX1AB_AICORE_NUM)) &&
+        (aivNum == static_cast<int64_t>(RT_BS9SX1AB_AIVECTOR_NUM))) {
         socVersion_ = "BS9SX1AB";
-    } else if ((aicNum == static_cast<int64_t>(RT_BS9SX1AC_AICORE_NUM)) && (aivNum == static_cast<int64_t>(RT_BS9SX1AC_AIVECTOR_NUM))) {
+    } else if (
+        (aicNum == static_cast<int64_t>(RT_BS9SX1AC_AICORE_NUM)) &&
+        (aivNum == static_cast<int64_t>(RT_BS9SX1AC_AIVECTOR_NUM))) {
         socVersion_ = "BS9SX1AC";
     } else {
         RT_LOG(RT_LOG_DEBUG, "other version.");
@@ -806,7 +812,8 @@ void Runtime::InitSocTypeFromCloudVersion(const int64_t aicoreNumLevel)
     int64_t aicoreFreqLevel = 0;
     drvError_t drvRet = halGetDeviceInfo(workingDev_, MODULE_TYPE_AICORE, INFO_TYPE_FREQUE_LEVEL, &aicoreFreqLevel);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
             static_cast<uint32_t>(drvRet), MODULE_TYPE_AICORE, INFO_TYPE_FREQUE_LEVEL);
         return;
     }
@@ -855,8 +862,8 @@ rtError_t Runtime::GetSocVersionByHardwareVer(int64_t hardwareVersion, int64_t a
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::InitSocVersionByDrvSocVersion(const uint32_t deviceId, const bool isUserSetSocVersion,
-                                                 bool &isSocVersionInitialized)
+rtError_t Runtime::InitSocVersionByDrvSocVersion(
+    const uint32_t deviceId, const bool isUserSetSocVersion, bool& isSocVersionInitialized)
 {
     // Prefer the driver's soc name when available. If the user already set a target soc, the driver's soc name is
     // treated as raw hardware soc only.
@@ -866,7 +873,8 @@ rtError_t Runtime::InitSocVersionByDrvSocVersion(const uint32_t deviceId, const 
         char_t socVersion[SOC_VERSION_LEN] = {0};
         drvRet = halGetSocVersion(deviceId, socVersion, SOC_VERSION_LEN);
         if ((drvRet != DRV_ERROR_NONE) && (drvRet != DRV_ERROR_NOT_SUPPORT)) {
-            DRV_ERROR_PROCESS(drvRet, "[drv api] halGetSocVersion failed, device_id=%u, drvRetCode=%d.", deviceId, drvRet);
+            DRV_ERROR_PROCESS(
+                drvRet, "[drv api] halGetSocVersion failed, device_id=%u, drvRetCode=%d.", deviceId, drvRet);
             return RT_GET_DRV_ERRCODE(drvRet);
         }
 
@@ -876,7 +884,8 @@ rtError_t Runtime::InitSocVersionByDrvSocVersion(const uint32_t deviceId, const 
                 // The effective target soc remains in GlobalContainer::socVersion_.
                 chipType_ = GlobalContainer::GetRtChipType();
                 socVersion_ = socVersion;
-                RT_LOG(RT_LOG_INFO, "user socVersion=%s, hardware socVersion=%s, chipType=%d",
+                RT_LOG(
+                    RT_LOG_INFO, "user socVersion=%s, hardware socVersion=%s, chipType=%d",
                     GlobalContainer::GetSocVersion().c_str(), socVersion_.c_str(), chipType_);
                 isSocVersionInitialized = true;
                 return RT_ERROR_NONE;
@@ -914,7 +923,8 @@ rtError_t Runtime::InitSocVersionByHardwareVersion(const uint32_t deviceId, cons
     int64_t vmAicoreNum = 0;
     drvRet = halGetDeviceInfo(workingDev_, MODULE_TYPE_AICORE, INFO_TYPE_CORE_NUM, &vmAicoreNum);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "[drv api] halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
+        DRV_ERROR_PROCESS(
+            drvRet, "[drv api] halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
             static_cast<uint32_t>(drvRet), MODULE_TYPE_AICORE, INFO_TYPE_CORE_NUM);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
@@ -922,7 +932,8 @@ rtError_t Runtime::InitSocVersionByHardwareVersion(const uint32_t deviceId, cons
     uint32_t aicoreNum = 0U;
     int64_t aicoreNumLevel = 0;
     const rtError_t ret = GetAicoreNumByLevel(chipType_, aicoreNumLevel, aicoreNum);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, ret != RT_ERROR_NONE, RT_ERROR_DRV_ERR,
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, ret != RT_ERROR_NONE, RT_ERROR_DRV_ERR,
         "Get AI Core number by level failed: aicoreNumLevel=%u.", static_cast<uint32_t>(aicoreNumLevel));
 
     CheckVirtualMachineMode(aicoreNum, vmAicoreNum);
@@ -934,7 +945,8 @@ rtError_t Runtime::InitSocVersionByHardwareVersion(const uint32_t deviceId, cons
         // GetSocVersionByHardwareVer updates socVersion_ with hardware-derived soc.
         // Restore chipType_ to the user target soc after VM-mode detection uses hardware chip type.
         chipType_ = GlobalContainer::GetRtChipType();
-        RT_LOG(RT_LOG_INFO, "user socVersion=%s, hardware socVersion=%s, chipType=%d",
+        RT_LOG(
+            RT_LOG_INFO, "user socVersion=%s, hardware socVersion=%s, chipType=%d",
             GlobalContainer::GetSocVersion().c_str(), socVersion_.c_str(), chipType_);
     }
     return RT_ERROR_NONE;
@@ -967,8 +979,9 @@ rtError_t Runtime::InitSocVersion()
         GlobalContainer::SetRtChipType(chipType_);
         GlobalContainer::SetSocVersion(socVersion_);
     } else {
-        RT_LOG(RT_LOG_DEBUG, "GlobalContainer socVersion_ = %s, chipType_ = %u",
-               GlobalContainer::GetSocVersion().c_str(), GlobalContainer::GetRtChipType());
+        RT_LOG(
+            RT_LOG_DEBUG, "GlobalContainer socVersion_ = %s, chipType_ = %u", GlobalContainer::GetSocVersion().c_str(),
+            GlobalContainer::GetRtChipType());
     }
 
     error = GetConnectUbFlagFromDrv(workingDev_, connectUbFlag_);
@@ -980,14 +993,16 @@ rtError_t Runtime::InitSocVersion()
     int64_t tsNumber = 0;
     drvRet = halGetDeviceInfo(workingDev_, MODULE_TYPE_SYSTEM, INFO_TYPE_CORE_NUM, &tsNumber);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call halGetDeviceInfo failed: drvRetCode=%u, module type=%d, info type=%d.",
             static_cast<uint32_t>(drvRet), MODULE_TYPE_SYSTEM, INFO_TYPE_CORE_NUM);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, (tsNumber == 0) || (static_cast<uint32_t>(tsNumber) > RT_MAX_TS_NUM),
-        RT_ERROR_DRV_ERR,
-        "The value %" PRId64 " for tsNumber obtained from driver is invalid, valid range is [1, %u].", tsNumber, RT_MAX_TS_NUM);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, (tsNumber == 0) || (static_cast<uint32_t>(tsNumber) > RT_MAX_TS_NUM), RT_ERROR_DRV_ERR,
+        "The value %" PRId64 " for tsNumber obtained from driver is invalid, valid range is [1, %u].", tsNumber,
+        RT_MAX_TS_NUM);
     tsNum_ = static_cast<uint32_t>(tsNumber);
     return error;
 }
@@ -1011,9 +1026,11 @@ rtError_t Runtime::InitChipTypeAndSocVersion()
     rtError_t ret = GET_ALL_DEV_PROPERTIES(propertiesMap_);
     ERROR_RETURN_MSG_INNER(ret, "Get all dev properties failed, retCode=%#x.", static_cast<uint32_t>(ret));
     ret = GET_DEV_PROPERTIES(chipType_, curChipProperties_);
-    ERROR_RETURN_MSG_INNER(ret, "Get dev properties failed, chipType=%d, retCode=%#x.", chipType_, static_cast<uint32_t>(ret));
-    RT_LOG(RT_LOG_INFO, "Runtime init: device type=%d, soc version=%s, have device=%d",
-           chipType_, socVersion_.c_str(), isHaveDevice_);
+    ERROR_RETURN_MSG_INNER(
+        ret, "Get dev properties failed, chipType=%d, retCode=%#x.", chipType_, static_cast<uint32_t>(ret));
+    RT_LOG(
+        RT_LOG_INFO, "Runtime init: device type=%d, soc version=%s, have device=%d", chipType_, socVersion_.c_str(),
+        isHaveDevice_);
     return RT_ERROR_NONE;
 }
 
@@ -1056,7 +1073,7 @@ rtError_t Runtime::InitLogger()
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::InitApiProfiler(Api * const apiObj)
+rtError_t Runtime::InitApiProfiler(Api* const apiObj)
 {
     profiler_ = new (std::nothrow) Profiler(apiObj);
     if (profiler_ == nullptr) {
@@ -1073,7 +1090,7 @@ rtError_t Runtime::InitApiProfiler(Api * const apiObj)
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::InitApiErrorDecorator(Api * const apiObj)
+rtError_t Runtime::InitApiErrorDecorator(Api* const apiObj)
 {
     apiError_ = new (std::nothrow) ApiErrorDecorator(apiObj);
     if (apiError_ == nullptr) {
@@ -1086,7 +1103,7 @@ rtError_t Runtime::InitApiErrorDecorator(Api * const apiObj)
 
 rtError_t Runtime::InitThreadGuard()
 {
-    threadGuard_ = new(std::nothrow) ThreadGuard();
+    threadGuard_ = new (std::nothrow) ThreadGuard();
     if (threadGuard_ == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ThreadGuard), "new");
         return RT_ERROR_MEMORY_ALLOCATION;
@@ -1097,26 +1114,24 @@ rtError_t Runtime::InitThreadGuard()
 
 rtError_t Runtime::InitStreamObserver()
 {
-    streamObserver_ = new(std::nothrow) EngineStreamObserver();
+    streamObserver_ = new (std::nothrow) EngineStreamObserver();
     if (streamObserver_ == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(EngineStreamObserver), "new");
         return RT_ERROR_ENGINE_NEW;
     }
-    RT_LOG(RT_LOG_INFO, "EngineStreamObserver:Runtime_alloc_size %zu.",
-        sizeof(EngineStreamObserver));
+    RT_LOG(RT_LOG_INFO, "EngineStreamObserver:Runtime_alloc_size %zu.", sizeof(EngineStreamObserver));
     return RT_ERROR_NONE;
 }
 
 rtError_t Runtime::InitAicpuStreamIdBitmap()
 {
-    aicpuStreamIdBitmap_ = new(std::nothrow) Bitmap(RT_MAX_AICPU_STREAM_COUNT);
+    aicpuStreamIdBitmap_ = new (std::nothrow) Bitmap(RT_MAX_AICPU_STREAM_COUNT);
     if (aicpuStreamIdBitmap_ == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Bitmap), "new");
         return RT_ERROR_MEMORY_ALLOCATION;
     }
 
-    RT_LOG(RT_LOG_INFO, "Bitmap(%u):Runtime_alloc_size %zu.", RT_MAX_AICPU_STREAM_COUNT,
-        sizeof(Bitmap));
+    RT_LOG(RT_LOG_INFO, "Bitmap(%u):Runtime_alloc_size %zu.", RT_MAX_AICPU_STREAM_COUNT, sizeof(Bitmap));
     return RT_ERROR_NONE;
 }
 
@@ -1136,7 +1151,7 @@ rtError_t Runtime::InitCbSubscribe()
 
     RT_LOG(RT_LOG_INFO, "The thread group num is %d", maxGrpNum);
 
-    cbSubscribe_ = new(std::nothrow) CbSubscribe(static_cast<uint32_t>(maxGrpNum));
+    cbSubscribe_ = new (std::nothrow) CbSubscribe(static_cast<uint32_t>(maxGrpNum));
     if (cbSubscribe_ == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(CbSubscribe), "new");
         return RT_ERROR_SUBSCRIBE_NEW;
@@ -1191,17 +1206,17 @@ rtError_t Runtime::InitProgramAllocator()
         if (IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_KERNEL_DOT_PROGRAM_ALLOCATOR)) {
             maxProgramNum_ = 20000U;
         }
-        const DevProperties &logProps = GetCurChipProperties();
+        const DevProperties& logProps = GetCurChipProperties();
         RT_LOG(
             RT_LOG_DEBUG, "run mode = %u [0:offline, 1:online], max program num %u, rtsqDepth=%u.", runMode,
             maxProgramNum_, logProps.rtsqDepth);
     }
 #endif
 
-    programAllocator_ = new (std::nothrow) ObjAllocator<RefObject<Program *>>(DEFAULT_PROGRAM_NUMBER,
-        Runtime::maxProgramNum_);
+    programAllocator_ =
+        new (std::nothrow) ObjAllocator<RefObject<Program*>>(DEFAULT_PROGRAM_NUMBER, Runtime::maxProgramNum_);
     if (programAllocator_ == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ObjAllocator<RefObject<Program *>>), "new");
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ObjAllocator<RefObject<Program*>>), "new");
         return RT_ERROR_PROGRAM_NEW;
     }
     return programAllocator_->Init();
@@ -1209,7 +1224,7 @@ rtError_t Runtime::InitProgramAllocator()
 
 rtError_t Runtime::InitLabelAllocator()
 {
-    labelAllocator_ = new(std::nothrow) LabelAllocator(static_cast<uint16_t>(MAX_UINT16_NUM));
+    labelAllocator_ = new (std::nothrow) LabelAllocator(static_cast<uint16_t>(MAX_UINT16_NUM));
     if (labelAllocator_ == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(LabelAllocator), "new");
         return RT_ERROR_LABEL_ALLOCATOR;
@@ -1232,7 +1247,7 @@ rtError_t Runtime::InitSetRuntimeVersion()
 
 void Runtime::InitNpuCollectPath()
 {
-    const char_t *npuCollectPathEnv = nullptr;
+    const char_t* npuCollectPathEnv = nullptr;
     MM_SYS_GET_ENV(MM_ENV_NPU_COLLECT_PATH, npuCollectPathEnv);
     if (npuCollectPathEnv == nullptr) {
         RT_LOG(RT_LOG_INFO, "NPU_COLLECT_PATH is not set!");
@@ -1276,11 +1291,15 @@ bool Runtime::CheckHaveDevice()
 
     if (drvRet != DRV_ERROR_NONE) {
         if (drvRet != DRV_ERROR_NOT_SUPPORT) {
-            DRV_ERROR_PROCESS(drvRet, "Call halGetDeviceInfo failed: drvRet=%d, module type=%d, info type=%d.",
-                drvRet, MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION);
+            DRV_ERROR_PROCESS(
+                drvRet, "Call halGetDeviceInfo failed: drvRet=%d, module type=%d, info type=%d.", drvRet,
+                MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION);
         } else {
-            RT_LOG(RT_LOG_WARNING, "[Call][halGetDeviceInfo] failed, function is not supported, module type=%d,"
-                   " info type=%d.", MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION);
+            RT_LOG(
+                RT_LOG_WARNING,
+                "[Call][halGetDeviceInfo] failed, function is not supported, module type=%d,"
+                " info type=%d.",
+                MODULE_TYPE_SYSTEM, INFO_TYPE_VERSION);
         }
     }
 
@@ -1338,7 +1357,8 @@ static rtError_t GetDavidDcacheLockMixPath(std::string& binaryPath)
     const char_t* getPath = nullptr;
     MM_SYS_GET_ENV(MM_ENV_LD_LIBRARY_PATH, getPath);
     if (getPath == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE2002, "NULL", "LD_LIBRARY_PATH", "a valid path containing \"runtime/lib64\"");
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE2002, "NULL", "LD_LIBRARY_PATH", "a valid path containing \"runtime/lib64\"");
         return RT_ERROR_INVALID_VALUE;
     }
 
@@ -1382,8 +1402,9 @@ rtError_t Runtime::GetDcacheLockMixOpPath(std::string& dcacheLockMixOpPath) cons
 {
     DevProperties prop;
     rtError_t ret = GET_DEV_PROPERTIES(chipType_, prop);
-    COND_RETURN_ERROR_MSG_INNER(ret != RT_ERROR_NONE, ret, "Get dev properties failed, chipType=%d, retCode=%#x.",
-        chipType_, static_cast<uint32_t>(ret));
+    COND_RETURN_ERROR_MSG_INNER(
+        ret != RT_ERROR_NONE, ret, "Get dev properties failed, chipType=%d, retCode=%#x.", chipType_,
+        static_cast<uint32_t>(ret));
     if (prop.dcacheLockMixType == DcacheLockMixType::DCACHE_LOCK_MIX_TYPE_FROM_910_B_93) {
         GetCloudV2DcacheLockMixPath(dcacheLockMixOpPath);
     } else if (prop.dcacheLockMixType == DcacheLockMixType::DCACHE_LOCK_MIX_TYPE_FROM_STARS_V2) {
@@ -1413,25 +1434,25 @@ void Runtime::FindDcacheLockOp()
     }
     struct stat buf;
     if (stat(dcacheLockMixOpPath.c_str(), &buf) < 0) {
-        RT_LOG(RT_LOG_INFO,
-            "unable to find dcache lock op file, path=%s, reason is %s",
-            dcacheLockMixOpPath.c_str(),
+        RT_LOG(
+            RT_LOG_INFO, "unable to find dcache lock op file, path=%s, reason is %s", dcacheLockMixOpPath.c_str(),
             strerror(errno));
         return;
     }
 
     std::ifstream file(dcacheLockMixOpPath, std::ios::binary);
     if (!file.is_open()) {
-        RT_LOG(RT_LOG_INFO,
-            "unable to open dcache lock op file, path=%s, reason is %s",
-            dcacheLockMixOpPath.c_str(),
+        RT_LOG(
+            RT_LOG_INFO, "unable to open dcache lock op file, path=%s, reason is %s", dcacheLockMixOpPath.c_str(),
             strerror(errno));
         return;
     }
 
     dcacheLockMixOpData_.resize(buf.st_size);
     if (!file.read(dcacheLockMixOpData_.data(), dcacheLockMixOpData_.size())) {
-        RT_LOG(RT_LOG_INFO, "unable to read dcache lock op file, path=%s, reason is %s", dcacheLockMixOpPath.c_str(), strerror(errno));
+        RT_LOG(
+            RT_LOG_INFO, "unable to read dcache lock op file, path=%s, reason is %s", dcacheLockMixOpPath.c_str(),
+            strerror(errno));
         dcacheLockMixOpData_.clear();
         return;
     }
@@ -1458,53 +1479,56 @@ rtError_t Runtime::Init()
     }
 
     error = InitApiImplies();
-    Api *api = nullptr;
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error,
-        error, "Failed to new ApiImpl.");
+    Api* api = nullptr;
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(
+        ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error, error, "Failed to new ApiImpl.");
 
     api = apiImpl_;
     error = InitLogger();
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error,
-        error, "Failed to new Logger.");
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(
+        ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error, error, "Failed to new Logger.");
 
     error = InitApiProfiler(api);
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error,
-        error, "Failed to new Profiler.");
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(
+        ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error, error, "Failed to new Profiler.");
 
     error = InitApiErrorDecorator(api);
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error,
-        error, "Failed to new ApiErrorDecorator.");
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(
+        ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error, error, "Failed to new ApiErrorDecorator.");
     api_ = apiError_;
     apiMbuf_ = apiImplMbuf_; // apiImplMbuf_ no Profiler and Decorator
     apiSoma_ = apiImplSoma_; // apiImplSoma_ no Profiler and Decorator
 
     error = InitThreadGuard();
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error,
-        error, "Failed to new ThreadGuard.");
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(
+        ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error, error, "Failed to new ThreadGuard.");
 
     error = InitStreamObserver();
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error,
-        error, "Failed to new EngineStreamObserver.");
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(
+        ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error, error, "Failed to new EngineStreamObserver.");
 
     error = InitAicpuStreamIdBitmap();
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error,
-        error, "Failed to new Bitmap, num=%u.", RT_MAX_AICPU_STREAM_COUNT);
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(
+        ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error, error, "Failed to new Bitmap, num=%u.",
+        RT_MAX_AICPU_STREAM_COUNT);
 
     error = InitCbSubscribe();
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error,
-        error, "Failed to new CbSubscribe.");
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(
+        ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error, error, "Failed to new CbSubscribe.");
 
     error = InitProgramAllocator();
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error,
-        error, "Init runtime failed, failed to new RefObject, num=%u.", maxProgramNum_);
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(
+        ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error, error,
+        "Init runtime failed, failed to new RefObject, num=%u.", maxProgramNum_);
 
     error = InitLabelAllocator();
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error,
-        RT_ERROR_LABEL_ALLOCATOR, "Failed to new LabelAllocator, num=%u.", RT_MAX_LABEL_NUM);
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(
+        ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error, RT_ERROR_LABEL_ALLOCATOR,
+        "Failed to new LabelAllocator, num=%u.", RT_MAX_LABEL_NUM);
 
     error = InitSetRuntimeVersion();
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error,
-        error, "Failed to set runtime version.");
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_CALL(
+        ERR_MODULE_SYSTEM, error != RT_ERROR_NONE, INIT_FAIL, error, error, "Failed to set runtime version.");
 
     TsdClientInit();
     excptCallBack_ = nullptr;
@@ -1539,8 +1563,9 @@ rtError_t Runtime::WaitMonitorExit() const
         ++cnt;
     }
     if (monitorThreadNum_.Value() > 0U) {
-        RT_LOG(RT_LOG_EVENT, "wait monitor not complete, used count=%u, monitor thread num=%u.",
-            cnt, monitorThreadNum_.Value());
+        RT_LOG(
+            RT_LOG_EVENT, "wait monitor not complete, used count=%u, monitor thread num=%u.", cnt,
+            monitorThreadNum_.Value());
     } else {
         RT_LOG(RT_LOG_EVENT, "wait monitor success, used count=%u.", cnt);
     }
@@ -1595,32 +1620,34 @@ rtKernelAttrType Runtime::Magic2KernelAttrType(const uint32_t magic) const
     return kernelAttrType;
 }
 
-rtError_t Runtime::MallocProgramAndReg(const rtDevBinary_t * const bin, Program ** const newProg) const
+rtError_t Runtime::MallocProgramAndReg(const rtDevBinary_t* const bin, Program** const newProg) const
 {
-    Program *prog = nullptr;
+    Program* prog = nullptr;
     rtKernelAttrType kernelAttrType = Magic2KernelAttrType(bin->magic);
     switch (bin->magic) {
         case RT_DEV_BINARY_MAGIC_PLAIN:
         case RT_DEV_BINARY_MAGIC_PLAIN_AICPU:
         case RT_DEV_BINARY_MAGIC_PLAIN_AIVEC:
             prog = new (std::nothrow) PlainProgram(kernelAttrType);
-            RT_LOG(RT_LOG_INFO, "new PlainProgram ok, magic=%#x, kernelAttrType=%d, Runtime_alloc_size=%zu",
-                bin->magic, kernelAttrType, sizeof(PlainProgram));
+            RT_LOG(
+                RT_LOG_INFO, "new PlainProgram ok, magic=%#x, kernelAttrType=%d, Runtime_alloc_size=%zu", bin->magic,
+                kernelAttrType, sizeof(PlainProgram));
             break;
         case RT_DEV_BINARY_MAGIC_ELF:
         case RT_DEV_BINARY_MAGIC_ELF_AICUBE:
         case RT_DEV_BINARY_MAGIC_ELF_AICPU:
         case RT_DEV_BINARY_MAGIC_ELF_AIVEC:
             prog = new (std::nothrow) ElfProgram(kernelAttrType);
-            RT_LOG(RT_LOG_INFO, "new ElfProgram ok, magic=%#x, kernelAttrType=%d, Runtime_alloc_size=%zu",
-                bin->magic, kernelAttrType, sizeof(ElfProgram));
+            RT_LOG(
+                RT_LOG_INFO, "new ElfProgram ok, magic=%#x, kernelAttrType=%d, Runtime_alloc_size=%zu", bin->magic,
+                kernelAttrType, sizeof(ElfProgram));
             break;
         default:
             RT_LOG_CALL_MSG(ERR_MODULE_GE, "Program register failed, magic error, magic: %#x.", bin->magic);
             return RT_ERROR_INVALID_VALUE;
     }
 
-    ElfProgram * const elfProg = dynamic_cast<ElfProgram *>(prog);
+    ElfProgram* const elfProg = dynamic_cast<ElfProgram*>(prog);
     if (elfProg != nullptr) {
         elfProg->SetElfMagic(bin->magic);
     }
@@ -1638,15 +1665,15 @@ rtError_t Runtime::MallocProgramAndReg(const rtDevBinary_t * const bin, Program 
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::AddProgramToPool(Program *const prog)
+rtError_t Runtime::AddProgramToPool(Program* const prog)
 {
     // just for loop from last pos.
     static uint32_t programsTryIdx = 0U;
-    const uint32_t newEnd = (maxProgramNum_ > (MAX_UINT32_NUM - programsTryIdx)) ?
-        MAX_UINT32_NUM : (maxProgramNum_ + programsTryIdx);
+    const uint32_t newEnd =
+        (maxProgramNum_ > (MAX_UINT32_NUM - programsTryIdx)) ? MAX_UINT32_NUM : (maxProgramNum_ + programsTryIdx);
     for (uint32_t i = programsTryIdx; i < newEnd; i++) {
         const uint32_t id = i % maxProgramNum_;
-        RefObject<Program *> *const programItem = programAllocator_->GetDataToItem(id);
+        RefObject<Program*>* const programItem = programAllocator_->GetDataToItem(id);
         if ((programItem != nullptr) && (programItem->TryIncAndSet(prog))) {
             prog->SetId(id);
             latestPoolIdx_ = i / DEFAULT_PROGRAM_NUMBER;
@@ -1659,25 +1686,25 @@ rtError_t Runtime::AddProgramToPool(Program *const prog)
     return RT_ERROR_PROGRAM_USEOUT;
 }
 
-rtError_t Runtime::ProgramRegister(const rtDevBinary_t *bin, Program **result)
+rtError_t Runtime::ProgramRegister(const rtDevBinary_t* bin, Program** result)
 {
-    Program *prog = nullptr;
+    Program* prog = nullptr;
     const rtError_t error = MallocProgramAndReg(bin, &prog);
     COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
     *result = prog;
     return RT_ERROR_NONE;
 }
 
-bool Runtime::GetProgram(const Program * const prog)
+bool Runtime::GetProgram(const Program* const prog)
 {
     if ((prog == nullptr) || (prog->IsNewBinaryLoadFlow())) {
         return false;
     }
 
-    COND_RETURN_WARN((prog->Id_() >= maxProgramNum_), false,
-        "id=%u, valid range is [0,%u)", prog->Id_(), maxProgramNum_);
+    COND_RETURN_WARN(
+        (prog->Id_() >= maxProgramNum_), false, "id=%u, valid range is [0,%u)", prog->Id_(), maxProgramNum_);
 
-    RefObject<Program *> * const refObj = programAllocator_->GetDataToItem(prog->Id_());
+    RefObject<Program*>* const refObj = programAllocator_->GetDataToItem(prog->Id_());
     if (refObj == nullptr) {
         return false;
     }
@@ -1685,7 +1712,7 @@ bool Runtime::GetProgram(const Program * const prog)
     return refObj->TryIncRef();
 }
 
-void Runtime::PutProgram(const Program * const programPtr, bool isUnRegisterApi)
+void Runtime::PutProgram(const Program* const programPtr, bool isUnRegisterApi)
 {
     if (unlikely(programPtr == nullptr) || (programPtr->IsNewBinaryLoadFlow())) {
         return;
@@ -1695,12 +1722,12 @@ void Runtime::PutProgram(const Program * const programPtr, bool isUnRegisterApi)
     COND_RETURN_VOID((id >= maxProgramNum_), "id=%u, valid range is [0,%u)", id, maxProgramNum_);
 
     bool needReset = false;
-    RefObject<Program *> * const refObj = programAllocator_->GetDataToItem(id);
+    RefObject<Program*>* const refObj = programAllocator_->GetDataToItem(id);
     if (refObj == nullptr) {
         return;
     }
 
-    Program *prog = refObj->GetVal(false);
+    Program* prog = refObj->GetVal(false);
 
     if (!refObj->TryDecRef(needReset)) {
         RT_LOG(RT_LOG_WARNING, "Try to double free program");
@@ -1724,70 +1751,78 @@ void Runtime::PutProgram(const Program * const programPtr, bool isUnRegisterApi)
     prog = nullptr;
 }
 
-void Runtime::KernelSetDfx(Program * const prog, const void * const kernelInfoExt, Kernel *kernelPtr) const
+void Runtime::KernelSetDfx(Program* const prog, const void* const kernelInfoExt, Kernel* kernelPtr) const
 {
-    ElfProgram * const elfProg = dynamic_cast<ElfProgram *>(prog);
+    ElfProgram* const elfProg = dynamic_cast<ElfProgram*>(prog);
     if (elfProg == nullptr) {
         RT_LOG(RT_LOG_INFO, "can't dynamic_cast program.");
         return;
     }
-    const RtKernel * const kernels = elfProg->GetKernels();
+    const RtKernel* const kernels = elfProg->GetKernels();
     const uint32_t kernelCount = elfProg->GetKernelsCount();
     if (kernels == nullptr) {
         RT_LOG(RT_LOG_INFO, "kernels is null, kernelCount=%u", kernelCount);
         return;
     }
     for (uint32_t idx = 0U; idx < kernelCount; idx++) {
-        if (strncmp(kernels[idx].name, RtPtrToPtr<const char_t *>(kernelInfoExt),
-            std::max(strlen(kernels[idx].name), strlen(RtPtrToPtr<const char_t *>(kernelInfoExt)))) == 0) {
+        if (strncmp(
+                kernels[idx].name, RtPtrToPtr<const char_t*>(kernelInfoExt),
+                std::max(strlen(kernels[idx].name), strlen(RtPtrToPtr<const char_t*>(kernelInfoExt)))) == 0) {
             kernelPtr->SetDfxSize(kernels[idx].metaInfo.dfxSize);
             kernelPtr->SetDfxAddr(kernels[idx].metaInfo.dfxAddr);
             kernelPtr->SetElfDataFlag(kernels[idx].metaInfo.elfDataFlag);
-            RT_LOG(RT_LOG_INFO, "kernel_name=%s, dfxAddr=%#" PRIu64 ", dfxSize=%u, elfDataFlag=%d",
-                kernels[idx].name, RtPtrToValue<const void *>(kernels[idx].metaInfo.dfxAddr),
-                kernels[idx].metaInfo.dfxSize, kernels[idx].metaInfo.elfDataFlag);
+            RT_LOG(
+                RT_LOG_INFO, "kernel_name=%s, dfxAddr=%#" PRIu64 ", dfxSize=%u, elfDataFlag=%d", kernels[idx].name,
+                RtPtrToValue<const void*>(kernels[idx].metaInfo.dfxAddr), kernels[idx].metaInfo.dfxSize,
+                kernels[idx].metaInfo.elfDataFlag);
         }
     }
 }
 
-rtError_t Runtime::RegisterKernelByStubFunc(ElfProgram *elfProg, const void *stubFunc, const char_t *stubName,
-    const void * const kernelInfoExt, const uint32_t funcMode, const char_t *kernelName)
+rtError_t Runtime::RegisterKernelByStubFunc(
+    ElfProgram* elfProg, const void* stubFunc, const char_t* stubName, const void* const kernelInfoExt,
+    const uint32_t funcMode, const char_t* kernelName)
 {
     uint32_t kernelCount = elfProg->GetKernelsCount();
     bool isKernelFound = false;
-    const RtKernel *kernels = elfProg->GetKernels();
-    Kernel *kernelObj = nullptr;
+    const RtKernel* kernels = elfProg->GetKernels();
+    Kernel* kernelObj = nullptr;
     std::string aicMixSuffix = std::string(kernelName) + "_mix_aic";
     std::string aivMixSuffix = std::string(kernelName) + "_mix_aiv";
-    const char *aicMixName = aicMixSuffix.c_str();
-    const char *aivMixName = aivMixSuffix.c_str();
+    const char* aicMixName = aicMixSuffix.c_str();
+    const char* aivMixName = aivMixSuffix.c_str();
 
     for (uint32_t idx = 0U; idx < kernelCount; idx++) {
-        const RtKernel *elfKernelInfo = &kernels[idx];
+        const RtKernel* elfKernelInfo = &kernels[idx];
         if (strncmp(kernelName, elfKernelInfo->name, strlen(kernelName)) != 0) {
             continue;
         }
 
-        if ((strncmp(kernelName, elfKernelInfo->name, std::max(strlen(kernelName), strlen(elfKernelInfo->name))) == 0) ||
-            (strncmp(aicMixName, elfKernelInfo->name, std::max(strlen(aicMixName), strlen(elfKernelInfo->name))) == 0) ||
-            (strncmp(aivMixName, elfKernelInfo->name, std::max(strlen(aivMixName), strlen(elfKernelInfo->name))) == 0)) {
+        if ((strncmp(kernelName, elfKernelInfo->name, std::max(strlen(kernelName), strlen(elfKernelInfo->name))) ==
+             0) ||
+            (strncmp(aicMixName, elfKernelInfo->name, std::max(strlen(aicMixName), strlen(elfKernelInfo->name))) ==
+             0) ||
+            (strncmp(aivMixName, elfKernelInfo->name, std::max(strlen(aivMixName), strlen(elfKernelInfo->name))) ==
+             0)) {
             rtError_t error;
             if (kernelObj != nullptr) {
                 error = elfProg->MergeKernel(elfKernelInfo, kernelObj);
-                ERROR_RETURN(error, "merge kernel failed, kernelName=%s. retCode=%#x.",
-                    elfKernelInfo->name, static_cast<uint32_t>(error));
+                ERROR_RETURN(
+                    error, "merge kernel failed, kernelName=%s. retCode=%#x.", elfKernelInfo->name,
+                    static_cast<uint32_t>(error));
                 return RT_ERROR_NONE;
             }
 
             isKernelFound = true;
             error = elfProg->BuildNewKernel(kernelName, elfKernelInfo, kernelObj);
-            COND_RETURN_ERROR((kernelObj == nullptr), error,
-                "Kernel register failed, build new Kernel failed, kernelName=%s.", elfKernelInfo->name);
+            COND_RETURN_ERROR(
+                (kernelObj == nullptr), error, "Kernel register failed, build new Kernel failed, kernelName=%s.",
+                elfKernelInfo->name);
 
             kernelObj->SetStub_(stubFunc);
             kernelObj->SetStubName_(stubName);
             if (kernelInfoExt != nullptr) {
-                kernelObj->SetKernelInfoExt(RtPtrToPtr<const char_t *>(kernelInfoExt));
+                kernelObj->SetKernelInfoExt(RtPtrToPtr<const char_t*>(kernelInfoExt));
             }
 
             const uint32_t funcModeInner = (funcMode & 0xFFFFU);
@@ -1800,47 +1835,54 @@ rtError_t Runtime::RegisterKernelByStubFunc(ElfProgram *elfProg, const void *stu
 
             /* add kernel to runtime KernelTable */
             error = kernelTable_.Add(kernelObj);
-            COND_PROC_RETURN_ERROR((error != RT_ERROR_NONE), error, DELETE_O(kernelObj),
-                "kernel add fail, stubFunc=%p, stubName=%s, kernelInfoExt=%s, kernelName=%s.",
-                (void *)stubFunc, stubName, kernelInfoExt, kernelName);
+            COND_PROC_RETURN_ERROR(
+                (error != RT_ERROR_NONE), error, DELETE_O(kernelObj),
+                "kernel add fail, stubFunc=%p, stubName=%s, kernelInfoExt=%s, kernelName=%s.", (void*)stubFunc,
+                stubName, kernelInfoExt, kernelName);
         }
     }
 
-    COND_RETURN_ERROR_MSG_INNER((!isKernelFound), RT_ERROR_KERNEL_NAME, "Kernel register failed, stubFunc=%p, "
-        "stubName=%s, kernelInfoExt=%s.", (void *)stubFunc, stubName, (const char_t *)kernelInfoExt);
+    COND_RETURN_ERROR_MSG_INNER(
+        (!isKernelFound), RT_ERROR_KERNEL_NAME,
+        "Kernel register failed, stubFunc=%p, "
+        "stubName=%s, kernelInfoExt=%s.",
+        (void*)stubFunc, stubName, (const char_t*)kernelInfoExt);
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::KernelRegister(Program *prog, const void *stubFunc, const char_t *stubName,
-                                  const void * const kernelInfoExt, const uint32_t funcMode)
+rtError_t Runtime::KernelRegister(
+    Program* prog, const void* stubFunc, const char_t* stubName, const void* const kernelInfoExt,
+    const uint32_t funcMode)
 {
-    Kernel *kernelObj = kernelTable_.Lookup(stubFunc);
+    Kernel* kernelObj = kernelTable_.Lookup(stubFunc);
     if (kernelObj != nullptr) {
         PutProgram(kernelObj->Program_());
-        RT_LOG(RT_LOG_WARNING, "kernel is registerd, stubFunc=%p, stubName=%s, kernelInfoExt=%s.",
-            (void *)stubFunc, stubName, kernelInfoExt);
+        RT_LOG(
+            RT_LOG_WARNING, "kernel is registerd, stubFunc=%p, stubName=%s, kernelInfoExt=%s.", (void*)stubFunc,
+            stubName, kernelInfoExt);
         return RT_ERROR_KERNEL_DUPLICATE;
     }
 
-    ElfProgram * const elfProg = dynamic_cast<ElfProgram *>(prog);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, elfProg == nullptr, RT_ERROR_INVALID_VALUE,
-        "Failed to dynamic_cast program.");
+    ElfProgram* const elfProg = dynamic_cast<ElfProgram*>(prog);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_SYSTEM, elfProg == nullptr, RT_ERROR_INVALID_VALUE, "Failed to dynamic_cast program.");
 
     uint32_t kernelCount = elfProg->GetKernelsCount();
     if ((elfProg->GetKernels() == nullptr) || (kernelCount == 0U)) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Program kernels is empty, programId=%u, kernelCount=%u.", elfProg->Id_(), kernelCount);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Program kernels is empty, programId=%u, kernelCount=%u.", elfProg->Id_(), kernelCount);
         return RT_ERROR_PROGRAM_DATA;
     }
 
     prog->kernelCount_ = kernelCount;
     RT_LOG(RT_LOG_DEBUG, "kernelCount=%u.", prog->kernelCount_);
 
-    const char_t *kernelName = RtPtrToPtr<const char_t *>(kernelInfoExt);
+    const char_t* kernelName = RtPtrToPtr<const char_t*>(kernelInfoExt);
     const bool kernelInfoExtVaild = (kernelInfoExt != nullptr) && (strnlen(kernelName, KERNEL_INFO_EXT_MAX) != 0);
     // kernelInfoExtVaild=false,历史遗留场景, 视为找到注册第一个kernel.
     if (!kernelInfoExtVaild) {
-        const RtKernel * const kernels = elfProg->GetKernels();
-        const RtKernel * const elfKernelInfo = &kernels[0];
+        const RtKernel* const kernels = elfProg->GetKernels();
+        const RtKernel* const elfKernelInfo = &kernels[0];
 
         /* 去掉kernelName的_mix_aic/_mix_aiv的后缀 */
         const std::string tripKName = elfProg->AdjustKernelName(elfKernelInfo->name);
@@ -1851,9 +1893,9 @@ rtError_t Runtime::KernelRegister(Program *prog, const void *stubFunc, const cha
     return RegisterKernelByStubFunc(elfProg, stubFunc, stubName, kernelInfoExt, funcMode, kernelName);
 }
 
-rtError_t Runtime::AllKernelRegister(Program * const prog) const
+rtError_t Runtime::AllKernelRegister(Program* const prog) const
 {
-    ElfProgram * const elfProg = dynamic_cast<ElfProgram *>(prog);
+    ElfProgram* const elfProg = dynamic_cast<ElfProgram*>(prog);
     COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, elfProg == nullptr, RT_ERROR_NONE, "Failed to dynamic_cast program.");
 
     prog->kernelCount_ = elfProg->GetKernelsCount();
@@ -1862,43 +1904,44 @@ rtError_t Runtime::AllKernelRegister(Program * const prog) const
     rtError_t error = elfProg->RegisterAllKernelCommon();
     ERROR_RETURN(error, "register all kernel failed, retCode=%#x.", static_cast<uint32_t>(error));
 
-    const std::map<std::string, Kernel *>& kernelNameMap = prog->GetKernelNameMap();
+    const std::map<std::string, Kernel*>& kernelNameMap = prog->GetKernelNameMap();
     for (auto iter = kernelNameMap.begin(); iter != kernelNameMap.end(); ++iter) {
-        Kernel *kernelObj = iter->second;
+        Kernel* kernelObj = iter->second;
 
         /* kernelTable_ will maintain kernel and the function PutProgram() will release memory. */
         if (prog->KernelTable_ == nullptr) {
             prog->KernelTable_ = new (std::nothrow) rtKernelArray_t[prog->kernelCount_];
-            COND_RETURN_AND_MSG_OUTER(prog->KernelTable_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-                ErrorCode::EE1013, sizeof(rtKernelArray_t) * prog->kernelCount_, "new");
+            COND_RETURN_AND_MSG_OUTER(
+                prog->KernelTable_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+                sizeof(rtKernelArray_t) * prog->kernelCount_, "new");
         }
 
         /* add kernel to KernelTable */
         bool isRepeated = false;
         error = prog->AllKernelAdd(kernelObj, isRepeated);
-        ERROR_RETURN(error, "add kernel to tilingKey table failed, kernel_name=%s, tilingKey=%llu.",
-            kernelObj->Name_().c_str(), kernelObj->TilingKey());
+        ERROR_RETURN(
+            error, "add kernel to tilingKey table failed, kernel_name=%s, tilingKey=%llu.", kernelObj->Name_().c_str(),
+            kernelObj->TilingKey());
     }
 
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::MixKernelRegister(Program * const prog)
+rtError_t Runtime::MixKernelRegister(Program* const prog)
 {
-    ElfProgram * const elfProg = dynamic_cast<ElfProgram *>(prog);
+    ElfProgram* const elfProg = dynamic_cast<ElfProgram*>(prog);
     COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, elfProg == nullptr, RT_ERROR_NONE, "Failed to dynamic_cast program.");
 
     prog->kernelCount_ = elfProg->GetKernelsCount();
     return elfProg->RegisterAllKernelCommon();
 }
 
-rtError_t Runtime::MallocProgramAndRegMixKernel(const void *data, const uint64_t length, Program ** const newProg) const
+rtError_t Runtime::MallocProgramAndRegMixKernel(const void* data, const uint64_t length, Program** const newProg) const
 {
-    Program *prog = new (std::nothrow) ElfProgram(GetDefaultKernelAttrType());
+    Program* prog = new (std::nothrow) ElfProgram(GetDefaultKernelAttrType());
     RT_LOG(RT_LOG_INFO, "new ElfProgram ok, Runtime_alloc_size %zu", sizeof(ElfProgram));
 
-    COND_RETURN_AND_MSG_OUTER(prog == nullptr, RT_ERROR_PROGRAM_NEW,
-        ErrorCode::EE1013, sizeof(ElfProgram), "new");
+    COND_RETURN_AND_MSG_OUTER(prog == nullptr, RT_ERROR_PROGRAM_NEW, ErrorCode::EE1013, sizeof(ElfProgram), "new");
     const rtError_t error = prog->Register(data, length);
     if (error != RT_ERROR_NONE) {
         RT_LOG_CALL_MSG(ERR_MODULE_GE, "Mix program register failed.");
@@ -1910,22 +1953,22 @@ rtError_t Runtime::MallocProgramAndRegMixKernel(const void *data, const uint64_t
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::GetTilingValue(const std::string &kernelInfoExt, uint64_t &tilingValue) const
+rtError_t Runtime::GetTilingValue(const std::string& kernelInfoExt, uint64_t& tilingValue) const
 {
     // dynamic shape kernel
     try {
         tilingValue = std::stoull(kernelInfoExt.c_str());
-    } catch (const std::invalid_argument &ia) {
+    } catch (const std::invalid_argument& ia) {
         RT_LOG(RT_LOG_WARNING, "%s failed, invalid_argument, tilingValue=%s.", ia.what(), kernelInfoExt.c_str());
         return RT_ERROR_INVALID_VALUE;
-    } catch (const std::out_of_range &oor) {
+    } catch (const std::out_of_range& oor) {
         RT_LOG(RT_LOG_WARNING, "%s failed, out_of_range, tilingValue=%s.", oor.what(), kernelInfoExt.c_str());
         return RT_ERROR_INVALID_VALUE;
     }
     return RT_ERROR_NONE;
 }
 
-std::string Runtime::GetTilingKeyFromKernel(const std::string &kernelName, uint8_t &mixType) const
+std::string Runtime::GetTilingKeyFromKernel(const std::string& kernelName, uint8_t& mixType) const
 {
     std::string temp = kernelName;
     const std::string mixAicName = "_mix_aic";
@@ -1954,17 +1997,11 @@ std::string Runtime::GetTilingKeyFromKernel(const std::string &kernelName, uint8
     return temp.substr(pos + 1U);
 }
 
-const Kernel *Runtime::KernelLookup(const void * const stub)
-{
-    return kernelTable_.Lookup(stub);
-}
+const Kernel* Runtime::KernelLookup(const void* const stub) { return kernelTable_.Lookup(stub); }
 
-const void *Runtime::StubFuncLookup(const char_t * const name)
-{
-    return kernelTable_.InvLookup(name);
-}
+const void* Runtime::StubFuncLookup(const char_t* const name) { return kernelTable_.InvLookup(name); }
 
-rtError_t Runtime::SetAicpuAttr(const char_t * const key, const char_t * const value) const
+rtError_t Runtime::SetAicpuAttr(const char_t* const key, const char_t* const value) const
 {
     RT_LOG(RT_LOG_DEBUG, "key=%s, val=%s", (key != nullptr) ? key : "NULL", (value != nullptr) ? value : "NULL");
 
@@ -1979,7 +2016,7 @@ rtError_t Runtime::SetAicpuAttr(const char_t * const key, const char_t * const v
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::GetTsdQos(const uint32_t devId, uint16_t &qos) const
+rtError_t Runtime::GetTsdQos(const uint32_t devId, uint16_t& qos) const
 {
     qos = 0U;
 
@@ -1996,10 +2033,15 @@ rtError_t Runtime::GetTsdQos(const uint32_t devId, uint16_t &qos) const
     uint64_t tsdQos;
     uint32_t userDeviceId;
     const rtError_t error = GetUserDevIdByDeviceId(devId, &userDeviceId, true);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(error), devId);
-    const TDT_StatusType tdtStat = tsdGetCapability_(static_cast<int32_t>(userDeviceId), 0, RtPtrToPtr<uintptr_t>(&tsdQos));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(error),
+        devId);
+    const TDT_StatusType tdtStat =
+        tsdGetCapability_(static_cast<int32_t>(userDeviceId), 0, RtPtrToPtr<uintptr_t>(&tsdQos));
     if (tdtStat != TSD_OK) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "[TSD] get qos failed, userDeviceId=%u, devId=%u, tdt error=%u.", userDeviceId, devId, tdtStat);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "[TSD] get qos failed, userDeviceId=%u, devId=%u, tdt error=%u.", userDeviceId, devId,
+            tdtStat);
         return RT_ERROR_DRV_TSD_ERR;
     }
 
@@ -2013,27 +2055,28 @@ static void PrintfTsdError(const uint32_t devId, const TDT_StatusType tdtStatus)
 {
     switch (tdtStatus) {
         case TSD_SUBPROCESS_NUM_EXCEED_THE_LIMIT: {
-            RT_LOG_OUTER_MSG(RT_TSD_SUBPROCESS_NUM_EXCEED_THE_LIMIT_ERROR,
+            RT_LOG_OUTER_MSG(
+                RT_TSD_SUBPROCESS_NUM_EXCEED_THE_LIMIT_ERROR,
                 "TsdOpen failed:The number of started NN processes exceeds the limit.");
             break;
         }
         case TSD_SUBPROCESS_BINARY_FILE_DAMAGED: {
-            RT_LOG_OUTER_MSG(RT_TSD_SUBPROCESS_BINARY_FILE_DAMAGED,
+            RT_LOG_OUTER_MSG(
+                RT_TSD_SUBPROCESS_BINARY_FILE_DAMAGED,
                 "TsdOpen failed:The binary file of the NN process is damaged or the file permissions are incorrect.");
             break;
         }
         case TSD_DEVICE_DISCONNECTED: {
-            RT_LOG_OUTER_MSG(RT_TSD_DEVICE_DISCONNECTED,
-                "TsdOpen failed:Device is disconnected.");
+            RT_LOG_OUTER_MSG(RT_TSD_DEVICE_DISCONNECTED, "TsdOpen failed:Device is disconnected.");
             break;
         }
         case TSD_DRV_HDC_SEND_FILE_FAILED: {
-            RT_LOG_OUTER_MSG(RT_TSD_DRV_HDC_SEND_FILE_FAILED_ERROR,
-                "TsdOpen failed:Failed to verify OPP package.");
+            RT_LOG_OUTER_MSG(RT_TSD_DRV_HDC_SEND_FILE_FAILED_ERROR, "TsdOpen failed:Failed to verify OPP package.");
             break;
         }
         case TSD_ADD_AICPUSD_TO_CGROUP_FAILED: {
-            RT_LOG_OUTER_MSG(RT_TSD_ADD_AICPUSD_TO_CGROUP_FAILED,
+            RT_LOG_OUTER_MSG(
+                RT_TSD_ADD_AICPUSD_TO_CGROUP_FAILED,
                 "TsdOpen failed:Failed to add the AI CPU scheduler to the Cgroup.");
             break;
         }
@@ -2053,7 +2096,8 @@ rtError_t Runtime::startAicpuExecutor(const uint32_t devId, const uint32_t tsId)
     return StartAicpuExecutorTracked(devId, tsId, nullptr);
 }
 
-rtError_t Runtime::StartAicpuExecutorTracked(const uint32_t devId, const uint32_t tsId, bool *aicpuExecutorStarted) const
+rtError_t Runtime::StartAicpuExecutorTracked(
+    const uint32_t devId, const uint32_t tsId, bool* aicpuExecutorStarted) const
 {
     rtError_t error = RT_ERROR_NONE;
     if (aicpuExecutorStarted != nullptr) {
@@ -2079,7 +2123,8 @@ rtError_t Runtime::StartAicpuExecutorTracked(const uint32_t devId, const uint32_
     TDT_StatusType tdtStatus;
     uint32_t userDevId = 0U;
     error = GetUserDevIdByDeviceId(devId, &userDevId, true);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", error, devId);
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", error, devId);
     if (tsdOpenEx_ != nullptr) {
         tdtStatus = tsdOpenEx_(userDevId, 0U, 0);
     } else if (tsdOpen_ != nullptr) {
@@ -2091,7 +2136,8 @@ rtError_t Runtime::StartAicpuExecutorTracked(const uint32_t devId, const uint32_
     RT_LOG(RT_LOG_INFO, "userDeviceId=%u, devId=%u, tsdOpen ret=%u", userDevId, devId, tdtStatus);
 
     /* call tsdOpen will not take effect. Should call openAiCpuSd in aicpu related procedure. */
-    if ((IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_DEVICE_AICPUSD_LAZY_START)) && (tdtStatus == TSD_OPEN_NOT_SUPPORT_FOR_MDC)) {
+    if ((IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_DEVICE_AICPUSD_LAZY_START)) &&
+        (tdtStatus == TSD_OPEN_NOT_SUPPORT_FOR_MDC)) {
         RT_LOG(RT_LOG_INFO, "TsdOpen success, will open ai cpu sd in later procedure, devId=%u", devId);
         return RT_ERROR_NONE;
     }
@@ -2108,18 +2154,20 @@ rtError_t Runtime::StartAicpuExecutorTracked(const uint32_t devId, const uint32_
     return error;
 }
 
-rtError_t Runtime::OpenNetService(const rtNetServiceOpenArgs *args) const
+rtError_t Runtime::OpenNetService(const rtNetServiceOpenArgs* args) const
 {
     rtError_t error = RT_ERROR_NONE;
-    COND_RETURN_AND_MSG_OUTER(tsdOpenNetService_ == nullptr, RT_ERROR_DRV_TSD_ERR,
-        ErrorCode::EE1015, "Starting the HCCP process", "Symbol TsdOpenNetService not found in libtsdclient.so.");
-    Context *ctx = CurrentContext();
+    COND_RETURN_AND_MSG_OUTER(
+        tsdOpenNetService_ == nullptr, RT_ERROR_DRV_TSD_ERR, ErrorCode::EE1015, "Starting the HCCP process",
+        "Symbol TsdOpenNetService not found in libtsdclient.so.");
+    Context* ctx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(ctx, RT_ERROR_CONTEXT_NULL);
     uint32_t userDeviceId = 0U;
     error = GetUserDevIdByDeviceId(ctx->Device_()->Id_(), &userDeviceId, true);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.",
-        static_cast<uint32_t>(error), ctx->Device_()->Id_());
-    const TDT_StatusType tdtStatus = tsdOpenNetService_(userDeviceId, RtPtrToPtr<const NetServiceOpenArgs *>(args));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(error),
+        ctx->Device_()->Id_());
+    const TDT_StatusType tdtStatus = tsdOpenNetService_(userDeviceId, RtPtrToPtr<const NetServiceOpenArgs*>(args));
     if (tdtStatus != TSD_OK) {
         RT_LOG_INNER_MSG(RT_LOG_ERROR, "Open NetService failed, devId=%u, tdt error=%u.", userDeviceId, tdtStatus);
         return RT_ERROR_DRV_OPEN_TSD;
@@ -2130,14 +2178,16 @@ rtError_t Runtime::OpenNetService(const rtNetServiceOpenArgs *args) const
 rtError_t Runtime::CloseNetService() const
 {
     rtError_t error = RT_ERROR_NONE;
-    COND_RETURN_AND_MSG_OUTER(tsdCloseNetService_ == nullptr, RT_ERROR_DRV_TSD_ERR,
-        ErrorCode::EE1015, "Stopping the HCCP process", "Symbol TsdCloseNetService not found in libtsdclient.so.");
-    Context *ctx = CurrentContext();
+    COND_RETURN_AND_MSG_OUTER(
+        tsdCloseNetService_ == nullptr, RT_ERROR_DRV_TSD_ERR, ErrorCode::EE1015, "Stopping the HCCP process",
+        "Symbol TsdCloseNetService not found in libtsdclient.so.");
+    Context* ctx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(ctx, RT_ERROR_CONTEXT_NULL);
     uint32_t userDeviceId = 0U;
     error = GetUserDevIdByDeviceId(ctx->Device_()->Id_(), &userDeviceId, true);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.",
-        static_cast<uint32_t>(error), ctx->Device_()->Id_());
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(error),
+        ctx->Device_()->Id_());
     const TDT_StatusType tdtStatus = tsdCloseNetService_(userDeviceId);
     if (tdtStatus != TSD_OK) {
         RT_LOG_INNER_MSG(RT_LOG_ERROR, "Close AI CPU service failed, devId=%u, tdt error=%u.", userDeviceId, tdtStatus);
@@ -2147,16 +2197,19 @@ rtError_t Runtime::CloseNetService() const
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::StartAicpuSd(Device * const device) const
+rtError_t Runtime::StartAicpuSd(Device* const device) const
 {
     rtError_t error = InitDrvEventThread(device->Id_());
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Init drv event thread failed, error=%#x, devId=%u.",
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Init drv event thread failed, error=%#x, devId=%u.",
         static_cast<uint32_t>(error), device->Id_());
 #if (!defined CFG_DEV_PLATFORM_PC)
-    RT_LOG(RT_LOG_DEBUG, "OpenAicpuSd, devId=%u, chipType=%d, isAicpuSchStart=%u", device->Id_(), chipType_,
+    RT_LOG(
+        RT_LOG_DEBUG, "OpenAicpuSd, devId=%u, chipType=%d, isAicpuSchStart=%u", device->Id_(), chipType_,
         device->IsAiCpuSdStarted());
 
-    if ((!device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_AICPUSD_LAZY_START)) || (device->IsAiCpuSdStarted())) {
+    if ((!device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_AICPUSD_LAZY_START)) ||
+        (device->IsAiCpuSdStarted())) {
         return RT_ERROR_NONE;
     }
 
@@ -2166,7 +2219,7 @@ rtError_t Runtime::StartAicpuSd(Device * const device) const
         return RT_ERROR_NONE;
     }
 
-    SpinLock * const aicpuSchSdLock = device->GetAiCpuSdLock();
+    SpinLock* const aicpuSchSdLock = device->GetAiCpuSdLock();
     aicpuSchSdLock->Lock();
     if (device->IsAiCpuSdStarted()) {
         aicpuSchSdLock->Unlock();
@@ -2224,7 +2277,8 @@ rtError_t Runtime::StopAicpuExecutor(const uint32_t devId, const uint32_t tsId, 
     }
     uint32_t userDeviceId;
     const rtError_t err = GetUserDevIdByDeviceId(devId, &userDeviceId, true);
-    COND_RETURN_ERROR_MSG_INNER(err != RT_ERROR_NONE, err, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(err), devId);
+    COND_RETURN_ERROR_MSG_INNER(
+        err != RT_ERROR_NONE, err, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(err), devId);
     TDT_StatusType tdtStatus;
     if (isQuickClose && tsdCloseEx_ != nullptr) {
         RT_LOG(RT_LOG_INFO, "tsdCloseEx_ start, userDeviceId=%u, devId=%u", userDeviceId, devId);
@@ -2244,14 +2298,14 @@ rtError_t Runtime::StopAicpuExecutor(const uint32_t devId, const uint32_t tsId, 
     return error;
 }
 
-rtError_t Runtime::InitAicpuQS(const uint32_t devId, const char_t * const grpName) const
+rtError_t Runtime::InitAicpuQS(const uint32_t devId, const char_t* const grpName) const
 {
     rtInitFlowGwInfo_t info = {};
     info.groupName = grpName;
     return InitAicpuFlowGw(devId, &info);
 }
 
-rtError_t Runtime::InitAicpuFlowGw(const uint32_t devId, const rtInitFlowGwInfo_t * const initInfo) const
+rtError_t Runtime::InitAicpuFlowGw(const uint32_t devId, const rtInitFlowGwInfo_t* const initInfo) const
 {
     if (devId == STUB_DEVICE_ID) {
         return RT_ERROR_NONE;
@@ -2279,18 +2333,22 @@ rtError_t Runtime::InitAicpuFlowGw(const uint32_t devId, const rtInitFlowGwInfo_
 
     uint32_t userDeviceId;
     const rtError_t error = GetUserDevIdByDeviceId(devId, &userDeviceId, true);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(error), devId);
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(error),
+        devId);
     const TDT_StatusType tdtStatus = tsdInitFlowGw_(userDeviceId, &info);
     if (tdtStatus != TSD_OK) {
         RT_LOG_CALL_MSG(ERR_MODULE_AICPU, "tsdInitFlowGw failed. drv devId=%u, tdt error=%u.", devId, tdtStatus);
         return RT_ERROR_DRV_CLOSE_TSD;
     }
-    RT_LOG(RT_LOG_INFO, "tsdInitFlowGw success, userDeviceId=%u, drv devId=%u, tdt status=%u", userDeviceId, devId, tdtStatus);
+    RT_LOG(
+        RT_LOG_INFO, "tsdInitFlowGw success, userDeviceId=%u, drv devId=%u, tdt status=%u", userDeviceId, devId,
+        tdtStatus);
 #endif
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::GetHdcConctStatus(const uint32_t devId, int32_t &hdcSessStat)
+rtError_t Runtime::GetHdcConctStatus(const uint32_t devId, int32_t& hdcSessStat)
 {
 #if (!defined CFG_DEV_PLATFORM_PC)
     if (tsdGetHdcConctStatus_ == nullptr) {
@@ -2299,11 +2357,14 @@ rtError_t Runtime::GetHdcConctStatus(const uint32_t devId, int32_t &hdcSessStat)
 
     uint32_t userDeviceId;
     const rtError_t error = GetUserDevIdByDeviceId(devId, &userDeviceId, true, false, true);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(error), devId);
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(error),
+        devId);
     const TDT_StatusType tdtStatus = tsdGetHdcConctStatus_(userDeviceId, &hdcSessStat);
     if (tdtStatus != TSD_OK) {
-        RT_LOG_INNER_MSG(RT_LOG_WARNING, "Get Hdc Connection Status failed. userDeviceId=%u, devId=%u, tdt status=%u.",
-            userDeviceId, devId, tdtStatus);
+        RT_LOG_INNER_MSG(
+            RT_LOG_WARNING, "Get Hdc Connection Status failed. userDeviceId=%u, devId=%u, tdt status=%u.", userDeviceId,
+            devId, tdtStatus);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     return RT_ERROR_NONE;
@@ -2320,14 +2381,11 @@ rtError_t Runtime::HandleAiCpuProfiling(
 {
     rtError_t error = RT_ERROR_NONE;
     uint32_t profSwitch = 0U;
-    RT_LOG(RT_LOG_INFO,
+    RT_LOG(
+        RT_LOG_INFO,
         "Handle aicpu profiling, profConfig=%#" PRIx64 ", profSwitchHi=%#" PRIx64 ", devId=%u, isHaveDevice=%d, "
         "isStart=%d(0:close, 1:open)",
-        profConfig,
-        profSwitchHi,
-        devId,
-        isHaveDevice_,
-        isStart);
+        profConfig, profSwitchHi, devId, isHaveDevice_, isStart);
     if (!isHaveDevice_) {
         return error;
     }
@@ -2352,23 +2410,28 @@ rtError_t Runtime::HandleAiCpuProfiling(
     if ((profConfig & PROF_TASK_TIME_L3_MASK) != 0UL) {
         profSwitch |= (1U << static_cast<uint32_t>(PROFILING_FEATURE_TIME_L3));
     }
-    profSwitch |= static_cast<uint32_t>((profSwitchHi >> 32ULL) & 0xFFFF0000ULL);  // 32是因为profSwitch是uint32，且只需要profSwitchHi的高16位
+    profSwitch |= static_cast<uint32_t>(
+        (profSwitchHi >> 32ULL) & 0xFFFF0000ULL); // 32是因为profSwitch是uint32，且只需要profSwitchHi的高16位
 
     RT_LOG(RT_LOG_INFO, "Handle aicpu profiling, profSwitch=%#" PRIx64, profSwitch);
 #if (!defined CFG_DEV_PLATFORM_PC)
 
-        COND_RETURN_WARN(tsdHandleAicpuProfiling_ == nullptr, RT_ERROR_DRV_SYM_TSD,
-            "handle is null, maybe cannot find symbol UpdateProfilingMode in libtsd_client.so.");
+    COND_RETURN_WARN(
+        tsdHandleAicpuProfiling_ == nullptr, RT_ERROR_DRV_SYM_TSD,
+        "handle is null, maybe cannot find symbol UpdateProfilingMode in libtsd_client.so.");
 
-        uint32_t userDeviceId;
-        const rtError_t err = GetUserDevIdByDeviceId(devId, &userDeviceId, true);
-        COND_RETURN_ERROR_MSG_INNER(err != RT_ERROR_NONE, err, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(err), devId);
-        const TDT_StatusType tdtStatus = tsdHandleAicpuProfiling_(userDeviceId, profSwitch);
-        if (tdtStatus != TSD_OK) {
-            error = RT_ERROR_DRV_TSD_ERR;
-            RT_LOG(RT_LOG_WARNING, "tsdHandleAicpuProfiling failed. devId=%u, tdt status=%u", devId, tdtStatus);
-        }
-        RT_LOG(RT_LOG_INFO, "tsdHandleAicpuProfiling success, userDeviceId=%u, devId=%u, tdt status=%u", userDeviceId, devId, tdtStatus);
+    uint32_t userDeviceId;
+    const rtError_t err = GetUserDevIdByDeviceId(devId, &userDeviceId, true);
+    COND_RETURN_ERROR_MSG_INNER(
+        err != RT_ERROR_NONE, err, "Get userDeviceId failed. error=%#x, devId=%u.", static_cast<uint32_t>(err), devId);
+    const TDT_StatusType tdtStatus = tsdHandleAicpuProfiling_(userDeviceId, profSwitch);
+    if (tdtStatus != TSD_OK) {
+        error = RT_ERROR_DRV_TSD_ERR;
+        RT_LOG(RT_LOG_WARNING, "tsdHandleAicpuProfiling failed. devId=%u, tdt status=%u", devId, tdtStatus);
+    }
+    RT_LOG(
+        RT_LOG_INFO, "tsdHandleAicpuProfiling success, userDeviceId=%u, devId=%u, tdt status=%u", userDeviceId, devId,
+        tdtStatus);
 #endif
     return error;
 }
@@ -2378,33 +2441,34 @@ rtError_t Runtime::SetTsdProfCallback(const MsprofReporterCallback profReporterC
     UNUSED(profReporterCallback);
 
 #if (!defined CFG_DEV_PLATFORM_PC)
-    if (!IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_DEVICE_HAS_TS_DEAMON) && (tsdSetProfCallback_ == nullptr)) {
+    if (!IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_DEVICE_HAS_TS_DEAMON) &&
+        (tsdSetProfCallback_ == nullptr)) {
         return RT_ERROR_NONE;
     }
 
     RT_LOG(RT_LOG_INFO, "set tsd prof callback");
 
-    COND_RETURN_WARN(tsdSetProfCallback_ == nullptr, RT_ERROR_DRV_SYM_TSD,
+    COND_RETURN_WARN(
+        tsdSetProfCallback_ == nullptr, RT_ERROR_DRV_SYM_TSD,
         "handle is null, maybe no symbol TsdSetMsprofReporterCallback in libtsd_client.so.");
 
     const TDT_StatusType tdtStatus = tsdSetProfCallback_(profReporterCallback);
     if (tdtStatus != TSD_OK) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR,
-            "Set MsprofReporterCallback for tsdclient failed. tdt error=%u.", tdtStatus);
+        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Set MsprofReporterCallback for tsdclient failed. tdt error=%u.", tdtStatus);
         return RT_ERROR_DRV_TSD_ERR;
     }
 #endif
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::LookupAddrByFun(const void * const stubFunc, Context * const ctx, void ** const addr)
+rtError_t Runtime::LookupAddrByFun(const void* const stubFunc, Context* const ctx, void** const addr)
 {
     uint64_t tmp_addr = 0U;
-    Program *prog = nullptr;
-    Module *programModule = nullptr;
-    Runtime * const rt = Runtime::Instance();
+    Program* prog = nullptr;
+    Module* programModule = nullptr;
+    Runtime* const rt = Runtime::Instance();
     rtError_t error;
-    const Kernel * const kernelObj = rt->kernelTable_.Lookup(stubFunc);
+    const Kernel* const kernelObj = rt->kernelTable_.Lookup(stubFunc);
     if (unlikely(kernelObj == nullptr)) {
         RT_LOG_INNER_MSG(RT_LOG_ERROR, "Cannot find kernel.");
         goto LOOKUP_ERROR;
@@ -2430,7 +2494,7 @@ rtError_t Runtime::LookupAddrByFun(const void * const stubFunc, Context * const 
         goto MODULE_ERROR;
     }
 
-    *addr = RtValueToPtr<void *>(tmp_addr);
+    *addr = RtValueToPtr<void*>(tmp_addr);
     Runtime::Instance()->PutProgram(prog);
     return RT_ERROR_NONE;
 
@@ -2440,24 +2504,22 @@ LOOKUP_ERROR:
     return RT_ERROR_KERNEL_LOOKUP;
 }
 
-rtError_t Runtime::LookupAddrAndPrefCntWithHandle(const void * const handlePtr, const void * const kernelInfoExt,
-                                                  Context * const ctx, void ** const addr, uint32_t * const prefetchCnt)
+rtError_t Runtime::LookupAddrAndPrefCntWithHandle(
+    const void* const handlePtr, const void* const kernelInfoExt, Context* const ctx, void** const addr,
+    uint32_t* const prefetchCnt)
 {
     UNUSED(handlePtr);
-    Program *program = nullptr;
-    Module *mdl = nullptr;
+    Program* program = nullptr;
+    Module* mdl = nullptr;
 
-    const Kernel *fftsKernel = kernelTable_.KernelInfoExtLookup((const char_t *)kernelInfoExt);
-    RT_LOG(RT_LOG_INFO, "Look up fftsKernel, kernelInfoExt=%s.",
-           RtPtrToPtr<const char_t *>(kernelInfoExt));
+    const Kernel* fftsKernel = kernelTable_.KernelInfoExtLookup((const char_t*)kernelInfoExt);
+    RT_LOG(RT_LOG_INFO, "Look up fftsKernel, kernelInfoExt=%s.", RtPtrToPtr<const char_t*>(kernelInfoExt));
     COND_RETURN_ERROR_MSG_INNER(fftsKernel == nullptr, RT_ERROR_KERNEL_LOOKUP, "Cannot find kernel.");
 
     program = fftsKernel->Program_();
     COND_RETURN_ERROR_MSG_INNER(program == nullptr, RT_ERROR_KERNEL_LOOKUP, "Cannot find program.");
 
-    std::function<void()> programGuardFunc = [program, this]() {
-        this->PutProgram(program);
-    };
+    std::function<void()> programGuardFunc = [program, this]() { this->PutProgram(program); };
     ScopeGuard programGuard(programGuardFunc);
     mdl = ctx->GetModule(program);
     COND_RETURN_ERROR_MSG_INNER(mdl == nullptr, RT_ERROR_KERNEL_LOOKUP, "Cannot find module.");
@@ -2468,32 +2530,31 @@ rtError_t Runtime::LookupAddrAndPrefCntWithHandle(const void * const handlePtr, 
         rtError_t error = mdl->GetFunction(fftsKernel, &tmp_addr);
         COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_KERNEL_LOOKUP, "Get function failed by kernel.");
 
-        *addr = RtValueToPtr<void *>(tmp_addr);
+        *addr = RtValueToPtr<void*>(tmp_addr);
         uint32_t cnt = 0U;
         error = mdl->GetPrefetchCnt(fftsKernel, cnt);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_KERNEL_LOOKUP, "Get prefetch cnt failed by kernel.");
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, RT_ERROR_KERNEL_LOOKUP, "Get prefetch cnt failed by kernel.");
         *prefetchCnt = cnt;
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::LookupAddrAndPrefCnt(const Kernel * const kernel, Context * const ctx,
-                                        rtKernelDetailInfo_t * const kernelInfo)
+rtError_t Runtime::LookupAddrAndPrefCnt(
+    const Kernel* const kernel, Context* const ctx, rtKernelDetailInfo_t* const kernelInfo)
 {
-    Program *prog = nullptr;
-    Module *mdl = nullptr;
+    Program* prog = nullptr;
+    Module* mdl = nullptr;
 
     prog = kernel->Program_();
     COND_RETURN_ERROR_MSG_INNER(prog == nullptr, RT_ERROR_KERNEL_LOOKUP, "Cannot find program.");
 
-    std::function<void()> progGuardFunc = [prog, this]() {
-        this->PutProgram(prog);
-    };
+    std::function<void()> progGuardFunc = [prog, this]() { this->PutProgram(prog); };
     ScopeGuard progGuard(progGuardFunc);
     mdl = ctx->GetModule(prog);
     COND_RETURN_ERROR_MSG_INNER(mdl == nullptr, RT_ERROR_KERNEL_LOOKUP, "Cannot find module.");
 
-    rtFunctionInfo_t * const functionInfo = kernelInfo->functionInfo;
+    rtFunctionInfo_t* const functionInfo = kernelInfo->functionInfo;
     prog->LoadDependencies(ctx);
     {
         uint64_t tmpAddr1 = 0UL;
@@ -2505,14 +2566,15 @@ rtError_t Runtime::LookupAddrAndPrefCnt(const Kernel * const kernel, Context * c
         rtError_t error = mdl->GetFunction(kernel, &tmpAddr1, &tmpAddr2);
         COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_KERNEL_LOOKUP, "Get function failed by kernel.");
         error = mdl->GetPrefetchCnt(kernel, cnt1, cnt2);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_KERNEL_LOOKUP, "Get prefetch cnt failed by kernel.");
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, RT_ERROR_KERNEL_LOOKUP, "Get prefetch cnt failed by kernel.");
 
         if (tmpAddr2 != 0UL) {
             functionNum = 2U;
         }
         kernelInfo->functionInfoNum = functionNum;
-        functionInfo[0].pcAddr = RtValueToPtr<void *>(tmpAddr1);
-        functionInfo[1].pcAddr = RtValueToPtr<void *>(tmpAddr2);
+        functionInfo[0].pcAddr = RtValueToPtr<void*>(tmpAddr1);
+        functionInfo[1].pcAddr = RtValueToPtr<void*>(tmpAddr2);
         functionInfo[0].prefetchCnt = cnt1;
         functionInfo[1].prefetchCnt = cnt2;
         functionInfo[0].mixType = kernel->GetMixType();
@@ -2530,18 +2592,16 @@ rtError_t Runtime::LookupAddrAndPrefCnt(const Kernel * const kernel, Context * c
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::LookupAddrAndPrefCnt(const Kernel * const kernel, Context * const ctx,
-                                        void ** const addr, uint32_t * const prefetchCnt)
+rtError_t Runtime::LookupAddrAndPrefCnt(
+    const Kernel* const kernel, Context* const ctx, void** const addr, uint32_t* const prefetchCnt)
 {
-    Program *prog = nullptr;
-    Module *mdl = nullptr;
+    Program* prog = nullptr;
+    Module* mdl = nullptr;
 
     prog = kernel->Program_();
     COND_RETURN_ERROR_MSG_INNER(prog == nullptr, RT_ERROR_KERNEL_LOOKUP, "Cannot find program.");
 
-    std::function<void()> progGuardFunc = [prog, this]() {
-        this->PutProgram(prog);
-    };
+    std::function<void()> progGuardFunc = [prog, this]() { this->PutProgram(prog); };
     ScopeGuard progGuard(progGuardFunc);
     mdl = ctx->GetModule(prog);
     COND_RETURN_ERROR_MSG_INNER(mdl == nullptr, RT_ERROR_KERNEL_LOOKUP, "Cannot find module.");
@@ -2552,10 +2612,11 @@ rtError_t Runtime::LookupAddrAndPrefCnt(const Kernel * const kernel, Context * c
         rtError_t error = mdl->GetFunction(kernel, &tmp_addr);
         COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_KERNEL_LOOKUP, "Get function failed by kernel.");
 
-        *addr = RtValueToPtr<void *>(tmp_addr);
+        *addr = RtValueToPtr<void*>(tmp_addr);
         uint32_t cnt = 0U;
         error = mdl->GetPrefetchCnt(kernel, cnt);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_KERNEL_LOOKUP, "Get prefetch cnt failed by kernel.");
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, RT_ERROR_KERNEL_LOOKUP, "Get prefetch cnt failed by kernel.");
         *prefetchCnt = cnt;
         const std::string kernelName = kernel->Name_();
         rtAddrKernelName_t mapInfo = {tmp_addr, kernelName};
@@ -2566,15 +2627,17 @@ rtError_t Runtime::LookupAddrAndPrefCnt(const Kernel * const kernel, Context * c
     return RT_ERROR_NONE;
 }
 
-RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
+RefObject<Context*>* Runtime::PrimaryContextRetain(const uint32_t devId)
 {
-    COND_RETURN_ERROR_MSG_INNER(devId >= RT_MAX_DEV_NUM, nullptr,
-        "Primary context retain failed because value %u for parameter devId is invalid, valid range is [0, %u).",
-        devId, RT_MAX_DEV_NUM);
+    COND_RETURN_ERROR_MSG_INNER(
+        devId >= RT_MAX_DEV_NUM, nullptr,
+        "Primary context retain failed because value %u for parameter devId is invalid, valid range is [0, %u).", devId,
+        RT_MAX_DEV_NUM);
 
-    COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), nullptr,
-        "Primary context retain failed because value %u for tsNum is invalid, valid range is [1, %u].",
-        tsNum_, RT_MAX_TS_NUM);
+    COND_RETURN_ERROR_MSG_INNER(
+        (tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), nullptr,
+        "Primary context retain failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_,
+        RT_MAX_TS_NUM);
 
     const bool sentinelMode = Runtime::Instance()->GetSentinelMode();
     if (sentinelMode) {
@@ -2586,7 +2649,7 @@ RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
         if ((sentinelMode) && (i == RT_TSC_ID)) {
             continue;
         }
-        RefObject<Context *> &refObj = priCtxs_[devId][i];
+        RefObject<Context*>& refObj = priCtxs_[devId][i];
 
         if (!refObj.IncRef()) {
             PrimaryContextInitInfo initInfo = PreparePrimaryContext(this, refObj, devId, i);
@@ -2598,8 +2661,9 @@ RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
                 if (i == RT_TSV_ID) {
                     RestorePrimaryContextRef(priCtxs_[devId][RT_TSC_ID]);
                 }
-                RT_LOG(RT_LOG_ERROR, "Primary context retain failed, devId=%u, ts_id=%u, retCode=%#x",
-                    devId, i, static_cast<uint32_t>(initInfo.err));
+                RT_LOG(
+                    RT_LOG_ERROR, "Primary context retain failed, devId=%u, ts_id=%u, retCode=%#x", devId, i,
+                    static_cast<uint32_t>(initInfo.err));
                 return nullptr;
             }
 
@@ -2612,15 +2676,14 @@ RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
 
         const uint64_t refObjValue = refObj.GetRef();
         RT_LOG(RT_LOG_INFO, "Context inc ref, devId=%u, ts_id=%u, count=%#llx", devId, i, refObjValue);
-        Context * const ctx = refObj.GetVal();
+        Context* const ctx = refObj.GetVal();
         if (ctx != nullptr) {
             continue;
         }
         if (refObj.GetRef() != 0U && !refObj.DecRef()) {
             const bool resetRefSuccess = refObj.TrySetValAndResetRef(nullptr);
             if (!resetRefSuccess) {
-                RT_LOG(RT_LOG_ERROR, "Primary context retain failed to reset ref, devId=%u, ts_id=%u.",
-                    devId, i);
+                RT_LOG(RT_LOG_ERROR, "Primary context retain failed to reset ref, devId=%u, ts_id=%u.", devId, i);
             }
         }
         if (i == RT_TSV_ID) {
@@ -2639,18 +2702,21 @@ RefObject<Context *> *Runtime::PrimaryContextRetain(const uint32_t devId)
     }
 }
 
-rtError_t Runtime::GetPrimaryCtxState(const int32_t devId, uint32_t *flags, int32_t *active)
+rtError_t Runtime::GetPrimaryCtxState(const int32_t devId, uint32_t* flags, int32_t* active)
 {
     *flags = 0U; // 0 means SCHED_AUTO;
     *active = 0;
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((static_cast<uint32_t>(devId) >= RT_MAX_DEV_NUM || devId < 0),
-        RT_ERROR_DEVICE_ID, "Obtaining the status of the default context", devId, "[0, " + std::to_string(RT_MAX_DEV_NUM) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        (static_cast<uint32_t>(devId) >= RT_MAX_DEV_NUM || devId < 0), RT_ERROR_DEVICE_ID,
+        "Obtaining the status of the default context", devId, "[0, " + std::to_string(RT_MAX_DEV_NUM) + ")");
 
-    COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_DEVICE_ID,
-        "GetPrimaryCtxState failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_, RT_MAX_TS_NUM);
+    COND_RETURN_ERROR_MSG_INNER(
+        (tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_DEVICE_ID,
+        "GetPrimaryCtxState failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_,
+        RT_MAX_TS_NUM);
 
     for (uint32_t i = 0U; i < tsNum_; i++) {
-        RefObject<Context *> &refObj = priCtxs_[devId][i];
+        RefObject<Context*>& refObj = priCtxs_[devId][i];
         const uint64_t refCnt = refObj.GetRefCount();
         RT_LOG(RT_LOG_INFO, "Default ctx state, devId=%u, ts_id=%u, count=%#llx", devId, i, refCnt);
         if (refCnt > 0ULL) {
@@ -2661,7 +2727,7 @@ rtError_t Runtime::GetPrimaryCtxState(const int32_t devId, uint32_t *flags, int3
     return RT_ERROR_NONE;
 }
 
-void Runtime::PrimaryContextCallBack(const Context * const ctx, const uint32_t devId)
+void Runtime::PrimaryContextCallBack(const Context* const ctx, const uint32_t devId)
 {
     if (!isExiting_) {
         StreamStateCallbackManager::Instance().Notify(ctx->Device_()->PrimaryStream_(), false);
@@ -2675,7 +2741,6 @@ void Runtime::PrimaryContextCallBackAfterTeardown(const uint32_t devId) const
         DeviceStateCallbackManager::Instance().Notify(devId, false, DEV_CB_POS_BACK, RT_DEVICE_STATE_RESET_POST);
     }
 }
-
 
 bool Runtime::HasRuntimeExitHostState() const
 {
@@ -2709,23 +2774,24 @@ void Runtime::PrepareProcessExitNoThrow()
                 continue;
             }
 
-            RefObject<Program *> * const programItem = programAllocator_->GetDataToItem(id);
+            RefObject<Program*>* const programItem = programAllocator_->GetDataToItem(id);
             if ((programItem != nullptr) && (programItem->GetVal(false) != nullptr)) {
                 programItem->ResetVal();
             }
         }
     }
 
-    for (auto &refObj : devices_) {
+    for (auto& refObj : devices_) {
         for (uint32_t tsId = 0U; tsId < RT_MAX_TS_NUM; tsId++) {
-            Device * const dev = refObj[tsId].GetVal(false);
+            Device* const dev = refObj[tsId].GetVal(false);
             if (dev == nullptr) {
                 continue;
             }
             dev->SetDeviceRelease();
             const rtError_t stopRet = dev->Stop();
             if (stopRet != RT_ERROR_NONE) {
-                RT_LOG(RT_LOG_WARNING, "Runtime process exit stop device host threads failed, retCode=%#x.",
+                RT_LOG(
+                    RT_LOG_WARNING, "Runtime process exit stop device host threads failed, retCode=%#x.",
                     static_cast<uint32_t>(stopRet));
             }
             (void)SetWatchDogDevStatus(dev, RT_DEVICE_STATUS_NORMAL);
@@ -2737,8 +2803,9 @@ void Runtime::PrepareProcessExitNoThrow()
     InnerThreadLocalContainer::SetCurCtx(nullptr);
 }
 
-rtError_t Runtime::ExecutePrimaryTearDown(RefObject<Context *> &refObj, Context * const ctx, const uint32_t devId,
-    const uint32_t tsId, const bool isForceReset, bool &earlyReturn)
+rtError_t Runtime::ExecutePrimaryTearDown(
+    RefObject<Context*>& refObj, Context* const ctx, const uint32_t devId, const uint32_t tsId, const bool isForceReset,
+    bool& earlyReturn)
 {
     earlyReturn = false;
     if (unlikely(!ContextManage::CheckContextIsValid(ctx, ContextAccessMode::INTERNAL))) {
@@ -2755,28 +2822,29 @@ rtError_t Runtime::ExecutePrimaryTearDown(RefObject<Context *> &refObj, Context 
             return RT_ERROR_CONTEXT_DEL;
         }
         refObj.SetPrimaryCtxCallBackFlag(true);
-        Context * const previousCtx = InnerThreadLocalContainer::GetCurCtx();
+        Context* const previousCtx = InnerThreadLocalContainer::GetCurCtx();
         const bool previousInternalAccess = InnerThreadLocalContainer::IsInternalContextAccess();
         Runtime::SetInternalThreadContext(ctx);
         const ScopeGuard internalCtxGuard([previousCtx, previousInternalAccess, ctx]() {
-            InnerThreadLocalContainer::SetCurCtx((previousCtx == ctx) ? nullptr : previousCtx,
-                previousInternalAccess);
+            InnerThreadLocalContainer::SetCurCtx((previousCtx == ctx) ? nullptr : previousCtx, previousInternalAccess);
         });
         PrimaryContextCallBack(ctx, devId);
         tearDownRet = ctx->TearDown();
         if (tearDownRet == RT_ERROR_NONE) {
             Runtime::SetInternalThreadContext(ctx);
-            Device * const ownerDev = ctx->Device_();
+            Device* const ownerDev = ctx->Device_();
             if (ownerDev != nullptr) {
                 const rtError_t prepareRet = ownerDev->PrepareStop();
                 if (prepareRet != RT_ERROR_NONE) {
-                        RT_LOG(RT_LOG_WARNING,
-                            "PrimaryContextRelease PrepareStop failed, devId=%u, ts_id=%u, retCode=%#x. "
-                            "Continue tearing down.", devId, tsId, static_cast<uint32_t>(prepareRet));
+                    RT_LOG(
+                        RT_LOG_WARNING,
+                        "PrimaryContextRelease PrepareStop failed, devId=%u, ts_id=%u, retCode=%#x. "
+                        "Continue tearing down.",
+                        devId, tsId, static_cast<uint32_t>(prepareRet));
                 }
             }
         }
-        Stream * const ctrlSqStream = ctx->GetCtrlSQStream();
+        Stream* const ctrlSqStream = ctx->GetCtrlSQStream();
         if (ctrlSqStream != nullptr) {
             ctrlSqStream->SetContext(nullptr);
         }
@@ -2789,16 +2857,15 @@ rtError_t Runtime::ExecutePrimaryTearDown(RefObject<Context *> &refObj, Context 
     return tearDownRet;
 }
 
-rtError_t Runtime::ReleasePrimaryContextSlot(const uint32_t devId, const uint32_t tsId, const bool isForceReset,
-    const bool sentinelMode, bool &ret)
+rtError_t Runtime::ReleasePrimaryContextSlot(
+    const uint32_t devId, const uint32_t tsId, const bool isForceReset, const bool sentinelMode, bool& ret)
 {
-    RefObject<Context *> &refObj = priCtxs_[devId][tsId];
+    RefObject<Context*>& refObj = priCtxs_[devId][tsId];
     if ((sentinelMode) && (tsId == RT_TSC_ID)) {
         return RT_ERROR_NONE;
     }
-    Context *ctx = refObj.GetVal(false);
-    PrimaryReleaseDecision decision =
-        DecidePrimaryReleaseAction(refObj, ctx, isForceReset, tsId, ret);
+    Context* ctx = refObj.GetVal(false);
+    PrimaryReleaseDecision decision = DecidePrimaryReleaseAction(refObj, ctx, isForceReset, tsId, ret);
     if (decision.action == PrimaryReleaseAction::SKIP_SLOT) {
         return RT_ERROR_NONE;
     }
@@ -2809,30 +2876,33 @@ rtError_t Runtime::ReleasePrimaryContextSlot(const uint32_t devId, const uint32_
     bool earlyReturn = false;
     const rtError_t tearDownRet = ExecutePrimaryTearDown(refObj, ctx, devId, tsId, isForceReset, earlyReturn);
     if (earlyReturn) {
-        return RollbackPrimaryTearDown(refObj, ctx, devId, tearDownRet,
-            decision.retainRestoreCount, decision.originForceReset);
+        return RollbackPrimaryTearDown(
+            refObj, ctx, devId, tearDownRet, decision.retainRestoreCount, decision.originForceReset);
     }
     if (tearDownRet != RT_ERROR_NONE) {
-        return RollbackPrimaryTearDown(refObj, ctx, devId, tearDownRet,
-            decision.retainRestoreCount, decision.originForceReset);
+        return RollbackPrimaryTearDown(
+            refObj, ctx, devId, tearDownRet, decision.retainRestoreCount, decision.originForceReset);
     }
     PrimaryContextCallBackAfterTeardown(devId);
     refObj.SetPrimaryCtxCallBackFlag(false);
     const bool resetRefSuccess = refObj.TrySetValAndResetRef(ctx);
-    COND_RETURN_ERROR_MSG_INNER(!resetRefSuccess, RT_ERROR_CONTEXT_DEL,
-        "Primary context release failed to reset ref, devId=%u, ts_id=%u.", devId, tsId);
+    COND_RETURN_ERROR_MSG_INNER(
+        !resetRefSuccess, RT_ERROR_CONTEXT_DEL, "Primary context release failed to reset ref, devId=%u, ts_id=%u.",
+        devId, tsId);
     return RT_ERROR_NONE;
 }
 
 rtError_t Runtime::PrimaryContextRelease(const uint32_t devId, const bool isForceReset)
 {
     bool ret = false;
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(devId >= RT_MAX_DEV_NUM, RT_ERROR_DEVICE_ID, devId,
-        "[0, " + std::to_string(RT_MAX_DEV_NUM) + ")");
-    COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_CONTEXT_DEL,
-        "PrimaryContextRelease failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_, RT_MAX_TS_NUM);
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+        devId >= RT_MAX_DEV_NUM, RT_ERROR_DEVICE_ID, devId, "[0, " + std::to_string(RT_MAX_DEV_NUM) + ")");
+    COND_RETURN_ERROR_MSG_INNER(
+        (tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_CONTEXT_DEL,
+        "PrimaryContextRelease failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_,
+        RT_MAX_TS_NUM);
 
-    Device * const dev = GetDevice(devId, 0U);
+    Device* const dev = GetDevice(devId, 0U);
     if (dev != nullptr) {
         dev->WaitForParsePrintf();
     }
@@ -2849,27 +2919,27 @@ rtError_t Runtime::PrimaryContextRelease(const uint32_t devId, const bool isForc
 
 rtError_t Runtime::SetMsprofReporterCallback(MsprofReporterCallback callback)
 {
-    ProfCtrlCallbackManager::Instance().Notify(RT_PROF_CTRL_REPORTER, RtPtrToPtr<void *>(callback),
-        sizeof(MsprofReporterCallback));
+    ProfCtrlCallbackManager::Instance().Notify(
+        RT_PROF_CTRL_REPORTER, RtPtrToPtr<void*>(callback), sizeof(MsprofReporterCallback));
 
     ProfilingAgent::Instance().SetMsprofReporterCallback(callback);
-    const Runtime * const rt = Runtime::Instance();
+    const Runtime* const rt = Runtime::Instance();
     return rt->SetTsdProfCallback(callback);
 }
 
-static void StartProfiler(const uint64_t profConfig, const uint32_t devId, Device * const dev)
+static void StartProfiler(const uint64_t profConfig, const uint32_t devId, Device* const dev)
 {
     ProfStart(Runtime::Instance()->Profiler_(), profConfig, devId, dev);
     return;
 }
 
-static void StopProfiler(const uint64_t profConfig, const uint32_t devId, const Device * const dev)
+static void StopProfiler(const uint64_t profConfig, const uint32_t devId, const Device* const dev)
 {
     ProfStop(Runtime::Instance()->Profiler_(), profConfig, devId, dev);
     return;
 }
 
-void Runtime::OpenDeviceProfiling(const uint32_t devId, Device * const dev)
+void Runtime::OpenDeviceProfiling(const uint32_t devId, Device* const dev)
 {
     rtError_t error = RT_ERROR_NONE;
     const uint32_t tsId = dev->DevGetTsId();
@@ -2922,7 +2992,7 @@ void Runtime::MsProfNotifyWhenSetDevice(const uint32_t devId) const
     return;
 }
 
-void Runtime::InitAtrace(Device *dev, TraHandle &curAtraceHandle) const
+void Runtime::InitAtrace(Device* dev, TraHandle& curAtraceHandle) const
 {
     if (dev != nullptr && AtraceCreate != nullptr) {
         std::string curAtraceName =
@@ -2944,14 +3014,14 @@ void Runtime::InitAtrace(Device *dev, TraHandle &curAtraceHandle) const
     }
 }
 
-rtError_t Runtime::InitOpExecTimeout(const Device *dev)
+rtError_t Runtime::InitOpExecTimeout(const Device* dev)
 {
     if (timeoutConfig_.isInit) {
         return RT_ERROR_NONE;
     }
 
-    const bool isSupportScaleMdy = dev->IsSupportFeature(
-        RtOptionalFeatureType::RT_FEATURE_TASK_EXEC_TIMEOUT_SCALE_MODIFY);
+    const bool isSupportScaleMdy =
+        dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_EXEC_TIMEOUT_SCALE_MODIFY);
     const bool isSupportOpTimeoutMs = dev->CheckFeatureSupport(TS_FEATURE_OP_EXEC_TIMEOUT_MS);
     std::lock_guard<std::mutex> lock(timeoutConfig_.mtx);
     if (timeoutConfig_.isInit) {
@@ -2969,30 +3039,32 @@ rtError_t Runtime::InitOpExecTimeout(const Device *dev)
     COND_RETURN_ERROR_MSG_INNER(curDrv == nullptr, RT_ERROR_DRV_NULL, "Get npu driver failed.");
     uint64_t timeoutInterval = 0ULL;
     const rtError_t error = curDrv->QueryOpExecTimeoutInterval(dev->Id_(), dev->DevGetTsId(), timeoutInterval);
-    ERROR_RETURN(error,
-        "Query op execute timeout failed, devId=%u, tsId=%u, retCode=%#x.", dev->Id_(), dev->DevGetTsId(),
+    ERROR_RETURN(
+        error, "Query op execute timeout failed, devId=%u, tsId=%u, retCode=%#x.", dev->Id_(), dev->DevGetTsId(),
         static_cast<uint32_t>(error));
 
     timeoutConfig_.interval = static_cast<float64_t>(timeoutInterval) / RT_TIMEOUT_US_TO_NS;
-    timeoutConfig_.isOpTimeoutMs =
-        (timeoutConfig_.interval < RT_STARS_OP_TIMEOUT_THRESHOLD &&
-        timeoutConfig_.interval > RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN) ?
-        true : false;
+    timeoutConfig_.isOpTimeoutMs = (timeoutConfig_.interval < RT_STARS_OP_TIMEOUT_THRESHOLD &&
+                                    timeoutConfig_.interval > RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN) ?
+                                       true :
+                                       false;
     timeoutConfig_.isInit = true;
-    RT_LOG(RT_LOG_INFO, "devId=%u, tsId=%u, op execute timeout interval=%" PRIu64 "ns, isOpTimeoutMs=%d.",
-        dev->Id_(), dev->DevGetTsId(), timeoutInterval, timeoutConfig_.isOpTimeoutMs);
+    RT_LOG(
+        RT_LOG_INFO, "devId=%u, tsId=%u, op execute timeout interval=%" PRIu64 "ns, isOpTimeoutMs=%d.", dev->Id_(),
+        dev->DevGetTsId(), timeoutInterval, timeoutConfig_.isOpTimeoutMs);
     return RT_ERROR_NONE;
 }
 
-Device *Runtime::DeviceRetain(const uint32_t devId, const uint32_t tsId)
+Device* Runtime::DeviceRetain(const uint32_t devId, const uint32_t tsId)
 {
-    Device *dev = nullptr;
+    Device* dev = nullptr;
     rtError_t error = RT_ERROR_NONE;
-    COND_RETURN_ERROR_MSG_INNER(devId > RT_MAX_DEV_NUM, nullptr,
-        "Device retain failed, devId=%u, valid range is [0,%u].", devId, RT_MAX_DEV_NUM);
-    COND_RETURN_ERROR_MSG_INNER(tsId > RT_MAX_TS_ID, nullptr,
-        "Device retain failed, tsId=%u, valid range is [0,%u].", tsId, RT_MAX_TS_ID);
-    RefObject<Device *> &refObj = devices_[devId][tsId];
+    COND_RETURN_ERROR_MSG_INNER(
+        devId > RT_MAX_DEV_NUM, nullptr, "Device retain failed, devId=%u, valid range is [0,%u].", devId,
+        RT_MAX_DEV_NUM);
+    COND_RETURN_ERROR_MSG_INNER(
+        tsId > RT_MAX_TS_ID, nullptr, "Device retain failed, tsId=%u, valid range is [0,%u].", tsId, RT_MAX_TS_ID);
+    RefObject<Device*>& refObj = devices_[devId][tsId];
     while (!refObj.IsValIdle()) {
         // wait idle
     }
@@ -3005,14 +3077,16 @@ Device *Runtime::DeviceRetain(const uint32_t devId, const uint32_t tsId)
             error = PrepareDeviceRetain(devId, tsId, errorTrace, aicpuExecutorStarted);
             ERROR_GOTO(error, DEV_ROLLBACK, "Start AI CPU executor failed, retCode=%#x, devId=%u.", error, devId);
 
-            dev = static_cast<Device *>(new (std::nothrow) RawDevice(devId));
-            COND_GOTO_MSG_OUTER(dev == nullptr, DEV_ROLLBACK, error, RT_ERROR_DEVICE_NEW, ErrorCode::EE1013, sizeof(RawDevice), "new");
+            dev = static_cast<Device*>(new (std::nothrow) RawDevice(devId));
+            COND_GOTO_MSG_OUTER(
+                dev == nullptr, DEV_ROLLBACK, error, RT_ERROR_DEVICE_NEW, ErrorCode::EE1013, sizeof(RawDevice), "new");
             if (errorTrace == RT_ERROR_NONE) {
                 dev->SetTsLogToHostFlag(RUNTIME_BUILD_VERSION);
             }
 
-            RT_LOG(RT_LOG_INFO, "Successfully allocated the device, devId=%u, rawDevSize=%zu (bytes), ts_id=%u",
-                devId, sizeof(RawDevice), tsId);
+            RT_LOG(
+                RT_LOG_INFO, "Successfully allocated the device, devId=%u, rawDevSize=%zu (bytes), ts_id=%u", devId,
+                sizeof(RawDevice), tsId);
             error = dev->DevSetTsId(tsId);
             ERROR_GOTO(error, DEV_ROLLBACK, "Failed to set ts id.");
 
@@ -3068,7 +3142,7 @@ DEV_DEC:
 }
 
 rtError_t Runtime::PrepareDeviceRetain(
-    const uint32_t devId, const uint32_t tsId, rtError_t &errorTrace, bool &aicpuExecutorStarted) const
+    const uint32_t devId, const uint32_t tsId, rtError_t& errorTrace, bool& aicpuExecutorStarted) const
 {
     if (DlogReportStart != nullptr) {
         RT_LOG(RT_LOG_INFO, "[dlog api] DlogReportStart exist.");
@@ -3079,15 +3153,15 @@ rtError_t Runtime::PrepareDeviceRetain(
     if (AtraceReportStart != nullptr) {
         RT_LOG(RT_LOG_INFO, "[dlog api] AtraceReportStart exist.");
         errorTrace = AtraceReportStart(static_cast<int32_t>(devId));
-        COND_LOG(errorTrace != RT_ERROR_NONE, "call AtraceReportStart api failed, retCode=%#x devId=%u.",
-            errorTrace, devId);
+        COND_LOG(
+            errorTrace != RT_ERROR_NONE, "call AtraceReportStart api failed, retCode=%#x devId=%u.", errorTrace, devId);
     }
     DeviceStateCallbackManager::Instance().Notify(devId, false, DEV_CB_POS_FRONT, RT_DEVICE_STATE_SET_PRE);
     return StartAicpuExecutorTracked(devId, tsId, &aicpuExecutorStarted);
 }
 
 void Runtime::RollbackFailedDeviceRetain(
-    RefObject<Device *> &refObj, Device *&dev, const uint32_t devId, const uint32_t tsId,
+    RefObject<Device*>& refObj, Device*& dev, const uint32_t devId, const uint32_t tsId,
     const bool aicpuExecutorStarted) const
 {
     DELETE_O(dev)
@@ -3095,13 +3169,11 @@ void Runtime::RollbackFailedDeviceRetain(
         (void)StopAicpuExecutor(devId, tsId);
     }
     refObj.SetVal(nullptr);
-    COND_PROC((AtraceReportStop != nullptr),
-        AtraceReportStop(static_cast<int32_t>(devId));)
-    COND_PROC((DlogReportStop != nullptr),
-        DlogReportStop(static_cast<int32_t>(devId));)
+    COND_PROC((AtraceReportStop != nullptr), AtraceReportStop(static_cast<int32_t>(devId));)
+    COND_PROC((DlogReportStop != nullptr), DlogReportStop(static_cast<int32_t>(devId));)
 }
 
-void Runtime::FinalizeDeviceRelease(RefObject<Device *> &refObj, Device *dev, const bool isForceReset)
+void Runtime::FinalizeDeviceRelease(RefObject<Device*>& refObj, Device* dev, const bool isForceReset)
 {
     const uint32_t devId = dev->Id_();
     const uint32_t tsId = dev->DevGetTsId();
@@ -3120,7 +3192,7 @@ void Runtime::FinalizeDeviceRelease(RefObject<Device *> &refObj, Device *dev, co
     }
     (void)SetWatchDogDevStatus(dev, RT_DEVICE_STATUS_NORMAL);
     if ((dev->GetAtraceHandle() >= 0) && (AtraceDestroy != nullptr)) {
-        AtraceDestroy(dev->GetAtraceHandle());  // handle的合法性校验由Atrace模块校验
+        AtraceDestroy(dev->GetAtraceHandle()); // handle的合法性校验由Atrace模块校验
         AtraceEventDestroy(dev->GetAtraceEventHandle());
     }
 
@@ -3129,36 +3201,35 @@ void Runtime::FinalizeDeviceRelease(RefObject<Device *> &refObj, Device *dev, co
     DELETE_O(dev)
 
     // 2.tsdclose
-    (void)StopAicpuExecutor(
-        devId, tsId, (isForceReset && devRunningState == static_cast<uint32_t>(DEV_RUNNING_DOWN)));
+    (void)StopAicpuExecutor(devId, tsId, (isForceReset && devRunningState == static_cast<uint32_t>(DEV_RUNNING_DOWN)));
 
     // 3.close log (in devicereset not in runtime destructor)
     if (!isExiting_) {
-        COND_PROC((&AtraceReportStop != nullptr),
-            AtraceReportStop(static_cast<int32_t>(devId));)
-        COND_PROC((&DlogReportStop != nullptr),
-            DlogReportStop(static_cast<int32_t>(devId));)
+        COND_PROC((&AtraceReportStop != nullptr), AtraceReportStop(static_cast<int32_t>(devId));)
+        COND_PROC((&DlogReportStop != nullptr), DlogReportStop(static_cast<int32_t>(devId));)
     }
 }
 
-Device *Runtime::GetDevice(const uint32_t devId, const uint32_t tsId, bool polling)
+Device* Runtime::GetDevice(const uint32_t devId, const uint32_t tsId, bool polling)
 {
-    COND_RETURN_ERROR_MSG_INNER(devId > RT_MAX_DEV_NUM, nullptr,
-        "Get device failed because value %u for parameter devId is invalid, valid range is [0, %u].",
-        devId, RT_MAX_DEV_NUM);
-    COND_RETURN_ERROR_MSG_INNER(tsId > RT_MAX_TS_ID, nullptr,
-        "Get device failed because value %u for parameter tsId is invalid, valid range is [0, %u].",
-        tsId, RT_MAX_TS_ID);
-    RefObject<Device *> &refObj = devices_[devId][tsId];
+    COND_RETURN_ERROR_MSG_INNER(
+        devId > RT_MAX_DEV_NUM, nullptr,
+        "Get device failed because value %u for parameter devId is invalid, valid range is [0, %u].", devId,
+        RT_MAX_DEV_NUM);
+    COND_RETURN_ERROR_MSG_INNER(
+        tsId > RT_MAX_TS_ID, nullptr,
+        "Get device failed because value %u for parameter tsId is invalid, valid range is [0, %u].", tsId,
+        RT_MAX_TS_ID);
+    RefObject<Device*>& refObj = devices_[devId][tsId];
 
     return refObj.GetVal(polling);
 }
 
-void Runtime::DeviceRelease(Device *dev, const bool isForceReset)
+void Runtime::DeviceRelease(Device* dev, const bool isForceReset)
 {
     COND_RETURN_VOID_WARN(dev == nullptr, "ptr device is NULL!");
     const uint32_t tsId = dev->DevGetTsId();
-    for (auto &refObj : devices_) {
+    for (auto& refObj : devices_) {
         if (refObj[tsId].GetVal() != dev) {
             continue;
         }
@@ -3167,7 +3238,6 @@ void Runtime::DeviceRelease(Device *dev, const bool isForceReset)
         }
         refObj[tsId].ChangeValStatus(refObj[tsId].STATUS_BUSY);
         if (!refObj[tsId].DecRef()) {
-
             if (isExiting_) {
                 profConfLock_.Lock();
                 dev->SetDevProfStatus(0x0ULL, false);
@@ -3175,7 +3245,8 @@ void Runtime::DeviceRelease(Device *dev, const bool isForceReset)
                 dev->SetDeviceRelease();
                 const rtError_t stopRet = dev->Stop();
                 if (stopRet != RT_ERROR_NONE) {
-                    RT_LOG(RT_LOG_WARNING, "Runtime process exit device release host stop failed, retCode=%#x.",
+                    RT_LOG(
+                        RT_LOG_WARNING, "Runtime process exit device release host stop failed, retCode=%#x.",
                         static_cast<uint32_t>(stopRet));
                 }
                 refObj[tsId].ResetVal();
@@ -3191,7 +3262,7 @@ void Runtime::DeviceRelease(Device *dev, const bool isForceReset)
     }
 }
 
-Device *Runtime::DeviceAddObserver(Device *dev)
+Device* Runtime::DeviceAddObserver(Device* dev)
 {
     if (dev != nullptr) {
         if (streamObserver_ != nullptr) {
@@ -3199,14 +3270,14 @@ Device *Runtime::DeviceAddObserver(Device *dev)
         }
 
         if (logger_ != nullptr) {
-            dev->AddObserver(const_cast<EngineLogObserver *>(logger_->EngineLogObserver_()));
+            dev->AddObserver(const_cast<EngineLogObserver*>(logger_->EngineLogObserver_()));
         }
     }
 
     return dev;
 }
 
-void Runtime::TsTimelineStart(const uint64_t profConfig, uint64_t &type, Device * const dev) const
+void Runtime::TsTimelineStart(const uint64_t profConfig, uint64_t& type, Device* const dev) const
 {
     if ((profConfig & PROF_SCHEDULE_TIMELINE_MASK) != 0ULL) {
         if ((dev->GetDevProfStatus() & PROF_SCHEDULE_TIMELINE_MASK) == 0ULL) {
@@ -3219,7 +3290,7 @@ void Runtime::TsTimelineStart(const uint64_t profConfig, uint64_t &type, Device 
 
 /* this function is for mini special case:PROF_TASK_TIME_MASK, PROF_SCHEDULE_TIMELINE_MASK
 could both open ts timeline */
-void Runtime::TsTimelineStart(const uint64_t profConfig, bool &needOpenTimeline, Device * const dev) const
+void Runtime::TsTimelineStart(const uint64_t profConfig, bool& needOpenTimeline, Device* const dev) const
 {
     if ((profConfig & PROF_SCHEDULE_TIMELINE_MASK) != 0ULL) {
         if ((dev->GetDevProfStatus() & PROF_TASK_TIME_MASK) == 0ULL) { // acl not open timeline
@@ -3254,7 +3325,7 @@ void Runtime::TsTimelineStart(const uint64_t profConfig, bool &needOpenTimeline,
     }
 }
 
-void Runtime::AicMetricStart(const uint64_t profConfig, uint64_t &type, const Device * const dev) const
+void Runtime::AicMetricStart(const uint64_t profConfig, uint64_t& type, const Device* const dev) const
 {
     const uint32_t devId = dev->Id_();
     if ((profConfig & PROF_AICORE_METRICS_MASK) != 0ULL) {
@@ -3269,11 +3340,11 @@ void Runtime::AicMetricStart(const uint64_t profConfig, uint64_t &type, const De
         }
     }
 }
-void Runtime::AivMetricStart(const uint64_t profConfig, uint64_t &type, const Device * const dev) const
+void Runtime::AivMetricStart(const uint64_t profConfig, uint64_t& type, const Device* const dev) const
 {
     const uint32_t devId = dev->Id_();
     if ((profConfig & PROF_AIVECTORCORE_METRICS_MASK) != 0ULL) {
-        if  ((GetTsNum() == TS_NUM_ADC) && (dev->DevGetTsId() == 1U)) { // mdc and ts1
+        if ((GetTsNum() == TS_NUM_ADC) && (dev->DevGetTsId() == 1U)) {                // mdc and ts1
             if ((dev->GetDevProfStatus() & PROF_AIVECTORCORE_METRICS_MASK) == 0ULL) { // disabled
                 type |= PROF_AIVECTORCORE_METRICS_MASK;
             } else {
@@ -3284,7 +3355,7 @@ void Runtime::AivMetricStart(const uint64_t profConfig, uint64_t &type, const De
         }
     }
 }
-void Runtime::HwtsLogStart(const uint64_t profConfig, uint64_t &type, const Device * const dev) const
+void Runtime::HwtsLogStart(const uint64_t profConfig, uint64_t& type, const Device* const dev) const
 {
     RT_LOG(RT_LOG_DEBUG, "hwts log start execute!");
 
@@ -3300,7 +3371,7 @@ void Runtime::HwtsLogStart(const uint64_t profConfig, uint64_t &type, const Devi
     }
 }
 
-void Runtime::AiCpuTraceStart(const uint64_t profConfig, uint64_t &type, const Device * const dev) const
+void Runtime::AiCpuTraceStart(const uint64_t profConfig, uint64_t& type, const Device* const dev) const
 {
     const uint32_t devId = dev->Id_();
     if ((profConfig & PROF_AICPU_TRACE_MASK) == 0ULL) {
@@ -3315,7 +3386,7 @@ void Runtime::AiCpuTraceStart(const uint64_t profConfig, uint64_t &type, const D
     return;
 }
 
-void Runtime::AiCpuModelTraceStart(const uint64_t profConfig, uint64_t &type, const Device * const dev) const
+void Runtime::AiCpuModelTraceStart(const uint64_t profConfig, uint64_t& type, const Device* const dev) const
 {
     RT_LOG(RT_LOG_INFO, "enter profConfig=%" PRIu64 ", type=%" PRIu64 ".", profConfig, type);
     if ((profConfig & PROF_AICPU_MODEL_MASK) == 0ULL) {
@@ -3331,38 +3402,40 @@ void Runtime::AiCpuModelTraceStart(const uint64_t profConfig, uint64_t &type, co
     return;
 }
 
-rtError_t Runtime::TsProfilerStart(const uint64_t profConfig, int32_t numsDev, const uint32_t * const deviceList)
+rtError_t Runtime::TsProfilerStart(const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList)
 {
     bool flag = false;
     if (numsDev == -1) { // open all device
         Driver* const curDrv = driverFactory_.GetDriver(NPU_DRIVER);
         NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
         const rtError_t error = curDrv->GetDeviceCount(&numsDev);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Ts profiler start failed, get device count failed.");
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error, "Ts profiler start failed, get device count failed.");
         flag = true;
     }
 
-    COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_INVALID_VALUE,
+    COND_RETURN_ERROR_MSG_INNER(
+        (tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_INVALID_VALUE,
         "Ts profiler start failed, tsNum=%u, valid range is [1,%u].", tsNum_, RT_MAX_TS_NUM);
     profConfLock_.Lock();
 
     for (int32_t i = 0; i < numsDev; i++) {
         const uint32_t devId = flag ? static_cast<uint32_t>(i) : deviceList[i];
         uint64_t tmp_type = 0ULL;
-        COND_PROC_RETURN_ERROR_MSG_INNER(devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE,
-            profConfLock_.Unlock(), "Ts profiler start failed, devId=%u, valid range is [0,%u].",
-            devId, RT_MAX_DEV_NUM);
+        COND_PROC_RETURN_ERROR_MSG_INNER(
+            devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+            "Ts profiler start failed, devId=%u, valid range is [0,%u].", devId, RT_MAX_DEV_NUM);
         for (size_t j = 0U; j < tsNum_; j++) {
-            RefObject<Device *> &refObj = devices_[devId][j];
-            Device * const dev = refObj.GetVal();
+            RefObject<Device*>& refObj = devices_[devId][j];
+            Device* const dev = refObj.GetVal();
             if (dev == nullptr) { // not set device
                 devNeedSendProf_[devId][j] |= profConfig;
                 continue;
             }
             // has set device
-            COND_PROC_RETURN_ERROR_MSG_INNER(profiler_ == nullptr, RT_ERROR_INVALID_VALUE,
-                profConfLock_.Unlock(), "Ts profiler start failed, profiler_ is null.");
+            COND_PROC_RETURN_ERROR_MSG_INNER(
+                profiler_ == nullptr, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+                "Ts profiler start failed, profiler_ is null.");
 
             bool needOpenTimeline = false;
             TsTimelineStart(profConfig, tmp_type, dev);
@@ -3387,7 +3460,7 @@ bool Runtime::isConfigForProfileLog(const uint64_t profConfig) const
     return (profConfig & PROF_RUNTIME_PROFILE_LOG_MASK) != 0ULL;
 }
 
-rtError_t Runtime::RuntimeProfileLogStart(const uint64_t profConfig, const int32_t numsDev, uint32_t * const deviceList)
+rtError_t Runtime::RuntimeProfileLogStart(const uint64_t profConfig, const int32_t numsDev, uint32_t* const deviceList)
 {
     UNUSED(profConfig);
     UNUSED(numsDev);
@@ -3398,12 +3471,13 @@ rtError_t Runtime::RuntimeProfileLogStart(const uint64_t profConfig, const int32
 
     profConfLock_.Lock();
 
-    const Api * const impl = profiler_->GetApiProfileLogDecorator_();
-    COND_PROC_RETURN_ERROR_MSG_INNER(impl == nullptr, RT_ERROR_INVALID_VALUE,
-        profConfLock_.Unlock(), "Runtime profiler log start failed, impl is null.");
+    const Api* const impl = profiler_->GetApiProfileLogDecorator_();
+    COND_PROC_RETURN_ERROR_MSG_INNER(
+        impl == nullptr, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+        "Runtime profiler log start failed, impl is null.");
 
     if ((profileLogType_ & PROF_RUNTIME_PROFILE_LOG_MASK) == 0ULL) { // disabled
-        apiError_->SetImpl(const_cast<Api *>(impl));
+        apiError_->SetImpl(const_cast<Api*>(impl));
         profileLogType_ |= PROF_RUNTIME_PROFILE_LOG_MASK;
         profiler_->SetProfLogEnable(true);
         RT_LOG(RT_LOG_INFO, "Start");
@@ -3415,7 +3489,8 @@ rtError_t Runtime::RuntimeProfileLogStart(const uint64_t profConfig, const int32
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::RuntimeProfileLogStop(const uint64_t profConfig, const int32_t numsDev, const uint32_t * const deviceList)
+rtError_t Runtime::RuntimeProfileLogStop(
+    const uint64_t profConfig, const int32_t numsDev, const uint32_t* const deviceList)
 {
     UNUSED(profConfig);
     UNUSED(numsDev);
@@ -3438,8 +3513,7 @@ rtError_t Runtime::RuntimeProfileLogStop(const uint64_t profConfig, const int32_
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::RuntimeApiProfilerStart(const uint64_t profConfig, int32_t numsDev,
-    const uint32_t * const deviceList)
+rtError_t Runtime::RuntimeApiProfilerStart(const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList)
 {
     bool flag = false;
     rtError_t error = RT_ERROR_NONE;
@@ -3452,20 +3526,24 @@ rtError_t Runtime::RuntimeApiProfilerStart(const uint64_t profConfig, int32_t nu
         Driver* const curDrv = driverFactory_.GetDriver(NPU_DRIVER);
         NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
         error = curDrv->GetDeviceCount(&numsDev);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Start profiler of runtime api failed, get device count failed, retCode=%#x.", static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error,
+            "Start profiler of runtime api failed, get device count failed, retCode=%#x.",
+            static_cast<uint32_t>(error));
         flag = true;
     }
 
-    COND_RETURN_ERROR_MSG_INNER((numsDev != 0) && ((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM)),
-        RT_ERROR_INVALID_VALUE,
-        "Start profiler of runtime api failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_, RT_MAX_TS_NUM);
+    COND_RETURN_ERROR_MSG_INNER(
+        (numsDev != 0) && ((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM)), RT_ERROR_INVALID_VALUE,
+        "Start profiler of runtime api failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_,
+        RT_MAX_TS_NUM);
 
     profConfLock_.Lock();
 
-    const Api * const impl = profiler_->GetApiProfileDecorator();
-    COND_PROC_RETURN_ERROR_MSG_INNER(impl == nullptr, RT_ERROR_INVALID_VALUE,
-        profConfLock_.Unlock(), "Runtime api profiler start failed, impl is null.");
+    const Api* const impl = profiler_->GetApiProfileDecorator();
+    COND_PROC_RETURN_ERROR_MSG_INNER(
+        impl == nullptr, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+        "Runtime api profiler start failed, impl is null.");
 
     if ((profConfig & PROF_RUNTIME_API_MASK) == 0ULL) {
         profConfLock_.Unlock();
@@ -3478,12 +3556,13 @@ rtError_t Runtime::RuntimeApiProfilerStart(const uint64_t profConfig, int32_t nu
         return RT_ERROR_NONE;
     }
     // disabled
-    apiError_->SetImpl(const_cast<Api *>(impl));
+    apiError_->SetImpl(const_cast<Api*>(impl));
     apiProfilingType_ |= PROF_RUNTIME_API_MASK;
 
     char_t profilingToStdOut[128] = {};
-    const bool enabled = (mmGetEnv("GE_PROFILING_TO_STD_OUT", static_cast<char_t *>(profilingToStdOut),
-                                   sizeof(profilingToStdOut)) == EN_OK);
+    const bool enabled =
+        (mmGetEnv("GE_PROFILING_TO_STD_OUT", static_cast<char_t*>(profilingToStdOut), sizeof(profilingToStdOut)) ==
+         EN_OK);
     if (!enabled) {
         profiler_->SetApiProfEnable(true);
     }
@@ -3493,13 +3572,14 @@ rtError_t Runtime::RuntimeApiProfilerStart(const uint64_t profConfig, int32_t nu
     }
     for (int32_t i = 0; i < numsDev; i++) {
         const uint32_t devId = flag ? static_cast<uint32_t>(i) : deviceList[i];
-        COND_PROC_RETURN_ERROR_MSG_INNER(devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
-            "Runtime api profiler start failed because value %u for devId is invalid, valid range is [0, %u].",
-            devId, RT_MAX_DEV_NUM);
+        COND_PROC_RETURN_ERROR_MSG_INNER(
+            devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+            "Runtime api profiler start failed because value %u for devId is invalid, valid range is [0, %u].", devId,
+            RT_MAX_DEV_NUM);
 
         for (size_t j = 0U; j < tsNum_; j++) {
-            RefObject<Device *> &refObj = devices_[devId][j];
-            Device * const dev = refObj.GetVal();
+            RefObject<Device*>& refObj = devices_[devId][j];
+            Device* const dev = refObj.GetVal();
             if (dev != nullptr) {
                 dev->SetDevProfStatus(static_cast<uint64_t>(PROF_RUNTIME_API_MASK), true);
             }
@@ -3509,22 +3589,21 @@ rtError_t Runtime::RuntimeApiProfilerStart(const uint64_t profConfig, int32_t nu
     return RT_ERROR_NONE;
 }
 
-void Runtime::ReportAllStreamSqInfo(const Device *const dev) const
+void Runtime::ReportAllStreamSqInfo(const Device* const dev) const
 {
     std::vector<uint32_t> streamIds;
     dev->GetStreamSqCqManage()->GetAllStreamId(streamIds);
-    RT_LOG(RT_LOG_INFO, "Report all stream sq info, deviceId=%u, stream count=%zu",
-        dev->Id_(), streamIds.size());
+    RT_LOG(RT_LOG_INFO, "Report all stream sq info, deviceId=%u, stream count=%zu", dev->Id_(), streamIds.size());
     for (uint32_t streamId : streamIds) {
-        Stream *stm = nullptr;
+        Stream* stm = nullptr;
         if ((dev->GetStreamSqCqManage()->GetStreamById(streamId, &stm) == RT_ERROR_NONE) && (stm != nullptr)) {
             ReportStreamSqInfoForProfiling(stm, STREAM_STATUS_CREATE);
         }
     }
 }
 
-rtError_t Runtime::RuntimeTrackProfilerStart(const uint64_t profConfig, int32_t numsDev,
-    const uint32_t * const deviceList, const uint32_t cacheFlag)
+rtError_t Runtime::RuntimeTrackProfilerStart(
+    const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList, const uint32_t cacheFlag)
 {
     bool flag = false;
     rtError_t error = RT_ERROR_NONE;
@@ -3533,12 +3612,15 @@ rtError_t Runtime::RuntimeTrackProfilerStart(const uint64_t profConfig, int32_t 
         Driver* const curDrv = driverFactory_.GetDriver(NPU_DRIVER);
         NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
         error = curDrv->GetDeviceCount(&numsDev);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Start profiler of runtime track failed, get device count failed, retCode=%#x.", static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error,
+            "Start profiler of runtime track failed, get device count failed, retCode=%#x.",
+            static_cast<uint32_t>(error));
         flag = true;
     }
 
-    COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_INVALID_VALUE,
+    COND_RETURN_ERROR_MSG_INNER(
+        (tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_INVALID_VALUE,
         "Start profiler of runtime track failed, tsNum=%u, valid range is [1,%u].", tsNum_, RT_MAX_TS_NUM);
     profConfLock_.Lock();
 
@@ -3552,12 +3634,14 @@ rtError_t Runtime::RuntimeTrackProfilerStart(const uint64_t profConfig, int32_t 
             SetTrackProfFlag(true);
             for (int32_t i = 0; i < numsDev; i++) {
                 const uint32_t devId = flag ? i : deviceList[i];
-                COND_PROC_RETURN_ERROR_MSG_INNER(devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
-                    "Runtime track profiler start failed because value %u for devId is invalid, valid range is [0, %u].",
+                COND_PROC_RETURN_ERROR_MSG_INNER(
+                    devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+                    "Runtime track profiler start failed because value %u for devId is invalid, valid range is [0, "
+                    "%u].",
                     devId, RT_MAX_DEV_NUM);
                 for (size_t j = 0U; j < tsNum_; j++) {
-                    RefObject<Device *> &refObj = devices_[devId][j];
-                    Device * const dev = refObj.GetVal();
+                    RefObject<Device*>& refObj = devices_[devId][j];
+                    Device* const dev = refObj.GetVal();
                     if (dev != nullptr) {
                         ReportAllStreamSqInfo(dev);
                         dev->SetDevProfStatus(static_cast<uint64_t>(PROF_RUNTIME_API_MASK), true);
@@ -3573,13 +3657,14 @@ rtError_t Runtime::RuntimeTrackProfilerStart(const uint64_t profConfig, int32_t 
 }
 
 rtError_t Runtime::AiCpuProfilerStart(
-    const uint64_t profConfig, int32_t numsDev, const uint32_t *const deviceList, const uint64_t profSwitchHi)
+    const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList, const uint64_t profSwitchHi)
 {
     bool flag = false;
     rtError_t error;
 
-    RT_LOG(RT_LOG_DEBUG,
-        "profConfig=%#" PRIx64 ", profSwitchHi=%#" PRIx64 ", chipType_ = %d", profConfig, profSwitchHi, chipType_);
+    RT_LOG(
+        RT_LOG_DEBUG, "profConfig=%#" PRIx64 ", profSwitchHi=%#" PRIx64 ", chipType_ = %d", profConfig, profSwitchHi,
+        chipType_);
     if (!IS_SUPPORT_CHIP_FEATURE(chipType_, RtOptionalFeatureType::RT_FEATURE_PROFILING_AICPU)) {
         RT_LOG(RT_LOG_WARNING, "AICPU profiling is not supported for chipType_=%d.", chipType_);
         return RT_ERROR_NONE;
@@ -3589,30 +3674,36 @@ rtError_t Runtime::AiCpuProfilerStart(
         Driver* const curDrv = driverFactory_.GetDriver(NPU_DRIVER);
         NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
         error = curDrv->GetDeviceCount(&numsDev);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Start AI CPU profiler failed because getting the device count failed, retCode=%#x.", static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error,
+            "Start AI CPU profiler failed because getting the device count failed, retCode=%#x.",
+            static_cast<uint32_t>(error));
         flag = true;
     }
 
-    COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_INVALID_VALUE,
-        "Start AI CPU profiler failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_, RT_MAX_TS_NUM);
+    COND_RETURN_ERROR_MSG_INNER(
+        (tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_INVALID_VALUE,
+        "Start AI CPU profiler failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_,
+        RT_MAX_TS_NUM);
 
     profConfLock_.Lock();
 
     for (int32_t i = 0; i < numsDev; i++) {
         const uint32_t devId = flag ? static_cast<uint32_t>(i) : deviceList[i];
-        COND_PROC_RETURN_ERROR_MSG_INNER(devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
-            "Start AI CPU profiler failed because value %u for devId is invalid, valid range is [0, %u].",
-            devId, RT_MAX_DEV_NUM);
+        COND_PROC_RETURN_ERROR_MSG_INNER(
+            devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+            "Start AI CPU profiler failed because value %u for devId is invalid, valid range is [0, %u].", devId,
+            RT_MAX_DEV_NUM);
         for (size_t j = 0U; j < tsNum_; j++) {
-            RefObject<Device *> &refObj = devices_[devId][j];
-            Device * const dev = refObj.GetVal();
+            RefObject<Device*>& refObj = devices_[devId][j];
+            Device* const dev = refObj.GetVal();
             if (dev == nullptr) { // not set device
                 devNeedSendProf_[devId][j] |= profConfig;
                 devNeedSendProfSwitchHi_[devId][j] |= profSwitchHi;
             } else { // has set device
-                COND_PROC_RETURN_ERROR_MSG_INNER(profiler_ == nullptr, RT_ERROR_INVALID_VALUE,
-                    profConfLock_.Unlock(), "Start AI CPU profiler failed because profiler_ is nullptr.");
+                COND_PROC_RETURN_ERROR_MSG_INNER(
+                    profiler_ == nullptr, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+                    "Start AI CPU profiler failed because profiler_ is nullptr.");
                 // Compatible with the old code, set PROF_AICPU_MODEL_MASK and PROF_AICPU_TRACE_MASK to 0.
                 uint64_t tmp_type = profConfig & 0xBFFFFFFFFFFFFFF7ULL;
                 AiCpuTraceStart(profConfig, tmp_type, dev);
@@ -3621,8 +3712,8 @@ rtError_t Runtime::AiCpuProfilerStart(
                 if (tmp_type != 0ULL) {
                     if (j == RT_TSC_ID) {
                         error = HandleAiCpuProfiling(tmp_type, devId, true, profSwitchHi); // open aicpu profiling
-                        ERROR_PROC_RETURN_MSG_INNER(error, profConfLock_.Unlock(),
-                            "Start AI CPU profiler failed, devId=%u.", devId);
+                        ERROR_PROC_RETURN_MSG_INNER(
+                            error, profConfLock_.Unlock(), "Start AI CPU profiler failed, devId=%u.", devId);
                     }
                     dev->SetDevProfStatus(tmp_type, true);
                 }
@@ -3635,7 +3726,8 @@ rtError_t Runtime::AiCpuProfilerStart(
 
 void Runtime::ReportSoftwareSqEnableToMsprof(void) const
 {
-    COND_RETURN_VOID_WARN((!(NpuDriver::CheckIsSupportFeature(0U, FEATURE_TRSDRV_IS_SQ_SUPPORT_DYNAMIC_BIND_VERSION))),
+    COND_RETURN_VOID_WARN(
+        (!(NpuDriver::CheckIsSupportFeature(0U, FEATURE_TRSDRV_IS_SQ_SUPPORT_DYNAMIC_BIND_VERSION))),
         "software sq is not supported.");
 
     MsprofCompactInfo compactInfo = {};
@@ -3644,27 +3736,29 @@ void Runtime::ReportSoftwareSqEnableToMsprof(void) const
     compactInfo.timeStamp = MsprofSysCycleTime();
     compactInfo.threadId = GetCurrentTid();
     compactInfo.dataLen = static_cast<uint32_t>(sizeof(MsprofStreamExpandSpecInfo));
-    compactInfo.data.streamExpandInfo.expandStatus = 1U;  // 1: enable software sq  0: disable software sq
+    compactInfo.data.streamExpandInfo.expandStatus = 1U; // 1: enable software sq  0: disable software sq
     compactInfo.data.streamExpandInfo.reserve1 = 0U;
     compactInfo.data.streamExpandInfo.reserve2 = 0U;
 
-    const auto error =
-        MsprofReportCompactInfo(0, &compactInfo, static_cast<uint32_t>(sizeof(MsprofCompactInfo)));
+    const auto error = MsprofReportCompactInfo(0, &compactInfo, static_cast<uint32_t>(sizeof(MsprofCompactInfo)));
     COND_RETURN_VOID(error != MSPROF_ERROR_NONE, "report software sq enable failed, ret=%d.", error);
 
     RT_LOG(RT_LOG_DEBUG, "report software sq enable successfully.");
 }
 
 /* profConfig mask like PROF_SCHEDULE_TIMELINE_MASK is in hisi/inc/toolchain/prof_acl_api.h */
-rtError_t Runtime::ProfilerStart(const uint64_t profConfig, const int32_t numsDev, uint32_t *const deviceList,
-    const uint32_t cacheFlag, const uint64_t profSwitchHi)
+rtError_t Runtime::ProfilerStart(
+    const uint64_t profConfig, const int32_t numsDev, uint32_t* const deviceList, const uint32_t cacheFlag,
+    const uint64_t profSwitchHi)
 {
     rtError_t error;
-    RT_LOG(RT_LOG_INFO,
-        "profConfig=%#" PRIx64 ", profSwitchHi=%#" PRIx64 " , numsDev=%d", profConfig, profSwitchHi, numsDev);
+    RT_LOG(
+        RT_LOG_INFO, "profConfig=%#" PRIx64 ", profSwitchHi=%#" PRIx64 " , numsDev=%d", profConfig, profSwitchHi,
+        numsDev);
 
     if (profileLogModeEnable_) {
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
         return RT_ERROR_PROF_STATUS;
     }
 
@@ -3679,30 +3773,34 @@ rtError_t Runtime::ProfilerStart(const uint64_t profConfig, const int32_t numsDe
 
         // status check:
         if ((apiProfilingType_ & PROF_RUNTIME_API_MASK) != 0ULL) {
-            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+                ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
             return RT_ERROR_PROF_STATUS;
         }
 
         if ((trackProfilingType_ & PROF_RUNTIME_TRACE_MASK) != 0ULL) {
-            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+                ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
             return RT_ERROR_PROF_STATUS;
         }
 
         COND_PROC((numsDev == 0), return RT_ERROR_NONE);
 
         error = RuntimeProfileLogStart(profConfig, numsDev, deviceList);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Runtime profiler log start failed, retCode=%#x.", static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error, "Runtime profiler log start failed, retCode=%#x.",
+            static_cast<uint32_t>(error));
         error = TsProfilerStart(profConfig, -1, nullptr);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Ts profiler start failed, retCode=%#x.", static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error, "Ts profiler start failed, retCode=%#x.", static_cast<uint32_t>(error));
         profileLogModeEnable_ = true;
     } else {
         RT_LOG(RT_LOG_INFO, "Start with original profiler.");
 
         // status check:
         if ((profileLogType_ & PROF_RUNTIME_PROFILE_LOG_MASK) != 0ULL) {
-            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+                ErrorCode::EE1018, "Starting profiling analysis", "profiler is already enabled, cannot set repeatedly");
             return RT_ERROR_PROF_STATUS;
         }
 
@@ -3714,7 +3812,7 @@ rtError_t Runtime::ProfilerStart(const uint64_t profConfig, const int32_t numsDe
             error = TsProfilerStart(profConfig, numsDev, deviceList);
             ERROR_RETURN(error, "Ts profiler start failed, retCode=%#x", error);
             error = AiCpuProfilerStart(profConfig, numsDev, deviceList, profSwitchHi);
-            ERROR_RETURN(error,"Aicpu profiler start failed, retCode=%#x", error);
+            ERROR_RETURN(error, "Aicpu profiler start failed, retCode=%#x", error);
         }
     }
 
@@ -3723,7 +3821,7 @@ rtError_t Runtime::ProfilerStart(const uint64_t profConfig, const int32_t numsDe
     return RT_ERROR_NONE;
 }
 
-void Runtime::TsTimelineStop(const uint64_t profConfig, uint64_t &type, Device * const dev) const
+void Runtime::TsTimelineStop(const uint64_t profConfig, uint64_t& type, Device* const dev) const
 {
     const uint32_t devId = dev->Id_();
     if ((profConfig & PROF_SCHEDULE_TIMELINE_MASK) != 0ULL) {
@@ -3737,7 +3835,7 @@ void Runtime::TsTimelineStop(const uint64_t profConfig, uint64_t &type, Device *
 
 /* this function is for mini special case:PROF_TASK_TIME_MASK, PROF_SCHEDULE_TIMELINE_MASK
 could both open ts timeline */
-void Runtime::TsTimelineStop(const uint64_t profConfig, bool &needCloseTimeline, Device *dev) const
+void Runtime::TsTimelineStop(const uint64_t profConfig, bool& needCloseTimeline, Device* dev) const
 {
     uint64_t tmp_type;
     const uint32_t devId = dev->Id_();
@@ -3775,7 +3873,7 @@ void Runtime::TsTimelineStop(const uint64_t profConfig, bool &needCloseTimeline,
     }
 }
 
-void Runtime::AicMetricStop(const uint64_t profConfig, uint64_t &type, const Device * const dev) const
+void Runtime::AicMetricStop(const uint64_t profConfig, uint64_t& type, const Device* const dev) const
 {
     const uint32_t devId = dev->Id_();
     if ((profConfig & PROF_AICORE_METRICS_MASK) != 0ULL) {
@@ -3790,12 +3888,12 @@ void Runtime::AicMetricStop(const uint64_t profConfig, uint64_t &type, const Dev
         }
     }
 }
-void Runtime::AivMetricStop(const uint64_t profConfig, uint64_t &type, const Device * const dev) const
+void Runtime::AivMetricStop(const uint64_t profConfig, uint64_t& type, const Device* const dev) const
 {
     const uint32_t devId = dev->Id_();
     if ((profConfig & PROF_AIVECTORCORE_METRICS_MASK) != 0ULL) {
         if ((dev->GetDevProfStatus() & PROF_AIVECTORCORE_METRICS_MASK) != 0ULL) {
-            if  ((GetTsNum() == TS_NUM_ADC) && (dev->DevGetTsId() == 1U)) { // mdc and ts1
+            if ((GetTsNum() == TS_NUM_ADC) && (dev->DevGetTsId() == 1U)) { // mdc and ts1
                 type |= PROF_AIVECTORCORE_METRICS_MASK;
             } else {
                 RT_LOG(RT_LOG_WARNING, "AIVector metrics are not supported");
@@ -3805,7 +3903,7 @@ void Runtime::AivMetricStop(const uint64_t profConfig, uint64_t &type, const Dev
         }
     }
 }
-void Runtime::HwtsLogStop(const uint64_t profConfig, uint64_t &type, const Device * const dev) const
+void Runtime::HwtsLogStop(const uint64_t profConfig, uint64_t& type, const Device* const dev) const
 {
     RT_LOG(RT_LOG_DEBUG, "hwts log stop execute!");
 
@@ -3825,7 +3923,7 @@ void Runtime::HwtsLogStop(const uint64_t profConfig, uint64_t &type, const Devic
     }
 }
 
-void Runtime::AiCpuTraceStop(const uint64_t profConfig, uint64_t &type, const Device * const dev) const
+void Runtime::AiCpuTraceStop(const uint64_t profConfig, uint64_t& type, const Device* const dev) const
 {
     const uint32_t devId = dev->Id_();
     if ((profConfig & PROF_AICPU_TRACE_MASK) != 0ULL) {
@@ -3837,7 +3935,7 @@ void Runtime::AiCpuTraceStop(const uint64_t profConfig, uint64_t &type, const De
     }
 }
 
-void Runtime::AiCpuModelTraceStop(const uint64_t profConfig, uint64_t &type, const Device * const dev) const
+void Runtime::AiCpuModelTraceStop(const uint64_t profConfig, uint64_t& type, const Device* const dev) const
 {
     if ((profConfig & PROF_AICPU_MODEL_MASK) != 0ULL) {
         if ((dev->GetDevProfStatus() & PROF_AICPU_MODEL_MASK) != 0ULL) {
@@ -3848,37 +3946,42 @@ void Runtime::AiCpuModelTraceStop(const uint64_t profConfig, uint64_t &type, con
     }
 }
 
-rtError_t Runtime::TsProfilerStop(const uint64_t profConfig, int32_t numsDev, const uint32_t * const deviceList)
+rtError_t Runtime::TsProfilerStop(const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList)
 {
     bool flag = false;
     if (numsDev == -1) { // close all device
         Driver* const curDrv = driverFactory_.GetDriver(NPU_DRIVER);
         NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
         const rtError_t error = curDrv->GetDeviceCount(&numsDev);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Ts profiler stop failed, get device count failed, retCode=%#x.", static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error, "Ts profiler stop failed, get device count failed, retCode=%#x.",
+            static_cast<uint32_t>(error));
         flag = true;
     }
 
-    COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_INVALID_VALUE,
-        "Ts profiler stop failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_, RT_MAX_TS_NUM);
+    COND_RETURN_ERROR_MSG_INNER(
+        (tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_INVALID_VALUE,
+        "Ts profiler stop failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_,
+        RT_MAX_TS_NUM);
     profConfLock_.Lock();
 
     for (int32_t i = 0; i < numsDev; i++) {
         const uint32_t devId = flag ? static_cast<uint32_t>(i) : deviceList[i];
 
-        COND_PROC_RETURN_ERROR_MSG_INNER(devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE,
-            profConfLock_.Unlock(), "Ts profiler stop failed because value %u for devId is invalid, valid range is [0, %u].",
-            devId, RT_MAX_DEV_NUM);
+        COND_PROC_RETURN_ERROR_MSG_INNER(
+            devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+            "Ts profiler stop failed because value %u for devId is invalid, valid range is [0, %u].", devId,
+            RT_MAX_DEV_NUM);
         for (uint32_t j = tsNum_; j > 0U; j--) {
-            RefObject<Device *> &refObj = devices_[devId][j - 1U];
-            Device * const dev = refObj.GetVal();
+            RefObject<Device*>& refObj = devices_[devId][j - 1U];
+            Device* const dev = refObj.GetVal();
             if (dev == nullptr) { // not set device
                 devNeedSendProf_[devId][j - 1U] &= (~profConfig);
                 continue;
             }
-            COND_PROC_RETURN_ERROR_MSG_INNER(profiler_ == nullptr, RT_ERROR_INVALID_VALUE,
-                profConfLock_.Unlock(), "Ts profiler stop failed because profiler_ is nullptr.");
+            COND_PROC_RETURN_ERROR_MSG_INNER(
+                profiler_ == nullptr, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+                "Ts profiler stop failed because profiler_ is nullptr.");
 
             bool needCloseTimeline = false;
             uint64_t tmp_type = 0ULL;
@@ -3901,7 +4004,7 @@ rtError_t Runtime::TsProfilerStop(const uint64_t profConfig, int32_t numsDev, co
 }
 
 rtError_t Runtime::AiCpuProfilerStop(
-    const uint64_t profConfig, int32_t numsDev, const uint32_t *const deviceList, const uint64_t profSwitchHi)
+    const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList, const uint64_t profSwitchHi)
 {
     bool flag = false;
     rtError_t error;
@@ -3915,30 +4018,33 @@ rtError_t Runtime::AiCpuProfilerStop(
         Driver* const curDrv = driverFactory_.GetDriver(NPU_DRIVER);
         NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
         error = curDrv->GetDeviceCount(&numsDev);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "GetDeviceCount failed, retCode=%#x.", error);
+        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "GetDeviceCount failed, retCode=%#x.", error);
         flag = true;
     }
 
-    COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_INVALID_VALUE,
-        "AI CPU profiler stop failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_, RT_MAX_TS_NUM);
+    COND_RETURN_ERROR_MSG_INNER(
+        (tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_INVALID_VALUE,
+        "AI CPU profiler stop failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_,
+        RT_MAX_TS_NUM);
     profConfLock_.Lock();
 
     for (int32_t i = 0; i < numsDev; i++) {
         const uint32_t devId = flag ? static_cast<uint32_t>(i) : deviceList[i];
-        COND_PROC_RETURN_ERROR_MSG_INNER(devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE,
-            profConfLock_.Unlock(), "AI CPU profiler stop failed because value %u for devId is invalid, valid range is [0, %u].",
-            devId, RT_MAX_DEV_NUM);
+        COND_PROC_RETURN_ERROR_MSG_INNER(
+            devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+            "AI CPU profiler stop failed because value %u for devId is invalid, valid range is [0, %u].", devId,
+            RT_MAX_DEV_NUM);
         for (uint32_t j = tsNum_; j > 0U; j--) {
-            RefObject<Device *> &refObj = devices_[devId][j - 1U];
-            Device * const dev = refObj.GetVal();
+            RefObject<Device*>& refObj = devices_[devId][j - 1U];
+            Device* const dev = refObj.GetVal();
             if (dev == nullptr) { // not set device
                 devNeedSendProf_[devId][j - 1U] &= (~profConfig);
                 devNeedSendProfSwitchHi_[devId][j - 1U] &= (~profSwitchHi);
                 continue;
             }
-            COND_PROC_RETURN_ERROR_MSG_INNER(profiler_ == nullptr, RT_ERROR_INVALID_VALUE,
-                profConfLock_.Unlock(), "AI CPU profiler stop failed because profiler_ is nullptr.");
+            COND_PROC_RETURN_ERROR_MSG_INNER(
+                profiler_ == nullptr, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+                "AI CPU profiler stop failed because profiler_ is nullptr.");
 
             // Compatible with the old code, set PROF_AICPU_MODEL_MASK and PROF_AICPU_TRACE_MASK to 0.
             uint64_t tmp_type = profConfig & 0xBFFFFFFFFFFFFFF7ULL;
@@ -3950,8 +4056,8 @@ rtError_t Runtime::AiCpuProfilerStop(
             }
             if ((j - 1U) == RT_TSC_ID) {
                 error = HandleAiCpuProfiling(tmp_type, devId, false, profSwitchHi); // stop aicpu profiling
-                ERROR_PROC_RETURN_MSG_INNER(error, profConfLock_.Unlock(),
-                    "AI CPU profiler stop failed, retCode=%#x devId=%u.", error, devId);
+                ERROR_PROC_RETURN_MSG_INNER(
+                    error, profConfLock_.Unlock(), "AI CPU profiler stop failed, retCode=%#x devId=%u.", error, devId);
             }
 
             tmp_type = ~tmp_type;
@@ -3962,14 +4068,15 @@ rtError_t Runtime::AiCpuProfilerStop(
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::isOperateAllDevice(int32_t * const numsDev, bool &flag)
+rtError_t Runtime::isOperateAllDevice(int32_t* const numsDev, bool& flag)
 {
     if (*numsDev == -1) { // close all device
         Driver* const curDrv = driverFactory_.GetDriver(NPU_DRIVER);
         NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
         const rtError_t error = curDrv->GetDeviceCount(numsDev);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Check operate of all device failed, get device count failed, retCode=%#x.", static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error, "Check operate of all device failed, get device count failed, retCode=%#x.",
+            static_cast<uint32_t>(error));
         flag = true;
     }
     return RT_ERROR_NONE;
@@ -3980,8 +4087,8 @@ int32_t Runtime::GetProfDeviceNum(const uint64_t profMask)
     int32_t cnt = 0;
     for (uint32_t i = 0U; i < RT_MAX_DEV_NUM; i++) {
         for (uint32_t j = tsNum_; j > 0U; j--) {
-            RefObject<Device *> &refObj = devices_[i][j - 1U];
-            const Device * const dev = refObj.GetVal();
+            RefObject<Device*>& refObj = devices_[i][j - 1U];
+            const Device* const dev = refObj.GetVal();
             if ((dev != nullptr) && ((dev->GetDevProfStatus() & profMask) != 0ULL)) {
                 cnt++;
             }
@@ -3990,7 +4097,7 @@ int32_t Runtime::GetProfDeviceNum(const uint64_t profMask)
     return cnt;
 }
 
-rtError_t Runtime::RuntimeApiProfilerStop(const uint64_t profConfig, int32_t numsDev, const uint32_t * const deviceList)
+rtError_t Runtime::RuntimeApiProfilerStop(const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList)
 {
     bool flag = false;
     rtError_t error = RT_ERROR_NONE;
@@ -4000,13 +4107,13 @@ rtError_t Runtime::RuntimeApiProfilerStop(const uint64_t profConfig, int32_t num
     NULL_PTR_RETURN_MSG(profiler_, RT_ERROR_INVALID_VALUE);
 
     error = isOperateAllDevice(&numsDev, flag);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-        "Runtime api profiler stop failed, check operation failed, retCode=%#x.", error);
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Runtime api profiler stop failed, check operation failed, retCode=%#x.", error);
 
-    COND_RETURN_ERROR_MSG_INNER((numsDev != 0) && ((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM)),
-        RT_ERROR_INVALID_VALUE,
-        "Runtime api profiler stop failed because value %u for tsNum is invalid, valid range is [1, %u].",
-        tsNum_, RT_MAX_TS_NUM);
+    COND_RETURN_ERROR_MSG_INNER(
+        (numsDev != 0) && ((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM)), RT_ERROR_INVALID_VALUE,
+        "Runtime api profiler stop failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_,
+        RT_MAX_TS_NUM);
 
     profConfLock_.Lock();
 
@@ -4017,19 +4124,20 @@ rtError_t Runtime::RuntimeApiProfilerStop(const uint64_t profConfig, int32_t num
     // need stop runtime api profiling
     for (int32_t i = 0; i < numsDev; i++) {
         const uint32_t devId = flag ? static_cast<uint32_t>(i) : deviceList[i];
-        COND_PROC_RETURN_ERROR_MSG_INNER(devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
-            "Runtime api profiler stop failed because value %u for devId is invalid, valid range is [0, %u].",
-            devId, RT_MAX_DEV_NUM);
+        COND_PROC_RETURN_ERROR_MSG_INNER(
+            devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+            "Runtime api profiler stop failed because value %u for devId is invalid, valid range is [0, %u].", devId,
+            RT_MAX_DEV_NUM);
         for (uint32_t j = tsNum_; j > 0U; j--) {
-            RefObject<Device *> &refObj = devices_[devId][j - 1U];
+            RefObject<Device*>& refObj = devices_[devId][j - 1U];
             if (refObj.GetVal() != nullptr) { // already reset device
-                Device * const dev = refObj.GetVal();
+                Device* const dev = refObj.GetVal();
                 constexpr uint64_t tmpType = (~(PROF_RUNTIME_API_MASK));
                 dev->SetDevProfStatus(tmpType, false);
             }
         }
     }
-    if (flag) { // close all device
+    if (flag) {                          // close all device
         if (apiProfilingType_ != 0ULL) { // enabled
             profiler_->SetApiProfEnable(false);
             apiError_->SetImpl(apiImpl_);
@@ -4052,7 +4160,8 @@ rtError_t Runtime::RuntimeApiProfilerStop(const uint64_t profConfig, int32_t num
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::RuntimeTrackProfilerStop(const uint64_t profConfig, int32_t numsDev, const uint32_t * const deviceList)
+rtError_t Runtime::RuntimeTrackProfilerStop(
+    const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList)
 {
     bool flag = false;
     rtError_t error = RT_ERROR_NONE;
@@ -4060,27 +4169,29 @@ rtError_t Runtime::RuntimeTrackProfilerStop(const uint64_t profConfig, int32_t n
     error = isOperateAllDevice(&numsDev, flag);
     ERROR_RETURN(error, "Runtime track profiler stop failed, check operation failed, retCode=%#x", error);
 
-    COND_RETURN_ERROR_MSG_INNER(tsNum_ > RT_MAX_TS_NUM, RT_ERROR_INVALID_VALUE,
-        "Runtime track profiler stop failed because value %u for tsNum is invalid, valid range is [1, %u].",
-        tsNum_, RT_MAX_TS_NUM);
+    COND_RETURN_ERROR_MSG_INNER(
+        tsNum_ > RT_MAX_TS_NUM, RT_ERROR_INVALID_VALUE,
+        "Runtime track profiler stop failed because value %u for tsNum is invalid, valid range is [1, %u].", tsNum_,
+        RT_MAX_TS_NUM);
     profConfLock_.Lock();
 
     if ((profConfig & PROF_RUNTIME_TRACE_MASK) != 0ULL) { // need stop runtime track profiling
         for (int32_t i = 0; i < numsDev; i++) {
             const uint32_t devId = flag ? static_cast<uint32_t>(i) : deviceList[i];
-            COND_PROC_RETURN_ERROR_MSG_INNER(devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
+            COND_PROC_RETURN_ERROR_MSG_INNER(
+                devId > RT_MAX_DEV_NUM, RT_ERROR_INVALID_VALUE, profConfLock_.Unlock(),
                 "Runtime track profiler stop failed because value %u for devId is invalid, valid range is [0, %u].",
                 devId, RT_MAX_DEV_NUM);
             for (uint32_t j = tsNum_; j > 0U; j--) {
-                RefObject<Device *> &refObj = devices_[devId][j - 1U];
+                RefObject<Device*>& refObj = devices_[devId][j - 1U];
                 if (refObj.GetVal() != nullptr) { // already reset device
-                    Device * const dev = refObj.GetVal();
+                    Device* const dev = refObj.GetVal();
                     constexpr uint64_t tmpType = (~(PROF_RUNTIME_TRACE_MASK));
                     dev->SetDevProfStatus(tmpType, false);
                 }
             }
         }
-        if (flag) { // close all device
+        if (flag) {                            // close all device
             if (trackProfilingType_ != 0ULL) { // enabled
                 profiler_->SetTrackProfEnable(false);
                 SetTrackProfFlag(false);
@@ -4105,11 +4216,10 @@ rtError_t Runtime::RuntimeTrackProfilerStop(const uint64_t profConfig, int32_t n
 }
 
 rtError_t Runtime::ProfilerStop(
-    const uint64_t profConfig, const int32_t numsDev, uint32_t *const deviceList, const uint64_t profSwitchHi)
+    const uint64_t profConfig, const int32_t numsDev, uint32_t* const deviceList, const uint64_t profSwitchHi)
 {
     rtError_t error;
-    RT_LOG(RT_LOG_INFO,
-        "ProfilerStop stop, profConfig=%#" PRIx64 ", numsDev=%d", profConfig, numsDev);
+    RT_LOG(RT_LOG_INFO, "ProfilerStop stop, profConfig=%#" PRIx64 ", numsDev=%d", profConfig, numsDev);
 
     bool bTaskTrack = 0U;
     if ((profConfig & PROF_TASK_TIME_MASK) != 0ULL) {
@@ -4126,27 +4236,25 @@ rtError_t Runtime::ProfilerStop(
         RT_LOG(RT_LOG_INFO, "ProfilerLog Stop Path");
         COND_PROC((numsDev == 0), return RT_ERROR_NONE);
         error = TsProfilerStop(profConfig, -1, nullptr);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Ts profiler stop failed, retCode=%#x.", error);
+        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Ts profiler stop failed, retCode=%#x.", error);
         error = RuntimeProfileLogStop(profConfig, numsDev, deviceList);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Runtime api profiler stop failed, retCode=%#x.", error);
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error, "Runtime api profiler stop failed, retCode=%#x.", error);
         profileLogModeEnable_ = false;
     } else {
         RT_LOG(RT_LOG_INFO, "Profiler Stop Path");
         error = RuntimeApiProfilerStop(profConfig, numsDev, deviceList);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Runtime api profiler stop failed, retCode=%#x.", error);
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error, "Runtime api profiler stop failed, retCode=%#x.", error);
         if (numsDev != 0) {
             error = TsProfilerStop(profConfig, numsDev, deviceList);
-            COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-                "Ts profiler stop failed, retCode=%#x.", error);
+            COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Ts profiler stop failed, retCode=%#x.", error);
             error = RuntimeTrackProfilerStop(profConfig, numsDev, deviceList);
-            COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-                "Runtime track profiler stop failed, retCode=%#x.", error);
+            COND_RETURN_ERROR_MSG_INNER(
+                error != RT_ERROR_NONE, error, "Runtime track profiler stop failed, retCode=%#x.", error);
             error = AiCpuProfilerStop(profConfig, numsDev, deviceList, profSwitchHi);
-            COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-                "Aicpu profiler stop failed, retCode=%#x.", error);
+            COND_RETURN_ERROR_MSG_INNER(
+                error != RT_ERROR_NONE, error, "Aicpu profiler stop failed, retCode=%#x.", error);
         }
     }
     kernelTable_.ResetAllKernelNameId();
@@ -4160,11 +4268,10 @@ rtError_t Runtime::SetExceptCallback(const rtErrorCallback callback)
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::SetTaskAbortCallBack(const char_t *regName, void *callback, void *args,
-    TaskAbortCallbackType type)
+rtError_t Runtime::SetTaskAbortCallBack(const char_t* regName, void* callback, void* args, TaskAbortCallbackType type)
 {
     std::string moduleStr;
-    (void)moduleStr.assign(RtPtrToPtr<const char_t *>(regName));
+    (void)moduleStr.assign(RtPtrToPtr<const char_t*>(regName));
     const std::unique_lock<std::mutex> taskAbortLock(taskAbortMutex_);
     if (callback == nullptr) {
         (void)taskAbortCallbackMap_.erase(regName);
@@ -4176,9 +4283,11 @@ rtError_t Runtime::SetTaskAbortCallBack(const char_t *regName, void *callback, v
         taskAbortCallbackMap_[regName].callback = RtPtrToPtr<rtTaskAbortCallBack>(callback);
         taskAbortCallbackMap_[regName].callbackV2 = nullptr;
         taskAbortCallbackMap_[regName].args = args;
-    } else if(type == TaskAbortCallbackType::RTS_SET_DEVICE_TASK_ABORT_CALLBACK) {
-        COND_RETURN_AND_MSG_OUTER(taskAbortCallbackMap_.count(regName) > 0, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
-            "Registering the aborting callback function of a task", "regName", "The regName " + std::string(regName) + " has been registered and cannot be registered again.");
+    } else if (type == TaskAbortCallbackType::RTS_SET_DEVICE_TASK_ABORT_CALLBACK) {
+        COND_RETURN_AND_MSG_OUTER(
+            taskAbortCallbackMap_.count(regName) > 0, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
+            "Registering the aborting callback function of a task", "regName",
+            "The regName " + std::string(regName) + " has been registered and cannot be registered again.");
         taskAbortCallbackMap_[regName].callback = nullptr;
         taskAbortCallbackMap_[regName].callbackV2 = RtPtrToPtr<rtsDeviceTaskAbortCallback>(callback);
         taskAbortCallbackMap_[regName].args = args;
@@ -4192,10 +4301,11 @@ rtError_t Runtime::SetTaskAbortCallBack(const char_t *regName, void *callback, v
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::AllocAiCpuStreamId(int32_t &id)
+rtError_t Runtime::AllocAiCpuStreamId(int32_t& id)
 {
     const int32_t tmpId = aicpuStreamIdBitmap_->AllocId();
-    COND_RETURN_ERROR_MSG_INNER(tmpId < 0, RT_ERROR_STREAM_AICPU_ALLOC_FAIL,
+    COND_RETURN_ERROR_MSG_INNER(
+        tmpId < 0, RT_ERROR_STREAM_AICPU_ALLOC_FAIL,
         "Alloc AI CPU stream ID failed because tmpId value %d is less than 0.", tmpId);
     id = static_cast<int32_t>(static_cast<uint32_t>(tmpId) | curChipProperties_.baseAicpuStreamId);
     return RT_ERROR_NONE;
@@ -4206,8 +4316,8 @@ rtError_t Runtime::TaskAbortCallBack(int32_t devId, rtTaskAbortStage_t stage, ui
     rtError_t error = RT_ERROR_NONE;
     uint32_t userDeviceId = 0U;
     error = Runtime::Instance()->GetUserDevIdByDeviceId(static_cast<uint32_t>(devId), &userDeviceId);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Get drvDeviceId:%d is err:%#x.", devId,
-        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Get drvDeviceId:%d is err:%#x.", devId, static_cast<uint32_t>(error));
 
     std::map<std::string, TaskAbortCallbackInfo> notifyMap;
     {
@@ -4215,15 +4325,16 @@ rtError_t Runtime::TaskAbortCallBack(int32_t devId, rtTaskAbortStage_t stage, ui
         notifyMap.insert(taskAbortCallbackMap_.cbegin(), taskAbortCallbackMap_.cend());
     }
 
-    for (const auto &info : notifyMap) {
+    for (const auto& info : notifyMap) {
         RT_LOG(RT_LOG_DEBUG, "notify [%s] task abort start.", info.first.c_str());
         TaskAbortCallbackType const type = info.second.type;
-        void *args = info.second.args;
+        void* args = info.second.args;
         if (type == TaskAbortCallbackType::RT_SET_TASK_ABORT_CALLBACK) {
             auto callback = info.second.callback;
             error = callback(userDeviceId, stage, timeout, args);
-            ERROR_RETURN_MSG_INNER(error, "Task abort call back func %p execution failed, regName=%s, retCode=%#x.",
-                callback, info.first.c_str(), error);
+            ERROR_RETURN_MSG_INNER(
+                error, "Task abort call back func %p execution failed, regName=%s, retCode=%#x.", callback,
+                info.first.c_str(), error);
         } else if (type == TaskAbortCallbackType::RTS_SET_DEVICE_TASK_ABORT_CALLBACK) {
             rtDeviceTaskAbortStage newStage = RT_DEVICE_TASK_ABORT_PRE;
             if (stage == RT_DEVICE_ABORT_POST) {
@@ -4251,37 +4362,39 @@ void Runtime::FreeAiCpuStreamId(const int32_t id)
     }
 }
 
-rtError_t Runtime::UnSubscribeReport(const uint64_t threadId, Stream * const stm)
+rtError_t Runtime::UnSubscribeReport(const uint64_t threadId, Stream* const stm)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, RT_ERROR_SUBSCRIBE_NULL);
     const rtError_t error = cbSubscribe_->Delete(threadId, stm);
-    ERROR_RETURN_MSG_INNER(error, "Unsubscribe report failed, streamId=%d, threadId=%" PRIu64 ", retCode=%#x.",
-        stm->Id_(), threadId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Unsubscribe report failed, streamId=%d, threadId=%" PRIu64 ", retCode=%#x.", stm->Id_(), threadId,
+        static_cast<uint32_t>(error));
     stm->SetSubscribeFlag(StreamSubscribeFlag::SUBSCRIBE_NONE);
     return error;
 }
 
-rtError_t Runtime::SubscribeReport(const uint64_t threadId, Stream * const stm, void *evtNotify)
+rtError_t Runtime::SubscribeReport(const uint64_t threadId, Stream* const stm, void* evtNotify)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, RT_ERROR_SUBSCRIBE_NULL);
     const rtError_t error = cbSubscribe_->Insert(threadId, stm, evtNotify);
-    ERROR_RETURN_MSG_INNER(error, "Subscribe report failed, streamId=%d, threadId=%" PRIu64 ", retCode=%#x.",
-        stm->Id_(), threadId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Subscribe report failed, streamId=%d, threadId=%" PRIu64 ", retCode=%#x.", stm->Id_(), threadId,
+        static_cast<uint32_t>(error));
     stm->SetSubscribeFlag(StreamSubscribeFlag::SUBSCRIBE_USER);
     return error;
 }
 
-rtError_t Runtime::UnSubscribeReport(Stream * const stm)
+rtError_t Runtime::UnSubscribeReport(Stream* const stm)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, RT_ERROR_SUBSCRIBE_NULL);
     const rtError_t error = cbSubscribe_->Delete(stm);
-    ERROR_RETURN_MSG_INNER(error, "Unsubscribe report failed, streamId=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Unsubscribe report failed, streamId=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     stm->SetSubscribeFlag(StreamSubscribeFlag::SUBSCRIBE_NONE);
     return error;
 }
 
-void Runtime::UnSubscribeReportHostOnly(Stream * const stm)
+void Runtime::UnSubscribeReportHostOnly(Stream* const stm)
 {
     if ((cbSubscribe_ == nullptr) || (stm == nullptr)) {
         return;
@@ -4290,7 +4403,7 @@ void Runtime::UnSubscribeReportHostOnly(Stream * const stm)
     stm->SetSubscribeFlag(StreamSubscribeFlag::SUBSCRIBE_NONE);
 }
 
-rtError_t Runtime::GetGroupIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t * const groupId)
+rtError_t Runtime::GetGroupIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t* const groupId)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, RT_ERROR_SUBSCRIBE_NULL);
     const rtError_t error = cbSubscribe_->GetGroupIdByStreamId(devId, streamId, groupId);
@@ -4298,17 +4411,17 @@ rtError_t Runtime::GetGroupIdByStreamId(const uint32_t devId, const int32_t stre
     return error;
 }
 
-rtError_t Runtime::GetGroupIdByThreadId(const uint64_t threadId, uint32_t * const deviceId, uint32_t * const tsId,
-                                        uint32_t * const groupId, const bool noLog)
+rtError_t Runtime::GetGroupIdByThreadId(
+    const uint64_t threadId, uint32_t* const deviceId, uint32_t* const tsId, uint32_t* const groupId, const bool noLog)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, RT_ERROR_SUBSCRIBE_NULL);
     const rtError_t error = cbSubscribe_->GetGroupIdByThreadId(threadId, deviceId, tsId, groupId, noLog);
-    COND_RETURN_DEBUG(error != RT_ERROR_NONE, error,
-        "get groupId fail, threadId=%" PRIu64 ", retCode=%#x", threadId, error);
+    COND_RETURN_DEBUG(
+        error != RT_ERROR_NONE, error, "get groupId fail, threadId=%" PRIu64 ", retCode=%#x", threadId, error);
     return error;
 }
 
-rtError_t Runtime::GetEventByStreamId(const uint32_t devId, const int32_t streamId, Event ** const evt)
+rtError_t Runtime::GetEventByStreamId(const uint32_t devId, const int32_t streamId, Event** const evt)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, RT_ERROR_SUBSCRIBE_NULL);
     const rtError_t error = cbSubscribe_->GetEventByStreamId(devId, streamId, evt);
@@ -4316,7 +4429,7 @@ rtError_t Runtime::GetEventByStreamId(const uint32_t devId, const int32_t stream
     return error;
 }
 
-rtError_t Runtime::GetNotifyByStreamId(const uint32_t devId, const int32_t streamId, Notify ** const notify)
+rtError_t Runtime::GetNotifyByStreamId(const uint32_t devId, const int32_t streamId, Notify** const notify)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, RT_ERROR_SUBSCRIBE_NULL);
     const rtError_t error = cbSubscribe_->GetNotifyByStreamId(devId, streamId, notify);
@@ -4324,43 +4437,44 @@ rtError_t Runtime::GetNotifyByStreamId(const uint32_t devId, const int32_t strea
     return error;
 }
 
-rtError_t Runtime::GetCqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t * const cqId)
+rtError_t Runtime::GetCqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t* const cqId)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, RT_ERROR_SUBSCRIBE_NULL);
     const rtError_t error = cbSubscribe_->GetCqIdByStreamId(devId, streamId, cqId);
-    ERROR_RETURN_MSG_INNER(error, "Get CQ ID failed, streamId=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Get CQ ID failed, streamId=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t Runtime::GetSqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t * const sqId)
+rtError_t Runtime::GetSqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t* const sqId)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, RT_ERROR_SUBSCRIBE_NULL);
     const rtError_t error = cbSubscribe_->GetSqIdByStreamId(devId, streamId, sqId);
-    ERROR_RETURN_MSG_INNER(error,
-        "Get SQ ID failed, streamId=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Get SQ ID failed, streamId=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t Runtime::GetThreadIdByStreamId(const uint32_t devId, const int32_t streamId, uint64_t * const threadId)
+rtError_t Runtime::GetThreadIdByStreamId(const uint32_t devId, const int32_t streamId, uint64_t* const threadId)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, RT_ERROR_SUBSCRIBE_NULL);
     const rtError_t error = cbSubscribe_->GetThreadIdByStreamId(devId, streamId, threadId);
-    ERROR_RETURN_MSG_INNER(error,
-        "Get threadId failed, streamId=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Get threadId failed, streamId=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return error;
 }
 
-bool Runtime::IsHostFuncCbReg(const Stream * const stm) const
+bool Runtime::IsHostFuncCbReg(const Stream* const stm) const
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, false);
     return cbSubscribe_->IsExistInStreamMap(stm);
 }
 
-Context *Runtime::GetPriCtxByDeviceId(const uint32_t deviceId, uint32_t tsId)
+Context* Runtime::GetPriCtxByDeviceId(const uint32_t deviceId, uint32_t tsId)
 {
     if (deviceId >= RT_MAX_DEV_NUM) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Get primary context by deviceId=%u, valid range is [0,%u).", deviceId,
-            RT_MAX_DEV_NUM);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Get primary context by deviceId=%u, valid range is [0,%u).", deviceId, RT_MAX_DEV_NUM);
         return nullptr;
     }
 
@@ -4369,13 +4483,13 @@ Context *Runtime::GetPriCtxByDeviceId(const uint32_t deviceId, uint32_t tsId)
     }
 
     if (tsId > RT_MAX_TS_ID) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Get primary context failed, tsId=%u, valid range is [0,%u].", tsId,
-            RT_MAX_TS_ID);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Get primary context failed, tsId=%u, valid range is [0,%u].", tsId, RT_MAX_TS_ID);
         return nullptr;
     }
 
-    RefObject<Context *> &refObj = priCtxs_[deviceId][tsId];
-    Context * const ctx = refObj.GetPrimaryCtxCallBackFlag() ? refObj.GetVal(false) : refObj.GetVal();
+    RefObject<Context*>& refObj = priCtxs_[deviceId][tsId];
+    Context* const ctx = refObj.GetPrimaryCtxCallBackFlag() ? refObj.GetVal(false) : refObj.GetVal();
     if (!ContextManage::IsActiveContextOnDevice(ctx, static_cast<int32_t>(deviceId))) {
         RT_LOG(RT_LOG_DEBUG, "Primary context is unavailable, deviceId=%u, tsId=%u, ctx=%p.", deviceId, tsId, ctx);
         return nullptr;
@@ -4383,43 +4497,42 @@ Context *Runtime::GetPriCtxByDeviceId(const uint32_t deviceId, uint32_t tsId)
     return ctx;
 }
 
-void Runtime::SetInternalThreadContext(Context * const ctx)
+void Runtime::SetInternalThreadContext(Context* const ctx)
 {
-    Context *validCtx = nullptr;
+    Context* validCtx = nullptr;
     if (ContextManage::CheckContextIsValid(ctx, ContextAccessMode::INTERNAL)) {
         validCtx = ctx;
     }
     InnerThreadLocalContainer::SetCurCtx(validCtx, true);
 }
 
-RefObject<Context *> *Runtime::GetRefPriCtx(const uint32_t deviceId, const uint32_t tsId)
+RefObject<Context*>* Runtime::GetRefPriCtx(const uint32_t deviceId, const uint32_t tsId)
 {
     if (deviceId >= RT_MAX_DEV_NUM) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Get primary context failed, deviceId=%u, valid range is [0,%u).", deviceId,
-            RT_MAX_DEV_NUM);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Get primary context failed, deviceId=%u, valid range is [0,%u).", deviceId, RT_MAX_DEV_NUM);
         return nullptr;
     }
 
     if (tsId > RT_MAX_TS_ID) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Get primary context failed, tsId=%u, valid range is [0,%u].", tsId,
-            RT_MAX_TS_ID);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Get primary context failed, tsId=%u, valid range is [0,%u].", tsId, RT_MAX_TS_ID);
         return nullptr;
     }
     return &priCtxs_[deviceId][tsId];
 }
 
-static rtError_t SetTimeoutConfigTaskSubmit(Stream * const stm, const rtTaskTimeoutType_t type,
-    const uint32_t timeout)
+static rtError_t SetTimeoutConfigTaskSubmit(Stream* const stm, const rtTaskTimeoutType_t type, const uint32_t timeout)
 {
     TaskInfo submitTask = {};
     rtError_t errorReason;
-    TaskInfo *timeoutSetTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_TASK_TIMEOUT_SET, errorReason);
+    TaskInfo* timeoutSetTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_TASK_TIMEOUT_SET, errorReason);
     NULL_PTR_RETURN_MSG(timeoutSetTask, errorReason);
 
     rtError_t error = TimeoutSetTaskInit(timeoutSetTask, type, timeout);
-    ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE,
-        "Failed to init TaskTimeoutSetTask, stream_id=%d, task_id=%u, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(timeoutSetTask->id), error);
+    ERROR_GOTO_MSG_INNER(
+        error, ERROR_RECYCLE, "Failed to init TaskTimeoutSetTask, stream_id=%d, task_id=%u, retCode=%#x.", stm->Id_(),
+        static_cast<uint32_t>(timeoutSetTask->id), error);
 
     error = stm->Device_()->SubmitTask(timeoutSetTask);
     ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE, "Failed to submit TaskTimeoutSetTask, retCode=%#x.", error);
@@ -4436,11 +4549,11 @@ static uint64_t ConvertTimeoutToUs(const uint64_t timeout, const RtTaskTimeUnitT
 {
     uint64_t opExcTaskTimeout;
     if (timeUnitType == RT_TIME_UNIT_TYPE_S) {
-        opExcTaskTimeout = (timeout > (MAX_UINT64_NUM / RT_TIMEOUT_S_TO_US)) ?
-            MAX_UINT64_NUM : (timeout * RT_TIMEOUT_S_TO_US);
+        opExcTaskTimeout =
+            (timeout > (MAX_UINT64_NUM / RT_TIMEOUT_S_TO_US)) ? MAX_UINT64_NUM : (timeout * RT_TIMEOUT_S_TO_US);
     } else if (timeUnitType == RT_TIME_UNIT_TYPE_MS) {
-        opExcTaskTimeout = (timeout > (MAX_UINT64_NUM / RT_TIMEOUT_MS_TO_US)) ?
-            MAX_UINT64_NUM : (timeout * RT_TIMEOUT_MS_TO_US);
+        opExcTaskTimeout =
+            (timeout > (MAX_UINT64_NUM / RT_TIMEOUT_MS_TO_US)) ? MAX_UINT64_NUM : (timeout * RT_TIMEOUT_MS_TO_US);
     } else { // us
         opExcTaskTimeout = timeout;
     }
@@ -4448,23 +4561,25 @@ static uint64_t ConvertTimeoutToUs(const uint64_t timeout, const RtTaskTimeUnitT
     return opExcTaskTimeout;
 }
 
-rtError_t Runtime::SetTimeoutConfig(const rtTaskTimeoutType_t type, const uint64_t timeout,
-    const RtTaskTimeUnitType timeUnitType)
+rtError_t Runtime::SetTimeoutConfig(
+    const rtTaskTimeoutType_t type, const uint64_t timeout, const RtTaskTimeUnitType timeUnitType)
 {
     rtError_t error = RT_ERROR_NONE;
 
-    COND_RETURN_ERROR_MSG_INNER((tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_DEVICE_INVALID,
+    COND_RETURN_ERROR_MSG_INNER(
+        (tsNum_ == 0U) || (tsNum_ > RT_MAX_TS_NUM), RT_ERROR_DEVICE_INVALID,
         "Set timeout config failed, tsNum=%u, valid range is [1,%u].", tsNum_, RT_MAX_TS_NUM);
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     const rtChipType_t chipType = rtInstance->GetChipType();
     // AS31XM1 use ms to calculate timeout cfg
     if ((socVersion_ == "AS31XM1X") || (chipType == CHIP_MC32DM11A) || (chipType == CHIP_MC62CM12A)) {
-        COND_RETURN_ERROR_MSG_INNER(timeUnitType == RT_TIME_UNIT_TYPE_US,
-            RT_ERROR_FEATURE_NOT_SUPPORT, "Not support set opexecutetimeout with us");
+        COND_RETURN_ERROR_MSG_INNER(
+            timeUnitType == RT_TIME_UNIT_TYPE_US, RT_ERROR_FEATURE_NOT_SUPPORT,
+            "Not support set opexecutetimeout with us");
         timeoutConfig_.mtx.lock();
         timeoutConfig_.isCfgOpExcTaskTimeout = true;
-        timeoutConfig_.opExcTaskTimeout = (timeout > (MAX_UINT64_NUM / RT_TIMEOUT_MS_TO_US)) ?
-            MAX_UINT64_NUM : (timeout * RT_TIMEOUT_MS_TO_US);
+        timeoutConfig_.opExcTaskTimeout =
+            (timeout > (MAX_UINT64_NUM / RT_TIMEOUT_MS_TO_US)) ? MAX_UINT64_NUM : (timeout * RT_TIMEOUT_MS_TO_US);
         timeoutConfig_.mtx.unlock();
         return RT_ERROR_NONE;
     }
@@ -4474,11 +4589,10 @@ rtError_t Runtime::SetTimeoutConfig(const rtTaskTimeoutType_t type, const uint64
     DevProperties prop;
     rtError_t ret = GET_DEV_PROPERTIES(chipType, prop);
     COND_RETURN_ERROR_MSG_INNER(ret != RT_ERROR_NONE, ret, "GetDevProperties failed.");
-    if ((type == RT_TIMEOUT_TYPE_OP_EXECUTE) &&
-        (prop.opExecuteTimeout)) {
+    if ((type == RT_TIMEOUT_TYPE_OP_EXECUTE) && (prop.opExecuteTimeout)) {
         taskTimeout = opExcTaskTimeout / RT_TIMEOUT_MS_TO_US; // ms
     } else {
-        taskTimeout = opExcTaskTimeout / RT_TIMEOUT_S_TO_US; // s
+        taskTimeout = opExcTaskTimeout / RT_TIMEOUT_S_TO_US;  // s
     }
     /* avoid deadlock when multi thread call the fuction frequently */
     static uint32_t cnt = 0U;
@@ -4487,18 +4601,18 @@ rtError_t Runtime::SetTimeoutConfig(const rtTaskTimeoutType_t type, const uint64
     }
     cnt++;
 #ifndef CFG_DEV_PLATFORM_PC
-    for (auto &refObj : devices_) {
+    for (auto& refObj : devices_) {
         for (size_t i = 0UL; i < tsNum_; i++) {
             if (refObj[i].GetRef() == 0ULL) {
                 continue;
             }
 
-            Device * const device = refObj[i].GetVal();
+            Device* const device = refObj[i].GetVal();
             if (device == nullptr) {
                 continue;
             }
 
-            Stream * const stm = device->GetCtrlStream(device->PrimaryStream_());
+            Stream* const stm = device->GetCtrlStream(device->PrimaryStream_());
             NULL_PTR_RETURN_MSG(stm, RT_ERROR_STREAM_NULL);
             if (device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_ALLOC_FROM_STREAM_POOL)) {
                 error = SetTimeoutConfigTaskSubmitDavid(stm, type, taskTimeout);
@@ -4523,27 +4637,21 @@ rtError_t Runtime::SetTimeoutConfig(const rtTaskTimeoutType_t type, const uint64
     return error;
 }
 
-void Runtime::LockGroupId(const uint32_t groupId)
-{
-    cbSubscribe_->LockGroupId(groupId);
-}
+void Runtime::LockGroupId(const uint32_t groupId) { cbSubscribe_->LockGroupId(groupId); }
 
-void Runtime::UnlockGroupId(const uint32_t groupId)
-{
-    cbSubscribe_->UnlockGroupId(groupId);
-}
+void Runtime::UnlockGroupId(const uint32_t groupId) { cbSubscribe_->UnlockGroupId(groupId); }
 
-rtError_t Runtime::ProcessForAllOpenDevice(const std::function<rtError_t(Device *)> &processFunc,
-                                           const bool exitWhenError)
+rtError_t Runtime::ProcessForAllOpenDevice(
+    const std::function<rtError_t(Device*)>& processFunc, const bool exitWhenError)
 {
     rtError_t firstError = RT_ERROR_NONE;
-    for (auto &refObj : devices_) {
+    for (auto& refObj : devices_) {
         for (uint32_t i = 0U; i < tsNum_; i++) {
             if (refObj[i].GetRef() == 0ULL) {
                 continue;
             }
 
-            Device * const openDevice = refObj[i].GetVal();
+            Device* const openDevice = refObj[i].GetVal();
             if (openDevice == nullptr) {
                 continue;
             }
@@ -4576,7 +4684,7 @@ rtMemType_t Runtime::GetTsMemType(rtMemRequestFeature_t featureType, uint64_t me
         return RT_MEMORY_HBM;
     }
 
-    Driver * const curDrv = driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* const curDrv = driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
     const bool isSupport = curDrv->CheckIfSupportNumaTs();
     if (isSupport) {
@@ -4587,7 +4695,7 @@ rtMemType_t Runtime::GetTsMemType(rtMemRequestFeature_t featureType, uint64_t me
     }
 }
 
-static std::vector<std::string> SplitString(const std::string &str)
+static std::vector<std::string> SplitString(const std::string& str)
 {
     std::vector<std::string> result;
 
@@ -4609,7 +4717,8 @@ static std::vector<std::string> SplitString(const std::string &str)
                 dataStr = s;
                 result.push_back(dataStr);
                 dataCnt = 0U;
-                (void)memset_s(s, static_cast<size_t>(RT_SET_DEVICE_STR_MAX_LEN + 1U), 0U,
+                (void)memset_s(
+                    s, static_cast<size_t>(RT_SET_DEVICE_STR_MAX_LEN + 1U), 0U,
                     static_cast<size_t>(RT_SET_DEVICE_STR_MAX_LEN + 1U));
             }
 
@@ -4631,7 +4740,7 @@ static std::vector<std::string> SplitString(const std::string &str)
     return result;
 }
 
-static bool IsdigitString(const std::string &strPara)
+static bool IsdigitString(const std::string& strPara)
 {
     for (uint32_t i = 0U; i < static_cast<uint32_t>(strPara.size()); i++) {
         if (!isdigit(strPara[i])) {
@@ -4660,7 +4769,8 @@ bool Runtime::IsNeedChangeDeviceId(const uint32_t userDevId, const bool isDevice
     return true;
 }
 
-rtError_t Runtime::ChgUserDevIdToDeviceId(const uint32_t userDevId, uint32_t * const deviceId, const bool isDeviceSetResetOp) const
+rtError_t Runtime::ChgUserDevIdToDeviceId(
+    const uint32_t userDevId, uint32_t* const deviceId, const bool isDeviceSetResetOp) const
 {
     if (!IsNeedChangeDeviceId(userDevId, isDeviceSetResetOp)) {
         (*deviceId) = userDevId;
@@ -4668,10 +4778,14 @@ rtError_t Runtime::ChgUserDevIdToDeviceId(const uint32_t userDevId, uint32_t * c
     }
 
     if ((userDevId >= userDeviceCnt) || (deviceInfo[userDevId] == MAX_UINT32_NUM)) {
-        RT_LOG(RT_LOG_ERROR, "input userDevId:%u is err, userDeviceCnt:%u, real deviceCnt:%u isSetVisibleDev:%d "
+        RT_LOG(
+            RT_LOG_ERROR,
+            "input userDevId:%u is err, userDeviceCnt:%u, real deviceCnt:%u isSetVisibleDev:%d "
             "ASCEND_RT_VISIBLE_DEVICES:[%s], available visible devices:[%s]",
             userDevId, userDeviceCnt, deviceCnt, isSetVisibleDev, inputDeviceStr, availableDeviceStr);
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, "Obtaining the logical device ID based on the user device ID", userDevId, "userDevId", "[0, " + std::to_string(userDeviceCnt) + ")");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1003, "Obtaining the logical device ID based on the user device ID", userDevId, "userDevId",
+            "[0, " + std::to_string(userDeviceCnt) + ")");
         return RT_ERROR_DEVICE_ID;
     }
     (*deviceId) = deviceInfo[userDevId];
@@ -4679,8 +4793,9 @@ rtError_t Runtime::ChgUserDevIdToDeviceId(const uint32_t userDevId, uint32_t * c
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::GetUserDevIdByDeviceId(const uint32_t deviceId, uint32_t * const userDevId,
-    const bool isDeviceSetResetOp, const bool ignoredError, const bool checkLog) const
+rtError_t Runtime::GetUserDevIdByDeviceId(
+    const uint32_t deviceId, uint32_t* const userDevId, const bool isDeviceSetResetOp, const bool ignoredError,
+    const bool checkLog) const
 {
     if (!IsNeedChangeDeviceId(deviceId, isDeviceSetResetOp)) {
         (*userDevId) = deviceId;
@@ -4689,25 +4804,32 @@ rtError_t Runtime::GetUserDevIdByDeviceId(const uint32_t deviceId, uint32_t * co
 
     if ((deviceId >= deviceCnt) || (userDeviceInfo[deviceId] >= userDeviceCnt)) {
         if (!ignoredError) {
-            RT_LOG(RT_LOG_ERROR, "Get userDevId failed, "
+            RT_LOG(
+                RT_LOG_ERROR,
+                "Get userDevId failed, "
                 "input deviceId:%u real deviceCnt:%u isSetVisibleDev:%d ASCEND_RT_VISIBLE_DEVICES:[%s].",
                 deviceId, deviceCnt, isSetVisibleDev, inputDeviceStr);
-            RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to convert the driver device ID %u to user device ID. Reason: driver device ID is invalid, valid range is [0, %u).", deviceId, deviceCnt);
+            RT_LOG_INNER_MSG(
+                RT_LOG_ERROR,
+                "Failed to convert the driver device ID %u to user device ID. Reason: driver device ID is invalid, "
+                "valid range is [0, %u).",
+                deviceId, deviceCnt);
         }
         return RT_ERROR_DEVICE_ID;
     }
 
     (*userDevId) = userDeviceInfo[deviceId];
     if (!checkLog) {
-        RT_LOG(RT_LOG_INFO, "userDevId=%u, deviceId=%u, isDeviceSetResetOp=%u", *userDevId, deviceId, isDeviceSetResetOp);
+        RT_LOG(
+            RT_LOG_INFO, "userDevId=%u, deviceId=%u, isDeviceSetResetOp=%u", *userDevId, deviceId, isDeviceSetResetOp);
     }
     return RT_ERROR_NONE;
 }
 
-static void BinaryMemFree(const Device * const device, Program * const prog, uint32_t alignSize)
+static void BinaryMemFree(const Device* const device, Program* const prog, uint32_t alignSize)
 {
-    Driver * const curDrv = device->Driver_();
-    void *baseAddr = prog->GetBinBaseAddr(device->Id_());
+    Driver* const curDrv = device->Driver_();
+    void* baseAddr = prog->GetBinBaseAddr(device->Id_());
     // 使用 TryRelease 原子化 Contains + Release，消除 TOCTOU 竞争
     if ((device->GetKernelMemoryPool() != nullptr) && device->GetKernelMemoryPool()->TryRelease(baseAddr, alignSize)) {
         // 已通过内存池释放
@@ -4720,33 +4842,36 @@ static void BinaryMemFree(const Device * const device, Program * const prog, uin
     return;
 }
 
-rtError_t Runtime::BinaryLoad(const Device *const device, Program * const prog)
+rtError_t Runtime::BinaryLoad(const Device* const device, Program* const prog)
 {
-    void *devMem = nullptr;
-    void *baseAddr = nullptr;
-    void *data = nullptr;
+    void* devMem = nullptr;
+    void* baseAddr = nullptr;
+    void* data = nullptr;
     bool readonly = true;
     uint32_t size = 0U;
     uint32_t alignSize = 0U;
     rtError_t error = RT_ERROR_NONE;
-    Driver * const curDrv = device->Driver_();
+    Driver* const curDrv = device->Driver_();
     bool isPoolMem = true;
 
     NULL_PTR_RETURN_MSG(prog, RT_ERROR_PROGRAM_NULL);
     size = prog->LoadSize();
     data = prog->Data();
     readonly = prog->IsReadOnly();
-    error = prog->RefreshSymbolAddr();      // May differ from the initially registered binary, mainly due to the symbol address
+    error =
+        prog->RefreshSymbolAddr(); // May differ from the initially registered binary, mainly due to the symbol address
     COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_PROGRAM_DATA, "Refresh symbol address failed.");
     NULL_PTR_RETURN_MSG(data, RT_ERROR_PROGRAM_NULL);
     if (size == 0U) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Module load failed, prog size should be larger than 0, but current prog size is 0.");
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Module load failed, prog size should be larger than 0, but current prog size is 0.");
         return RT_ERROR_PROGRAM_SIZE;
     }
 
     TIMESTAMP_BEGIN(rtBinaryLoad_DevMemAlloc);
     const uint32_t devSize = device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_SIMT) ?
-        (size + PREFETCH_INCREASE_SIZE) : size;
+                                 (size + PREFETCH_INCREASE_SIZE) :
+                                 size;
     if (device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_KERNEL_MEMORY_POOL)) {
         alignSize = (devSize + POOL_ALIGN_SIZE) & (~POOL_ALIGN_SIZE);
         devMem = device->GetKernelMemoryPool()->Allocate(static_cast<size_t>(alignSize), readonly);
@@ -4754,15 +4879,17 @@ rtError_t Runtime::BinaryLoad(const Device *const device, Program * const prog)
     }
 
     if (devMem == nullptr) {
-        error = curDrv->DevMemAlloc(&devMem, static_cast<uint64_t>(devSize + INSTR_ALIGN_SIZE),
-            RT_MEMORY_HBM, device->Id_(), MODULEID_RUNTIME, true, readonly);
+        error = curDrv->DevMemAlloc(
+            &devMem, static_cast<uint64_t>(devSize + INSTR_ALIGN_SIZE), RT_MEMORY_HBM, device->Id_(), MODULEID_RUNTIME,
+            true, readonly);
         isPoolMem = false;
     }
     TIMESTAMP_END(rtBinaryLoad_DevMemAlloc);
 
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "Malloc device program failed, retCode=%#x, size = %llu",
-               static_cast<uint32_t>(error), static_cast<uint64_t>(devSize + INSTR_ALIGN_SIZE));
+        RT_LOG(
+            RT_LOG_ERROR, "Malloc device program failed, retCode=%#x, size = %llu", static_cast<uint32_t>(error),
+            static_cast<uint64_t>(devSize + INSTR_ALIGN_SIZE));
         return error;
     }
     baseAddr = devMem;
@@ -4770,7 +4897,7 @@ rtError_t Runtime::BinaryLoad(const Device *const device, Program * const prog)
     if ((RtPtrToPtr<uintptr_t>(devMem) & 0xFFFULL) != 0ULL) {
         // 2 ^ 12 is 4K align
         const uintptr_t devMemAlign = (((RtPtrToPtr<uintptr_t>(devMem)) >> 12U) + 1UL) << 12U;
-        devMem = RtPtrToPtr<void *>(devMemAlign);
+        devMem = RtPtrToPtr<void*>(devMemAlign);
     }
 
     if (isPoolMem) {
@@ -4783,14 +4910,14 @@ rtError_t Runtime::BinaryLoad(const Device *const device, Program * const prog)
     prog->SetBinAlignBaseAddr(devMem, device->Id_());
 
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "Memcpy failed, size=%u(bytes), type=%d(RT_MEMCPY_HOST_TO_DEVICE), retCode=%#x",
-            size, static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
+        RT_LOG(
+            RT_LOG_ERROR, "Memcpy failed, size=%u(bytes), type=%d(RT_MEMCPY_HOST_TO_DEVICE), retCode=%#x", size,
+            static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
         BinaryMemFree(device, prog, alignSize);
         return error;
     }
 
-    RT_LOG(RT_LOG_DEBUG,
-        "Load on device addr=%p, size=%u(bytes), program id=%u.", devMem, size, prog->Id_());
+    RT_LOG(RT_LOG_DEBUG, "Load on device addr=%p, size=%u(bytes), program id=%u.", devMem, size, prog->Id_());
     return RT_ERROR_NONE;
 }
 
@@ -4801,7 +4928,7 @@ rtError_t Runtime::GetVisibleDevices()
         return RT_ERROR_NONE;
     }
 
-    const char_t *inputStr = nullptr;
+    const char_t* inputStr = nullptr;
     MM_SYS_GET_ENV(MM_ENV_ASCEND_RT_VISIBLE_DEVICES, inputStr);
     if (inputStr == nullptr) {
         RT_LOG(RT_LOG_EVENT, "ASCEND_RT_VISIBLE_DEVICES param was not set");
@@ -4814,7 +4941,8 @@ rtError_t Runtime::GetVisibleDevices()
             return RT_ERROR_NONE;
         }
     }
-    (void)memset_s(deviceInfo, static_cast<size_t>(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN), MAX_UINT32_NUM,
+    (void)memset_s(
+        deviceInfo, static_cast<size_t>(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN), MAX_UINT32_NUM,
         static_cast<size_t>(sizeof(uint32_t) * RT_SET_DEVICE_STR_MAX_LEN));
 
     if (userDeviceInfo == nullptr) {
@@ -4823,21 +4951,24 @@ rtError_t Runtime::GetVisibleDevices()
             return RT_ERROR_NONE;
         }
     }
-    (void)memset_s(userDeviceInfo, static_cast<size_t>(sizeof(uint32_t) * RT_MAX_DEV_NUM), MAX_UINT32_NUM,
+    (void)memset_s(
+        userDeviceInfo, static_cast<size_t>(sizeof(uint32_t) * RT_MAX_DEV_NUM), MAX_UINT32_NUM,
         static_cast<size_t>(sizeof(uint32_t) * RT_MAX_DEV_NUM));
 
     isSetVisibleDev = true;
     const drvError_t drvRet = drvGetDevNum(&deviceCnt);
     if ((drvRet != DRV_ERROR_NONE) || (deviceCnt > RT_MAX_DEV_NUM)) {
-        DRV_ERROR_PROCESS(drvRet, "[drv api] drvGetDevNum failed: drvRetCode=%d, deviceCnt=[%u,%u].",
-            static_cast<int32_t>(drvRet), deviceCnt, RT_MAX_DEV_NUM);
+        DRV_ERROR_PROCESS(
+            drvRet, "[drv api] drvGetDevNum failed: drvRetCode=%d, deviceCnt=[%u,%u].", static_cast<int32_t>(drvRet),
+            deviceCnt, RT_MAX_DEV_NUM);
         retType = RT_GET_DRIVER_ERROR;
         return RT_ERROR_NONE;
     }
 
     uint32_t intDeviceLen = static_cast<uint32_t>(strlen(inputStr));
     intDeviceLen = (intDeviceLen > RT_SET_DEVICE_STR_MAX_LEN) ? RT_SET_DEVICE_STR_MAX_LEN : intDeviceLen;
-    (void)memcpy_s(inputDeviceStr, static_cast<size_t>(RT_SET_DEVICE_STR_MAX_LEN + 1U), inputStr,
+    (void)memcpy_s(
+        inputDeviceStr, static_cast<size_t>(RT_SET_DEVICE_STR_MAX_LEN + 1U), inputStr,
         static_cast<size_t>(intDeviceLen));
     inputDeviceStr[intDeviceLen] = '\0';
 
@@ -4863,14 +4994,15 @@ rtError_t Runtime::GetVisibleDevices()
 
         for (uint32_t j = 0U; j < setDeviceCnt; j++) {
             if ((setDeviceCnt > 0) && (deviceInfo[setDeviceCnt] < deviceInfo[setDeviceCnt - 1])) {
-                RT_LOG(RT_LOG_ERROR,
-                    "set ASCEND_RT_VISIBLE_DEVICES:[%s] error, it must be configured in ascending order.",
+                RT_LOG(
+                    RT_LOG_ERROR, "set ASCEND_RT_VISIBLE_DEVICES:[%s] error, it must be configured in ascending order.",
                     inputStr);
                 retType = RT_ALL_ORDER_ERROR;
                 return RT_ERROR_NONE;
             }
             if (deviceInfo[j] == deviceInfo[setDeviceCnt]) {
-                RT_LOG(RT_LOG_ERROR, "set ASCEND_RT_VISIBLE_DEVICES:[%s] cannot be duplicated, input data range[0-%u)",
+                RT_LOG(
+                    RT_LOG_ERROR, "set ASCEND_RT_VISIBLE_DEVICES:[%s] cannot be duplicated, input data range[0-%u)",
                     inputStr, deviceCnt);
                 retType = RT_ALL_DUPLICATED_ERROR;
                 return RT_ERROR_NONE;
@@ -4880,10 +5012,12 @@ rtError_t Runtime::GetVisibleDevices()
         errno_t errNo = EOK;
         if (setDeviceCnt > 0) {
             errNo = strcat_s(availableDeviceStr, sizeof(availableDeviceStr), ",");
-            COND_LOG_ERROR(errNo != EOK, "strcat_s failed, size=%zu(bytes), retCode=%d!", sizeof(availableDeviceStr), errNo);
+            COND_LOG_ERROR(
+                errNo != EOK, "strcat_s failed, size=%zu(bytes), retCode=%d!", sizeof(availableDeviceStr), errNo);
         }
         errNo = strcat_s(availableDeviceStr, sizeof(availableDeviceStr), tokens[static_cast<size_t>(i)].c_str());
-        COND_LOG_ERROR(errNo != EOK, "strcat_s failed, size=%zu(bytes), retCode=%d!", sizeof(availableDeviceStr), errNo);
+        COND_LOG_ERROR(
+            errNo != EOK, "strcat_s failed, size=%zu(bytes), retCode=%d!", sizeof(availableDeviceStr), errNo);
 
         setDeviceCnt++;
         if (setDeviceCnt >= deviceCnt) {
@@ -4894,50 +5028,50 @@ rtError_t Runtime::GetVisibleDevices()
     if (setDeviceCnt != 0U) {
         userDeviceCnt = setDeviceCnt;
     } else {
-        RT_LOG(RT_LOG_ERROR, "set ASCEND_RT_VISIBLE_DEVICES:[%s] error, input data range[0-%u)",
-            inputStr, deviceCnt);
+        RT_LOG(RT_LOG_ERROR, "set ASCEND_RT_VISIBLE_DEVICES:[%s] error, input data range[0-%u)", inputStr, deviceCnt);
         retType = RT_ALL_DATA_ERROR;
         return RT_ERROR_NONE;
     }
 
     retType = RT_ALL_DATA_OK;
-    RT_LOG(RT_LOG_EVENT,
-        "real deviceCnt:%u userDeviceCnt:%u isSetVisibleDev:%d ASCEND_RT_VISIBLE_DEVICES:[%s] available visible devices:[%s]",
+    RT_LOG(
+        RT_LOG_EVENT,
+        "real deviceCnt:%u userDeviceCnt:%u isSetVisibleDev:%d ASCEND_RT_VISIBLE_DEVICES:[%s] available visible "
+        "devices:[%s]",
         deviceCnt, userDeviceCnt, isSetVisibleDev, inputStr, availableDeviceStr);
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::BinaryGetFunction(const Program * const prog, const uint64_t tilingKey,
-                                     Kernel ** const funcHandle) const
+rtError_t Runtime::BinaryGetFunction(
+    const Program* const prog, const uint64_t tilingKey, Kernel** const funcHandle) const
 {
-    Program * const progTmp = const_cast<Program *>(prog);
-    const Kernel *kernel = progTmp->GetKernelByTillingKey(tilingKey);
-    COND_RETURN_ERROR_MSG_INNER(kernel == nullptr, RT_ERROR_KERNEL_NULL,
-        "Cannot find kernel by tilingKey[%" PRIu64 "].", tilingKey);
-    *funcHandle = const_cast<Kernel *>(kernel);
+    Program* const progTmp = const_cast<Program*>(prog);
+    const Kernel* kernel = progTmp->GetKernelByTillingKey(tilingKey);
+    COND_RETURN_ERROR_MSG_INNER(
+        kernel == nullptr, RT_ERROR_KERNEL_NULL, "Cannot find kernel by tilingKey[%" PRIu64 "].", tilingKey);
+    *funcHandle = const_cast<Kernel*>(kernel);
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::BinaryGetFunctionByName(const Program * const binHandle, const char *kernelName,
-                                           Kernel ** const funcHandle) const
+rtError_t Runtime::BinaryGetFunctionByName(
+    const Program* const binHandle, const char* kernelName, Kernel** const funcHandle) const
 {
     rtError_t ret;
-    const Program * const prog = binHandle;
-    Program * const progTmp = const_cast<Program *>(prog);
+    const Program* const prog = binHandle;
+    Program* const progTmp = const_cast<Program*>(prog);
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    const Device * const dev = curCtx->Device_();
+    const Device* const dev = curCtx->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     if (!IS_SUPPORT_CHIP_FEATURE(dev->GetChipType(), RtOptionalFeatureType::RT_FEATURE_XPU)) {
         ret = progTmp->CopySoAndNameToCurrentDevice();
         ERROR_RETURN(ret, "copy program to, failed retCode=%#x.", ret);
     }
 
-    Kernel *kernel = const_cast<Kernel*>(progTmp->GetKernelByName(kernelName));
+    Kernel* kernel = const_cast<Kernel*>(progTmp->GetKernelByName(kernelName));
     const uint32_t devId = static_cast<uint32_t>(dev->Id_());
-    COND_RETURN_ERROR_MSG_INNER(kernel == nullptr, RT_ERROR_KERNEL_NULL,
-                                "Cannot find kernel by name %s.", kernelName);
+    COND_RETURN_ERROR_MSG_INNER(kernel == nullptr, RT_ERROR_KERNEL_NULL, "Cannot find kernel by name %s.", kernelName);
 
     *funcHandle = kernel;
     if (IS_SUPPORT_CHIP_FEATURE(dev->GetChipType(), RtOptionalFeatureType::RT_FEATURE_XPU)) {
@@ -4948,20 +5082,21 @@ rtError_t Runtime::BinaryGetFunctionByName(const Program * const binHandle, cons
 }
 
 TIMESTAMP_EXTERN(rtBinaryUnLoad_DevMemRelease);
-rtError_t Runtime::BinaryUnLoad(const Device *const device, Program * const prog) const
+rtError_t Runtime::BinaryUnLoad(const Device* const device, Program* const prog) const
 {
     TIMESTAMP_BEGIN(rtBinaryUnLoad_DevMemRelease);
     rtError_t ret = RT_ERROR_NONE;
     if (prog->GetBinBaseAddr(device->Id_()) != nullptr) {
         const uint32_t devSize = device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_SIMT) ?
-            (prog->LoadSize() + PREFETCH_INCREASE_SIZE) : prog->LoadSize();
+                                     (prog->LoadSize() + PREFETCH_INCREASE_SIZE) :
+                                     prog->LoadSize();
         const uint32_t alignSize = (devSize + POOL_ALIGN_SIZE) & (~POOL_ALIGN_SIZE);
         // 使用 TryRelease 原子化 Contains + Release，消除 TOCTOU 竞争
         if ((device->GetKernelMemoryPool() != nullptr) &&
             device->GetKernelMemoryPool()->TryRelease(prog->GetBinBaseAddr(device->Id_()), alignSize)) {
             // 已通过内存池释放
         } else {
-            Driver * const curDrv = device->Driver_();
+            Driver* const curDrv = device->Driver_();
             ret = curDrv->DevMemFree(prog->GetBinBaseAddr(device->Id_()), device->Id_());
         }
         ERROR_RETURN(ret, "Free svm mem free failed, retCode=%#x, dev_id=%u.", ret, device->Id_());
@@ -4973,9 +5108,8 @@ rtError_t Runtime::BinaryUnLoad(const Device *const device, Program * const prog
     ERROR_RETURN(ret, "Fail to FreeKernelLiteralNameDevMem, retCode=%#x, dev_id=%u.", ret, device->Id_());
 
     // 此处考虑prog的释放，做log记录，不return
-    ret = prog->ProcCpuKernelH2DMem(false, RtPtrToUnConstPtr<Device *const>(device));
-    COND_PROC((ret != RT_ERROR_NONE),
-        RT_LOG(RT_LOG_ERROR, "fail to free cpu so dev mem, retCode=%#x", ret));
+    ret = prog->ProcCpuKernelH2DMem(false, RtPtrToUnConstPtr<Device* const>(device));
+    COND_PROC((ret != RT_ERROR_NONE), RT_LOG(RT_LOG_ERROR, "fail to free cpu so dev mem, retCode=%#x", ret));
 
     TIMESTAMP_END(rtBinaryUnLoad_DevMemRelease);
     return ret;
@@ -4983,10 +5117,12 @@ rtError_t Runtime::BinaryUnLoad(const Device *const device, Program * const prog
 
 rtError_t Runtime::RegKernelLaunchFillFunc(const char* symbol, rtKernelLaunchFillFunc callback)
 {
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(symbol, RT_ERROR_INVALID_VALUE, "Registering the callback function for data filling during kernel startup");
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(callback, RT_ERROR_INVALID_VALUE, "Registering the callback function for data filling during kernel startup");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        symbol, RT_ERROR_INVALID_VALUE, "Registering the callback function for data filling during kernel startup");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        callback, RT_ERROR_INVALID_VALUE, "Registering the callback function for data filling during kernel startup");
     std::string symbolStr;
-    (void)symbolStr.assign(RtPtrToPtr<const char_t *>(symbol));
+    (void)symbolStr.assign(RtPtrToPtr<const char_t*>(symbol));
     const std::unique_lock<std::mutex> regMapLock(mapMutex_);
     callbackMap_[symbolStr] = callback;
     RT_LOG(RT_LOG_INFO, "register callback finish, symbol:%s.", symbol);
@@ -4995,16 +5131,17 @@ rtError_t Runtime::RegKernelLaunchFillFunc(const char* symbol, rtKernelLaunchFil
 
 rtError_t Runtime::UnRegKernelLaunchFillFunc(const char* symbol)
 {
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(symbol, RT_ERROR_INVALID_VALUE, "Deregistering the callback function for data filling during kernel startup");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        symbol, RT_ERROR_INVALID_VALUE, "Deregistering the callback function for data filling during kernel startup");
     std::string symbolStr;
-    (void)symbolStr.assign(RtPtrToPtr<const char_t *>(symbol));
+    (void)symbolStr.assign(RtPtrToPtr<const char_t*>(symbol));
     const std::unique_lock<std::mutex> regMapLock(mapMutex_);
     (void)callbackMap_.erase(symbolStr);
     RT_LOG(RT_LOG_INFO, "unregister callback finish, symbol:%s.", symbol);
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::ExeCallbackFillFunc(std::string symbol, void *cfgAddr, uint32_t size)
+rtError_t Runtime::ExeCallbackFillFunc(std::string symbol, void* cfgAddr, uint32_t size)
 {
     RT_LOG(RT_LOG_DEBUG, "symbol:%s, cfgAddr:%p , cfg len:%u.", symbol.c_str(), cfgAddr, size);
     const std::unique_lock<std::mutex> regMapLock(mapMutex_);
@@ -5017,7 +5154,7 @@ rtError_t Runtime::ExeCallbackFillFunc(std::string symbol, void *cfgAddr, uint32
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::GetElfOffset(void * const elfData, const uint32_t elfLen, uint32_t* offset) const
+rtError_t Runtime::GetElfOffset(void* const elfData, const uint32_t elfLen, uint32_t* offset) const
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(elfData, RT_ERROR_INVALID_VALUE, "Obtaining the ElfData offset");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(offset, RT_ERROR_INVALID_VALUE, "Obtaining the ElfData offset");
@@ -5029,14 +5166,14 @@ rtError_t Runtime::GetElfOffset(void * const elfData, const uint32_t elfLen, uin
 }
 
 // 调用方保证binFileName路径是realpath标准化之后的路径
-rtError_t Runtime::GetKernelBinByFileName(const char_t *const binFileName,
-                                         char_t **const buffer, uint64_t *length) const
+rtError_t Runtime::GetKernelBinByFileName(
+    const char_t* const binFileName, char_t** const buffer, uint64_t* length) const
 {
     *length = 0U;
     std::ifstream file(binFileName, std::ios::binary | std::ios::in);
-    COND_RETURN_ERROR_MSG_INNER(!file.is_open(), RT_ERROR_INVALID_VALUE,
-        "File %s does not exist or is inaccessible. errno=%d, reason=%s.",
-         binFileName, errno, strerror(errno))
+    COND_RETURN_ERROR_MSG_INNER(
+        !file.is_open(), RT_ERROR_INVALID_VALUE, "File %s does not exist or is inaccessible. errno=%d, reason=%s.",
+        binFileName, errno, strerror(errno))
 
     const std::streampos begin = file.tellg();
     (void)file.seekg(0, std::ios::end);
@@ -5062,20 +5199,22 @@ rtError_t Runtime::GetKernelBinByFileName(const char_t *const binFileName,
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::GetEnvPath(std::string &binaryPath) const
+rtError_t Runtime::GetEnvPath(std::string& binaryPath) const
 {
     std::string libPath;
-    const char_t *getPath = nullptr;
+    const char_t* getPath = nullptr;
     MM_SYS_GET_ENV(MM_ENV_LD_LIBRARY_PATH, getPath);
     if (getPath == nullptr) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE2002, "NULL", "LD_LIBRARY_PATH", "a valid path containing \"fwkacllib/lib64\"");
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE2002, "NULL", "LD_LIBRARY_PATH", "a valid path containing \"fwkacllib/lib64\"");
         return RT_ERROR_INVALID_VALUE;
     }
 
     libPath = getPath;
     const size_t mid = libPath.find("fwkacllib/lib64");
     if (mid == libPath.npos) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE2002, libPath, "LD_LIBRARY_PATH", "a valid path containing \"fwkacllib/lib64\"");
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE2002, libPath, "LD_LIBRARY_PATH", "a valid path containing \"fwkacllib/lib64\"");
         return RT_ERROR_INVALID_VALUE;
     }
     size_t diff;
@@ -5093,8 +5232,7 @@ rtError_t Runtime::GetEnvPath(std::string &binaryPath) const
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::GetKernelBin(const char_t *const binFileName,
-                                char_t **const buffer, uint32_t *length) const
+rtError_t Runtime::GetKernelBin(const char_t* const binFileName, char_t** const buffer, uint32_t* length) const
 {
     std::string binaryPath;
     const rtError_t ret = GetEnvPath(binaryPath);
@@ -5111,24 +5249,26 @@ rtError_t Runtime::GetKernelBin(const char_t *const binFileName,
     }
 
     RT_LOG(RT_LOG_INFO, "kernel bin full path:%s", binRealPath.c_str());
-    return GetKernelBinByFileName(binRealPath.c_str(), buffer, RtPtrToPtr<uint64_t *>(length));
+    return GetKernelBinByFileName(binRealPath.c_str(), buffer, RtPtrToPtr<uint64_t*>(length));
 }
 
-rtError_t Runtime::GetBinBuffer(const rtBinHandle binHandle, const rtBinBufferType_t type, void **bin,
-                                uint32_t *binSize) const
+rtError_t Runtime::GetBinBuffer(
+    const rtBinHandle binHandle, const rtBinBufferType_t type, void** bin, uint32_t* binSize) const
 {
-    Program * const programHdl = static_cast<Program *>(binHandle);
-    RT_LOG(RT_LOG_INFO, "Start to get bin buffer, bin handle %p, program id=%u, buffer type %d",
-           binHandle, programHdl->Id_(), type);
+    Program* const programHdl = static_cast<Program*>(binHandle);
+    RT_LOG(
+        RT_LOG_INFO, "Start to get bin buffer, bin handle %p, program id=%u, buffer type %d", binHandle,
+        programHdl->Id_(), type);
     *binSize = programHdl->GetBinarySize();
     if (type == RT_BIN_HOST_ADDR) {
         *bin = programHdl->GetBinary();
     } else if (type == RT_BIN_DEVICE_ADDR) {
-        Context *curCtx = CurrentContext();
+        Context* curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
         const rtError_t ret = programHdl->CopySoAndNameToCurrentDevice();
-        COND_RETURN_ERROR_MSG_INNER(ret != RT_ERROR_NONE, ret, "Copy bin to device failed device_id=%u, retCode=%#x.",
-            curCtx->Device_()->Id_(), ret);
+        COND_RETURN_ERROR_MSG_INNER(
+            ret != RT_ERROR_NONE, ret, "Copy bin to device failed device_id=%u, retCode=%#x.", curCtx->Device_()->Id_(),
+            ret);
         *bin = programHdl->GetBinBaseAddr(curCtx->Device_()->Id_());
     } else {
         // do nothing
@@ -5137,16 +5277,17 @@ rtError_t Runtime::GetBinBuffer(const rtBinHandle binHandle, const rtBinBufferTy
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::FreeKernelBin(char_t * const buffer) const
+rtError_t Runtime::FreeKernelBin(char_t* const buffer) const
 {
-    delete [] buffer;
+    delete[] buffer;
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::GetWatchDogDevStatus(uint32_t deviceId, rtDeviceStatus *deviceStatus)
+rtError_t Runtime::GetWatchDogDevStatus(uint32_t deviceId, rtDeviceStatus* deviceStatus)
 {
     if (deviceId > RT_MAX_DEV_NUM) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "GetWatchDogDevStatus failed, param deviceId is invalid, drv devId=%u.", deviceId);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "GetWatchDogDevStatus failed, param deviceId is invalid, drv devId=%u.", deviceId);
         return RT_ERROR_DEVICE_ID;
     }
     const std::unique_lock<std::mutex> lk(watchDogDevStatusMutex_);
@@ -5160,13 +5301,15 @@ rtError_t Runtime::GetWatchDogDevStatus(uint32_t deviceId, rtDeviceStatus *devic
     return RT_ERROR_NONE;
 }
 
-rtError_t Runtime::SetWatchDogDevStatus(const Device *device, rtDeviceStatus deviceStatus)
+rtError_t Runtime::SetWatchDogDevStatus(const Device* device, rtDeviceStatus deviceStatus)
 {
     if (device != nullptr) {
         const uint32_t deviceId = device->Id_();
         const uint32_t tsId = device->DevGetTsId();
         if ((deviceId > RT_MAX_DEV_NUM) || (tsId >= RT_MAX_TS_NUM)) {
-            RT_LOG_INNER_MSG(RT_LOG_ERROR, "SetWatchDogDevStatus failed, param device is invalid, devId=%u, tsId=%u.", deviceId, tsId);
+            RT_LOG_INNER_MSG(
+                RT_LOG_ERROR, "SetWatchDogDevStatus failed, param device is invalid, devId=%u, tsId=%u.", deviceId,
+                tsId);
             return RT_ERROR_DEVICE_ID;
         }
         const std::unique_lock<std::mutex> lk(watchDogDevStatusMutex_);
@@ -5186,7 +5329,7 @@ rtError_t Runtime::SetWatchDogDevStatus(const Device *device, rtDeviceStatus dev
 
 void Runtime::ReadStreamSyncModeFromConfigIni(void)
 {
-    const char_t *env = nullptr;
+    const char_t* env = nullptr;
     MM_SYS_GET_ENV(MM_ENV_ASCEND_LATEST_INSTALL_PATH, env);
     if ((env == nullptr) || (*env == '\0')) {
         RT_LOG(RT_LOG_WARNING, "Cannot read ASCEND_LATEST_INSTALL_PATH! using non esched mode");
@@ -5206,18 +5349,18 @@ void Runtime::ReadStreamSyncModeFromConfigIni(void)
     return;
 }
 
-Context *Runtime::CurrentContext() const
+Context* Runtime::CurrentContext() const
 {
-    const ContextAccessMode accessMode = InnerThreadLocalContainer::IsInternalContextAccess() ?
-        ContextAccessMode::INTERNAL : ContextAccessMode::USER;
-    Context * const curCtx = InnerThreadLocalContainer::GetCurCtx();
+    const ContextAccessMode accessMode =
+        InnerThreadLocalContainer::IsInternalContextAccess() ? ContextAccessMode::INTERNAL : ContextAccessMode::USER;
+    Context* const curCtx = InnerThreadLocalContainer::GetCurCtx();
     if (curCtx != nullptr) {
         return ContextManage::CheckContextIsValid(curCtx, accessMode) ? curCtx : nullptr;
     }
 
-    RefObject<Context *> * const curRef = InnerThreadLocalContainer::GetCurRef();
+    RefObject<Context*>* const curRef = InnerThreadLocalContainer::GetCurRef();
     if (curRef != nullptr) {
-        Context * const refCtx = curRef->GetPrimaryCtxCallBackFlag() ? curRef->GetVal(false) : curRef->GetVal();
+        Context* const refCtx = curRef->GetPrimaryCtxCallBackFlag() ? curRef->GetVal(false) : curRef->GetVal();
         return ContextManage::CheckContextIsValid(refCtx, accessMode) ? refCtx : nullptr;
     }
     return nullptr;
@@ -5228,7 +5371,8 @@ rtError_t Runtime::InitAiCpuCnt()
     int64_t aicpuNum = DEFAULT_AICPU_INVALID_NUM;
     const drvError_t drvRet = halGetDeviceInfo(workingDev_, MODULE_TYPE_AICPU, INFO_TYPE_CORE_NUM, &aicpuNum);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "[drv api] halGetDeviceInfo failed, drvRetCode=%u, module type=%d, info type=%d.",
+        DRV_ERROR_PROCESS(
+            drvRet, "[drv api] halGetDeviceInfo failed, drvRetCode=%u, module type=%d, info type=%d.",
             static_cast<uint32_t>(drvRet), MODULE_TYPE_AICPU, INFO_TYPE_CORE_NUM);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
@@ -5243,15 +5387,9 @@ driverType_t Runtime::GetDriverType(void) const
     return drvType;
 }
 
-void Runtime::StreamSyncEschedLock(void)
-{
-    StreamSyncEschedMutex_.lock();
-}
+void Runtime::StreamSyncEschedLock(void) { StreamSyncEschedMutex_.lock(); }
 
-void Runtime::StreamSyncEschedUnLock(void)
-{
-    StreamSyncEschedMutex_.unlock();
-}
+void Runtime::StreamSyncEschedUnLock(void) { StreamSyncEschedMutex_.unlock(); }
 
 void Runtime::SetGlobalErr(const rtError_t errcode) const
 {
@@ -5259,7 +5397,7 @@ void Runtime::SetGlobalErr(const rtError_t errcode) const
     ContextManage::SetGlobalErrToCtx(errcode);
 }
 
-rtError_t Runtime::GetNpuDeviceCnt(int32_t &cnt)
+rtError_t Runtime::GetNpuDeviceCnt(int32_t& cnt)
 {
     const auto npuDrv = driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN_MSG(npuDrv, RT_ERROR_API_NULL);
@@ -5279,11 +5417,12 @@ rtError_t Runtime::CreateReportRasThread()
         return RT_ERROR_NONE;
     }
 
-    void * const reportRas = ValueToPtr(THREAD_REPORTRAS);
+    void* const reportRas = ValueToPtr(THREAD_REPORTRAS);
     constexpr const char_t* threadName = "REPORT_RAS";
     hbmRasThread_.reset(OsalFactory::CreateThread(threadName, &ras_, reportRas));
-    COND_RETURN_AND_MSG_OUTER(hbmRasThread_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, OsalFactory::GetThreadObjectSize(), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        hbmRasThread_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, OsalFactory::GetThreadObjectSize(),
+        "new");
     hbmRasThreadRunFlag_ = true;
     const int32_t error = hbmRasThread_->Start();
     if (error != EN_OK) {
@@ -5307,7 +5446,7 @@ void Runtime::DestroyReportRasThread(void)
     }
 }
 
-void RuntimeRas::Run(const void * const param)
+void RuntimeRas::Run(const void* const param)
 {
     UNUSED(param);
     Runtime::Instance()->ReportRasRun();
@@ -5316,8 +5455,7 @@ void RuntimeRas::Run(const void * const param)
 void Runtime::ReportRasRun(void)
 {
     if (!IS_SUPPORT_CHIP_FEATURE(GetChipType(), RtOptionalFeatureType::RT_FEATURE_DFX_REPORT_RAS)) {
-        RT_LOG(RT_LOG_WARNING, "ChipType %d does not support RAS reporting.",
-            static_cast<int32_t>(GetChipType()));
+        RT_LOG(RT_LOG_WARNING, "ChipType %d does not support RAS reporting.", static_cast<int32_t>(GetChipType()));
         return;
     }
     GlobalStateManager::GetInstance().IncBackgroundThreadCount(__func__);
@@ -5341,8 +5479,7 @@ void Runtime::ProcHBMRas(const uint32_t devId)
     RT_LOG(RT_LOG_ERROR, "ProcHBMRas start, device_id=%u.", devId);
 
     DevDynInfoProcFunc func{};
-    if ((GET_DEV_INFO_PROC_FUNC(GetChipType(), func) == RT_ERROR_NONE) &&
-        (func.devHitBlackListErrors != nullptr) &&
+    if ((GET_DEV_INFO_PROC_FUNC(GetChipType(), func) == RT_ERROR_NONE) && (func.devHitBlackListErrors != nullptr) &&
         func.devHitBlackListErrors(devId)) {
         return;
     }
@@ -5365,8 +5502,8 @@ void Runtime::ProcHBMRas(const uint32_t devId)
         ContextManage::SetGlobalFailureErr(devId, RT_ERROR_MEM_RAS_ERROR);
         ContextManage::DeviceSetFaultType(devId, DeviceFaultType::HBM_UCE_ERROR);
         RT_LOG(RT_LOG_ERROR, "get syscnt, device_id=%u, time us=%" PRIu64 ".", devId, timeUs);
-        RT_LOG_CALL_MSG(ERR_MODULE_DRV,
-            "HBM MULTI BIT ECC, Uncorrectable ECC, device_id=%u, event_id=0x%x, time us=%" PRIu64 ".",
+        RT_LOG_CALL_MSG(
+            ERR_MODULE_DRV, "HBM MULTI BIT ECC, Uncorrectable ECC, device_id=%u, event_id=0x%x, time us=%" PRIu64 ".",
             devId, HBM_ECC_EVENT_ID, timeUs);
     }
 }
@@ -5383,10 +5520,10 @@ static const char_t* GetEventAssertDesc(const uint8_t assertion)
         EVENT_OCCUR = 1U,
         ONE_TIME_EVENT = 2U,
     };
-    const AssertDesInfo assertDesc[] = { {EVENT_RESUME, "Event resume"}, {EVENT_OCCUR, "Event occur"},
-                                       {ONE_TIME_EVENT, "One time event"}};
+    const AssertDesInfo assertDesc[] = {
+        {EVENT_RESUME, "Event resume"}, {EVENT_OCCUR, "Event occur"}, {ONE_TIME_EVENT, "One time event"}};
 
-    for (uint32_t i = 0U; i< sizeof(assertDesc) / sizeof(AssertDesInfo); i++) {
+    for (uint32_t i = 0U; i < sizeof(assertDesc) / sizeof(AssertDesInfo); i++) {
         if (assertDesc[i].assert == assertion) {
             return assertDesc[i].name;
         }
@@ -5398,11 +5535,13 @@ void Runtime::ReportHBMRasProc(void)
 {
     if (hbmRasProcFlag_ == HBM_RAS_WAIT_PROC) {
         for (uint32_t i = 0U; hbmRasThreadRunFlag_ == true && i < (RAS_QUERY_MAX_COUNT - 1U); i++) {
-            Device *dev = GetDevice(rasInfo_.devId, 0U, false);
+            Device* dev = GetDevice(rasInfo_.devId, 0U, false);
             if (dev != nullptr && !dev->IsDeviceRelease()) {
                 if (dev->GetDeviceStatus() == RT_ERROR_DEVICE_TASK_ABORT) {
                     hbmRasProcFlag_ = HBM_RAS_WORKING;
-                    RT_LOG(RT_LOG_INFO, "device_id=%u is in the fast recovery phase and does not need to handle hbm ras.", rasInfo_.devId);
+                    RT_LOG(
+                        RT_LOG_INFO, "device_id=%u is in the fast recovery phase and does not need to handle hbm ras.",
+                        rasInfo_.devId);
                     break;
                 }
                 RT_LOG(RT_LOG_DEBUG, "wake up the recycle thread to receive cqe.");
@@ -5416,8 +5555,8 @@ void Runtime::ReportHBMRasProc(void)
     }
 
     rtDmsEventFilter filter;
-    filter.filterFlag = static_cast<uint64_t>(RT_DSM_EVENT_FILTER_FLAG_PID) |
-                        static_cast<uint64_t>(RT_DSM_EVENT_FILTER_FLAG_EVENT_ID);
+    filter.filterFlag =
+        static_cast<uint64_t>(RT_DSM_EVENT_FILTER_FLAG_PID) | static_cast<uint64_t>(RT_DSM_EVENT_FILTER_FLAG_EVENT_ID);
     filter.eventId = HBM_ECC_NOTIFY_EVENT_ID;
     rtDmsFaultEvent dmsEvent;
     // read dmsEvent, if assertion, change flag to wait proc
@@ -5429,10 +5568,11 @@ void Runtime::ReportHBMRasProc(void)
         hbmRasProcFlag_ = HBM_RAS_NOT_SUPPORT;
         RT_LOG(RT_LOG_EVENT, "Reading fault events is not supported");
     } else if (error == RT_ERROR_NONE && dmsEvent.eventId == HBM_ECC_NOTIFY_EVENT_ID) {
-        RT_LOG(RT_LOG_ERROR, "get fault event, device_id=%u, assert=%u[%s], event_id=0x%x.",
-            dmsEvent.deviceId, dmsEvent.assertion, GetEventAssertDesc(dmsEvent.assertion), dmsEvent.eventId);
+        RT_LOG(
+            RT_LOG_ERROR, "get fault event, device_id=%u, assert=%u[%s], event_id=0x%x.", dmsEvent.deviceId,
+            dmsEvent.assertion, GetEventAssertDesc(dmsEvent.assertion), dmsEvent.eventId);
         hbmRasProcFlag_ = HBM_RAS_WAIT_PROC;
-        Device *dev = GetDevice(dmsEvent.deviceId, 0U);
+        Device* dev = GetDevice(dmsEvent.deviceId, 0U);
         if (dev != nullptr) {
             dev->SetDeviceRas(true);
         }
@@ -5442,7 +5582,7 @@ void Runtime::ReportHBMRasProc(void)
     }
 }
 
-static void ProcUBMemNetworkException(const uint32_t devId, const rtDmsFaultEvent *faultEventInfo, uint32_t eventCount)
+static void ProcUBMemNetworkException(const uint32_t devId, const rtDmsFaultEvent* faultEventInfo, uint32_t eventCount)
 {
     static std::array<uint64_t, RT_MAX_DEV_NUM> lastReportTime = {};
     for (uint32_t faultIndex = 0U; faultIndex < eventCount; faultIndex++) {
@@ -5451,8 +5591,9 @@ static void ProcUBMemNetworkException(const uint32_t devId, const rtDmsFaultEven
             lastReportTime[devId] = faultEventInfo[faultIndex].alarmRaisedTime;
             if (ContextManage::DeviceSetFaultTypeIfNoError(devId, DeviceFaultType::L3_PORT_ERROR)) {
                 ContextManage::SetGlobalFailureErr(devId, RT_ERROR_L3_PORT_ERROR);
-                RT_LOG(RT_LOG_INFO, "set fault type for ub mem, device id=%u, event id=0x%x.",
-                    devId, faultEventInfo[faultIndex].eventId);
+                RT_LOG(
+                    RT_LOG_INFO, "set fault type for ub mem, device id=%u, event id=0x%x.", devId,
+                    faultEventInfo[faultIndex].eventId);
             }
             break;
         }
@@ -5463,7 +5604,7 @@ void Runtime::ReportUBMemRasProc()
 {
     std::vector<rtDmsFaultEvent> faultEventInfo(RAS_GET_MAX_NUM, rtDmsFaultEvent{});
     for (uint32_t devId = 0U; devId < RT_MAX_DEV_NUM; devId++) {
-        Device *dev = GetDevice(devId, 0U, false);
+        Device* dev = GetDevice(devId, 0U, false);
         if (dev == nullptr || dev->IsDeviceRelease()) {
             continue;
         }
@@ -5480,15 +5621,15 @@ void Runtime::ReportPageFaultProc(void)
 {
     mmTimeval time = {};
     (void)mmGetTimeOfDay(&time, nullptr);
-    const uint64_t currentTime = (static_cast<uint64_t>(time.tv_sec) * RT_MS_PER_S) +
-                                 (static_cast<uint64_t>(time.tv_usec) / RT_US_TO_MS);
+    const uint64_t currentTime =
+        (static_cast<uint64_t>(time.tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(time.tv_usec) / RT_US_TO_MS);
     for (uint32_t i = 0U; i < RT_MAX_DEV_NUM; i++) {
-        auto &refObj = devices_[i];
+        auto& refObj = devices_[i];
         for (uint32_t j = 0U; j < tsNum_; j++) {
             if (refObj[j].GetRef() == 0ULL) {
                 continue;
             }
-            Device * const device = refObj[j].GetVal();
+            Device* const device = refObj[j].GetVal();
             if (device == nullptr) {
                 continue;
             }
@@ -5513,10 +5654,10 @@ void Runtime::ReportPageFaultProc(void)
                 continue;
             }
             const uint32_t pageFaultCnt = value - device->GetPageFaultBaseCnt();
- 	        if (pageFaultCnt > PAGE_FAULT_CNT_THRESHOLD) {
+            if (pageFaultCnt > PAGE_FAULT_CNT_THRESHOLD) {
                 if ((currentTime - device->GetPageFaultBaseTime()) >= PAGE_FAULT_TIME_THRESHOLD) {
-                    RT_LOG(RT_LOG_ERROR,
-                        "Page fault count exceeds the limit, drv devId=%u, current page fault count=%u.",
+                    RT_LOG(
+                        RT_LOG_ERROR, "Page fault count exceeds the limit, drv devId=%u, current page fault count=%u.",
                         device->Id_(), pageFaultCnt);
                     ProcPageFault(device, pageFaultCnt);
                 }
@@ -5526,7 +5667,7 @@ void Runtime::ReportPageFaultProc(void)
 }
 
 // 仅限于pagefault上报
-void Runtime::ProcPageFault(Device * const device, const uint32_t value)
+void Runtime::ProcPageFault(Device* const device, const uint32_t value)
 {
     const uint32_t devId = device->Id_();
     rtDeviceStatus deviceStatus = RT_DEVICE_STATUS_NORMAL;
@@ -5542,14 +5683,17 @@ void Runtime::ProcPageFault(Device * const device, const uint32_t value)
 rtError_t Runtime::SaveModelAllDataToHost(void)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     Driver* devDrv = rt->driverFactory_.GetDriver(NPU_DRIVER);
     for (const auto& node : moduleBackupList_) {
         auto tempDrv = (node->drv == nullptr ? devDrv : node->drv);
         RT_LOG(RT_LOG_DEBUG, "device_id=%u, backup devAddr=0x%llx len=%u", node->devId, node->devAddr, node->memSize);
-        ret = tempDrv->MemCopySync(static_cast<void *>(node->hostAddr), node->memSize, node->devAddr, node->memSize, RT_MEMCPY_DEVICE_TO_HOST);
+        ret = tempDrv->MemCopySync(
+            static_cast<void*>(node->hostAddr), node->memSize, node->devAddr, node->memSize, RT_MEMCPY_DEVICE_TO_HOST);
         if (ret != RT_ERROR_NONE) {
-            RT_LOG(RT_LOG_ERROR, "MemCopySync fail! src=0x%llx, dst=0x%llx, len=%lu.", node->devAddr, node->hostAddr, node->memSize);
+            RT_LOG(
+                RT_LOG_ERROR, "MemCopySync fail! src=0x%llx, dst=0x%llx, len=%lu.", node->devAddr, node->hostAddr,
+                node->memSize);
             DeleteModuleBackupPoint();
             break;
         }
@@ -5559,8 +5703,8 @@ rtError_t Runtime::SaveModelAllDataToHost(void)
 
 rtError_t Runtime::SaveModuleAicpuInfo(const Module* const module, const uint32_t devId, Driver* curDrv)
 {
-    void *soNameBase = nullptr;
-    void *kernelNameBase = nullptr;
+    void* soNameBase = nullptr;
+    void* kernelNameBase = nullptr;
     uint32_t soNameSize = 0U;
     uint32_t kenelNameSize = 0U;
     rtError_t ret = RT_ERROR_NONE;
@@ -5568,28 +5712,34 @@ rtError_t Runtime::SaveModuleAicpuInfo(const Module* const module, const uint32_
     module->GetAicpuLoadInfo(&soNameBase, &soNameSize, &kernelNameBase, &kenelNameSize);
 
     // back aicpu so name
-    std::unique_ptr<ModuleMemInfo> soNameMemInfo(std::make_unique<ModuleMemInfo>(devId, soNameSize, soNameBase, curDrv, false));
+    std::unique_ptr<ModuleMemInfo> soNameMemInfo(
+        std::make_unique<ModuleMemInfo>(devId, soNameSize, soNameBase, curDrv, false));
     COND_PROC(soNameMemInfo == nullptr, ret = RT_ERROR_MEMORY_ALLOCATION);
-    COND_RETURN_AND_MSG_OUTER(soNameMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        soNameMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
     COND_PROC(soNameBase != nullptr, moduleBackupList_.push_back(std::move(soNameMemInfo)));
 
     // backup aicpu kernel info
-    std::unique_ptr<ModuleMemInfo> kernelNameMemInfo(std::make_unique<ModuleMemInfo>(devId, kenelNameSize, kernelNameBase, curDrv, false));
+    std::unique_ptr<ModuleMemInfo> kernelNameMemInfo(
+        std::make_unique<ModuleMemInfo>(devId, kenelNameSize, kernelNameBase, curDrv, false));
     COND_PROC(kernelNameMemInfo == nullptr, ret = RT_ERROR_MEMORY_ALLOCATION);
-    COND_RETURN_AND_MSG_OUTER(kernelNameMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        kernelNameMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
     COND_PROC(kernelNameBase != nullptr, moduleBackupList_.push_back(std::move(kernelNameMemInfo)));
 
     return ret;
 }
 
-rtError_t Runtime::SaveModuleDataInfoToList(Program *prog)
+rtError_t Runtime::SaveModuleDataInfoToList(Program* prog)
 {
     bool readonly = prog->IsReadOnly();
     for (uint32_t i = 0U; i < RT_MAX_DEV_NUM; i++) {
         if (prog->GetBinAlignBaseAddr(i) != nullptr) {
             // save program load addr
-            std::unique_ptr<ModuleMemInfo> progMemInfo(std::make_unique<ModuleMemInfo>(i, prog->LoadSize(), prog->GetBinAlignBaseAddr(i), nullptr, readonly));
-            COND_RETURN_AND_MSG_OUTER(progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
+            std::unique_ptr<ModuleMemInfo> progMemInfo(
+                std::make_unique<ModuleMemInfo>(i, prog->LoadSize(), prog->GetBinAlignBaseAddr(i), nullptr, readonly));
+            COND_RETURN_AND_MSG_OUTER(
+                progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
             moduleBackupList_.push_back(std::move(progMemInfo));
         }
 
@@ -5598,10 +5748,14 @@ rtError_t Runtime::SaveModuleDataInfoToList(Program *prog)
             const std::string& soName = iter.first;
             void* soNameDevAddr = iter.second;
             if (soNameDevAddr != nullptr) {
-                std::unique_ptr<ModuleMemInfo> progMemInfo(std::make_unique<ModuleMemInfo>(i, soName.size() + 1U, soNameDevAddr, nullptr, false));
-                COND_RETURN_AND_MSG_OUTER(progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
+                std::unique_ptr<ModuleMemInfo> progMemInfo(
+                    std::make_unique<ModuleMemInfo>(i, soName.size() + 1U, soNameDevAddr, nullptr, false));
+                COND_RETURN_AND_MSG_OUTER(
+                    progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo),
+                    "new");
                 moduleBackupList_.push_back(std::move(progMemInfo));
-                RT_LOG(RT_LOG_INFO, "prog id=%u, soName=%s, soNameDevAddr=%p", prog->Id_(), soName.c_str(), soNameDevAddr);
+                RT_LOG(
+                    RT_LOG_INFO, "prog id=%u, soName=%s, soNameDevAddr=%p", prog->Id_(), soName.c_str(), soNameDevAddr);
             }
         }
 
@@ -5610,10 +5764,15 @@ rtError_t Runtime::SaveModuleDataInfoToList(Program *prog)
             const std::string& funcName = iter.first;
             void* funcNameDevAddr = iter.second;
             if (funcNameDevAddr != nullptr) {
-                std::unique_ptr<ModuleMemInfo> progMemInfo(std::make_unique<ModuleMemInfo>(i, funcName.size() + 1, funcNameDevAddr, nullptr, false));
-                COND_RETURN_AND_MSG_OUTER(progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
+                std::unique_ptr<ModuleMemInfo> progMemInfo(
+                    std::make_unique<ModuleMemInfo>(i, funcName.size() + 1, funcNameDevAddr, nullptr, false));
+                COND_RETURN_AND_MSG_OUTER(
+                    progMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo),
+                    "new");
                 moduleBackupList_.push_back(std::move(progMemInfo));
-                RT_LOG(RT_LOG_INFO, "prog id=%u, funcName=%s, funcNameDevAddr=%p", prog->Id_(), funcName.c_str(), funcNameDevAddr);
+                RT_LOG(
+                    RT_LOG_INFO, "prog id=%u, funcName=%s, funcNameDevAddr=%p", prog->Id_(), funcName.c_str(),
+                    funcNameDevAddr);
             }
         }
     }
@@ -5627,12 +5786,15 @@ rtError_t Runtime::SaveModuleDataInfoToList(Program *prog)
 
         Driver* curDrv = dereferenceCtx->Device_()->Driver_();
         const uint32_t devId = dereferenceCtx->Device_()->Id_();
-        const void *devAddr = module->GetBaseAddr();
+        const void* devAddr = module->GetBaseAddr();
         uint32_t memSize = module->GetBaseAddrSize();
         // The address in the module may be the same as that in the prog.
-        std::unique_ptr<ModuleMemInfo> kernelMemInfo(std::make_unique<ModuleMemInfo>(devId, memSize, devAddr, curDrv, readonly));
-        COND_RETURN_AND_MSG_OUTER(kernelMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
-        COND_PROC((prog->GetBinAlignBaseAddr(devId) != devAddr && prog->LoadSize() != memSize),
+        std::unique_ptr<ModuleMemInfo> kernelMemInfo(
+            std::make_unique<ModuleMemInfo>(devId, memSize, devAddr, curDrv, readonly));
+        COND_RETURN_AND_MSG_OUTER(
+            kernelMemInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(ModuleMemInfo), "new");
+        COND_PROC(
+            (prog->GetBinAlignBaseAddr(devId) != devAddr && prog->LoadSize() != memSize),
             moduleBackupList_.push_back(std::move(kernelMemInfo)));
 
         rtError_t ret = SaveModuleAicpuInfo(module, devId, curDrv);
@@ -5645,16 +5807,16 @@ rtError_t Runtime::SaveModuleDataInfoToList(Program *prog)
 rtError_t Runtime::SaveModule(void)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Runtime * const rt = Runtime::Instance();
-    ObjAllocator<RefObject<Program *>> *programAllocator = rt->GetProgramAllocator();
+    Runtime* const rt = Runtime::Instance();
+    ObjAllocator<RefObject<Program*>>* programAllocator = rt->GetProgramAllocator();
     NULL_PTR_RETURN_MSG(programAllocator, RT_ERROR_PROGRAM_BASE);
 
     COND_PROC(moduleBackupList_.empty() == false, DeleteModuleBackupPoint());
 
-    RefObject<Program *> **progPool = programAllocator->GetObjAllocatorPool();
+    RefObject<Program*>** progPool = programAllocator->GetObjAllocatorPool();
     NULL_PTR_RETURN_MSG(progPool, RT_ERROR_PROGRAM_BASE);
 
-    std::mutex *progMtx = programAllocator->GetObjAllocatorMutex();
+    std::mutex* progMtx = programAllocator->GetObjAllocatorMutex();
     NULL_PTR_RETURN_MSG(progMtx, RT_ERROR_PROGRAM_BASE);
 
     const uint32_t poolNum = Runtime::maxProgramNum_ / DEFAULT_PROGRAM_NUMBER;
@@ -5672,13 +5834,13 @@ rtError_t Runtime::SaveModule(void)
 
         const uint32_t baseId = programAllocator->AccumulatePoolCount(i);
         for (uint32_t index = baseId; index < baseId + DEFAULT_PROGRAM_NUMBER; index++) {
-            RefObject<Program *> * const refObj = programAllocator->GetDataToItemApplied(index);
+            RefObject<Program*>* const refObj = programAllocator->GetDataToItemApplied(index);
             COND_PROC(refObj == nullptr, continue);
 
             const uint64_t refObjValue = refObj->GetRef();
             COND_PROC(refObjValue == 0, continue);
 
-            Program *prog = refObj->GetVal(false);
+            Program* prog = refObj->GetVal(false);
             COND_PROC(prog == nullptr, continue);
 
             RT_LOG(RT_LOG_DEBUG, "prog ctx cnt=%u, prog id=%u", prog->GetCtxMap().size(), prog->Id_());
@@ -5696,25 +5858,29 @@ rtError_t Runtime::RestoreModule(void) const
     rtError_t ret = RT_ERROR_NONE;
     RT_LOG(RT_LOG_DEBUG, "backup begin");
     for (const auto& node : moduleBackupList_) {
-        void* devAddr = const_cast<void *>(node->devAddr);
+        void* devAddr = const_cast<void*>(node->devAddr);
         const uint32_t memSize = static_cast<uint32_t>(node->memSize);
-        void *hostAddr = static_cast<void *>(node->hostAddr);
-        Device *device = const_cast<Runtime*>(this)->GetDevice(node->devId, 0U);
+        void* hostAddr = static_cast<void*>(node->hostAddr);
+        Device* device = const_cast<Runtime*>(this)->GetDevice(node->devId, 0U);
         rtError_t error;
         // 使用 GetPoolMemInfo 原子化查询，避免 TOCTOU 竞争
         PoolMemInfo poolInfo = device->GetKernelMemoryPool()->GetPoolMemInfo(devAddr);
         if (poolInfo.found) {
-            error = Program::BinaryPoolMemCopySync(devAddr, static_cast<uint32_t>(memSize), hostAddr, device, node->readonly);
-            COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-                "BinaryPoolMemCopySync failed, device_id=%u, src=%p, dest=%p, len=%u.", node->devId, hostAddr, devAddr, memSize);
+            error = Program::BinaryPoolMemCopySync(
+                devAddr, static_cast<uint32_t>(memSize), hostAddr, device, node->readonly);
+            COND_RETURN_ERROR_MSG_INNER(
+                error != RT_ERROR_NONE, error, "BinaryPoolMemCopySync failed, device_id=%u, src=%p, dest=%p, len=%u.",
+                node->devId, hostAddr, devAddr, memSize);
         } else {
             const uint32_t adviseSize = static_cast<uint32_t>(node->memSize + INSTR_ALIGN_SIZE);
-            error = Program::BinaryMemCopySync(devAddr, adviseSize, static_cast<uint32_t>(memSize), hostAddr, device, node->readonly);
-            COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-                "BinaryMemCopySync failed, device_id=%u, src=%p, dest=%p, len=%u.", node->devId, hostAddr, devAddr, memSize);
+            error = Program::BinaryMemCopySync(
+                devAddr, adviseSize, static_cast<uint32_t>(memSize), hostAddr, device, node->readonly);
+            COND_RETURN_ERROR_MSG_INNER(
+                error != RT_ERROR_NONE, error, "BinaryMemCopySync failed, device_id=%u, src=%p, dest=%p, len=%u.",
+                node->devId, hostAddr, devAddr, memSize);
         }
 
-        RT_LOG(RT_LOG_DEBUG,"baseAddr=0x%llx, hostMem=0x%llx.", devAddr, hostAddr);
+        RT_LOG(RT_LOG_DEBUG, "baseAddr=0x%llx, hostMem=0x%llx.", devAddr, hostAddr);
     }
     RT_LOG(RT_LOG_DEBUG, "backup work finish");
     return ret;
@@ -5727,26 +5893,28 @@ void Runtime::DeleteModuleBackupPoint(void)
     RT_LOG(RT_LOG_DEBUG, "Delete finish");
 }
 
-bool Runtime::JudgeNeedSubscribe(const uint64_t threadId, Stream *stm, const uint32_t deviceId)
+bool Runtime::JudgeNeedSubscribe(const uint64_t threadId, Stream* stm, const uint32_t deviceId)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, false);
     return cbSubscribe_->JudgeNeedSubscribe(threadId, stm, deviceId);
 }
 
-rtError_t Runtime::SubscribeCallback(const uint64_t threadId, Stream *stm, void *evtNotify)
+rtError_t Runtime::SubscribeCallback(const uint64_t threadId, Stream* stm, void* evtNotify)
 {
     NULL_PTR_RETURN_MSG(cbSubscribe_, RT_ERROR_SUBSCRIBE_NULL);
     const rtError_t error = cbSubscribe_->SubscribeCallback(threadId, stm, evtNotify);
-    ERROR_RETURN_MSG_INNER(error, "SubscribeCallback failed, stream_id=%d, threadId=%" PRIu64 ", retCode=%#x.",
-        stm->Id_(), threadId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "SubscribeCallback failed, stream_id=%d, threadId=%" PRIu64 ", retCode=%#x.", stm->Id_(), threadId,
+        static_cast<uint32_t>(error));
     stm->SetSubscribeFlag(StreamSubscribeFlag::SUBSCRIBE_RUNTIME);
     return error;
 }
 
 rtError_t Runtime::SetSimdPrintFifoSize(uint32_t val)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((val < SIMD_MIN_FIFO_PRINTF_SIZE || val > MAX_FIFO_PRINTF_SIZE), RT_ERROR_INVALID_VALUE,
-        val, "[" + std::to_string(SIMD_MIN_FIFO_PRINTF_SIZE) + ", " + std::to_string(MAX_FIFO_PRINTF_SIZE) + "]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+        (val < SIMD_MIN_FIFO_PRINTF_SIZE || val > MAX_FIFO_PRINTF_SIZE), RT_ERROR_INVALID_VALUE, val,
+        "[" + std::to_string(SIMD_MIN_FIFO_PRINTF_SIZE) + ", " + std::to_string(MAX_FIFO_PRINTF_SIZE) + "]");
     uint32_t assignVal = (val + PRINTF_FIFO_ASSIGN - 1U) / PRINTF_FIFO_ASSIGN * PRINTF_FIFO_ASSIGN;
     printblockLen_ = assignVal;
     RT_LOG(RT_LOG_DEBUG, "Set simd printf fifo size succ, origin val=%u, assgin val=%u", val, printblockLen_);
@@ -5755,8 +5923,9 @@ rtError_t Runtime::SetSimdPrintFifoSize(uint32_t val)
 
 rtError_t Runtime::SetSimtPrintFifoSize(uint32_t val)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((val < SIMT_MIN_FIFO_PRINTF_SIZE || val > MAX_FIFO_PRINTF_SIZE), RT_ERROR_INVALID_VALUE,
-        val, "[" + std::to_string(SIMT_MIN_FIFO_PRINTF_SIZE) + ", " + std::to_string(MAX_FIFO_PRINTF_SIZE) + "]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+        (val < SIMT_MIN_FIFO_PRINTF_SIZE || val > MAX_FIFO_PRINTF_SIZE), RT_ERROR_INVALID_VALUE, val,
+        "[" + std::to_string(SIMT_MIN_FIFO_PRINTF_SIZE) + ", " + std::to_string(MAX_FIFO_PRINTF_SIZE) + "]");
     uint32_t assignVal = (val + PRINTF_FIFO_ASSIGN - 1U) / PRINTF_FIFO_ASSIGN * PRINTF_FIFO_ASSIGN;
     simtPrintLen_ = assignVal;
     RT_LOG(RT_LOG_DEBUG, "Set simt printf fifo size succ, origin val=%u, assgin val=%u", val, simtPrintLen_);
@@ -5765,9 +5934,10 @@ rtError_t Runtime::SetSimtPrintFifoSize(uint32_t val)
 
 uint32_t GetRuntimeStreamNum(void)
 {
-    Runtime *rt = Runtime::Instance();
-    if ((rt != nullptr) && IS_SUPPORT_CHIP_FEATURE(rt->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_EXTENSION)) {
-        const DevProperties &stmProps = rt->GetCurChipProperties();
+    Runtime* rt = Runtime::Instance();
+    if ((rt != nullptr) &&
+        IS_SUPPORT_CHIP_FEATURE(rt->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_EXTENSION)) {
+        const DevProperties& stmProps = rt->GetCurChipProperties();
         RT_LOG(RT_LOG_DEBUG, "StreamCnt=%u", stmProps.rsvAicpuStreamNum);
         return stmProps.maxAllocStreamNum + stmProps.rsvAicpuStreamNum;
     }
@@ -5775,15 +5945,14 @@ uint32_t GetRuntimeStreamNum(void)
     return 3072U;
 }
 
-Stream *Runtime::GetCurStream(Stream * const stm) const
+Stream* Runtime::GetCurStream(Stream* const stm) const
 {
-    if (stm == nullptr &&
-        IS_SUPPORT_CHIP_FEATURE(GetChipType(), RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
-        Context *curCtx = CurrentContext();
+    if (stm == nullptr && IS_SUPPORT_CHIP_FEATURE(GetChipType(), RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
+        Context* curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, nullptr);
         return curCtx->DefaultStream_();
     }
     return stm;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

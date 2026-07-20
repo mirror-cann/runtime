@@ -15,22 +15,21 @@
 
 namespace cce {
 namespace runtime {
-rtError_t FftsPlusTaskInit(TaskInfo* taskInfo, const rtFftsPlusTaskInfo_t * const fftsPlusTaskInfo,
-                           const uint32_t flag);
-rtError_t FillFftsPlusSqe(TaskInfo* taskInfo, const void * const devMem);
+rtError_t FftsPlusTaskInit(TaskInfo* taskInfo, const rtFftsPlusTaskInfo_t* const fftsPlusTaskInfo, const uint32_t flag);
+rtError_t FillFftsPlusSqe(TaskInfo* taskInfo, const void* const devMem);
 void DoCompleteSuccForFftsPlusTask(TaskInfo* taskInfo, const uint32_t devId);
-void FftsPlusTaskUnInit(TaskInfo * const taskInfo);
-void SqeTaskUpdateForFftsPlus(TaskInfo* taskInfo, rtStarsSqe_t * const fftsplusSqe);
-uint32_t GetSendSqeNumForFftsPlusTask(const TaskInfo * const taskInfo);
-void ConstructSqeForFftsPlusTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
-void PrintDsaErrorInfoForFftsPlusTask(TaskInfo* taskInfo, const rtFftsPlusTaskErrInfo_t &info,
-                                      const uint32_t devId);
-void PrintAicAivErrorInfoForFftsPlusTask(TaskInfo* taskInfo, const rtFftsPlusTaskErrInfo_t &info, uint32_t devId);
-void GetExceptionArgsForFftsPlus(TaskInfo* taskInfo, const rtExceptionExpandInfo_t * const expandInfo,
-                                 uint32_t errType, rtExceptionArgsInfo_t *argsInfo);
+void FftsPlusTaskUnInit(TaskInfo* const taskInfo);
+void SqeTaskUpdateForFftsPlus(TaskInfo* taskInfo, rtStarsSqe_t* const fftsplusSqe);
+uint32_t GetSendSqeNumForFftsPlusTask(const TaskInfo* const taskInfo);
+void ConstructSqeForFftsPlusTask(TaskInfo* taskInfo, rtStarsSqe_t* const command);
+void PrintDsaErrorInfoForFftsPlusTask(TaskInfo* taskInfo, const rtFftsPlusTaskErrInfo_t& info, const uint32_t devId);
+void PrintAicAivErrorInfoForFftsPlusTask(TaskInfo* taskInfo, const rtFftsPlusTaskErrInfo_t& info, uint32_t devId);
+void GetExceptionArgsForFftsPlus(
+    TaskInfo* taskInfo, const rtExceptionExpandInfo_t* const expandInfo, uint32_t errType,
+    rtExceptionArgsInfo_t* argsInfo);
 void PrintErrorInfoForFftsPlusTask(TaskInfo* taskInfo, const uint32_t devId);
-void PushBackErrInfoForFftsPlusTask(TaskInfo* taskInfo, const void *errInfo, uint32_t len);
-void SetStarsResultForFftsPlusTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_FFTS_TASK_H
+void PushBackErrInfoForFftsPlusTask(TaskInfo* taskInfo, const void* errInfo, uint32_t len);
+void SetStarsResultForFftsPlusTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_FFTS_TASK_H

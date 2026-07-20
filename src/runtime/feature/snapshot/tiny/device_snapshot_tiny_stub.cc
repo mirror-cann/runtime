@@ -12,19 +12,17 @@
 namespace cce {
 namespace runtime {
 
-DeviceSnapshot::DeviceSnapshot(Device *dev)
-    : NoCopy(), IDeviceSnapshotOps(), device_(dev)
-{}
+DeviceSnapshot::DeviceSnapshot(Device* dev) : NoCopy(), IDeviceSnapshotOps(), device_(dev) {}
 
 DeviceSnapshot::~DeviceSnapshot() noexcept {}
 
-void DeviceSnapshot::RecordOpAddrAndSize(const Stream *const stm) { UNUSED(stm); }
+void DeviceSnapshot::RecordOpAddrAndSize(const Stream* const stm) { UNUSED(stm); }
 
-void DeviceSnapshot::GetOpTotalMemoryInfo(const Model *const mdl) { UNUSED(mdl); }
+void DeviceSnapshot::GetOpTotalMemoryInfo(const Model* const mdl) { UNUSED(mdl); }
 
-void DeviceSnapshot::RecordFuncCallAddrAndSize(TaskInfo *const task) { UNUSED(task); }
+void DeviceSnapshot::RecordFuncCallAddrAndSize(TaskInfo* const task) { UNUSED(task); }
 
-void DeviceSnapshot::RecordArgsAddrAndSize(TaskInfo *const task) { UNUSED(task); }
+void DeviceSnapshot::RecordArgsAddrAndSize(TaskInfo* const task) { UNUSED(task); }
 
 rtError_t DeviceSnapshot::OpMemoryBackup(void) { return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
@@ -34,23 +32,52 @@ rtError_t DeviceSnapshot::ArgsPoolRestore(void) const { return RT_ERROR_FEATURE_
 
 rtError_t DeviceSnapshot::UbArgsPoolRestore(void) const { return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
-rtError_t DeviceSnapshot::ArgsPoolConvertAddr(H2DCopyMgr *const mgr) const { UNUSED(mgr); return RT_ERROR_FEATURE_NOT_SUPPORT; }
+rtError_t DeviceSnapshot::ArgsPoolConvertAddr(H2DCopyMgr* const mgr) const
+{
+    UNUSED(mgr);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
 
 void DeviceSnapshot::OpMemoryInfoInit(void) {}
 
-const DeviceSnapshot::TaskHandlerFuncMap& DeviceSnapshot::GetHandlerMap() const {
+const DeviceSnapshot::TaskHandlerFuncMap& DeviceSnapshot::GetHandlerMap() const
+{
     static TaskHandlerFuncMap emptyMap;
     return emptyMap;
 }
 
 namespace TaskHandlers {
-void HandleStreamSwitch(TaskInfo* const task, DeviceSnapshot* snapshot) { UNUSED(task); UNUSED(snapshot); }
-void HandleStreamLabelSwitchByIndex(TaskInfo* const task, DeviceSnapshot* snapshot) { UNUSED(task); UNUSED(snapshot); }
-void HandleMemWaitValue(TaskInfo* const task, DeviceSnapshot* snapshot) { UNUSED(task); UNUSED(snapshot); }
-void HandleRdmaPiValueModify(TaskInfo* const task, DeviceSnapshot* snapshot) { UNUSED(task); UNUSED(snapshot); }
-void HandleStreamActive(TaskInfo* const task, DeviceSnapshot* snapshot) { UNUSED(task); UNUSED(snapshot); }
-void HandleModelTaskUpdate(TaskInfo* const task, DeviceSnapshot* snapshot) { UNUSED(task); UNUSED(snapshot); }
+void HandleStreamSwitch(TaskInfo* const task, DeviceSnapshot* snapshot)
+{
+    UNUSED(task);
+    UNUSED(snapshot);
 }
+void HandleStreamLabelSwitchByIndex(TaskInfo* const task, DeviceSnapshot* snapshot)
+{
+    UNUSED(task);
+    UNUSED(snapshot);
+}
+void HandleMemWaitValue(TaskInfo* const task, DeviceSnapshot* snapshot)
+{
+    UNUSED(task);
+    UNUSED(snapshot);
+}
+void HandleRdmaPiValueModify(TaskInfo* const task, DeviceSnapshot* snapshot)
+{
+    UNUSED(task);
+    UNUSED(snapshot);
+}
+void HandleStreamActive(TaskInfo* const task, DeviceSnapshot* snapshot)
+{
+    UNUSED(task);
+    UNUSED(snapshot);
+}
+void HandleModelTaskUpdate(TaskInfo* const task, DeviceSnapshot* snapshot)
+{
+    UNUSED(task);
+    UNUSED(snapshot);
+}
+} // namespace TaskHandlers
 
-}
-}
+} // namespace runtime
+} // namespace cce

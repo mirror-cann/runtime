@@ -18,33 +18,34 @@ namespace cce {
 namespace runtime {
 #if F_DESC("DavinciKernelTask")
 
-bool IsAicAivBiuPerfStreamSupported(const Stream *const stm)
+bool IsAicAivBiuPerfStreamSupported(const Stream* const stm)
 {
     UNUSED(stm);
     return true;
 }
 
-void ConstructDavidAICpuSqeForDavinciTask(TaskInfo *const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
+void ConstructDavidAICpuSqeForDavinciTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     ConstructDavidAICpuSqeForDavinciTaskBase(taskInfo, davidSqe, sqBaseAddr);
-    RtDavidStarsAicpuKernelSqe *const aicpuKernelSqe = &(davidSqe->aicpuSqe);
+    RtDavidStarsAicpuKernelSqe* const aicpuKernelSqe = &(davidSqe->aicpuSqe);
 
     // swap buffer use host pid
     aicpuKernelSqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
     UpdateDavidAICpuKernelSqeForDavinciTask(aicpuKernelSqe);
 
     PrintDavidSqe(davidSqe, "AICpuTask");
-    RT_LOG(RT_LOG_INFO, "type=%hu, topic_type=%hu, kernel_type=%u, dump_en=%u",
-        aicpuKernelSqe->header.type, aicpuKernelSqe->topicType, aicpuKernelSqe->kernelType, aicpuKernelSqe->debugDumpEn);
+    RT_LOG(
+        RT_LOG_INFO, "type=%hu, topic_type=%hu, kernel_type=%u, dump_en=%u", aicpuKernelSqe->header.type,
+        aicpuKernelSqe->topicType, aicpuKernelSqe->kernelType, aicpuKernelSqe->debugDumpEn);
     return;
 }
 
-void UpdateDavidAICoreSqeForDavinciTask(TaskInfo *taskInfo, RtDavidStarsAicAivKernelSqe * const sqe)
+void UpdateDavidAICoreSqeForDavinciTask(TaskInfo* taskInfo, RtDavidStarsAicAivKernelSqe* const sqe)
 {
-    AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
-    const Kernel *kernel = aicTaskInfo->kernel;
+    AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
+    const Kernel* kernel = aicTaskInfo->kernel;
     if ((kernel != nullptr) && (kernel->isStlKernel())) {
         sqe->aivSimtDcuSmSize = RT_SIMT_STL_UB_SIZE;
         sqe->stl = 1U;
@@ -53,19 +54,19 @@ void UpdateDavidAICoreSqeForDavinciTask(TaskInfo *taskInfo, RtDavidStarsAicAivKe
     return;
 }
 
-void UpdateDavidAICpuControlSqeForDavinciTask(RtDavidStarsAicpuControlSqe * const sqe)
+void UpdateDavidAICpuControlSqeForDavinciTask(RtDavidStarsAicpuControlSqe* const sqe)
 {
- 	sqe->topicType = TOPIC_TYPE_DEVICE_AICPU_SRC_PID;
- 	return;
+    sqe->topicType = TOPIC_TYPE_DEVICE_AICPU_SRC_PID;
+    return;
 }
 
-void UpdateDavidAICpuKernelSqeForDavinciTask(RtDavidStarsAicpuKernelSqe * const sqe)
+void UpdateDavidAICpuKernelSqeForDavinciTask(RtDavidStarsAicpuKernelSqe* const sqe)
 {
- 	sqe->topicType = TOPIC_TYPE_DEVICE_AICPU_SRC_PID;
- 	return;
+    sqe->topicType = TOPIC_TYPE_DEVICE_AICPU_SRC_PID;
+    return;
 }
 
-void ConfigSqeDieFriendly(RtDavidStarsAicAivKernelSqe * const sqe, const Stream * const stm)
+void ConfigSqeDieFriendly(RtDavidStarsAicAivKernelSqe* const sqe, const Stream* const stm)
 {
     UNUSED(stm);
     sqe->dieFriendly = 0U;
@@ -114,5 +115,5 @@ static bool g_davinciKernelTaskRegister = DavinciKernelTaskRegister();
 
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

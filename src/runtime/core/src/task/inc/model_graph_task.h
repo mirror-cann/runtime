@@ -16,14 +16,14 @@
 namespace cce {
 namespace runtime {
 
-rtError_t AddEndGraphTaskInit(TaskInfo* taskInfo, const uint32_t modelId, const uint32_t exeFlag,
-                              const uint64_t argParam, const uint64_t endGraphName,
-                              const uint8_t flags);
-void ToCmdBodyForAddEndGraphTask(TaskInfo* taskInfo, rtCommand_t *const command);
+rtError_t AddEndGraphTaskInit(
+    TaskInfo* taskInfo, const uint32_t modelId, const uint32_t exeFlag, const uint64_t argParam,
+    const uint64_t endGraphName, const uint8_t flags);
+void ToCmdBodyForAddEndGraphTask(TaskInfo* taskInfo, rtCommand_t* const command);
 
 rtError_t AddModelExitTaskInit(TaskInfo* taskInfo, const uint32_t modelId);
-void ToCmdBodyForAddModelExitTask(TaskInfo* taskInfo, rtCommand_t *const command);
+void ToCmdBodyForAddModelExitTask(TaskInfo* taskInfo, rtCommand_t* const command);
 
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_MODEL_GRAPH_TASK_H
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_MODEL_GRAPH_TASK_H

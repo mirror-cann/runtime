@@ -21,10 +21,10 @@ namespace runtime {
 constexpr const uint16_t STARS_DATADUMP_LOADINFO_END_BITMAP = 0x20U;
 
 #if F_DESC("DataDumpLoadInfoTask")
-static void ConstructSqeForDataDumpLoadInfoTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForDataDumpLoadInfoTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    Stream * const stm = taskInfo->stream;
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 1U;
@@ -54,18 +54,17 @@ static void DoCompleteSuccessForDataDumpLoadInfoTask(TaskInfo* taskInfo, const u
     const uint32_t errorCode = taskInfo->errorCode;
     if (unlikely(errorCode != static_cast<uint32_t>(RT_ERROR_NONE))) {
         taskInfo->stream->SetErrCode(errorCode);
-        RT_LOG(RT_LOG_ERROR, "Data Dump Load Info retCode=%#x, [%s].",
-               errorCode, GetTsErrCodeDesc(errorCode));
+        RT_LOG(RT_LOG_ERROR, "Data Dump Load Info retCode=%#x, [%s].", errorCode, GetTsErrCodeDesc(errorCode));
     }
 }
 
 #endif
 
 #if F_DESC("DebugRegisterTask")
-static void ConstructSqeForDebugRegisterTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForDebugRegisterTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    Stream * const stm = taskInfo->stream;
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 1U;
@@ -88,10 +87,10 @@ static void ConstructSqeForDebugRegisterTask(TaskInfo* taskInfo, rtStarsSqe_t *c
 #endif
 
 #if F_DESC("DebugUnRegisterTask")
-static void ConstructSqeForDebugUnRegisterTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForDebugUnRegisterTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    Stream * const stm = taskInfo->stream;
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 1U;
@@ -112,10 +111,10 @@ static void ConstructSqeForDebugUnRegisterTask(TaskInfo* taskInfo, rtStarsSqe_t 
 #endif
 
 #if F_DESC("DebugRegisterForStreamTask")
-static void ConstructSqeForDebugRegisterForStreamTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForDebugRegisterForStreamTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    Stream * const stm = taskInfo->stream;
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 1U;
@@ -133,17 +132,18 @@ static void ConstructSqeForDebugRegisterForStreamTask(TaskInfo* taskInfo, rtStar
     sqe->u.stream_debug_register_info.flag = taskInfo->u.debugRegisterForStreamTask.flag;
 
     PrintSqe(command, "DebugRegisterForStream");
-    RT_LOG(RT_LOG_INFO, "DebugRegisterForStreamTask stream_id:%d task_id:%u",
-        stm->Id_(), static_cast<uint32_t>(taskInfo->id));
+    RT_LOG(
+        RT_LOG_INFO, "DebugRegisterForStreamTask stream_id:%d task_id:%u", stm->Id_(),
+        static_cast<uint32_t>(taskInfo->id));
 }
 
 #endif
 
 #if F_DESC("DebugUnRegisterForStreamTask")
-static void ConstructSqeForDebugUnRegisterForStreamTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForDebugUnRegisterForStreamTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    RtStarsPhSqe *const sqe = &(command->phSqe);
-    Stream *stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
+    Stream* stm = taskInfo->stream;
 
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
@@ -160,16 +160,17 @@ static void ConstructSqeForDebugUnRegisterForStreamTask(TaskInfo* taskInfo, rtSt
     sqe->u.stream_debug_register_info.streamId = taskInfo->u.debugUnRegisterForStreamTask.streamId;
 
     PrintSqe(command, "DebugUnRegisterForStream");
-    RT_LOG(RT_LOG_INFO, "DebugUnRegisterForStreamTask stream_id:%d task_id:%u",
-        stm->Id_(), static_cast<uint32_t>(taskInfo->id));
+    RT_LOG(
+        RT_LOG_INFO, "DebugUnRegisterForStreamTask stream_id:%d task_id:%u", stm->Id_(),
+        static_cast<uint32_t>(taskInfo->id));
 }
 #endif
 
 #if F_DESC("AicpuInfoLoadTask")
-static void ConstructSqeForAicpuInfoLoadTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForAicpuInfoLoadTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    Stream * const stm = taskInfo->stream;
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 1U;
@@ -199,16 +200,15 @@ static void DoCompleteSuccessForAicpuInfoLoadTask(TaskInfo* taskInfo, const uint
     const uint32_t errorCode = taskInfo->errorCode;
     if (unlikely(errorCode != static_cast<uint32_t>(RT_ERROR_NONE))) {
         taskInfo->stream->SetErrCode(errorCode);
-        RT_LOG(RT_LOG_ERROR, "Ai Cpu Load Info retCode=%#x, [%s].",
-               errorCode, GetTsErrCodeDesc(errorCode));
+        RT_LOG(RT_LOG_ERROR, "Ai Cpu Load Info retCode=%#x, [%s].", errorCode, GetTsErrCodeDesc(errorCode));
     }
 }
 #endif
 
-void ConstructSqeForNopTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForNopTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    Stream *const stm = taskInfo->stream;
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 0U;
@@ -322,5 +322,5 @@ static bool DumpTaskRegister()
 
 static bool g_dumpTaskRegister = DumpTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

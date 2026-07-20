@@ -21,9 +21,9 @@ namespace {
 constexpr size_t PROF_API_STACK_RESERVE_SIZE = 8U;
 thread_local std::vector<ProfApiContext> g_apiProfStack{};
 thread_local ProfApiContext g_fallbackProfApiContext{};
-}
+} // namespace
 
-ProfilingAgent &ProfilingAgent::Instance()
+ProfilingAgent& ProfilingAgent::Instance()
 {
     static ProfilingAgent insAgent;
     return insAgent;
@@ -34,10 +34,7 @@ void ProfilingAgent::SetMsprofReporterCallback(MsprofReporterCallback const call
     profReporterCallback_ = callback;
 }
 
-MsprofReporterCallback ProfilingAgent::GetMsprofReporterCallback() const
-{
-    return profReporterCallback_;
-}
+MsprofReporterCallback ProfilingAgent::GetMsprofReporterCallback() const { return profReporterCallback_; }
 
 rtError_t ProfilingAgent::RegisterProfTypeInfo() const
 {
@@ -45,7 +42,7 @@ rtError_t ProfilingAgent::RegisterProfTypeInfo() const
         // task type, register task type and task name for parse, or profiling don't get task name
         {TS_TASK_TYPE_KERNEL_AICORE, "KERNEL_AICORE"},
         {TS_TASK_TYPE_KERNEL_MIX_AIC, "KERNEL_MIX_AIC"},
-        {TS_TASK_TYPE_KERNEL_MIX_AIV, "KERNEL_MIX_AIV"}, 
+        {TS_TASK_TYPE_KERNEL_MIX_AIV, "KERNEL_MIX_AIV"},
         {static_cast<uint32_t>(ProfTaskType::PROF_TASK_TYPE_KERNEL_SIMT), "KERNEL_SIMT"},
         {TS_TASK_TYPE_KERNEL_AICPU, "KERNEL_AICPU"},
         {TS_TASK_TYPE_EVENT_RECORD, "EVENT_RECORD"},
@@ -144,177 +141,344 @@ rtError_t ProfilingAgent::RegisterProfTypeInfo() const
         // capture last task op info
         {RT_PROFILE_TYPE_SHAPE_INFO, "capture_op_info"},
         // dpu track
- 	    {RT_PROFILE_TYPE_DPU_INFO, "dpu_track"},
+        {RT_PROFILE_TYPE_DPU_INFO, "dpu_track"},
         // stream sq info
         {RT_PROFILE_TYPE_STREAM_SQ_INFO, "stream_sq_info"},
 
         // api, RT_PROFILE_TYPE_API_BEGIN + rtProfApiType_t
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEVBINARY_REGISTER), "DevBinaryRegister"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_ALLKERNEL_REGISTER), "RegisterAllKernel"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEVBINARY_UNREGISTER), "DevBinaryUnRegister"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_FUNCTION_REGISTER), "FunctionRegister"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_FUNCTION_BY_NAME), "GetFunctionByName"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_QUERY_FUNCTION_REGISTERED), "QueryFunctionRegistered"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_FUSION_START), "KernelFusionStart"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_FUSION_END), "KernelFusionEnd"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_HUGE), "KernelLaunch_Huge"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_BIG), "KernelLaunch_Big"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH), "KernelLaunch"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_FLOW_CTRL), "KernelLaunchFlowCtrl"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE_HUGE), "KernelLaunchWithHandle_Huge"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE_BIG), "KernelLaunchWithHandle_Big"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE), "KernelLaunchWithHandle"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE_FLOW_CTRL), "KernelLaunchWithHandleFlowCtrl"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_EX), "KernelLaunchEx"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch), "CpuKernelLaunch"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch_EX), "CpuKernelLaunchEx"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch_EX_WITH_ARG), "CpuKernelLaunchExWithArgs"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DATA_DUMP_INFO_LOAD), "DatadumpInfoLoad"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_CREATE), "StreamCreate"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_DESTROY), "StreamDestroy"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_WAITEVENT), "StreamWaitEvent"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_SYNCHRONIZE), "StreamSynchronize"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_SET_MODE), "SetStreamMode"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_GET_MODE), "GetStreamMode"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_EVENT_CREATE), "EventCreate"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GetEventID), "GetEventID"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_EVENT_DESTROY), "EventDestroy"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_EVENT_RECORD), "EventRecord"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_EVENT_SYNCHRONIZE), "EventSynchronize"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEVBINARY_REGISTER),
+         "DevBinaryRegister"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_ALLKERNEL_REGISTER),
+         "RegisterAllKernel"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEVBINARY_UNREGISTER),
+         "DevBinaryUnRegister"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_FUNCTION_REGISTER),
+         "FunctionRegister"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_FUNCTION_BY_NAME),
+         "GetFunctionByName"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_QUERY_FUNCTION_REGISTERED),
+         "QueryFunctionRegistered"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_FUSION_START),
+         "KernelFusionStart"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_FUSION_END),
+         "KernelFusionEnd"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_HUGE),
+         "KernelLaunch_Huge"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_BIG),
+         "KernelLaunch_Big"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH),
+         "KernelLaunch"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_FLOW_CTRL),
+         "KernelLaunchFlowCtrl"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE_HUGE),
+         "KernelLaunchWithHandle_Huge"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE_BIG),
+         "KernelLaunchWithHandle_Big"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE),
+         "KernelLaunchWithHandle"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE_FLOW_CTRL),
+         "KernelLaunchWithHandleFlowCtrl"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_EX),
+         "KernelLaunchEx"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch),
+         "CpuKernelLaunch"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch_EX),
+         "CpuKernelLaunchEx"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch_EX_WITH_ARG),
+         "CpuKernelLaunchExWithArgs"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DATA_DUMP_INFO_LOAD),
+         "DatadumpInfoLoad"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_CREATE),
+         "StreamCreate"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_DESTROY),
+         "StreamDestroy"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_WAITEVENT),
+         "StreamWaitEvent"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_SYNCHRONIZE),
+         "StreamSynchronize"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_SET_MODE),
+         "SetStreamMode"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_GET_MODE),
+         "GetStreamMode"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_EVENT_CREATE),
+         "EventCreate"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GetEventID),
+         "GetEventID"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_EVENT_DESTROY),
+         "EventDestroy"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_EVENT_RECORD),
+         "EventRecord"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_EVENT_SYNCHRONIZE),
+         "EventSynchronize"},
         {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEV_MALLOC), "DevMalloc"},
         {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEV_FREE), "DevFree"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CAHCEDMEM_ALLOC), "DevMallocCached"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEV_DVPP_MALLOC), "DevDvppMalloc"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEV_DVPP_FREE), "DevDvppFree"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CAHCEDMEM_ALLOC),
+         "DevMallocCached"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEV_DVPP_MALLOC),
+         "DevDvppMalloc"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEV_DVPP_FREE),
+         "DevDvppFree"},
         {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_ADVISE), "MemAdvise"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_HOST_MALLOC), "HostMalloc"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_HOST_MALLOC),
+         "HostMalloc"},
         {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_HOST_FREE), "HostFree"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MANAGEDMEM_ALLOC), "ManagedMemAlloc"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MANAGEDMEM_FREE), "ManagedMemFree"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MANAGEDMEM_ALLOC),
+         "ManagedMemAlloc"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MANAGEDMEM_FREE),
+         "ManagedMemFree"},
         {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_CPY), "MemCopySync"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEMCPY_ASYNC_HUGE), "MemcpyAsync_Huge"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEMCPY_ASYNC), "MemcpyAsync"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEMCPY_ASYNC_BATCH), "MemcpyBatchAsync"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_HOST_CALLBACK), "LaunchHostFunc"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_EVENT_HANDLE), "IpcGetEventHandle"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_OPEN_EVENT_HANDLE), "IpcOpenEventHandle"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEMCPY_ASYNC_FLOW_CTRL), "MemcpyAsyncFlowCtrl"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_ReduceAsync), "ReduceAsync"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_REDUCE_ASYNC_V2), "ReduceAsyncV2"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_CPY2D), "MemCopy2DSync"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_CPY2D_ASYNC), "MemCopy2DAsync"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_HOST_TASK_MEMCPY), "MemcpyHostTask"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEMCPY_ASYNC_HUGE),
+         "MemcpyAsync_Huge"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEMCPY_ASYNC),
+         "MemcpyAsync"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEMCPY_ASYNC_BATCH),
+         "MemcpyBatchAsync"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_HOST_CALLBACK),
+         "LaunchHostFunc"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_EVENT_HANDLE),
+         "IpcGetEventHandle"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_OPEN_EVENT_HANDLE),
+         "IpcOpenEventHandle"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEMCPY_ASYNC_FLOW_CTRL),
+         "MemcpyAsyncFlowCtrl"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_ReduceAsync),
+         "ReduceAsync"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_REDUCE_ASYNC_V2),
+         "ReduceAsyncV2"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_CPY2D),
+         "MemCopy2DSync"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_CPY2D_ASYNC),
+         "MemCopy2DAsync"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_HOST_TASK_MEMCPY),
+         "MemcpyHostTask"},
         {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_SET_DEVICE), "SetDevice"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEVICE_RESET), "DeviceReset"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEVICE_SYNCHRONIZE), "DeviceSynchronize"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CONTEXT_CREATE), "ContextCreate"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CONTEXT_DESTROY), "ContextDestroy"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CONTEXT_GET_CURRENT), "ContextGetCurrent"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CONTEXT_SETCURRENT), "ContextSetCurrent"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CONTEXT_SYNCHRONIZE), "ContextSynchronize"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_CREATE), "ModelCreate"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_SET_EXT_ID), "ModelSetExtId"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_DESTROY), "ModelDestroy"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_BIND_STREAM), "ModelBindStream"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_UNBIND_STREAM), "ModelUnbindStream"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_EXECUTE), "ModelExecute"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEVICE_RESET),
+         "DeviceReset"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEVICE_SYNCHRONIZE),
+         "DeviceSynchronize"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CONTEXT_CREATE),
+         "ContextCreate"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CONTEXT_DESTROY),
+         "ContextDestroy"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CONTEXT_GET_CURRENT),
+         "ContextGetCurrent"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CONTEXT_SETCURRENT),
+         "ContextSetCurrent"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CONTEXT_SYNCHRONIZE),
+         "ContextSynchronize"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_CREATE),
+         "ModelCreate"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_SET_EXT_ID),
+         "ModelSetExtId"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_DESTROY),
+         "ModelDestroy"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_BIND_STREAM),
+         "ModelBindStream"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_UNBIND_STREAM),
+         "ModelUnbindStream"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_EXECUTE),
+         "ModelExecute"},
         {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_RDMASend), "RDMASend"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_RdmaDbSend), "RdmaDbSend"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_NotifyCreate), "NotifyCreate"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_NotifyDestroy), "NotifyDestroy"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_NotifyRecord), "NotifyRecord"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_NotifyWait), "NotifyWait"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_IpcOpenNotify), "IpcOpenNotify"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_SET_SCH_GROUP_ID), "ModelSetSchGroupId"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_rtSubscribeReport), "SubscribeReport"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_rtCallbackLaunch), "CallbackLaunch"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_rtProcessReport), "ProcessReport"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_rtUnSubscribeReport), "UnSubscribeReport"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_rtGetRunMode), "GetRunMode"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LabelSwitchByIndex), "LabelSwitchByIndex"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LabelGotoEx), "LabelGotoEx"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_Label2Content), "LabelListCpy"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STARS_TASK_LAUNCH), "StarsTaskLaunch"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_FFTS_PLUS_TASK_LAUNCH), "FftsPlusTaskLaunch"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LABELDESTROY), "LabelDestroy"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CMO_TASK_LAUNCH), "CmoTaskLaunch"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BARRIER_TASK_LAUNCH), "BarrierTaskLaunch"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_SYNC_TASK_FINISH), "StreamSyncTaskFinish"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_NOTIFY_ADDR), "GetNotifyAddress"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BUFF_GET_INFO), "BuffGetInfo"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_LOAD), "BinaryLoad"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_GET_FUNCTION), "BinaryGetFunction"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_UNLOAD), "BinaryUnLoad"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_KERNEL), "LaunchKernel"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CtxSetSysParamOpt), "CtxSetSysParamOpt"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CtxGetSysParamOpt), "CtxGetSysParamOpt"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CtxGetOverflowAddr), "CtxGetOverflowAddr"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GetDeviceSatStatus), "GetDeviceSatStatus"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CleanDeviceSatStatus), "CleanDeviceSatStatus"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch_EX_WITH_ARG_BIG), "CpuKernelLaunchExWithArgs_Big"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch_EX_WITH_ARG_HUGE), "CpuKernelLaunchExWithArgs_Huge"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_KERNEL_HUGE), "LaunchKernel_Huge"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_KERNEL_BIG), "LaunchKernel_Big"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_DEV_ARG_ADDR), "GetDevArgsAddr"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_GET_FUNCTION_BY_NAME), "BinaryGetFunctionByName"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_LOAD_WITHOUT_TILING_KEY), "BinaryLoadWithoutTilingKey"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CMO_ADDR_TASK_LAUNCH), "CmoAddrTaskLaunch"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_EVENT_CREATE_EX), "EventCreateEx"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_AI_CPU_INFO_LOAD), "AicpuInfoLoad"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_TASK_UPDATE), "ModelTaskUpdate"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_CLEAR), "StreamClear"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_NOTIFY_RESET), "NotifyReset"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GetServerIDBySDID), "GetServerIDBySDID"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_LARGE), "KernelLaunch_Large"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE_LARGE), "KernelLaunchWithHandle_Large"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch_EX_WITH_ARG_LARGE), "CpuKernelLaunchExWithArgs_Large"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_KERNEL_LARGE), "LaunchKernel_Large"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEVICE_RESET_FORCE), "DeviceResetForce"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_CPY_ASYNC_PTR), "MemcpyAsyncPtr"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_USER_TO_LOGIC_ID), "GetLogicDevIdByUserDevId"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LOGIC_TO_USER_ID), "GetUserDevIdByLogicDevId"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_LOAD_FROM_FILE), "BinaryLoadFromFile"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_LOAD_FROM_DATA), "BinaryLoadFromData"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_FUNC_GET_ADDR), "FuncGetAddr"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_DVPP_TASK), "LaunchDvppTask"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_RANDOM_NUM_TASK), "LaunchRandomNumTask"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_INIT), "KernelArgsInit"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_APEND_PLACE_HOLDER), "KernelArgsApendPlaceHolder"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_GET_PLACE_HOLDER_BUFF), "KernelArgsGetPlaceHolderBuff"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_GET_HANDLE_MEM_SIZE), "KernelArgsGetHandleMemSize"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_FINALIZE), "KernelArgsFinalize"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_GET_MEM_SIZE), "KernelArgsGetMemSize"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_INIT_BY_USER_MEM), "KernleArgsInitByUserMem"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_APEND), "KernelArgsApend"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_KERNEL_V2), "LaunchKernelV2"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_GET_FUNCTION_BY_ENTRY), "BinaryGetFunctionByEntry"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_RdmaDbSend),
+         "RdmaDbSend"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_NotifyCreate),
+         "NotifyCreate"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_NotifyDestroy),
+         "NotifyDestroy"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_NotifyRecord),
+         "NotifyRecord"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_NotifyWait),
+         "NotifyWait"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_IpcOpenNotify),
+         "IpcOpenNotify"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_SET_SCH_GROUP_ID),
+         "ModelSetSchGroupId"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_rtSubscribeReport),
+         "SubscribeReport"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_rtCallbackLaunch),
+         "CallbackLaunch"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_rtProcessReport),
+         "ProcessReport"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_rtUnSubscribeReport),
+         "UnSubscribeReport"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_rtGetRunMode),
+         "GetRunMode"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LabelSwitchByIndex),
+         "LabelSwitchByIndex"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LabelGotoEx),
+         "LabelGotoEx"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_Label2Content),
+         "LabelListCpy"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STARS_TASK_LAUNCH),
+         "StarsTaskLaunch"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_FFTS_PLUS_TASK_LAUNCH),
+         "FftsPlusTaskLaunch"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LABELDESTROY),
+         "LabelDestroy"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CMO_TASK_LAUNCH),
+         "CmoTaskLaunch"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BARRIER_TASK_LAUNCH),
+         "BarrierTaskLaunch"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_SYNC_TASK_FINISH),
+         "StreamSyncTaskFinish"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_NOTIFY_ADDR),
+         "GetNotifyAddress"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BUFF_GET_INFO),
+         "BuffGetInfo"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_LOAD),
+         "BinaryLoad"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_GET_FUNCTION),
+         "BinaryGetFunction"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_UNLOAD),
+         "BinaryUnLoad"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_KERNEL),
+         "LaunchKernel"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CtxSetSysParamOpt),
+         "CtxSetSysParamOpt"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CtxGetSysParamOpt),
+         "CtxGetSysParamOpt"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CtxGetOverflowAddr),
+         "CtxGetOverflowAddr"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GetDeviceSatStatus),
+         "GetDeviceSatStatus"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CleanDeviceSatStatus),
+         "CleanDeviceSatStatus"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch_EX_WITH_ARG_BIG),
+         "CpuKernelLaunchExWithArgs_Big"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch_EX_WITH_ARG_HUGE),
+         "CpuKernelLaunchExWithArgs_Huge"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_KERNEL_HUGE),
+         "LaunchKernel_Huge"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_KERNEL_BIG),
+         "LaunchKernel_Big"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_DEV_ARG_ADDR),
+         "GetDevArgsAddr"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_BINARY_GET_FUNCTION_BY_NAME),
+         "BinaryGetFunctionByName"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_BINARY_LOAD_WITHOUT_TILING_KEY),
+         "BinaryLoadWithoutTilingKey"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CMO_ADDR_TASK_LAUNCH),
+         "CmoAddrTaskLaunch"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_EVENT_CREATE_EX),
+         "EventCreateEx"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_AI_CPU_INFO_LOAD),
+         "AicpuInfoLoad"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_TASK_UPDATE),
+         "ModelTaskUpdate"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_STREAM_CLEAR),
+         "StreamClear"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_NOTIFY_RESET),
+         "NotifyReset"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GetServerIDBySDID),
+         "GetServerIDBySDID"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_LARGE),
+         "KernelLaunch_Large"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE_LARGE),
+         "KernelLaunchWithHandle_Large"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_CpuKernelLaunch_EX_WITH_ARG_LARGE),
+         "CpuKernelLaunchExWithArgs_Large"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_KERNEL_LARGE),
+         "LaunchKernel_Large"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEVICE_RESET_FORCE),
+         "DeviceResetForce"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_CPY_ASYNC_PTR),
+         "MemcpyAsyncPtr"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_USER_TO_LOGIC_ID),
+         "GetLogicDevIdByUserDevId"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LOGIC_TO_USER_ID),
+         "GetUserDevIdByLogicDevId"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_LOAD_FROM_FILE),
+         "BinaryLoadFromFile"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_BINARY_LOAD_FROM_DATA),
+         "BinaryLoadFromData"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_FUNC_GET_ADDR),
+         "FuncGetAddr"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_DVPP_TASK),
+         "LaunchDvppTask"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_RANDOM_NUM_TASK),
+         "LaunchRandomNumTask"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_INIT),
+         "KernelArgsInit"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_APEND_PLACE_HOLDER),
+         "KernelArgsApendPlaceHolder"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_GET_PLACE_HOLDER_BUFF),
+         "KernelArgsGetPlaceHolderBuff"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_GET_HANDLE_MEM_SIZE),
+         "KernelArgsGetHandleMemSize"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_FINALIZE),
+         "KernelArgsFinalize"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_GET_MEM_SIZE),
+         "KernelArgsGetMemSize"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_INIT_BY_USER_MEM),
+         "KernleArgsInitByUserMem"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_KERNEL_ARGS_APEND),
+         "KernelArgsApend"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_LAUNCH_KERNEL_V2),
+         "LaunchKernelV2"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) +
+             static_cast<uint32_t>(RT_PROF_API_BINARY_GET_FUNCTION_BY_ENTRY),
+         "BinaryGetFunctionByEntry"},
         {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_UB_DB_SEND), "UbDbSend"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_UB_DIRECT_SEND), "UbDirectSend"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEMCPY_BATCH), "MemcpyBatch"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_CMO_DESC_SIZE), "GetCmoDesc"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_SET_CMO_DESC), "SetCmoDesc"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_EXECUTE_SYNC), "ModelExecuteSync"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_EXECUTE_ASYNC), "ModelExecuteASync"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_WRITE_VALUE), "MemWriteValue"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_WAIT_VALUE), "MemWaitValue"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_DEFAULT_CTX_STATE), "GetPrimaryCtxState"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_COUNT_NOTIFY_CREATE), "CntNotifyCreate"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_COUNT_NOTIFY_DESTROY), "CntNotifyDestroy"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_COUNT_NOTIFY_RECORD), "CntNotifyRecord"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_COUNT_NOTIFY_WAIT), "CntNotifyWaitWithTimeout"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_COUNT_NOTIFY_ADDR), "GetCntNotifyAddress"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_COUNT_NOTIFY_RESET), "CntNotifyReset"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_WRITE_VALUE), "WriteValue"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_FUSION_KERNEL_LAUNCH), "FusionLaunch"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_UB_DIRECT_SEND),
+         "UbDirectSend"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEMCPY_BATCH),
+         "MemcpyBatch"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_CMO_DESC_SIZE),
+         "GetCmoDesc"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_SET_CMO_DESC),
+         "SetCmoDesc"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_EXECUTE_SYNC),
+         "ModelExecuteSync"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MODEL_EXECUTE_ASYNC),
+         "ModelExecuteASync"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_WRITE_VALUE),
+         "MemWriteValue"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_MEM_WAIT_VALUE),
+         "MemWaitValue"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_DEFAULT_CTX_STATE),
+         "GetPrimaryCtxState"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_COUNT_NOTIFY_CREATE),
+         "CntNotifyCreate"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_COUNT_NOTIFY_DESTROY),
+         "CntNotifyDestroy"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_COUNT_NOTIFY_RECORD),
+         "CntNotifyRecord"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_COUNT_NOTIFY_WAIT),
+         "CntNotifyWaitWithTimeout"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_COUNT_NOTIFY_ADDR),
+         "GetCntNotifyAddress"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_GET_COUNT_NOTIFY_RESET),
+         "CntNotifyReset"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_WRITE_VALUE),
+         "WriteValue"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_FUSION_KERNEL_LAUNCH),
+         "FusionLaunch"},
         {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CCU_LAUNCH), "CCULaunch"},
-        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CACHE_LAST_TASK_OP_INFO), "CacheLastTaskOpInfo"},
+        {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_CACHE_LAST_TASK_OP_INFO),
+         "CacheLastTaskOpInfo"},
     };
 
-    for (uint32_t i = 0U; i< sizeof(registerInfo) / sizeof(ProfTypeRegisterInfo); i++) {
+    for (uint32_t i = 0U; i < sizeof(registerInfo) / sizeof(ProfTypeRegisterInfo); i++) {
         const int32_t ret = MsprofRegTypeInfo(MSPROF_REPORT_RUNTIME_LEVEL, registerInfo[i].type, registerInfo[i].name);
         if (ret != MSPROF_ERROR_NONE) {
-            RT_LOG_CALL_MSG(ERR_MODULE_PROFILE,
-                "Failed to register profiling runtime task type, type=%u, name=%s, ret=%d.",
+            RT_LOG_CALL_MSG(
+                ERR_MODULE_PROFILE, "Failed to register profiling runtime task type, type=%u, name=%s, ret=%d.",
                 registerInfo[i].type, registerInfo[i].name, ret);
             return RT_ERROR_PROF_OPER;
         }
@@ -351,7 +515,7 @@ rtError_t ProfilingAgent::UnInit() const
     return RT_ERROR_NONE;
 }
 
-void ProfilingAgent::ReportProfApi(const uint32_t devId, RuntimeProfApiData &profApiData) const
+void ProfilingAgent::ReportProfApi(const uint32_t devId, RuntimeProfApiData& profApiData) const
 {
     // for api
     MsprofApi apiInfo{};
@@ -374,9 +538,9 @@ void ProfilingAgent::ReportProfApi(const uint32_t devId, RuntimeProfApiData &pro
         compactInfo.threadId = profApiData.threadId;
         compactInfo.timeStamp = profApiData.entryTime + 1;
         compactInfo.dataLen = static_cast<uint32_t>(sizeof(RuntimeMemcpyInfo));
-        RtPtrToPtr<RuntimeMemcpyInfo *>(compactInfo.data.info)->dateSize = profApiData.dataSize;
-        RtPtrToPtr<RuntimeMemcpyInfo *>(compactInfo.data.info)->maxSize = profApiData.maxSize;
-        RtPtrToPtr<RuntimeMemcpyInfo *>(compactInfo.data.info)->direction = profApiData.memcpyDirection;
+        RtPtrToPtr<RuntimeMemcpyInfo*>(compactInfo.data.info)->dateSize = profApiData.dataSize;
+        RtPtrToPtr<RuntimeMemcpyInfo*>(compactInfo.data.info)->maxSize = profApiData.maxSize;
+        RtPtrToPtr<RuntimeMemcpyInfo*>(compactInfo.data.info)->direction = profApiData.memcpyDirection;
 
         const int32_t res =
             MsprofReportCompactInfo(true, &compactInfo, static_cast<uint32_t>(sizeof(MsprofCompactInfo)));
@@ -387,7 +551,7 @@ void ProfilingAgent::ReportProfApi(const uint32_t devId, RuntimeProfApiData &pro
     }
 }
 
-ProfApiContext *ProfilerPushProfApiContext(void)
+ProfApiContext* ProfilerPushProfApiContext(void)
 {
     if (g_apiProfStack.capacity() == 0U) {
         g_apiProfStack.reserve(PROF_API_STACK_RESERVE_SIZE);
@@ -396,7 +560,7 @@ ProfApiContext *ProfilerPushProfApiContext(void)
     return &g_apiProfStack.back();
 }
 
-bool ProfilerPopProfApiContext(ProfApiContext &profApiContext)
+bool ProfilerPopProfApiContext(ProfApiContext& profApiContext)
 {
     if (g_apiProfStack.empty()) {
         return false;
@@ -407,7 +571,7 @@ bool ProfilerPopProfApiContext(ProfApiContext &profApiContext)
     return true;
 }
 
-ProfApiContext *ProfilerGetTopProfApiContext(void)
+ProfApiContext* ProfilerGetTopProfApiContext(void)
 {
     if (g_apiProfStack.empty()) {
         return nullptr;
@@ -416,16 +580,16 @@ ProfApiContext *ProfilerGetTopProfApiContext(void)
     return &g_apiProfStack.back();
 }
 
-RuntimeProfApiData &ProfilerGetProfApiData(void)
+RuntimeProfApiData& ProfilerGetProfApiData(void)
 {
-    ProfApiContext *profApiContext = ProfilerGetTopProfApiContext();
+    ProfApiContext* profApiContext = ProfilerGetTopProfApiContext();
     return (profApiContext == nullptr) ? g_fallbackProfApiContext.apiData : profApiContext->apiData;
 }
 
-TaskTrackInfo &ProfilerGetProfTaskTrackData(void)
+TaskTrackInfo& ProfilerGetProfTaskTrackData(void)
 {
-    ProfApiContext *profApiContext = ProfilerGetTopProfApiContext();
+    ProfApiContext* profApiContext = ProfilerGetTopProfApiContext();
     return (profApiContext == nullptr) ? g_fallbackProfApiContext.taskTrackInfo : profApiContext->taskTrackInfo;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

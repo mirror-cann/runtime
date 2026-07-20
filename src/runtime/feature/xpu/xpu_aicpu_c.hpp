@@ -16,9 +16,10 @@
 
 namespace cce {
 namespace runtime {
-    rtError_t XpuLaunchKernel(const Kernel * const kernel, const uint32_t coreDim, const rtAicpuArgsEx_t * const argsInfo,
-        Stream * const stm, const TaskCfg * const taskCfg);
-}  // namespace runtime
-}  // namespace cce
+rtError_t XpuLaunchKernel(
+    const Kernel* const kernel, const uint32_t coreDim, const rtAicpuArgsEx_t* const argsInfo, Stream* const stm,
+    const TaskCfg* const taskCfg);
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_XPU_AICPU_C_HPP__

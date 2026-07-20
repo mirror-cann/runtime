@@ -21,29 +21,26 @@ public:
     explicit ShmCq();
     ~ShmCq() noexcept;
 
-    rtError_t Init(Device *dev);
+    rtError_t Init(Device* dev);
     rtError_t InitCqShm(const uint32_t streamId);
-    rtError_t QueryLatestTaskId(const uint32_t streamId, uint32_t &taskId) const;
-    rtError_t QueryCqShm(const uint32_t streamId, rtShmQuery_t &shareMemInfo);
+    rtError_t QueryLatestTaskId(const uint32_t streamId, uint32_t& taskId) const;
+    rtError_t QueryCqShm(const uint32_t streamId, rtShmQuery_t& shareMemInfo);
     uint32_t GetTaskIdFromStreamShmTaskId(const uint32_t streamId) const;
 
-    uint32_t GetShareSqId() const
-    {
-        return vSqId_;
-    }
+    uint32_t GetShareSqId() const { return vSqId_; }
 
 private:
-    Device *dev_{nullptr};
-    Driver *driver_{nullptr};
+    Device* dev_{nullptr};
+    Driver* driver_{nullptr};
     bool vSqReadonly_{false};
 
     uint32_t vSqId_{MAX_UINT32_NUM};
     uint32_t vCqId_{MAX_UINT32_NUM};
-    uint8_t *vSqBase_{nullptr};
+    uint8_t* vSqBase_{nullptr};
     uint32_t deviceId_{MAX_UINT32_NUM};
     uint32_t tsId_{MAX_UINT32_NUM};
-    uint32_t *streamShmTaskId_{nullptr};
+    uint32_t* streamShmTaskId_{nullptr};
 };
-}  // namespace runtime
-}  // namespace cce
-#endif  // __CCE_RUNTIME_SHM_CQ_HPP__
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_SHM_CQ_HPP__

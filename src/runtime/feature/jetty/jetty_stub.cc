@@ -14,45 +14,31 @@
 namespace cce {
 namespace runtime {
 
-JettyPool::~JettyPool()
-{
-}
+JettyPool::~JettyPool() {}
 
-JettyPool::JettyPool(uint32_t deviceId)
-{
-    UNUSED(deviceId);
-}
+JettyPool::JettyPool(uint32_t deviceId) { UNUSED(deviceId); }
 
-JettyManager::JettyManager(uint32_t deviceId)
-{
-    UNUSED(deviceId);
-}
+JettyManager::JettyManager(uint32_t deviceId) { UNUSED(deviceId); }
 
-void JettyManager::Clear()
-{
-}
+void JettyManager::Clear() {}
 
-rtError_t JettyManager::ResetJettyForSnapshotRestore()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t JettyManager::ResetJettyForSnapshotRestore() { return RT_ERROR_NONE; }
 
-rtError_t StreamJettyHandler::FillNopWqeOnCaptureEnd(const Stream *stream, JettyType jettyType)
+rtError_t StreamJettyHandler::FillNopWqeOnCaptureEnd(const Stream* stream, JettyType jettyType)
 {
     UNUSED(stream);
     UNUSED(jettyType);
     return RT_ERROR_NONE;
 }
 
-JettyType StreamJettyHandler::GetJettyTypeFromTask(const TaskInfo *task)
+JettyType StreamJettyHandler::GetJettyTypeFromTask(const TaskInfo* task)
 {
     UNUSED(task);
     return JettyType::JETTY_TYPE_MAX;
 }
 
 rtError_t StreamJettyHandler::HandleUbDmaTask(
-    const TaskInfo *task, JettyType jettyType,
-    AsyncWqeInputPara *input, AsyncWqeOutputPara *output)
+    const TaskInfo* task, JettyType jettyType, AsyncWqeInputPara* input, AsyncWqeOutputPara* output)
 {
     UNUSED(task);
     UNUSED(jettyType);
@@ -61,9 +47,7 @@ rtError_t StreamJettyHandler::HandleUbDmaTask(
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamJettyHandler::BindJetty(
-    Stream *stream, JettyType type,
-    const CaptureModel *excludeMdl)
+rtError_t StreamJettyHandler::BindJetty(Stream* stream, JettyType type, const CaptureModel* excludeMdl)
 {
     UNUSED(stream);
     UNUSED(type);
@@ -71,8 +55,7 @@ rtError_t StreamJettyHandler::BindJetty(
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamJettyHandler::RecycleJetty(
-    Stream *stream, JettyType type, uint32_t &count)
+rtError_t StreamJettyHandler::RecycleJetty(Stream* stream, JettyType type, uint32_t& count)
 {
     UNUSED(stream);
     UNUSED(type);
@@ -80,8 +63,7 @@ rtError_t StreamJettyHandler::RecycleJetty(
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamJettyHandler::ReleaseJetty(
-    Stream *stream, JettyType type)
+rtError_t StreamJettyHandler::ReleaseJetty(Stream* stream, JettyType type)
 {
     UNUSED(stream);
     UNUSED(type);

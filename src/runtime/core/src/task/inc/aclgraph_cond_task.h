@@ -19,17 +19,18 @@ namespace runtime {
 
 constexpr uint8_t COND_TASK_IF_SWITCH_TASK_NUM = 2U;
 constexpr uint8_t COND_TASK_WHILE_TASK_NUM = 3U;
-constexpr uint8_t COND_TASK_RESV_LEN_FOR_COND_EXECUTE = 32U; // 预留32字节长度，用于存放headSqArrAddr、headSqArrMax、streamSvmArrAddr
+constexpr uint8_t COND_TASK_RESV_LEN_FOR_COND_EXECUTE =
+    32U; // 预留32字节长度，用于存放headSqArrAddr、headSqArrMax、streamSvmArrAddr
 constexpr uint8_t COND_TASK_IF_SWITCH_SQE_NUM = 2U;
 constexpr uint8_t COND_TASK_WHILE_SQE_NUM = 3U;
 
-rtError_t CaptureConditionTaskInit(TaskInfo *taskInfo, CondHandle *condHandle);
-void CaptureConditionTaskUnInit(TaskInfo * const taskInfo);
-void ConstructCaptureConditionJumpBackFc(TaskInfo * const taskInfo, RtStarsCaptureWhileCondJumpBackFc &fc);
-rtError_t ReConstructCaptureConditionTaskFc(TaskInfo *taskInfo, CondHandle *condHandle);
-rtError_t PostProcCaptureConditionTask(CondHandle *condHandle, Stream * const stm, const uint16_t taskId);
+rtError_t CaptureConditionTaskInit(TaskInfo* taskInfo, CondHandle* condHandle);
+void CaptureConditionTaskUnInit(TaskInfo* const taskInfo);
+void ConstructCaptureConditionJumpBackFc(TaskInfo* const taskInfo, RtStarsCaptureWhileCondJumpBackFc& fc);
+rtError_t ReConstructCaptureConditionTaskFc(TaskInfo* taskInfo, CondHandle* condHandle);
+rtError_t PostProcCaptureConditionTask(CondHandle* condHandle, Stream* const stm, const uint16_t taskId);
 rtError_t CheckCondTaskParamsSize(rtCondTaskParams params);
 
-}  // namespace runtime
-}  // namespace cce
-#endif  // ACLGRAPH_COND_TASK_H
+} // namespace runtime
+} // namespace cce
+#endif // ACLGRAPH_COND_TASK_H

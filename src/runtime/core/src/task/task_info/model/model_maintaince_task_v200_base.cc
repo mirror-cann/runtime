@@ -23,11 +23,11 @@ namespace runtime {
 
 #if F_DESC("ModelMaintainceTask")
 
-rtError_t DavidModelMaintainceTaskInit(TaskInfo * const taskInfo, const MmtType mType,
-    Model *const modelPtr, Stream *const opStreamPtr, const rtModelStreamType_t modelStreamType,
-    const uint32_t firstTaskIndex)
+rtError_t DavidModelMaintainceTaskInit(
+    TaskInfo* const taskInfo, const MmtType mType, Model* const modelPtr, Stream* const opStreamPtr,
+    const rtModelStreamType_t modelStreamType, const uint32_t firstTaskIndex)
 {
-    ModelMaintainceTaskInfo *modelMaintainceTaskInfo = &(taskInfo->u.modelMaintainceTaskInfo);
+    ModelMaintainceTaskInfo* modelMaintainceTaskInfo = &(taskInfo->u.modelMaintainceTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_MODEL_MAINTAINCE;
@@ -41,16 +41,15 @@ rtError_t DavidModelMaintainceTaskInit(TaskInfo * const taskInfo, const MmtType 
     modelMaintainceTaskInfo->execTimesSvmOffset = 0x0U;
 
     if (mType == MMT_STREAM_ADD) {
-        uint16_t * const execTimesSvm = modelMaintainceTaskInfo->opStream->GetExecutedTimesSvm();
-        modelMaintainceTaskInfo->execTimesSvmOffset =
-            RtPtrToValue<uint16_t *>(execTimesSvm);
+        uint16_t* const execTimesSvm = modelMaintainceTaskInfo->opStream->GetExecutedTimesSvm();
+        modelMaintainceTaskInfo->execTimesSvmOffset = RtPtrToValue<uint16_t*>(execTimesSvm);
     }
     return RT_ERROR_NONE;
 }
 
-static void ConstructSqeForModelMaintainceTaskCommon(TaskInfo * const taskInfo, RtDavidPlaceHolderSqe * const sqe)
+static void ConstructSqeForModelMaintainceTaskCommon(TaskInfo* const taskInfo, RtDavidPlaceHolderSqe* const sqe)
 {
-    ModelMaintainceTaskInfo * const modelMaintainceTaskInfo = &(taskInfo->u.modelMaintainceTaskInfo);
+    ModelMaintainceTaskInfo* const modelMaintainceTaskInfo = &(taskInfo->u.modelMaintainceTaskInfo);
     sqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
     sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
     sqe->taskType = TS_TASK_TYPE_MODEL_MAINTAINCE;
@@ -64,13 +63,14 @@ static void ConstructSqeForModelMaintainceTaskCommon(TaskInfo * const taskInfo, 
     sqe->u.modelMaintainceInfo.sqId = taskInfo->stream->GetSqId();
 }
 
-static void ConstructDavidSqeForModelMaintainceTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+static void ConstructDavidSqeForModelMaintainceTask(
+    TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
-    ModelMaintainceTaskInfo * const modelMaintainceTaskInfo = &(taskInfo->u.modelMaintainceTaskInfo);
+    ModelMaintainceTaskInfo* const modelMaintainceTaskInfo = &(taskInfo->u.modelMaintainceTaskInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
+    RtDavidPlaceHolderSqe* const phSqe = &(davidSqe->phSqe);
     ConstructSqeForModelMaintainceTaskCommon(taskInfo, phSqe);
 
     const int32_t type = static_cast<int32_t>(modelMaintainceTaskInfo->type);
@@ -80,7 +80,8 @@ static void ConstructDavidSqeForModelMaintainceTask(TaskInfo * const taskInfo, v
             phSqe->u.modelMaintainceInfo.streamExecTimesAddr = modelMaintainceTaskInfo->execTimesSvmOffset;
             modelMaintainceTaskInfo->opStream->SetBindFlag(true);
             PrintDavidSqe(davidSqe, "ModelBindTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, bind stream_id=%hu to modelId=%hu, task_id=%hu",
+            RT_LOG(
+                RT_LOG_INFO, "model maintaince type=%d, device_id=%u, bind stream_id=%hu to modelId=%hu, task_id=%hu",
                 type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
                 phSqe->u.modelMaintainceInfo.modelId, taskInfo->id);
             break;
@@ -88,8 +89,11 @@ static void ConstructDavidSqeForModelMaintainceTask(TaskInfo * const taskInfo, v
             phSqe->header.preP = 1U;
             modelMaintainceTaskInfo->opStream->SetBindFlag(false);
             PrintDavidSqe(davidSqe, "ModelUnbindTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, unbind stream_id=%hu from modelId=%hu,"
-                "task_id=%hu", type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
+            RT_LOG(
+                RT_LOG_INFO,
+                "model maintaince type=%d, device_id=%u, unbind stream_id=%hu from modelId=%hu,"
+                "task_id=%hu",
+                type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
                 phSqe->u.modelMaintainceInfo.modelId, taskInfo->id);
             break;
         case MMT_MODEL_PRE_PROC:
@@ -103,28 +107,36 @@ static void ConstructDavidSqeForModelMaintainceTask(TaskInfo * const taskInfo, v
                     static_cast<uint16_t>(GetEndGraphNotifyId(modelMaintainceTaskInfo->model));
             }
             PrintDavidSqe(davidSqe, "ModelPreProcTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, pre proc stream_id=%hu of modelId=%hu,"
-                "endgraphNotifyId=%hu, taskId=%hu, executorFlag=%u.", type, taskInfo->stream->Device_()->Id_(),
-                phSqe->u.modelMaintainceInfo.streamId, phSqe->u.modelMaintainceInfo.modelId,
-                phSqe->u.modelMaintainceInfo.endgraphNotifyId, taskInfo->id, phSqe->u.modelMaintainceInfo.executorFlag);
+            RT_LOG(
+                RT_LOG_INFO,
+                "model maintaince type=%d, device_id=%u, pre proc stream_id=%hu of modelId=%hu,"
+                "endgraphNotifyId=%hu, taskId=%hu, executorFlag=%u.",
+                type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
+                phSqe->u.modelMaintainceInfo.modelId, phSqe->u.modelMaintainceInfo.endgraphNotifyId, taskInfo->id,
+                phSqe->u.modelMaintainceInfo.executorFlag);
             break;
         case MMT_MODEL_LOAD_COMPLETE:
             PrintDavidSqe(davidSqe, "ModelLoadCompleteTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, load complete stream_id=%hu of modelId=%hu,"
-                "task_id=%hu", type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
+            RT_LOG(
+                RT_LOG_INFO,
+                "model maintaince type=%d, device_id=%u, load complete stream_id=%hu of modelId=%hu,"
+                "task_id=%hu",
+                type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
                 phSqe->u.modelMaintainceInfo.modelId, taskInfo->id);
             break;
         case MMT_MODEL_ABORT:
             phSqe->header.preP = 1U;
             PrintDavidSqe(davidSqe, "ModelAbortTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, abort stream_id=%hu of modelId=%hu, task_id=%hu",
+            RT_LOG(
+                RT_LOG_INFO, "model maintaince type=%d, device_id=%u, abort stream_id=%hu of modelId=%hu, task_id=%hu",
                 type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
                 phSqe->u.modelMaintainceInfo.modelId, taskInfo->id);
             break;
         default:
             PrintDavidSqe(davidSqe, "ModelMaintainceTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%d, device_id=%u, stream_id=%hu, modelId=%hu, task_id=%hu",
-                type, taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
+            RT_LOG(
+                RT_LOG_INFO, "model maintaince type=%d, device_id=%u, stream_id=%hu, modelId=%hu, task_id=%hu", type,
+                taskInfo->stream->Device_()->Id_(), phSqe->u.modelMaintainceInfo.streamId,
                 phSqe->u.modelMaintainceInfo.modelId, taskInfo->id);
             break;
     }
@@ -146,7 +158,7 @@ static bool ModelMaintainceTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
 
-    const auto &chips = GetDavidChips();
+    const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_MAINTAINCE, funcs);
     }
@@ -157,5 +169,5 @@ static bool ModelMaintainceTaskRegister()
 
 static bool g_modelMaintainceTaskRegister = ModelMaintainceTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

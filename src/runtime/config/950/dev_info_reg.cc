@@ -120,25 +120,25 @@ const std::unordered_set<RtOptionalFeatureType> CHIP_DAVID_FEATURE{
     RtOptionalFeatureType::RT_FEATURE_MODEL_PERSISTENT_STREAM_UNLIMITED_DEPTH,
     RtOptionalFeatureType::RT_FEATURE_TASK_EXEC_TIMEOUT_SCALE_MODIFY,
     RtOptionalFeatureType::RT_FEATURE_MEM_WAIT_PROF,
-    RtOptionalFeatureType::RT_FEATURE_DFX_PROCESS_SNAPSHOT
-};
+    RtOptionalFeatureType::RT_FEATURE_DFX_PROCESS_SNAPSHOT};
 
 REGISTER_CHIP_FEATURE_SET(CHIP_DAVID, CHIP_DAVID_FEATURE);
 
 constexpr uint32_t TS_FEATURE_MC2_RTS_SUPPORT_HCCL_PROP = 23;
 static constexpr uint32_t RT_STARS_MAX_KERNEL_CREDIT_UINT32 = 254U; // STARS MAX KERNEL_CREDIT = 255.
-static constexpr uint32_t RT_STARS_DEFAULT_KERNEL_CREDIT_UINT32 = 254U; // The STARS reference time is 1090921693.184 us.
-static constexpr int32_t KERNEL_CUSTOM_STACK_SIZE_MAX = 131072U; // 128KB
+static constexpr uint32_t RT_STARS_DEFAULT_KERNEL_CREDIT_UINT32 =
+    254U;                                                           // The STARS reference time is 1090921693.184 us.
+static constexpr int32_t KERNEL_CUSTOM_STACK_SIZE_MAX = 131072U;    // 128KB
 static constexpr size_t MEMCPY_DESC_SIZE_V2 = 64U;
-static constexpr float64_t RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN = 0.001F;  // 0.001(us) = 1ns
+static constexpr float64_t RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN = 0.001F; // 0.001(us) = 1ns
 
 const uint32_t RT_ATOMIC_CAPS_TYPE1 = RT_ATOMIC_CAPABILITY_SIGNED | RT_ATOMIC_CAPABILITY_UNSIGNED |
-                                    RT_ATOMIC_CAPABILITY_SCALAR32 | RT_ATOMIC_CAPABILITY_SCALAR64;
+                                      RT_ATOMIC_CAPABILITY_SCALAR32 | RT_ATOMIC_CAPABILITY_SCALAR64;
 const uint32_t RT_ATOMIC_CAPS_TYPE2 =
     RT_ATOMIC_CAPABILITY_UNSIGNED | RT_ATOMIC_CAPABILITY_SCALAR32 | RT_ATOMIC_CAPABILITY_SCALAR64;
 const uint32_t RT_ATOMIC_CAPS_TYPE3 = RT_ATOMIC_CAPABILITY_SCALAR16 | RT_ATOMIC_CAPABILITY_SCALAR32;
 const uint32_t RT_ATOMIC_CAPS_TYPE4 = RT_ATOMIC_CAPABILITY_SIGNED | RT_ATOMIC_CAPABILITY_SCALAR8 |
-                                    RT_ATOMIC_CAPABILITY_SCALAR16 | RT_ATOMIC_CAPABILITY_SCALAR32;
+                                      RT_ATOMIC_CAPABILITY_SCALAR16 | RT_ATOMIC_CAPABILITY_SCALAR32;
 
 static constexpr std::array<uint32_t, RT_ATOMIC_OPERATION_MAX_VAL> GetDavidAtomicCaps()
 {
@@ -216,10 +216,9 @@ static const DevProperties CHIP_DAVID_PROPERTIES = {
     .starsDefaultKernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT,
     .KernelCreditScale = RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN,
     .isSupportInitFuncCallPara = true,
-    .rtsqVirtualAddr = {DAVID_SIMPLE_RTSQ_FSM_SEL_REG,
-        STARS_SIMPLE_SQ_ENABLE_OFFSET,
-        DAVID_SIMPLE_SQ_TAIL_OFFSET,
-        STARS_SIMPLE_SQ_HEAD_OFFSET},
+    .rtsqVirtualAddr =
+        {DAVID_SIMPLE_RTSQ_FSM_SEL_REG, STARS_SIMPLE_SQ_ENABLE_OFFSET, DAVID_SIMPLE_SQ_TAIL_OFFSET,
+         STARS_SIMPLE_SQ_HEAD_OFFSET},
     .rtsqFsmStateAddrCalMethod = RtsqFsmStateAddrCalMethod::FSM_ADDR_CALCULATE_STATIC,
     .starsBaseAddrMethod = StarsBaseAddrMethod::STARS_BASE_CALCULATE_BY_DRIVER,
     .rtSqEnableAddrCalMethod = RtSqEnableAddrCalMethod::RT_SQ_ENABLE_ADDR_CAL_STATIC,
@@ -278,7 +277,7 @@ static const DevProperties CHIP_DAVID_PROPERTIES = {
     .stubEventCount = 131072U,
     .maxReportTimeoutCnt = 36,
     .rtcqDepth = 2049U,
-    .baseAicpuStreamId = 65536U,    /* 64 * 1024 */
+    .baseAicpuStreamId = 65536U, /* 64 * 1024 */
     .expandStreamRsvTaskNum = 8U,
     .expandStreamSqDepthAdapt = 7U,
     .expandStreamAdditionalSqeNum = 8U,
@@ -314,5 +313,5 @@ static const DevProperties CHIP_DAVID_PROPERTIES = {
 };
 
 REGISTER_DEV_PROPERTIES(CHIP_DAVID, CHIP_DAVID_PROPERTIES);
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

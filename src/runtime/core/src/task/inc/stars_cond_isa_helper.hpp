@@ -18,152 +18,171 @@
 namespace cce {
 namespace runtime {
 
-void ConstrucModelExeScanSq(rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeScanSq &scanSq);
-void ConstrucModelExeCheckSqFsm(rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeCheckSqFsm &checkSqFsm);
+void ConstrucModelExeScanSq(rtStarsModelExeFuncCallPara_t& funcCallPara, RtStarsModelExeScanSq& scanSq);
+void ConstrucModelExeCheckSqFsm(rtStarsModelExeFuncCallPara_t& funcCallPara, RtStarsModelExeCheckSqFsm& checkSqFsm);
 void ConstrucModelExeCheckSqDisable(
-    rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeCheckSqDisable &checkSqDisable);
+    rtStarsModelExeFuncCallPara_t& funcCallPara, RtStarsModelExeCheckSqDisable& checkSqDisable);
 void ConstrucModelExeCheckSqHeadTail(
-    const rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeCheckSqHeadTail &checkSqHeadTail);
-void ConstrucModelExeDeactiveSq(RtStarsModelExeDeactiveSq &deactiveSq);
-void ConstrucModelExeActiveHeadSq(rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeActiveSq &activeHeadSq);
+    const rtStarsModelExeFuncCallPara_t& funcCallPara, RtStarsModelExeCheckSqHeadTail& checkSqHeadTail);
+void ConstrucModelExeDeactiveSq(RtStarsModelExeDeactiveSq& deactiveSq);
+void ConstrucModelExeActiveHeadSq(rtStarsModelExeFuncCallPara_t& funcCallPara, RtStarsModelExeActiveSq& activeHeadSq);
 void ConstrucModelExeCheckSqDisableErrInstr(
-    const rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeCheckSqErrInstr &errInstr);
+    const rtStarsModelExeFuncCallPara_t& funcCallPara, RtStarsModelExeCheckSqErrInstr& errInstr);
 void ConstrucModelExeCheckSqHeadTailErrInstr(
-    const rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeCheckSqErrInstr &errInstr);
-void ConstrucModelExeErrInstr(RtStarsModelExeExeErrInstr &errInstr);
-void ConstrucModelExeEndInstrr(RtStarsModelExeExeEndInstr &endInstr);
-void ConstrucModelExeFuncCall(rtStarsModelExeFuncCallPara_t &funcCallPara, RtStarsModelExeFuncCall &funcCall);
+    const rtStarsModelExeFuncCallPara_t& funcCallPara, RtStarsModelExeCheckSqErrInstr& errInstr);
+void ConstrucModelExeErrInstr(RtStarsModelExeExeErrInstr& errInstr);
+void ConstrucModelExeEndInstrr(RtStarsModelExeExeEndInstr& endInstr);
+void ConstrucModelExeFuncCall(rtStarsModelExeFuncCallPara_t& funcCallPara, RtStarsModelExeFuncCall& funcCall);
 void ConstructStreamActiveFc(
-    RtStarsStreamActiveFc &fc, const rtStarsStreamActiveFcPara_t &fcPara, const uint32_t offsetStart);
-void ConstructStreamSwitchFc(rtStarsStreamSwitchFc_t &fc, const rtStarsStreamSwitchFcPara_t &fcPara);
-void ConstructStreamSwitchExFc(rtStarsStreamSwitchExFc_t &fc, const rtStarsStreamSwitchExFcPara_t &fcPara);
-void ConstructLabelSwitchByIndexFc(rtStarsLabelSwitchByIndexFc_t &fc, const rtStarsLabelSwitchByIndexFcPara_t &fcPara,
+    RtStarsStreamActiveFc& fc, const rtStarsStreamActiveFcPara_t& fcPara, const uint32_t offsetStart);
+void ConstructStreamSwitchFc(rtStarsStreamSwitchFc_t& fc, const rtStarsStreamSwitchFcPara_t& fcPara);
+void ConstructStreamSwitchExFc(rtStarsStreamSwitchExFc_t& fc, const rtStarsStreamSwitchExFcPara_t& fcPara);
+void ConstructLabelSwitchByIndexFc(
+    rtStarsLabelSwitchByIndexFc_t& fc, const rtStarsLabelSwitchByIndexFcPara_t& fcPara,
     const uint16_t currentStreamSqId);
-void ConstructMemWaitValueInstr2WithDynamicProf(RtStarsMemWaitValueLastInstrFcWithDynamicProf &fc,
-    const RtStarsMemWaitValueInstrFcParaWithDynamicProf &fcPara);
-void ConstructMemWaitValueInstr2ExWithDynamicProf(RtStarsMemWaitValueLastInstrFcExWithDynamicProf &fc,
-    const RtStarsMemWaitValueInstrFcParaWithDynamicProf &fcPara); 
-void ConstructMemWaitValueInstr2(RtStarsMemWaitValueLastInstrFc &fc, const RtStarsMemWaitValueInstrFcPara &fcPara);
-void ConstructMemWaitValueInstr2Ex(RtStarsMemWaitValueLastInstrFcEx &fc, const RtStarsMemWaitValueInstrFcPara &fcPara);
-void ConvertOpToReverseOp(const rtStarsCondIsaBranchFunc3_t branchFunc, rtStarsCondIsaBranchFunc3_t &reverseBranchFunc);
+void ConstructMemWaitValueInstr2WithDynamicProf(
+    RtStarsMemWaitValueLastInstrFcWithDynamicProf& fc, const RtStarsMemWaitValueInstrFcParaWithDynamicProf& fcPara);
+void ConstructMemWaitValueInstr2ExWithDynamicProf(
+    RtStarsMemWaitValueLastInstrFcExWithDynamicProf& fc, const RtStarsMemWaitValueInstrFcParaWithDynamicProf& fcPara);
+void ConstructMemWaitValueInstr2(RtStarsMemWaitValueLastInstrFc& fc, const RtStarsMemWaitValueInstrFcPara& fcPara);
+void ConstructMemWaitValueInstr2Ex(RtStarsMemWaitValueLastInstrFcEx& fc, const RtStarsMemWaitValueInstrFcPara& fcPara);
+void ConvertOpToReverseOp(const rtStarsCondIsaBranchFunc3_t branchFunc, rtStarsCondIsaBranchFunc3_t& reverseBranchFunc);
 
 void ConstructRdmaPiValueModifyInstr(
-    uint64_t piValueArrAddr, uint64_t piValueVecLength, uint64_t dfxAddr, RtStarsPivalueModifyFuncCall &fc);
+    uint64_t piValueArrAddr, uint64_t piValueVecLength, uint64_t dfxAddr, RtStarsPivalueModifyFuncCall& fc);
 
-void ConstructNop(RtStarsCondOpNop &nop);
+void ConstructNop(RtStarsCondOpNop& nop);
 
-void ConstructLoad(const rtStarsCondIsaRegister_t rs1Reg, const uint16_t imd, const rtStarsCondIsaRegister_t dstReg,
-    const rtStarsCondIsaLoadFunc3_t func3, RtStarsCondOpLoad &load);
+void ConstructLoad(
+    const rtStarsCondIsaRegister_t rs1Reg, const uint16_t imd, const rtStarsCondIsaRegister_t dstReg,
+    const rtStarsCondIsaLoadFunc3_t func3, RtStarsCondOpLoad& load);
 
-void ConstructLoadImm(const rtStarsCondIsaRegister_t dstReg, const uint64_t addr,
-    const rtStarsCondIsaLoadImmFunc3_t func3, RtStarsCondOpLoadImm &loadImm);
+void ConstructLoadImm(
+    const rtStarsCondIsaRegister_t dstReg, const uint64_t addr, const rtStarsCondIsaLoadImmFunc3_t func3,
+    RtStarsCondOpLoadImm& loadImm);
 
-void ConstructOpImmAndi(const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t dstReg,
-    const uint32_t immd, const RtStarsCondIsaOpImmFunc3 func3, RtStarsCondOpImm &opImmAndi);
+void ConstructOpImmAndi(
+    const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t dstReg, const uint32_t immd,
+    const RtStarsCondIsaOpImmFunc3 func3, RtStarsCondOpImm& opImmAndi);
 
-void ConstructOpImmSlli(const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t dstReg,
-    const uint8_t shamt, const RtStarsCondIsaOpImmFunc3 func3, const rtStarsCondIsaOpImmFunc7_t func7,
-    RtStarsCondOpImmSLLI &opImmSlli);
+void ConstructOpImmSlli(
+    const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t dstReg, const uint8_t shamt,
+    const RtStarsCondIsaOpImmFunc3 func3, const rtStarsCondIsaOpImmFunc7_t func7, RtStarsCondOpImmSLLI& opImmSlli);
 
-void ConstructOpOp(const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t rs2Reg,
-    const rtStarsCondIsaRegister_t dstReg, const rtStarsCondIsaOpFunc3_t func3, const RtStarsCondIsaOpFunc7 func7,
-    RtStarsCondOpOp &opOp);
+void ConstructOpOp(
+    const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t rs2Reg, const rtStarsCondIsaRegister_t dstReg,
+    const rtStarsCondIsaOpFunc3_t func3, const RtStarsCondIsaOpFunc7 func7, RtStarsCondOpOp& opOp);
 
-void ConstructLHWI(const rtStarsCondIsaRegister_t dstReg, const uint64_t immd, RtStarsCondOpLHWI &opLHWI);
+void ConstructLHWI(const rtStarsCondIsaRegister_t dstReg, const uint64_t immd, RtStarsCondOpLHWI& opLHWI);
 
-void ConstructLLWI(const rtStarsCondIsaRegister_t dstReg, const uint64_t immd, RtStarsCondOpLLWI &opLLWI);
+void ConstructLLWI(const rtStarsCondIsaRegister_t dstReg, const uint64_t immd, RtStarsCondOpLLWI& opLLWI);
 
-void ConstructBranch(const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t rs2Reg,
-    const rtStarsCondIsaBranchFunc3_t func3, const uint8_t instrOffset, RtStarsCondOpBranch &opBranch);
+void ConstructBranch(
+    const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t rs2Reg,
+    const rtStarsCondIsaBranchFunc3_t func3, const uint8_t instrOffset, RtStarsCondOpBranch& opBranch);
 
-void ConstructLoop(const rtStarsCondIsaRegister_t rs1Reg, const uint16_t delayCycle, const uint8_t instrOffset,
-    RtStarsCondOpLoop &opLoop);
+void ConstructLoop(
+    const rtStarsCondIsaRegister_t rs1Reg, const uint16_t delayCycle, const uint8_t instrOffset,
+    RtStarsCondOpLoop& opLoop);
 
 void ConstructActiveI(
-    const rtStarsCondIsaRegister_t dstReg, const uint16_t activeStreamSqId, RtStarsCondOpStreamActiveI &opActiveI);
+    const rtStarsCondIsaRegister_t dstReg, const uint16_t activeStreamSqId, RtStarsCondOpStreamActiveI& opActiveI);
 
-void ConstructDeActiveI(const rtStarsCondIsaRegister_t dstReg, const uint16_t deActiveStreamSqId,
-    RtStarsCondOpStreamDeActiveI &opDeActiveI);
+void ConstructDeActiveI(
+    const rtStarsCondIsaRegister_t dstReg, const uint16_t deActiveStreamSqId,
+    RtStarsCondOpStreamDeActiveI& opDeActiveI);
 
-void ConstructActiveR(const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t dstReg,
-    RtStarsCondOpStreamActiveR &opActiveR);
-void ConstructDeActiveR(const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t dstReg,
-    RtStarsCondOpStreamDeActiveR &opDeActiveR);
+void ConstructActiveR(
+    const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t dstReg,
+    RtStarsCondOpStreamActiveR& opActiveR);
+void ConstructDeActiveR(
+    const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t dstReg,
+    RtStarsCondOpStreamDeActiveR& opDeActiveR);
 
-void ConstructGotoI(const rtStarsCondIsaRegister_t dstReg, const uint16_t activeStreamSqId, const uint16_t head,
-    RtStarsCondOpStreamGotoI &opGotoI);
+void ConstructGotoI(
+    const rtStarsCondIsaRegister_t dstReg, const uint16_t activeStreamSqId, const uint16_t head,
+    RtStarsCondOpStreamGotoI& opGotoI);
 
 void ConstructGotoR(
-    const rtStarsCondIsaRegister_t sr1Reg, const rtStarsCondIsaRegister_t dstReg, RtStarsCondOpStreamGotoR &opGotoR);
+    const rtStarsCondIsaRegister_t sr1Reg, const rtStarsCondIsaRegister_t dstReg, RtStarsCondOpStreamGotoR& opGotoR);
 
 void ConvertConditionToBranchFunc3(
-    const rtCondition_t condition, rtStarsCondIsaBranchFunc3_t &func3, bool &isNeedReverseCmpReg);
+    const rtCondition_t condition, rtStarsCondIsaBranchFunc3_t& func3, bool& isNeedReverseCmpReg);
 
-void ConstructStore(const rtStarsCondIsaRegister_t addrReg, const rtStarsCondIsaRegister_t valReg,
-    const uint16_t immdOffset, const RtStarsCondIsaStoreFunc3 func3, RtStarsCondOpStore &opStore);
+void ConstructStore(
+    const rtStarsCondIsaRegister_t addrReg, const rtStarsCondIsaRegister_t valReg, const uint16_t immdOffset,
+    const RtStarsCondIsaStoreFunc3 func3, RtStarsCondOpStore& opStore);
 
-void ConstructSystemCsr(const rtStarsCondIsaRegister_t srReg, const rtStarsCondIsaRegister_t dstReg,
-    const rtStarsCondCsrRegister_t csrReg, const rtStarsCondIsaSystemFunc3_t func3, RtStarsCondOpSystemCsr &opCsr);
+void ConstructSystemCsr(
+    const rtStarsCondIsaRegister_t srReg, const rtStarsCondIsaRegister_t dstReg, const rtStarsCondCsrRegister_t csrReg,
+    const rtStarsCondIsaSystemFunc3_t func3, RtStarsCondOpSystemCsr& opCsr);
 
 void ConstructFuncCall(
-    const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t rs2Reg, RtStarsCondOpFuncCall &opFuncCall);
+    const rtStarsCondIsaRegister_t rs1Reg, const rtStarsCondIsaRegister_t rs2Reg, RtStarsCondOpFuncCall& opFuncCall);
 
-void ConstructErrorInstr(RtStarsCondOpErrorInstr &opErrInstr);
+void ConstructErrorInstr(RtStarsCondOpErrorInstr& opErrInstr);
 
 rtCondition_t GetNotCondition(const rtCondition_t condition);
 
-void ConstructGetSqFsmStateFcI(const rtStarsCondIsaRegister_t sqFsmStateReg, const rtStarsCondIsaRegister_t sqIdReg,
+void ConstructGetSqFsmStateFcI(
+    const rtStarsCondIsaRegister_t sqFsmStateReg, const rtStarsCondIsaRegister_t sqIdReg,
     const rtStarsCondIsaRegister_t maskReg, const uint32_t sqId, const uint64_t addr,
-    RtStarsGetSqFsmStateI &getSqFsmState);
+    RtStarsGetSqFsmStateI& getSqFsmState);
 
 void ConstructSetJumpPcFc(
-    const rtStarsCondIsaRegister_t offsetReg, const uint64_t offset, RtStarsSetCsrJumpPc &setCsrJumpPc);
+    const rtStarsCondIsaRegister_t offsetReg, const uint64_t offset, RtStarsSetCsrJumpPc& setCsrJumpPc);
 
 void ConstructSetCqeStatus(
-    const rtStarsCondIsaRegister_t srReg, const rtStarsCondIsaRegister_t dstReg, RtStarsSetCqeStatus &setCqeStatus);
+    const rtStarsCondIsaRegister_t srReg, const rtStarsCondIsaRegister_t dstReg, RtStarsSetCqeStatus& setCqeStatus);
 
 void ConstructGetSqEnableFcI(
-    const rtStarsCondIsaRegister_t sqEnableReg, const uint64_t addr, RtStarsGetSqEnableI &getSqEnable);
+    const rtStarsCondIsaRegister_t sqEnableReg, const uint64_t addr, RtStarsGetSqEnableI& getSqEnable);
 
-void ConstructGetSqHeadAndTailFcI(const rtStarsCondIsaRegister_t headReg, const rtStarsCondIsaRegister_t tailReg,
-    const uint64_t tailAddr, const uint64_t headAddr, RtStarsGetSqHeadAndTailI &getSqheadAndTail);
+void ConstructGetSqHeadAndTailFcI(
+    const rtStarsCondIsaRegister_t headReg, const rtStarsCondIsaRegister_t tailReg, const uint64_t tailAddr,
+    const uint64_t headAddr, RtStarsGetSqHeadAndTailI& getSqheadAndTail);
 
 void ConstructDisableStreamFcI(
-    const rtStarsCondIsaRegister_t addrReg, const uint64_t addr, RtStarsDisableStreamI &disableStream);
+    const rtStarsCondIsaRegister_t addrReg, const uint64_t addr, RtStarsDisableStreamI& disableStream);
 
-void ConstructAddStreamActiveTimesFcI(const rtStarsCondIsaRegister_t svmAddrReg, const rtStarsCondIsaRegister_t valReg,
-    const uint64_t svmAddr, RtStarsAddStreamActiveTimes &addStreamActiveTimes);
+void ConstructAddStreamActiveTimesFcI(
+    const rtStarsCondIsaRegister_t svmAddrReg, const rtStarsCondIsaRegister_t valReg, const uint64_t svmAddr,
+    RtStarsAddStreamActiveTimes& addStreamActiveTimes);
 
-void ConstructLabelSwitchByIdxCheckFc(const uint64_t indexPtr, const uint32_t maxVal, const uint64_t addr,
-    RtStarsLabelSwitchByIdxCheck &labelSwitchByIdx);
+void ConstructLabelSwitchByIdxCheckFc(
+    const uint64_t indexPtr, const uint32_t maxVal, const uint64_t addr,
+    RtStarsLabelSwitchByIdxCheck& labelSwitchByIdx);
 
-void ConstructSwitchGetSqHeadAndTailFcI(const rtStarsCondIsaRegister_t headReg, const rtStarsCondIsaRegister_t tailReg,
-    const rtStarsCondIsaRegister_t addrReg, RtStarsSwitchGetSqHeadAndTailI &getSqheadAndTail,
-    const rtStarsLabelSwitchByIndexFcPara_t &fcPara);
-void ConstructSwitchGetSqVirtualAddrFcI(const rtStarsCondIsaRegister_t sqIdReg,
-    const rtStarsCondIsaRegister_t sqVirtualAddrReg, const uint64_t deviceMemForVirAddr,
-    rtStarsLabelSwitchByIndexFc_t &labelSwitchByIdxFc);
+void ConstructSwitchGetSqHeadAndTailFcI(
+    const rtStarsCondIsaRegister_t headReg, const rtStarsCondIsaRegister_t tailReg,
+    const rtStarsCondIsaRegister_t addrReg, RtStarsSwitchGetSqHeadAndTailI& getSqheadAndTail,
+    const rtStarsLabelSwitchByIndexFcPara_t& fcPara);
+void ConstructSwitchGetSqVirtualAddrFcI(
+    const rtStarsCondIsaRegister_t sqIdReg, const rtStarsCondIsaRegister_t sqVirtualAddrReg,
+    const uint64_t deviceMemForVirAddr, rtStarsLabelSwitchByIndexFc_t& labelSwitchByIdxFc);
 
-void ConstructSwitchGetSqEnableFcI(const rtStarsCondIsaRegister_t sqEnableReg, const rtStarsCondIsaRegister_t sqAddrReg,
-    RtStarsSwitchGetSqEnableI &getSqEnable);
+void ConstructSwitchGetSqEnableFcI(
+    const rtStarsCondIsaRegister_t sqEnableReg, const rtStarsCondIsaRegister_t sqAddrReg,
+    RtStarsSwitchGetSqEnableI& getSqEnable);
 
 void ConstructSwitchDisableStreamFcI(
-    const rtStarsCondIsaRegister_t addrReg, RtStarsSwitchDisableStreamI &disableStream);
+    const rtStarsCondIsaRegister_t addrReg, RtStarsSwitchDisableStreamI& disableStream);
 
-void ConstructAddExecTimesFc(const uint64_t indexPtr, const uint64_t labelInfoPtr, RtStarsAddExecTimesFc &fc);
+void ConstructAddExecTimesFc(const uint64_t indexPtr, const uint64_t labelInfoPtr, RtStarsAddExecTimesFc& fc);
 
-void ConstructCondStoreCurModelPara(uint64_t dfxAddr, uint64_t headSqArrPtrArrAddr,
-    uint64_t modelSqCountArrAddr, uint64_t streamSvmPtrArrAddr, RtStarsCondStoreCurModelPara &storePara);
+void ConstructCondStoreCurModelPara(
+    uint64_t dfxAddr, uint64_t headSqArrPtrArrAddr, uint64_t modelSqCountArrAddr, uint64_t streamSvmPtrArrAddr,
+    RtStarsCondStoreCurModelPara& storePara);
 
-void ConstructSubmodelOffset(RtStarsCaptureCondSubModelOffset &subModelOffset);
+void ConstructSubmodelOffset(RtStarsCaptureCondSubModelOffset& subModelOffset);
 
-void ConstructSwitchCondSetupBranch(rtStarsCaptureCondFcPara_t &para, RtStarsCaptureSwitchCondSetupBranch &setupBranch);
-void TransParaToModelExecuteFuncCallPara(rtStarsCaptureCondFcPara_t &para, rtStarsModelExeFuncCallPara_t &modelPara);
-void ConstructIfCondSetupBranch(rtStarsCaptureCondFcPara_t &para, RtStarsIfCondSetupBranchFc &setupBranch);
-void ConstructWhileCondSetupBranch(rtStarsCaptureCondFcPara_t &para, RtStarsWhileCondSetupBranchFc &setupBranch);
+void ConstructSwitchCondSetupBranch(rtStarsCaptureCondFcPara_t& para, RtStarsCaptureSwitchCondSetupBranch& setupBranch);
+void TransParaToModelExecuteFuncCallPara(rtStarsCaptureCondFcPara_t& para, rtStarsModelExeFuncCallPara_t& modelPara);
+void ConstructIfCondSetupBranch(rtStarsCaptureCondFcPara_t& para, RtStarsIfCondSetupBranchFc& setupBranch);
+void ConstructWhileCondSetupBranch(rtStarsCaptureCondFcPara_t& para, RtStarsWhileCondSetupBranchFc& setupBranch);
 
 template <typename CondFc>
-void ConstructCondTaskGotoNextSqe(rtStarsCaptureCondFcPara_t &para, CondFc &fc)
+void ConstructCondTaskGotoNextSqe(rtStarsCaptureCondFcPara_t& para, CondFc& fc)
 {
     constexpr rtStarsCondIsaRegister_t r0 = RT_STARS_COND_ISA_REGISTER_R0;
     constexpr rtStarsCondIsaRegister_t r1 = RT_STARS_COND_ISA_REGISTER_R1;
@@ -175,16 +194,17 @@ void ConstructCondTaskGotoNextSqe(rtStarsCaptureCondFcPara_t &para, CondFc &fc)
 
     ConstructLHWI(r4, static_cast<uint64_t>(para.sqHeadNext), fc.gotoNextSqe.lhwiHead);
     ConstructLLWI(r4, static_cast<uint64_t>(para.sqHeadNext), fc.gotoNextSqe.llwiHead);
-    ConstructOpImmSlli(r4, r4, 16U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SLLI, RT_STARS_COND_ISA_OP_IMM_FUNC7_SLLI,
-                       fc.gotoNextSqe.slliHead);
+    ConstructOpImmSlli(
+        r4, r4, 16U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SLLI, RT_STARS_COND_ISA_OP_IMM_FUNC7_SLLI, fc.gotoNextSqe.slliHead);
     ConstructOpOp(r3, r4, r3, RT_STARS_COND_ISA_OP_FUNC3_OR, RT_STARS_COND_ISA_OP_FUNC7_OR, fc.gotoNextSqe.orHead);
     ConstructGotoR(r3, r2, fc.gotoNextSqe.gotoSkip);
 
     const uint64_t endOffset = offsetof(CondFc, nop) / sizeof(uint32_t);
     ConstructSetJumpPcFc(r1, endOffset, fc.gotoNextSqe.jumpPcToEnd);
-    ConstructBranch(r0, r0, RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ, static_cast<uint8_t>(endOffset), fc.gotoNextSqe.branchToEnd);
+    ConstructBranch(
+        r0, r0, RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ, static_cast<uint8_t>(endOffset), fc.gotoNextSqe.branchToEnd);
 
-    const uint32_t * const cmd = RtPtrToPtr<const uint32_t *>(&fc.gotoNextSqe);
+    const uint32_t* const cmd = RtPtrToPtr<const uint32_t*>(&fc.gotoNextSqe);
     if (CheckLogLevel(static_cast<int32_t>(RUNTIME), DLOG_DEBUG) == 1) {
         RT_LOG(RT_LOG_DEBUG, "construct cond task goto next sqe, offset=%u", endOffset);
         for (size_t i = 0UL; i < (sizeof(RtStarsCaptureCondGotoNextSqe) / sizeof(uint32_t)); i++) {
@@ -193,14 +213,14 @@ void ConstructCondTaskGotoNextSqe(rtStarsCaptureCondFcPara_t &para, CondFc &fc)
     }
 }
 
-void ConstructCaptureIfCondFc(rtStarsCaptureCondFcPara_t &para, RtStarsCaptureIfCondFc &fc);
+void ConstructCaptureIfCondFc(rtStarsCaptureCondFcPara_t& para, RtStarsCaptureIfCondFc& fc);
 
-void ConstructCaptureWhileCondFc(rtStarsCaptureCondFcPara_t &para, RtStarsCaptureWhileCondFc &fc);
+void ConstructCaptureWhileCondFc(rtStarsCaptureCondFcPara_t& para, RtStarsCaptureWhileCondFc& fc);
 
-void ConstructCaptureSwitchCondFc(rtStarsCaptureCondFcPara_t &para, RtStarsCaptureSwitchCondFc &fc);
+void ConstructCaptureSwitchCondFc(rtStarsCaptureCondFcPara_t& para, RtStarsCaptureSwitchCondFc& fc);
 
 template <typename T>
-void ConstructGetFloatStatusInstr(const uint64_t svmAddr, const uint64_t svmSize, T &sqe)
+void ConstructGetFloatStatusInstr(const uint64_t svmAddr, const uint64_t svmSize, T& sqe)
 {
     (void)svmSize;
     constexpr rtStarsCondIsaRegister_t r0 = RT_STARS_COND_ISA_REGISTER_R0;
@@ -213,15 +233,15 @@ void ConstructGetFloatStatusInstr(const uint64_t svmAddr, const uint64_t svmSize
 
     ConstructStore(r1, r2, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SD, sqe.sdOverflowCnt);
 
-    uint16_t offset = 8U;  // SD write by 8byte
-    for (RtStarsCondOpStore &sd : sqe.sdZero) {
+    uint16_t offset = 8U; // SD write by 8byte
+    for (RtStarsCondOpStore& sd : sqe.sdZero) {
         ConstructStore(r1, r0, offset, RT_STARS_COND_ISA_STORE_FUNC3_SD, sd);
-        offset += 8U;  // SD write by 8byte
+        offset += 8U; // SD write by 8byte
     }
 }
 
 template <typename T>
-void ConstructFunctionCallInstr(const uint64_t funcAddr, const uint64_t funcCallSize, T &sqe)
+void ConstructFunctionCallInstr(const uint64_t funcAddr, const uint64_t funcCallSize, T& sqe)
 {
     constexpr rtStarsCondIsaRegister_t r1 = RT_STARS_COND_ISA_REGISTER_R1;
     constexpr rtStarsCondIsaRegister_t r2 = RT_STARS_COND_ISA_REGISTER_R2;
@@ -238,12 +258,12 @@ void ConstructFunctionCallInstr(const uint64_t funcAddr, const uint64_t funcCall
     ConstructFuncCall(r1, r2, sqe.funcCall);
 
     // NOP
-    for (RtStarsCondOpNop &nop : sqe.nop) {
+    for (RtStarsCondOpNop& nop : sqe.nop) {
         ConstructNop(nop);
     }
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_STARS_COND_ISA_HELPER_HPP__

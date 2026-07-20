@@ -48,14 +48,14 @@ enum class SegmentState : uint8_t {
 
 struct Segment {
     Segment(uint64_t base, uint64_t size);
-    Segment(uint64_t base, uint64_t size, Segment *prev, Segment *next);
+    Segment(uint64_t base, uint64_t size, Segment* prev, Segment* next);
     Segment* SplitLeft(uint64_t splitedSize, bool mustSplit = false);
     void MergeLeft();
 
     uint64_t basePtr;
     uint64_t size;
-    Segment *prev;
-    Segment *next;
+    Segment* prev;
+    Segment* next;
     int32_t streamId;
     int32_t graphId;
     int32_t eventId;
@@ -64,7 +64,7 @@ struct Segment {
 };
 
 struct SegmentComparator {
-    bool operator()(const Segment *a, const Segment *b) const
+    bool operator()(const Segment* a, const Segment* b) const
     {
         if (a->size != b->size) {
             return a->size < b->size;
@@ -74,7 +74,8 @@ struct SegmentComparator {
 };
 
 struct PairHash {
-    size_t operator()(const pair<int32_t, int32_t>& p) const {
+    size_t operator()(const pair<int32_t, int32_t>& p) const
+    {
         const size_t h1 = hash<int32_t>()(p.first);
         const size_t h2 = hash<int32_t>()(p.second);
         return h1 ^ (h2 + HASH_GOLDEN_RATIO + (h1 << 6U) + (h1 >> 2U));
@@ -97,15 +98,15 @@ struct AicpuPoolCtxArgs {
     uint64_t va;
     uint64_t mempoolId;
     uint32_t deviceId;
-    int32_t memAsyncOpType;  // Malloc(0) Free(1)
-    int32_t memAsyncSubCMD;  // Distinguish between Malloc reuse strategies and Free explicit/implicit reuse methods
+    int32_t memAsyncOpType; // Malloc(0) Free(1)
+    int32_t memAsyncSubCMD; // Distinguish between Malloc reuse strategies and Free explicit/implicit reuse methods
 };
 
 struct PoolDependencyFea {
-    uint32_t singleDependencies = 1; // Reuse in a single Stream
-    uint32_t eventDependencies = 0;  // Reuse between streams with event
+    uint32_t singleDependencies = 1;   // Reuse in a single Stream
+    uint32_t eventDependencies = 0;    // Reuse between streams with event
     uint32_t internalDependencies = 0; // Reuse between streams, alloc must wait until free
-    uint32_t opportunistic = 0;      // Reuse between streams, failed when free not executed before alloc
+    uint32_t opportunistic = 0;        // Reuse between streams, failed when free not executed before alloc
     uint64_t waterMark = 0;
 };
 
@@ -118,12 +119,12 @@ enum class ReuseFlag : int32_t {
 
 class SegmentManager {
 public:
-    SegmentManager(Segment *seg, uint32_t deviceId, bool canDelete);
+    SegmentManager(Segment* seg, uint32_t deviceId, bool canDelete);
     ~SegmentManager();
-    rtError_t SegmentAlloc(Segment* &ret, uint64_t size, int32_t streamId, ReuseFlag &flag);
+    rtError_t SegmentAlloc(Segment*& ret, uint64_t size, int32_t streamId, ReuseFlag& flag);
     rtError_t SegmentFree(uint64_t ptr, bool forceFree = false);
     static inline Segment* CreateSegment(uint64_t base, uint64_t size);
-    static inline Segment* CreateSegment(uint64_t base, uint64_t size, Segment *next, Segment *prev);
+    static inline Segment* CreateSegment(uint64_t base, uint64_t size, Segment* next, Segment* prev);
     static inline void DeleteSegment(Segment*& segment);
     uint64_t MemPoolId() const { return RtPtrToValue(this); }
     uint64_t PoolSegAddr() const { return base_; }
@@ -134,30 +135,30 @@ public:
     bool CanDelete() const { return canDelete_; }
     rtError_t GetAttribute(rtMemPoolAttr attr, void* value);
     rtError_t SetAttribute(rtMemPoolAttr attr, const void* value);
-    Segment* SingleStreamReuse(size_t size, const int32_t streamId, ReuseFlag &flag) const;
-    Segment* StreamInternalReuse(size_t size, const int32_t streamId, bool reuseType, ReuseFlag &flag) const;
-    Segment* StreamEventReuse(size_t size, const int32_t streamId, ReuseFlag &flag) const;
-    Segment* TryToReuse(size_t size, const int32_t streamId, PoolDependencyFea &state, ReuseFlag &flag) const;
+    Segment* SingleStreamReuse(size_t size, const int32_t streamId, ReuseFlag& flag) const;
+    Segment* StreamInternalReuse(size_t size, const int32_t streamId, bool reuseType, ReuseFlag& flag) const;
+    Segment* StreamEventReuse(size_t size, const int32_t streamId, ReuseFlag& flag) const;
+    Segment* TryToReuse(size_t size, const int32_t streamId, PoolDependencyFea& state, ReuseFlag& flag) const;
     rtError_t TrimTo(const uint64_t minBytesToKeep);
-    void SetInitialSegment(Segment *seg);
+    void SetInitialSegment(Segment* seg);
 
 private:
-    void MergeIntoCachedSegs(Segment* &seg);
-    bool CheckMergeRules(const Segment *segLeft, const Segment *segRight) const;
+    void MergeIntoCachedSegs(Segment*& seg);
+    bool CheckMergeRules(const Segment* segLeft, const Segment* segRight) const;
     Segment* AllocFromFreeSegs(uint64_t size);
-    void MergeIntoFreeSegs(Segment* &seg);
+    void MergeIntoFreeSegs(Segment*& seg);
     void TrimCachedSegs(const uint64_t minBytesToKeep);
 
     std::mutex mutex_;
-    std::unordered_map<uint64_t, Segment *> allocedMap_;
-    std::set<Segment *, SegmentComparator> cachedSegs_;
-    std::set<Segment *, SegmentComparator> freeSegs_;
+    std::unordered_map<uint64_t, Segment*> allocedMap_;
+    std::set<Segment*, SegmentComparator> cachedSegs_;
+    std::set<Segment*, SegmentComparator> freeSegs_;
 
     PoolDependencyFea state_;
-    Segment *tail_;
+    Segment* tail_;
     uint64_t base_;
     uint64_t size_;
-    uint64_t busySize_; // allocated
+    uint64_t busySize_;    // allocated
     uint64_t reserveSize_; // allocated + cached
     uint64_t maxBusySize_;
     uint64_t maxReservedSize_;
@@ -168,7 +169,7 @@ private:
 };
 
 struct SegmentManagerComparator {
-    bool operator()(const SegmentManager *a, const SegmentManager *b) const
+    bool operator()(const SegmentManager* a, const SegmentManager* b) const
     {
         return a->PoolSegAddr() < b->PoolSegAddr();
     }
@@ -176,14 +177,14 @@ struct SegmentManagerComparator {
 
 class PoolRegistry {
 public:
-    static PoolRegistry &Instance() {
-        std::call_once(initFlag_, []() {
-            poolRegistry_ = new PoolRegistry();
-        });
+    static PoolRegistry& Instance()
+    {
+        std::call_once(initFlag_, []() { poolRegistry_ = new PoolRegistry(); });
         return *poolRegistry_;
     }
 
-    static void DestroyPoolRegistry() {
+    static void DestroyPoolRegistry()
+    {
         if (poolRegistry_ != nullptr) {
             delete poolRegistry_;
             poolRegistry_ = nullptr;
@@ -191,21 +192,21 @@ public:
     }
     rtError_t Init();
     ~PoolRegistry();
-    static rtError_t InitializeMemPool(SegmentManager *mgr, uint64_t va, uint64_t size);
-    void RegisterMemPool(SegmentManager *mgr);
-    rtError_t CheckRemoveMemPool(SegmentManager *memPool);
-    static SegmentManager* CreateManager(Segment *seg, uint32_t deviceId, bool canDeleteOutsideDestruction);
+    static rtError_t InitializeMemPool(SegmentManager* mgr, uint64_t va, uint64_t size);
+    void RegisterMemPool(SegmentManager* mgr);
+    rtError_t CheckRemoveMemPool(SegmentManager* memPool);
+    static SegmentManager* CreateManager(Segment* seg, uint32_t deviceId, bool canDeleteOutsideDestruction);
     static void DeleteManager(SegmentManager*& manager);
     rtError_t RemoveMemPool(SegmentManager* memPool, std::shared_ptr<SegmentManager>& owned);
-    std::shared_ptr<SegmentManager> QueryMemPool(SegmentManager *p);
+    std::shared_ptr<SegmentManager> QueryMemPool(SegmentManager* p);
     std::unordered_map<std::pair<int32_t, int32_t>, uint64_t, PairHash> GetSequenceMap() const;
     std::unordered_map<int32_t, uint64_t> GetStreamSeqId() const;
     void UpdateSeqMap(const int32_t streamId, const int32_t eventId);
     void UpdateEventMap(const int32_t streamId, const int32_t eventId);
     void RemoveFromEventMap(const int32_t eventId);
     void RemoveSeqMap(rtStream_t stm);
-    static void StreamStateCallback(rtStream_t stm, rtStreamState type, void *args);
-    static void EventStateCallbackWrapper(Stream* stream, Event* event, EventStatePeriod period, void *args);
+    static void StreamStateCallback(rtStream_t stm, rtStreamState type, void* args);
+    static void EventStateCallbackWrapper(Stream* stream, Event* event, EventStatePeriod period, void* args);
     rtError_t RegisterSomaCallBack();
     bool InMemPoolRegion(uint64_t ptr);
     std::shared_ptr<SegmentManager> FindMemPoolByPtr(uint64_t ptr);
@@ -213,8 +214,8 @@ public:
 
 private:
     PoolRegistry() = default;
-    PoolRegistry(const PoolRegistry &) = delete;
-    PoolRegistry &operator=(const PoolRegistry &) = delete;
+    PoolRegistry(const PoolRegistry&) = delete;
+    PoolRegistry& operator=(const PoolRegistry&) = delete;
 
     mutable std::mutex mutex_;
     std::set<SegmentManager*, SegmentManagerComparator> entries_;
@@ -223,10 +224,10 @@ private:
     std::unordered_map<int32_t, std::pair<int32_t, uint64_t>> eventsMap_;
     std::unordered_map<std::pair<int32_t, int32_t>, uint64_t, PairHash> sequenceMap_;
     std::unordered_map<int32_t, uint64_t> streamSeqId_;
-    static PoolRegistry *poolRegistry_;
+    static PoolRegistry* poolRegistry_;
     static std::once_flag initFlag_;
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 #endif // STREAM_MEM_POOL_HPP

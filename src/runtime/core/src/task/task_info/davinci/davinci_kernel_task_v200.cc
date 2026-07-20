@@ -16,44 +16,42 @@ namespace cce {
 namespace runtime {
 #if F_DESC("DavinciKernelTask")
 
-bool IsAicAivBiuPerfStreamSupported(const Stream *const stm)
-{
-    return !stm->GetBindFlag();
-}
+bool IsAicAivBiuPerfStreamSupported(const Stream* const stm) { return !stm->GetBindFlag(); }
 
-void ConstructDavidAICpuSqeForDavinciTask(TaskInfo *const taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
+void ConstructDavidAICpuSqeForDavinciTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
     ConstructDavidAICpuSqeForDavinciTaskBase(taskInfo, davidSqe, sqBaseAddr);
 
-    RtDavidStarsAicpuKernelSqe *const aicpuKernelSqe = &(davidSqe->aicpuSqe);
+    RtDavidStarsAicpuKernelSqe* const aicpuKernelSqe = &(davidSqe->aicpuSqe);
     PrintDavidSqe(davidSqe, "AICpuTask");
-    RT_LOG(RT_LOG_INFO, "topic_type=%hu, kernel_type=%u, dump_en=%u",
-        aicpuKernelSqe->topicType, aicpuKernelSqe->kernelType, aicpuKernelSqe->debugDumpEn);
+    RT_LOG(
+        RT_LOG_INFO, "topic_type=%hu, kernel_type=%u, dump_en=%u", aicpuKernelSqe->topicType,
+        aicpuKernelSqe->kernelType, aicpuKernelSqe->debugDumpEn);
     return;
 }
 
-void UpdateDavidAICoreSqeForDavinciTask(TaskInfo *taskInfo, RtDavidStarsAicAivKernelSqe * const sqe)
+void UpdateDavidAICoreSqeForDavinciTask(TaskInfo* taskInfo, RtDavidStarsAicAivKernelSqe* const sqe)
 {
     UNUSED(taskInfo);
     UNUSED(sqe);
     return;
 }
 
-void UpdateDavidAICpuKernelSqeForDavinciTask(RtDavidStarsAicpuKernelSqe * const sqe)
+void UpdateDavidAICpuKernelSqeForDavinciTask(RtDavidStarsAicpuKernelSqe* const sqe)
 {
- 	UNUSED(sqe);
+    UNUSED(sqe);
     return;
 }
 
-void UpdateDavidAICpuControlSqeForDavinciTask(RtDavidStarsAicpuControlSqe * const sqe)
+void UpdateDavidAICpuControlSqeForDavinciTask(RtDavidStarsAicpuControlSqe* const sqe)
 {
- 	UNUSED(sqe);
+    UNUSED(sqe);
     return;
 }
 
-void ConfigSqeDieFriendly(RtDavidStarsAicAivKernelSqe * const sqe, const Stream * const stm)
+void ConfigSqeDieFriendly(RtDavidStarsAicAivKernelSqe* const sqe, const Stream* const stm)
 {
 #ifndef CFG_DEV_PLATFORM_PC
     const uint8_t dieNum = stm->Device_()->GetDavidDieNum();
@@ -109,5 +107,5 @@ static bool g_davinciKernelTaskRegister = DavinciKernelTaskRegister();
 
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

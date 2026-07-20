@@ -19,7 +19,7 @@
 namespace cce {
 namespace runtime {
 
-void PrintAsyncPtrProc(Driver * const driver, char_t * const errStr, void *memcpyAddrInfo, int32_t &countNum)
+void PrintAsyncPtrProc(Driver* const driver, char_t* const errStr, void* memcpyAddrInfo, int32_t& countNum)
 {
     UNUSED(driver);
     UNUSED(errStr);
@@ -27,7 +27,7 @@ void PrintAsyncPtrProc(Driver * const driver, char_t * const errStr, void *memcp
     UNUSED(countNum);
 }
 
-rtError_t MixKernelUpdatePrepare(TaskInfo * const updateTask, void ** const hostAddr, const uint64_t allocSize)
+rtError_t MixKernelUpdatePrepare(TaskInfo* const updateTask, void** const hostAddr, const uint64_t allocSize)
 {
     UNUSED(updateTask);
     UNUSED(hostAddr);
@@ -35,8 +35,7 @@ rtError_t MixKernelUpdatePrepare(TaskInfo * const updateTask, void ** const host
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t NormalKernelUpdatePrepare(TaskInfo * const updateTask, void ** const hostAddr,
-                                    const uint64_t allocSize)
+rtError_t NormalKernelUpdatePrepare(TaskInfo* const updateTask, void** const hostAddr, const uint64_t allocSize)
 {
     UNUSED(updateTask);
     UNUSED(hostAddr);
@@ -44,15 +43,15 @@ rtError_t NormalKernelUpdatePrepare(TaskInfo * const updateTask, void ** const h
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ConvertAsyncDma(TaskInfo * const taskInfo)
+rtError_t ConvertAsyncDma(TaskInfo* const taskInfo)
 {
     UNUSED(taskInfo);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ConvertAsyncDma2D(TaskInfo * const taskInfo2D, void *const dst, const uint64_t dstPitch,
-    const void *const src, const uint64_t srcPitch, const uint64_t width, const uint64_t height,
-    const uint64_t fixedSize)
+rtError_t ConvertAsyncDma2D(
+    TaskInfo* const taskInfo2D, void* const dst, const uint64_t dstPitch, const void* const src,
+    const uint64_t srcPitch, const uint64_t width, const uint64_t height, const uint64_t fixedSize)
 {
     UNUSED(taskInfo2D);
     UNUSED(dst);
@@ -65,8 +64,9 @@ rtError_t ConvertAsyncDma2D(TaskInfo * const taskInfo2D, void *const dst, const 
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t SqeUpdateH2DTaskInit(TaskInfo * const taskInfo, void *srcAddr, void *dstAddr, const uint64_t cpySize,
-                               void *releaseArgHandle, void * const updateArgHandle)
+rtError_t SqeUpdateH2DTaskInit(
+    TaskInfo* const taskInfo, void* srcAddr, void* dstAddr, const uint64_t cpySize, void* releaseArgHandle,
+    void* const updateArgHandle)
 {
     UNUSED(taskInfo);
     UNUSED(srcAddr);
@@ -77,8 +77,9 @@ rtError_t SqeUpdateH2DTaskInit(TaskInfo * const taskInfo, void *srcAddr, void *d
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t UpdateD2HTaskInit(TaskInfo * const taskInfo, const void *sqeBaseAddr, const uint64_t cpySize,
-                                        const uint32_t sqId, const uint32_t pos, const uint8_t sqeOffset)
+rtError_t UpdateD2HTaskInit(
+    TaskInfo* const taskInfo, const void* sqeBaseAddr, const uint64_t cpySize, const uint32_t sqId, const uint32_t pos,
+    const uint8_t sqeOffset)
 {
     UNUSED(taskInfo);
     UNUSED(sqeBaseAddr);
@@ -89,7 +90,7 @@ rtError_t UpdateD2HTaskInit(TaskInfo * const taskInfo, const void *sqeBaseAddr, 
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t MemWriteValueTaskInit(TaskInfo *taskInfo, const void * const devAddr, const uint64_t value)
+rtError_t MemWriteValueTaskInit(TaskInfo* taskInfo, const void* const devAddr, const uint64_t value)
 {
     UNUSED(taskInfo);
     UNUSED(devAddr);
@@ -97,13 +98,9 @@ rtError_t MemWriteValueTaskInit(TaskInfo *taskInfo, const void * const devAddr, 
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-void MemWaitTaskUnInit(TaskInfo *taskInfo)
-{
-    UNUSED(taskInfo);
-}
+void MemWaitTaskUnInit(TaskInfo* taskInfo) { UNUSED(taskInfo); }
 
-rtError_t MemWaitValueTaskInit(TaskInfo *taskInfo, const void * const devAddr,
-                               const uint64_t value, const uint32_t flag)
+rtError_t MemWaitValueTaskInit(TaskInfo* taskInfo, const void* const devAddr, const uint64_t value, const uint32_t flag)
 {
     UNUSED(taskInfo);
     UNUSED(devAddr);
@@ -112,7 +109,7 @@ rtError_t MemWaitValueTaskInit(TaskInfo *taskInfo, const void * const devAddr,
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t UpdateTaskD2HSubmit(const TaskInfo * const updateTask, void *sqeAddr, Stream * const stm)
+rtError_t UpdateTaskD2HSubmit(const TaskInfo* const updateTask, void* sqeAddr, Stream* const stm)
 {
     UNUSED(updateTask);
     UNUSED(sqeAddr);
@@ -120,7 +117,7 @@ rtError_t UpdateTaskD2HSubmit(const TaskInfo * const updateTask, void *sqeAddr, 
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t UpdateTaskH2DSubmit(TaskInfo * const updateTask, Stream * const stm, void* sqeDeviceAddr)
+rtError_t UpdateTaskH2DSubmit(TaskInfo* const updateTask, Stream* const stm, void* sqeDeviceAddr)
 {
     UNUSED(updateTask);
     UNUSED(stm);
@@ -128,7 +125,7 @@ rtError_t UpdateTaskH2DSubmit(TaskInfo * const updateTask, Stream * const stm, v
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-void IpcEventDestroy(IpcEvent **eventPtr, int32_t freeId, bool isNeedDestroy)
+void IpcEventDestroy(IpcEvent** eventPtr, int32_t freeId, bool isNeedDestroy)
 {
     UNUSED(eventPtr);
     UNUSED(freeId);
@@ -184,7 +181,7 @@ rtError_t UpdateWaitValueTaskParams(TaskInfo* const taskInfo, rtTaskParams* cons
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t CreateL2AddrTaskInit(TaskInfo * const taskInfo, const uint64_t ptePtrAddr)
+rtError_t CreateL2AddrTaskInit(TaskInfo* const taskInfo, const uint64_t ptePtrAddr)
 {
     UNUSED(taskInfo);
     UNUSED(ptePtrAddr);
@@ -199,13 +196,13 @@ rtError_t UpdateAddressTaskInit(TaskInfo* taskInfo, uint64_t devAddr, uint64_t l
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-static void ConstructPlaceHolderSqe(TaskInfo * const taskInfo, rtStarsSqe_t * const command)
+static void ConstructPlaceHolderSqe(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    MemcpyAsyncTaskInfo* memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
-    RtStarsPhSqe *const sqe = &(command->phSqe);
-    sqe->header.type  = RT_STARS_SQE_TYPE_PLACE_HOLDER;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
+    sqe->header.type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->header.wrCqe = stream->GetStarsWrCqeFlag();
     sqe->header.rtStreamId = static_cast<uint16_t>(stream->Id_());
     sqe->header.taskId = taskInfo->id;
@@ -220,23 +217,25 @@ static void ConstructPlaceHolderSqe(TaskInfo * const taskInfo, rtStarsSqe_t * co
     sqe->u.memcpyAsyncWithoutSdmaInfo.size = memcpyAsyncTaskInfo->size;
     sqe->u.memcpyAsyncWithoutSdmaInfo.pid = static_cast<uint32_t>(drvDeviceGetBareTgid());
     PrintSqe(command, "MemCopyAsyncByPlaceHolder");
-    RT_LOG(RT_LOG_INFO, "ConstructSqe, size_=%" PRIu64 ", pid=%u.",
-        memcpyAsyncTaskInfo->size, sqe->u.memcpyAsyncWithoutSdmaInfo.pid);
+    RT_LOG(
+        RT_LOG_INFO, "ConstructSqe, size_=%" PRIu64 ", pid=%u.", memcpyAsyncTaskInfo->size,
+        sqe->u.memcpyAsyncWithoutSdmaInfo.pid);
 }
 
-void ConstructSqeForMemcpyAsyncTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForMemcpyAsyncTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
     ConstructPlaceHolderSqe(taskInfo, command);
-    RT_LOG(RT_LOG_INFO, "MemcpyAsyncTask using PH SQE. stream_id=%d, task_id=%u",
-           static_cast<int32_t>(taskInfo->stream->Id_()), static_cast<uint32_t>(taskInfo->id));
+    RT_LOG(
+        RT_LOG_INFO, "MemcpyAsyncTask using PH SQE. stream_id=%d, task_id=%u",
+        static_cast<int32_t>(taskInfo->stream->Id_()), static_cast<uint32_t>(taskInfo->id));
     PrintSqe(command, "MemcpyAsyncPtr");
 }
 
-static void ReleaseCpyTmpMem(TaskInfo * const taskInfo)
+static void ReleaseCpyTmpMem(TaskInfo* const taskInfo)
 {
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
-    Stream * const stream = taskInfo->stream;
-    Driver * const driver = taskInfo->stream->Device_()->Driver_();
+    MemcpyAsyncTaskInfo* memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    Stream* const stream = taskInfo->stream;
+    Driver* const driver = taskInfo->stream->Device_()->Driver_();
 
     if (memcpyAsyncTaskInfo->srcPtr != nullptr) {
         if (stream->Device_()->IsAddrFlatDev()) {
@@ -252,18 +251,18 @@ static void ReleaseCpyTmpMem(TaskInfo * const taskInfo)
     }
 }
 
-void MemcpyAsyncTaskUnInit(TaskInfo * const taskInfo)
+void MemcpyAsyncTaskUnInit(TaskInfo* const taskInfo)
 {
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    MemcpyAsyncTaskInfo* memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
 
     if ((memcpyAsyncTaskInfo->isSqeUpdateH2D) && (memcpyAsyncTaskInfo->src != nullptr)) {
-        Driver * const driver = taskInfo->stream->Device_()->Driver_();
+        Driver* const driver = taskInfo->stream->Device_()->Driver_();
         (void)driver->HostMemFree(memcpyAsyncTaskInfo->src);
         memcpyAsyncTaskInfo->src = nullptr;
     }
 
     if (memcpyAsyncTaskInfo->releaseArgHandle != nullptr) {
-        ArgLoader * const argLoaderObj = taskInfo->stream->Device_()->ArgLoader_();
+        ArgLoader* const argLoaderObj = taskInfo->stream->Device_()->ArgLoader_();
         (void)argLoaderObj->Release(memcpyAsyncTaskInfo->releaseArgHandle);
         memcpyAsyncTaskInfo->releaseArgHandle = nullptr;
     }
@@ -289,11 +288,11 @@ static bool IsSdmaMteErrorCode(const int32_t errCode)
 }
 
 TIMESTAMP_EXTERN(rtMemcpyAsync_drvMemDestroyAddr);
-void DoCompleteSuccessForMemcpyAsyncTask(TaskInfo * const taskInfo, const uint32_t devId)
+void DoCompleteSuccessForMemcpyAsyncTask(TaskInfo* const taskInfo, const uint32_t devId)
 {
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
-    Stream * const stream = taskInfo->stream;
-    Driver * const driver = taskInfo->stream->Device_()->Driver_();
+    MemcpyAsyncTaskInfo* memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    Stream* const stream = taskInfo->stream;
+    Driver* const driver = taskInfo->stream->Device_()->Driver_();
     const uint32_t copyType = memcpyAsyncTaskInfo->copyType;
     uint32_t errorCode = taskInfo->errorCode;
 
@@ -304,15 +303,17 @@ void DoCompleteSuccessForMemcpyAsyncTask(TaskInfo * const taskInfo, const uint32
         }
         stream->SetErrCode(errorCode);
         if (errorCode != TS_ERROR_SDMA_OVERFLOW) {
-            RT_LOG(RT_LOG_ERROR, "mem async copy error, mte_err=%#x, retCode=%#x, [%s].",
-                   taskInfo->mte_error, errorCode, GetTsErrCodeDesc(errorCode));
+            RT_LOG(
+                RT_LOG_ERROR, "mem async copy error, mte_err=%#x, retCode=%#x, [%s].", taskInfo->mte_error, errorCode,
+                GetTsErrCodeDesc(errorCode));
             PrintErrorInfoForMemcpyAsyncTask(taskInfo, devId);
         }
     }
 
     if (errorCode != TS_ERROR_SDMA_OVERFLOW) {
-        TaskFailCallBack(static_cast<uint32_t>(stream->Id_()), static_cast<uint32_t>(taskInfo->id),
-            taskInfo->tid, errorCode, stream->Device_());
+        TaskFailCallBack(
+            static_cast<uint32_t>(stream->Id_()), static_cast<uint32_t>(taskInfo->id), taskInfo->tid, errorCode,
+            stream->Device_());
     }
 
     (void)RecycleTaskResourceForMemcpyAsyncTask(taskInfo);
@@ -334,8 +335,8 @@ void DoCompleteSuccessForMemcpyAsyncTask(TaskInfo * const taskInfo, const uint32
             TIMESTAMP_BEGIN(rtMemcpyAsync_drvMemDestroyAddr);
             error = driver->MemDestroyAddr(&(memcpyAsyncTaskInfo->dmaAddr));
             TIMESTAMP_END(rtMemcpyAsync_drvMemDestroyAddr);
-            COND_RETURN_VOID(error != RT_ERROR_NONE,
-                "free dma addr failed after convert memory address, retCode=%#x.", error);
+            COND_RETURN_VOID(
+                error != RT_ERROR_NONE, "free dma addr failed after convert memory address, retCode=%#x.", error);
         } else {
             (stream->Model_())->PushbackDmaAddr(memcpyAsyncTaskInfo->dmaAddr);
         }
@@ -360,5 +361,5 @@ static bool MemoryTaskRegister()
 
 static bool g_memoryTaskRegister = MemoryTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -31,21 +31,21 @@ class ArgLoader;
 class CondHandle;
 
 struct CmoAddrTaskInfo {
-    void *src;
-    void *cmoAddrInfo;
+    void* src;
+    void* cmoAddrInfo;
     uint32_t lenInner;
     uint16_t numOuter;
-	uint16_t numInner;
-	uint32_t strideOuter;
+    uint16_t numInner;
+    uint32_t strideOuter;
     uint32_t strideInner;
     uint8_t cmoOpCode;
 };
 
 struct ReduceAsyncV2TaskInfo {
-    void *src;
-    void *destPtr;
-    void *overflowAddr;
-    std::vector<std::shared_ptr<void>> *guardMemVec;
+    void* src;
+    void* destPtr;
+    void* overflowAddr;
+    std::vector<std::shared_ptr<void>>* guardMemVec;
     uint64_t size;
     uint32_t copyType;
     uint32_t copyKind;
@@ -54,25 +54,25 @@ struct ReduceAsyncV2TaskInfo {
 };
 
 struct EventRecordTaskInfo {
-    Event *event;
+    Event* event;
     uint64_t timelineBase;   // valid when flag bit 0 set, otherwise set to MAX.
     uint64_t timestamp;
     uint32_t timelineOffset; // offset of timeline
     int32_t eventid;
-    int32_t timeout; // for stream sync timeout
+    int32_t timeout;         // for stream sync timeout
     uint16_t waitCqId;
     bool isNotifyRecord;
     bool waitCqflag;
 };
 
 struct EventResetTaskInfo {
-    Event *event;
+    Event* event;
     int32_t eventid;
     bool isNotify;
 };
 
 struct RemoteEventWaitTaskInfo {
-    Event *event;
+    Event* event;
     uint64_t srcMailboxPa;
     uint64_t srcDoorbellPa;
     uint64_t dstDoorbellPa;
@@ -83,14 +83,14 @@ struct RemoteEventWaitTaskInfo {
 };
 
 struct EventWaitTaskInfo {
-    Event *event;
+    Event* event;
     int32_t eventId;
-    uint32_t timeout; // used only for 51 pg1
+    uint32_t timeout;      // used only for 51 pg1
     uint8_t eventWaitFlag; // 0: event wait(default), 1: notify wait
 };
 
 struct DavidEventRecordTaskInfo {
-    Event *event;
+    Event* event;
     uint64_t timestamp;
     int32_t eventId;
     int32_t timeout; // for stream sync timeout
@@ -99,13 +99,13 @@ struct DavidEventRecordTaskInfo {
 };
 
 struct DavidEventResetTaskInfo {
-    Event *event;
+    Event* event;
     int32_t eventId;
     uint32_t isCountNotify;
 };
 
 struct DavidEventWaitTaskInfo {
-    Event *event;
+    Event* event;
     int32_t eventId;
     uint32_t timeout;
     uint32_t isCountNotify;
@@ -173,8 +173,8 @@ struct PCTraceTaskInfo {
 };
 
 struct ModelMaintainceTaskInfo {
-    Stream *opStream;
-    Model *model;
+    Stream* opStream;
+    Model* model;
     uint64_t execTimesSvmOffset;
     MmtType type;
     uint32_t streamType;
@@ -182,7 +182,7 @@ struct ModelMaintainceTaskInfo {
 };
 
 struct ModelExecuteTaskInfo {
-    Model *model;
+    Model* model;
     uint32_t modelId;
     uint32_t firstTaskId;
     uint32_t errorTaskId;
@@ -227,7 +227,7 @@ struct ActiveAicpuStreamTaskInfo {
 
 // CallbackLaunchTask
 struct CallbackLaunchTaskInfo {
-    void *fnData;
+    void* fnData;
     rtCallback_t callBackFunc; // 定义在kernel.h中
     int32_t eventId;
     bool isBlock;
@@ -240,10 +240,10 @@ struct StreamLabelGotoTaskInfo {
 
 // FftsPlusTask
 struct FftsPlusTaskInfo {
-    void *descBuf;         // device memory
-    void *descAlignBuf;
-    void *argHandle;
-    std::vector<rtFftsPlusTaskErrInfo_t> *errInfo;
+    void* descBuf; // device memory
+    void* descAlignBuf;
+    void* argHandle;
+    std::vector<rtFftsPlusTaskErrInfo_t>* errInfo;
     rtFftsPlusSqe_t fftsSqe; // 在rt_stars_define.h中定义
     uint64_t descBufLen;
     uint64_t loadDumpInfo;
@@ -251,14 +251,14 @@ struct FftsPlusTaskInfo {
     uint32_t loadDumpInfoLen;
     uint32_t unloadDumpInfoLen;
     uint32_t argsHandleInfoNum;
-    std::vector<void *> *argsHandleInfoPtr;
+    std::vector<void*>* argsHandleInfoPtr;
     uint8_t kernelFlag;
     rtArgsSizeInfo_t inputArgsSize;
 };
 
 // NpuGetFloatStatusTask
 struct NpuGetFloatStatusTaskInfo {
-    void *outputAddrPtr; // the second rank pointer to output data
+    void* outputAddrPtr; // the second rank pointer to output data
     uint64_t outputSize;
     uint32_t checkMode;
     bool debugFlag;
@@ -272,19 +272,19 @@ struct NpuClearFloatStatusTaskInfo {
 
 // OverflowSwitchSetTask
 struct OverflowSwitchSetTaskInfo {
-    Stream *targetStm;
+    Stream* targetStm;
     bool switchFlag;
 };
 
 // StreamTagSetTask
 struct StreamTagSetTaskInfo {
-    Stream *targetStm;
+    Stream* targetStm;
     uint32_t geOpTag;
 };
 
 // RingBufferMaintainTask
 struct RingBufferMaintainTaskInfo {
-    void *deviceRingBufferAddr;
+    void* deviceRingBufferAddr;
     uint32_t bufferLen;
     bool deleteFlag;
 };
@@ -335,8 +335,8 @@ struct NotifyRecordTaskInfo {
         rtCntNtyRecordInfo_t countNtfyInfo;
     } uInfo;
     union {
-        Notify *notify;
-        CountNotify *countNotify;
+        Notify* notify;
+        CountNotify* countNotify;
     } uPtr;
     bool isCountNotify;
 };
@@ -349,8 +349,8 @@ struct CountNotifyWaitInfo {
 
 struct NotifyWaitTaskInfo {
     union {
-        Notify *notify;
-        CountNotify *countNotify;
+        Notify* notify;
+        CountNotify* countNotify;
     } u;
     uint64_t timestamp;
     uint32_t notifyId;
@@ -364,7 +364,7 @@ struct NotifyWaitTaskInfo {
 };
 
 struct LabelSetTaskInfo {
-    void *devDstAddr;
+    void* devDstAddr;
     uint16_t labelId;
 };
 
@@ -427,7 +427,7 @@ struct TimeoutSetTaskInfo {
 };
 
 struct GetDevMsgTaskInfo {
-    void *devMem;
+    void* devMem;
     uint64_t offset;
     uint32_t msgBufferLen;
     rtGetDevMsgType_t msgType;
@@ -441,7 +441,7 @@ struct DebugRegisterForStreamTaskInfo {
 
 struct FlipTaskInfo {
     uint16_t flipNumReport;
-    uint16_t subType;       // 0：使用当前流的streamId上报, 1：使用task中携带的streamId上报
+    uint16_t subType; // 0：使用当前流的streamId上报, 1：使用task中携带的streamId上报
     uint32_t streamId;
 };
 
@@ -460,21 +460,21 @@ struct MdlUpdateTaskInfo {
     uint16_t desStreamId;
     uint16_t exeStreamId;
     uint32_t destaskId;
-    void *prgHandle;
+    void* prgHandle;
     uint64_t descBufOffset;
     uint64_t fftsPlusSqeOffset;
     uint64_t tilingKeyOffset;
     uint64_t blockDimOffset;
     uint64_t tilingTabOffset;
-    void *tilingTabAddr;
+    void* tilingTabAddr;
     uint32_t tilingTabLen;
-    void *fftsPlusTaskDescBuf;
-    void *blockDimAddr;
-    void *tilingKeyAddr;
+    void* fftsPlusTaskDescBuf;
+    void* blockDimAddr;
+    void* tilingKeyAddr;
 };
 
 struct MemWriteValueTaskInfo {
-    Event *event;
+    Event* event;
     uint64_t devAddr;
     uint64_t value;
     uint16_t curIndex;
@@ -490,38 +490,38 @@ struct SqeUpdateTaskInfo {
     uint16_t desStreamId;
     uint16_t desTaskId;
     uint8_t schemMode;
-    void *updateArgHandle;
+    void* updateArgHandle;
 };
 
 struct CaptureConditionTaskInfo {
     // === 全局属性 ===
-    CondHandle *condHandle;               // 条件操作 Handle（type/size/devAddr 均可从中获取）
+    CondHandle* condHandle; // 条件操作 Handle（type/size/devAddr 均可从中获取）
 
     // === SQE[0] CondFirst：条件判断 FunctionCall ===
-    void *funcCallSvmMem;                  // FunctionCall 指令设备内存地址（已对齐）
-    void *baseFuncCallSvmMem;              // 设备内存分配基地址（用于 free）
-    void *baseFuncCallDevMem;              // 设备内存分配基地址，存储条件算子各个入参，如sqlist、sqcountlist、sqsvmlist
-    void *funcCallHostMem;                 // FunctionCall 指令主机内存地址
-    uint64_t funCallMemSize;               // FunctionCall 指令大小
-    void *dfxPtr;                          // dfx 数据起始地址
-    void *headSqArrPtrArrSvmMem;           // 每个模型 sq list 首地址的指针数组设备内存
-    void *headSqArrDataSvmMem;             // 所有模型 sq id 数据设备内存
-    uint32_t headSqArrDataSvmMemSize;      // sq id 数据大小
-    void *modelSqCountArrSvmMem;           // 每个模型的 sq 数量数组设备内存
-    void *streamSvmPtrArrSvmMem;           // 每个模型 svm list 首地址的指针数组设备内存
-    void *streamSvmDataSvmMem;             // 所有模型 svm 数据设备内存
-    uint32_t streamSvmDataSvmMemSize;      // svm 数据大小
+    void* funcCallSvmMem;     // FunctionCall 指令设备内存地址（已对齐）
+    void* baseFuncCallSvmMem; // 设备内存分配基地址（用于 free）
+    void* baseFuncCallDevMem; // 设备内存分配基地址，存储条件算子各个入参，如sqlist、sqcountlist、sqsvmlist
+    void* funcCallHostMem;            // FunctionCall 指令主机内存地址
+    uint64_t funCallMemSize;          // FunctionCall 指令大小
+    void* dfxPtr;                     // dfx 数据起始地址
+    void* headSqArrPtrArrSvmMem;      // 每个模型 sq list 首地址的指针数组设备内存
+    void* headSqArrDataSvmMem;        // 所有模型 sq id 数据设备内存
+    uint32_t headSqArrDataSvmMemSize; // sq id 数据大小
+    void* modelSqCountArrSvmMem;      // 每个模型的 sq 数量数组设备内存
+    void* streamSvmPtrArrSvmMem;      // 每个模型 svm list 首地址的指针数组设备内存
+    void* streamSvmDataSvmMem;        // 所有模型 svm 数据设备内存
+    uint32_t streamSvmDataSvmMemSize; // svm 数据大小
 
     // === SQE[1] NotifyWait：子模型完成通知 ===
-    uint32_t notifyId;                     // notify_id
-    uint32_t notifyTimeout;                // timeout
+    uint32_t notifyId;      // notify_id
+    uint32_t notifyTimeout; // timeout
 
     // === SQE[2] JumpBack（仅 WHILE）：跳回循环头部 ===
-    void *jumpBackFuncCallSvmMem;          // FunctionCall 指令设备内存地址
-    void *jumpBackBaseFuncCallSvmMem;      // 设备内存分配基地址（用于 free）
-    uint64_t jumpBackFunCallMemSize;       // FunctionCall 指令大小
+    void* jumpBackFuncCallSvmMem;     // FunctionCall 指令设备内存地址
+    void* jumpBackBaseFuncCallSvmMem; // 设备内存分配基地址（用于 free）
+    uint64_t jumpBackFunCallMemSize;  // FunctionCall 指令大小
 };
 
-}
-}
-#endif  // CCE_RUNTIME_TASK_INFO_STRUCT_HPP
+} // namespace runtime
+} // namespace cce
+#endif // CCE_RUNTIME_TASK_INFO_STRUCT_HPP

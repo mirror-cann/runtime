@@ -23,7 +23,7 @@ PfnTaskUnInit g_taskXpuUnInitFunc[TS_TASK_TYPE_RESERVED] = {};
 PfnDoCompleteSucc g_doXpuCompleteSuccFunc[TS_TASK_TYPE_RESERVED] = {};
 PfnTaskSetTprtResult g_setXpuResultFunc[TS_TASK_TYPE_RESERVED] = {};
 PfnPrintErrorInfo g_printXpuErrorInfoFunc[TS_TASK_TYPE_RESERVED] = {};
-static const char_t *g_xpuSqeTypeStr[] = {
+static const char_t* g_xpuSqeTypeStr[] = {
     "aicpu",
     "invalid",
 };
@@ -36,7 +36,7 @@ static void RegTaskToXpuSqefunc(void)
     g_toXpuSqeFunc[TS_TASK_TYPE_KERNEL_AICPU] = &ConstructTprtAICpuSqeForDavinciTask;
 }
 
-void ToConstructXpuSqe(TaskInfo *taskInfo, TprtSqe_t *const tprtSqe)
+void ToConstructXpuSqe(TaskInfo* taskInfo, TprtSqe_t* const tprtSqe)
 {
     if (g_toXpuSqeFunc[taskInfo->type] != nullptr) {
         g_toXpuSqeFunc[taskInfo->type](taskInfo, tprtSqe);
@@ -53,7 +53,7 @@ static void XpuRegTaskUnInitFunc(void)
 
 static void XpuRegDoCompleteSuccFunc(void)
 {
-    for (auto &item : g_doXpuCompleteSuccFunc) {
+    for (auto& item : g_doXpuCompleteSuccFunc) {
         item = nullptr;
     }
     g_doXpuCompleteSuccFunc[TS_TASK_TYPE_KERNEL_AICPU] = &DoCompleteSuccessForXpuDavinciTask;
@@ -61,13 +61,13 @@ static void XpuRegDoCompleteSuccFunc(void)
 
 static void XpuRegSetResultFunc(void)
 {
-    for (auto &item : g_setXpuResultFunc) {
+    for (auto& item : g_setXpuResultFunc) {
         item = nullptr;
     }
     g_setXpuResultFunc[TS_TASK_TYPE_KERNEL_AICPU] = &SetTprtResultForDavinciTask;
 }
 
-void XpuComplete(TaskInfo *const taskInfo, const uint32_t devId)
+void XpuComplete(TaskInfo* const taskInfo, const uint32_t devId)
 {
     if (g_doXpuCompleteSuccFunc[taskInfo->type] != nullptr) {
         g_doXpuCompleteSuccFunc[taskInfo->type](taskInfo, devId);
@@ -76,7 +76,7 @@ void XpuComplete(TaskInfo *const taskInfo, const uint32_t devId)
     }
 }
 
-void XpuSetStarsResult(TaskInfo *taskInfo, const TprtLogicCqReport_t &logicCq)
+void XpuSetStarsResult(TaskInfo* taskInfo, const TprtLogicCqReport_t& logicCq)
 {
     if (taskInfo->type >= TS_TASK_TYPE_RESERVED) {
         return;
@@ -87,7 +87,7 @@ void XpuSetStarsResult(TaskInfo *taskInfo, const TprtLogicCqReport_t &logicCq)
     }
 }
 
-void XpuPrintErrorInfo(TaskInfo *taskInfo, const uint32_t devId)
+void XpuPrintErrorInfo(TaskInfo* taskInfo, const uint32_t devId)
 {
     if (taskInfo->type >= TS_TASK_TYPE_RESERVED) {
         return;
@@ -100,7 +100,7 @@ void XpuPrintErrorInfo(TaskInfo *taskInfo, const uint32_t devId)
 
 static void XpuRegPrintErrorInfoFunc(void)
 {
-    for (auto &item : g_printXpuErrorInfoFunc) {
+    for (auto& item : g_printXpuErrorInfoFunc) {
         item = &PrintErrorInfoCommon;
     }
     g_printXpuErrorInfoFunc[TS_TASK_TYPE_KERNEL_AICPU] = &XpuPrintAICpuErrorInfoForDavinciTask;
@@ -116,7 +116,7 @@ const char_t* GetXpuSqeDescByType(const uint8_t sqeType)
     return g_xpuSqeTypeStr[sqeType];
 }
 
-void XpuTaskUnInitProc(TaskInfo *taskInfo)
+void XpuTaskUnInitProc(TaskInfo* taskInfo)
 {
     if (taskInfo->type >= TS_TASK_TYPE_RESERVED) {
         return;
@@ -143,5 +143,5 @@ static bool XpuTaskFuncRegister()
 }
 
 static bool g_xpuTaskFuncRegister = XpuTaskFuncRegister();
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

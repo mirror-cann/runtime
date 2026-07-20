@@ -18,15 +18,34 @@
 
 namespace cce {
 namespace runtime {
-Kernel::Kernel(const char_t * const kernelName, const uint64_t key, Program * const prog,
-    rtKernelAttrType kernelAttrType, const uint32_t funcOffset1, const uint32_t funcOffset2,
-    const uint8_t mixType, const uint32_t taskRation, const uint32_t funcType)
-    : program_(prog), kernelAttrType_(kernelAttrType), stubFun_(nullptr), name_(kernelName), tilingKey_(key),
-      offset1_(funcOffset1), offset2_(funcOffset2), length1_(0U), length2_(0U),
-      pctraceFlag_(0U), nameOffset_(0U), mixType_(mixType),
-      taskRation_(taskRation), funcType_(funcType), userParaNum_(0U), systemParaNum_(0U),
-      dfxAddr_(nullptr), dfxSize_(0), elfDataFlag_(0), nameId_(0U),
-      kernelVfType_(0U), shareMemSize_(0U), prefetchCnt1_(0U), prefetchCnt2_(0U)
+Kernel::Kernel(
+    const char_t* const kernelName, const uint64_t key, Program* const prog, rtKernelAttrType kernelAttrType,
+    const uint32_t funcOffset1, const uint32_t funcOffset2, const uint8_t mixType, const uint32_t taskRation,
+    const uint32_t funcType)
+    : program_(prog),
+      kernelAttrType_(kernelAttrType),
+      stubFun_(nullptr),
+      name_(kernelName),
+      tilingKey_(key),
+      offset1_(funcOffset1),
+      offset2_(funcOffset2),
+      length1_(0U),
+      length2_(0U),
+      pctraceFlag_(0U),
+      nameOffset_(0U),
+      mixType_(mixType),
+      taskRation_(taskRation),
+      funcType_(funcType),
+      userParaNum_(0U),
+      systemParaNum_(0U),
+      dfxAddr_(nullptr),
+      dfxSize_(0),
+      elfDataFlag_(0),
+      nameId_(0U),
+      kernelVfType_(0U),
+      shareMemSize_(0U),
+      prefetchCnt1_(0U),
+      prefetchCnt2_(0U)
 {
     if (taskRation_ == NONE_TASK_RATION) {
         DevProperties prop;
@@ -38,14 +57,36 @@ Kernel::Kernel(const char_t * const kernelName, const uint64_t key, Program * co
     }
 }
 
-Kernel::Kernel(const std::string &cpuKernelSo, const std::string &cpuFunctionName, const std::string &cpuOpType)
-    : program_(nullptr), aicpuKernelType_(0), stubFun_(nullptr), name_(cpuOpType), kernelInfoExt_(""), tilingKey_(0ULL), offset1_(0U), offset2_(0U),
-	  length1_(0U), length2_(0U), pctraceFlag_(0U), nameOffset_(0U), mixType_(0U), taskRation_(0U), funcType_(0U), userParaNum_(0U),
-      systemParaNum_(0U), dfxAddr_(nullptr), dfxSize_(0U), elfDataFlag_(0),
-      nameId_(0U), kernelVfType_(0U), shareMemSize_(0U), prefetchCnt1_(0U), prefetchCnt2_(0U),
-	  cpuOpType_(cpuOpType), cpuKernelSo_(cpuKernelSo), cpuFunctionName_(cpuFunctionName)
-{
-}
+Kernel::Kernel(const std::string& cpuKernelSo, const std::string& cpuFunctionName, const std::string& cpuOpType)
+    : program_(nullptr),
+      aicpuKernelType_(0),
+      stubFun_(nullptr),
+      name_(cpuOpType),
+      kernelInfoExt_(""),
+      tilingKey_(0ULL),
+      offset1_(0U),
+      offset2_(0U),
+      length1_(0U),
+      length2_(0U),
+      pctraceFlag_(0U),
+      nameOffset_(0U),
+      mixType_(0U),
+      taskRation_(0U),
+      funcType_(0U),
+      userParaNum_(0U),
+      systemParaNum_(0U),
+      dfxAddr_(nullptr),
+      dfxSize_(0U),
+      elfDataFlag_(0),
+      nameId_(0U),
+      kernelVfType_(0U),
+      shareMemSize_(0U),
+      prefetchCnt1_(0U),
+      prefetchCnt2_(0U),
+      cpuOpType_(cpuOpType),
+      cpuKernelSo_(cpuKernelSo),
+      cpuFunctionName_(cpuFunctionName)
+{}
 
 uint64_t Kernel::GetNameId()
 {
@@ -59,13 +100,13 @@ uint64_t Kernel::GetNameId()
 }
 
 // Get function addr (also known as pc_start) in device.
-rtError_t Kernel::GetFunctionDevAddr(uint64_t &func1, uint64_t &func2) const
+rtError_t Kernel::GetFunctionDevAddr(uint64_t& func1, uint64_t& func2) const
 {
     NULL_PTR_RETURN_MSG(program_, RT_ERROR_PROGRAM_NULL);
     // should check if the program has been loaded to device.
     rtError_t error = program_->CheckLoaded2Device();
     ERROR_RETURN(error, "Get function addr error, failed to load program to device.");
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     const uint64_t programBinAlignBaseAddr = RtPtrToValue(program_->GetBinAlignBaseAddr(curCtx->Device_()->Id_()));
@@ -75,8 +116,11 @@ rtError_t Kernel::GetFunctionDevAddr(uint64_t &func1, uint64_t &func2) const
         func2 = programBinAlignBaseAddr + static_cast<uint64_t>(offset2_);
     }
 
-    RT_LOG(RT_LOG_DEBUG, "Get function device addr, device kernel baseAddr is %#" PRIx64 ", func1 address is %#"
-        PRIx64 ", func2 address is %#" PRIx64 ". ", programBinAlignBaseAddr, func1, func2);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "Get function device addr, device kernel baseAddr is %#" PRIx64 ", func1 address is %#" PRIx64
+        ", func2 address is %#" PRIx64 ". ",
+        programBinAlignBaseAddr, func1, func2);
     return RT_ERROR_NONE;
 }
 
@@ -85,31 +129,25 @@ void Kernel::SetMixMinStackSize()
     minStackSize1_ = minStackSize1_ > minStackSize2_ ? minStackSize1_ : minStackSize2_;
 }
 
-KernelTable::KernelTable():kernelArr_(nullptr), rtKernelArrPos_(0UL), kernelArrAllocTimes_(1UL)
-{
-}
+KernelTable::KernelTable() : kernelArr_(nullptr), rtKernelArrPos_(0UL), kernelArrAllocTimes_(1UL) {}
 
-KernelTable::~KernelTable()
-{
-    ReleaseKernelsOnDestroy();
-}
+KernelTable::~KernelTable() { ReleaseKernelsOnDestroy(); }
 
 void KernelTable::ReleaseKernelsOnDestroy()
 {
     kernelMapLock_.Lock();
     for (uint32_t i = 0U; i < rtKernelArrPos_; i++) {
-         Kernel * const delKernel = kernelArr_[i].kernel;
-         ResetEmbeddedInnerHandle<Kernel>(delKernel);
-         delete delKernel;
+        Kernel* const delKernel = kernelArr_[i].kernel;
+        ResetEmbeddedInnerHandle<Kernel>(delKernel);
+        delete delKernel;
     }
 
-    delete [] kernelArr_;
+    delete[] kernelArr_;
     kernelArr_ = nullptr;
     kernelMapLock_.Unlock();
 }
 
-void KernelTable::HalfSearch(const uint32_t searchLen, const void * const stub,
-                             rtHalfSearchResult_t *halfSearchResult)
+void KernelTable::HalfSearch(const uint32_t searchLen, const void* const stub, rtHalfSearchResult_t* halfSearchResult)
 {
     int32_t topIndex = searchLen - 1;
     int32_t bottomIndex = 0;
@@ -132,17 +170,17 @@ void KernelTable::HalfSearch(const uint32_t searchLen, const void * const stub,
     halfSearchResult->matchIndex = bottomIndex;
 }
 
-rtError_t KernelTable::ArrayInsert(const int32_t insertIndex, const void * const stub,
-                                   Kernel *&addKernel)
+rtError_t KernelTable::ArrayInsert(const int32_t insertIndex, const void* const stub, Kernel*& addKernel)
 {
     RT_LOG(RT_LOG_DEBUG, "KernelTable insertIndex=%d.", insertIndex);
 
-    const uint32_t copySize = static_cast<uint32_t>(sizeof(rtKernelArr_t)) *
-                              (rtKernelArrPos_ - static_cast<uint32_t>(insertIndex));
+    const uint32_t copySize =
+        static_cast<uint32_t>(sizeof(rtKernelArr_t)) * (rtKernelArrPos_ - static_cast<uint32_t>(insertIndex));
 
     if (copySize > 0) {
         const errno_t ret = memmove_s(kernelArr_ + insertIndex + 1, copySize, kernelArr_ + insertIndex, copySize);
-        COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE,
+        COND_RETURN_ERROR_MSG_INNER(
+            ret != EOK, RT_ERROR_SEC_HANDLE,
             "Failed to call memmove_s to move kernel array, dest=%p, destsz=%u, src=%p, count=%u, retCode=%d.",
             kernelArr_ + insertIndex + 1, copySize, kernelArr_ + insertIndex, copySize, ret);
     }
@@ -157,30 +195,31 @@ rtError_t KernelTable::AllocKernelArr()
 {
     if (kernelArr_ == nullptr) {
         kernelArr_ = new (std::nothrow) rtKernelArr_t[kernelArrAllocTimes_ * KERNEL_ARRAY_SIZE_PER_ALLOC];
-        COND_RETURN_AND_MSG_OUTER(kernelArr_ == nullptr, RT_ERROR_CALLOC, ErrorCode::EE1013,
+        COND_RETURN_AND_MSG_OUTER(
+            kernelArr_ == nullptr, RT_ERROR_CALLOC, ErrorCode::EE1013,
             sizeof(rtKernelArr_t) * kernelArrAllocTimes_ * KERNEL_ARRAY_SIZE_PER_ALLOC, "new");
         RT_LOG(RT_LOG_DEBUG, "KernelTable AllocKernelArr success.");
     } else if (rtKernelArrPos_ >= kernelArrAllocTimes_ * KERNEL_ARRAY_SIZE_PER_ALLOC) {
         kernelArrAllocTimes_ += 1U;
-        rtKernelArr_t *kernelArrTmp =
-                      new (std::nothrow) rtKernelArr_t[kernelArrAllocTimes_ * KERNEL_ARRAY_SIZE_PER_ALLOC];
+        rtKernelArr_t* kernelArrTmp =
+            new (std::nothrow) rtKernelArr_t[kernelArrAllocTimes_ * KERNEL_ARRAY_SIZE_PER_ALLOC];
         if (kernelArrTmp == nullptr) {
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013,
-                sizeof(rtKernelArr_t) * kernelArrAllocTimes_ * KERNEL_ARRAY_SIZE_PER_ALLOC, "new");
+            RT_LOG_OUTER_MSG_IMPL(
+                ErrorCode::EE1013, sizeof(rtKernelArr_t) * kernelArrAllocTimes_ * KERNEL_ARRAY_SIZE_PER_ALLOC, "new");
             return RT_ERROR_CALLOC;
         }
-        const uint32_t copySize = static_cast<uint32_t>(sizeof(rtKernelArr_t)) *
-                                  (kernelArrAllocTimes_ - 1U) * KERNEL_ARRAY_SIZE_PER_ALLOC;
+        const uint32_t copySize =
+            static_cast<uint32_t>(sizeof(rtKernelArr_t)) * (kernelArrAllocTimes_ - 1U) * KERNEL_ARRAY_SIZE_PER_ALLOC;
         const errno_t ret =
             memcpy_s(kernelArrTmp, static_cast<size_t>(copySize), kernelArr_, static_cast<size_t>(copySize));
         if (ret != EOK) {
             RT_LOG(RT_LOG_ERROR, "Call memcpy_s failed, copy size is %u", copySize);
-            delete [] kernelArrTmp;
+            delete[] kernelArrTmp;
             kernelArrTmp = nullptr;
             return RT_ERROR_SEC_HANDLE;
         }
 
-        delete [] kernelArr_;
+        delete[] kernelArr_;
         kernelArr_ = kernelArrTmp;
         kernelArrTmp = nullptr;
         RT_LOG(RT_LOG_DEBUG, "KernelTable realloc success.");
@@ -190,33 +229,34 @@ rtError_t KernelTable::AllocKernelArr()
     return RT_ERROR_NONE;
 }
 
-rtError_t KernelTable::Add(Kernel *&addKernel)
+rtError_t KernelTable::Add(Kernel*& addKernel)
 {
     rtError_t error = RT_ERROR_NONE;
     rtHalfSearchResult_t halfSearchResult;
-    const void *stub = addKernel->Stub_();
+    const void* stub = addKernel->Stub_();
     const std::string stubName = addKernel->StubName_();
-    const char_t *kernelInfoExt = addKernel->KernelInfoExt_();
+    const char_t* kernelInfoExt = addKernel->KernelInfoExt_();
 
     kernelMapLock_.Lock();
     error = AllocKernelArr();
-    COND_PROC_RETURN_ERROR(error != 0, static_cast<uint32_t>(error), kernelMapLock_.Unlock(),
+    COND_PROC_RETURN_ERROR(
+        error != 0, static_cast<uint32_t>(error), kernelMapLock_.Unlock(),
         "KernelTable AllocKernelArr failed, retCode=%#x.", static_cast<uint32_t>(error));
     HalfSearch(rtKernelArrPos_, stub, &halfSearchResult);
     if (!halfSearchResult.matchFlag) {
         error = ArrayInsert(halfSearchResult.matchIndex, stub, addKernel);
-        COND_PROC_RETURN_ERROR(error != 0, static_cast<uint32_t>(error), kernelMapLock_.Unlock(),
+        COND_PROC_RETURN_ERROR(
+            error != 0, static_cast<uint32_t>(error), kernelMapLock_.Unlock(),
             "KernelTable ArrayInsert failed, retCode=%#x.", static_cast<uint32_t>(error));
         invKernelMap_[stubName] = stub;
         kernelInfoExtMap_[kernelInfoExt] = addKernel;
-        const Program *prog = addKernel->Program_();
+        const Program* prog = addKernel->Program_();
         (void)programStubMultiMap_.insert({prog, stub});
         rtKernelArrPos_ += 1;
         InitEmbeddedInnerHandle<Kernel>(addKernel);
     } else {
         const std::string temp = kernelArr_[halfSearchResult.matchIndex].kernel->Name_();
-        RT_LOG(RT_LOG_WARNING, "Add kernel failed, using registered stubfun=%p --> kernel_name=%s",
-            stub, temp.c_str());
+        RT_LOG(RT_LOG_WARNING, "Add kernel failed, using registered stubfun=%p --> kernel_name=%s", stub, temp.c_str());
         kernelMapLock_.Unlock();
         return RT_ERROR_KERNEL_DUPLICATE;
     }
@@ -226,28 +266,30 @@ rtError_t KernelTable::Add(Kernel *&addKernel)
     return error;
 }
 
-rtError_t KernelTable::RemoveAll(const Program * const prog)
+rtError_t KernelTable::RemoveAll(const Program* const prog)
 {
     kernelMapLock_.Lock();
     const auto iterRange = programStubMultiMap_.equal_range(prog);
     for (auto iter = iterRange.first; iter != iterRange.second; ++iter) {
-        const void * const stub = iter->second;
+        const void* const stub = iter->second;
         rtHalfSearchResult_t halfSearchResult;
         HalfSearch(rtKernelArrPos_, stub, &halfSearchResult);
         if (halfSearchResult.matchFlag) {
-            Kernel * const delKernel = kernelArr_[halfSearchResult.matchIndex].kernel;
+            Kernel* const delKernel = kernelArr_[halfSearchResult.matchIndex].kernel;
             (void)invKernelMap_.erase(delKernel->Name_());
             (void)kernelInfoExtMap_.erase(delKernel->KernelInfoExt_());
-            const uint32_t copySize = sizeof(rtKernelArr_t) *
-                                      ((rtKernelArrPos_ - static_cast<uint32_t>(halfSearchResult.matchIndex)) -
-                                       1U);
+            const uint32_t copySize =
+                sizeof(rtKernelArr_t) * ((rtKernelArrPos_ - static_cast<uint32_t>(halfSearchResult.matchIndex)) - 1U);
 
             if (copySize > 0) {
-                const errno_t ret = memmove_s(kernelArr_ + halfSearchResult.matchIndex, copySize,
-                                        kernelArr_ + halfSearchResult.matchIndex + 1, copySize);
-                COND_PROC_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE, kernelMapLock_.Unlock(),
+                const errno_t ret = memmove_s(
+                    kernelArr_ + halfSearchResult.matchIndex, copySize, kernelArr_ + halfSearchResult.matchIndex + 1,
+                    copySize);
+                COND_PROC_RETURN_ERROR_MSG_INNER(
+                    ret != EOK, RT_ERROR_SEC_HANDLE, kernelMapLock_.Unlock(),
                     "Failed to call memmove_s to move kernel array, dest=%p, destsz=%u, src=%p, count=%u, retCode=%d.",
-                    kernelArr_ + halfSearchResult.matchIndex, copySize, kernelArr_ + halfSearchResult.matchIndex + 1, copySize, ret);
+                    kernelArr_ + halfSearchResult.matchIndex, copySize, kernelArr_ + halfSearchResult.matchIndex + 1,
+                    copySize, ret);
             }
 
             ResetEmbeddedInnerHandle<Kernel>(delKernel);
@@ -262,16 +304,15 @@ rtError_t KernelTable::RemoveAll(const Program * const prog)
 }
 
 // 找到kernel后会使prog ref+1,
-Kernel *KernelTable::Lookup(const void * const stub)
+Kernel* KernelTable::Lookup(const void* const stub)
 {
-    Kernel *retKernel = nullptr;
+    Kernel* retKernel = nullptr;
     rtHalfSearchResult_t halfSearchResult;
     kernelMapLock_.Lock();
     HalfSearch(rtKernelArrPos_, stub, &halfSearchResult);
-    retKernel = halfSearchResult.matchFlag ?
-                kernelArr_[halfSearchResult.matchIndex].kernel : nullptr;
+    retKernel = halfSearchResult.matchFlag ? kernelArr_[halfSearchResult.matchIndex].kernel : nullptr;
     if (retKernel != nullptr) {
-        const Program * const prog = retKernel->Program_();
+        const Program* const prog = retKernel->Program_();
         const bool notReleased = Runtime::Instance()->GetProgram(prog);
         // Program was releasing and kernel will be deleted later.
         if (!notReleased) {
@@ -284,13 +325,13 @@ Kernel *KernelTable::Lookup(const void * const stub)
 }
 
 // 找到kernel后会使prog ref+1,
-const Kernel *KernelTable::KernelInfoExtLookup(const char_t * const stubFunc)
+const Kernel* KernelTable::KernelInfoExtLookup(const char_t* const stubFunc)
 {
     kernelMapLock_.Lock();
     const auto iter = kernelInfoExtMap_.find(std::string(stubFunc));
-    const Kernel *kernelObj = (iter != kernelInfoExtMap_.end()) ? iter->second : nullptr;
+    const Kernel* kernelObj = (iter != kernelInfoExtMap_.end()) ? iter->second : nullptr;
     if (kernelObj != nullptr) {
-        const Program * const prog = kernelObj->Program_();
+        const Program* const prog = kernelObj->Program_();
         const bool notReleased = Runtime::Instance()->GetProgram(prog);
         // Program was releasing and kernel will be deleted later.
         if (!notReleased) {
@@ -301,10 +342,10 @@ const Kernel *KernelTable::KernelInfoExtLookup(const char_t * const stubFunc)
     return kernelObj;
 }
 
-const void *KernelTable::InvLookup(const char_t * const name)
+const void* KernelTable::InvLookup(const char_t* const name)
 {
     kernelMapLock_.Lock();
-    const void *func = nullptr;
+    const void* func = nullptr;
     const auto iter = invKernelMap_.find(std::string(name));
     if (iter != invKernelMap_.end()) {
         func = iter->second;
@@ -318,7 +359,7 @@ void KernelTable::ResetAllKernelNameId()
 {
     RT_LOG(RT_LOG_DEBUG, "Reset all kernel name id.");
     kernelMapLock_.Lock();
-    for (auto &iter : kernelInfoExtMap_) {
+    for (auto& iter : kernelInfoExtMap_) {
         if (iter.second != nullptr) {
             iter.second->ResetNameId();
         }
@@ -326,8 +367,8 @@ void KernelTable::ResetAllKernelNameId()
     kernelMapLock_.Unlock();
 }
 
-rtError_t GetPrefetchCntAndMixTypeWithKernel(const Kernel * const kernelPtr,
-    uint32_t &icachePrefetchCnt1, uint32_t &icachePrefetchCnt2, uint8_t &mixType)
+rtError_t GetPrefetchCntAndMixTypeWithKernel(
+    const Kernel* const kernelPtr, uint32_t& icachePrefetchCnt1, uint32_t& icachePrefetchCnt2, uint8_t& mixType)
 {
     // 32KB, K=1024. aicore can prefetch 32KB at most.
     constexpr uint32_t aicoreIcachePrefetchSizeMax = 32768U;
@@ -369,47 +410,46 @@ rtError_t GetPrefetchCntAndMixTypeWithKernel(const Kernel * const kernelPtr,
     const uint32_t prefetchMaxSizeCnt1 = prefetchMaxSize1 / prefetchUnits;
     if (mixType == static_cast<uint8_t>(MIX_AIC_AIV_MAIN_AIC)) {
         restSizeCnt1 = (restSize1 + prefetchUnits - 1U) / prefetchUnits;
-        const uint32_t restSizeCnt2 = (restSize2 + prefetchUnits - 1U)  / prefetchUnits;
+        const uint32_t restSizeCnt2 = (restSize2 + prefetchUnits - 1U) / prefetchUnits;
         const uint32_t prefetchMaxSizeCnt2 = prefetchMaxSize2 / prefetchUnits;
         icachePrefetchCnt2 = (restSizeCnt2 > prefetchMaxSizeCnt2) ? prefetchMaxSizeCnt2 : restSizeCnt2;
     }
     icachePrefetchCnt1 = (restSizeCnt1 > prefetchMaxSizeCnt1) ? prefetchMaxSizeCnt1 : restSizeCnt1;
 
-    RT_LOG(RT_LOG_DEBUG, "get prefetch cnt success, prefetchCnt1=%u, prefetchCnt2=%u, mixType=%hu.",
-           icachePrefetchCnt1, icachePrefetchCnt2, mixType);
+    RT_LOG(
+        RT_LOG_DEBUG, "get prefetch cnt success, prefetchCnt1=%u, prefetchCnt2=%u, mixType=%hu.", icachePrefetchCnt1,
+        icachePrefetchCnt2, mixType);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t Kernel::GetParamInfo(uint32_t paramIndex, uint32_t *paramOffset, uint32_t *paramSize) const
+rtError_t Kernel::GetParamInfo(uint32_t paramIndex, uint32_t* paramOffset, uint32_t* paramSize) const
 {
     if (!hasParamSummary_ || (paramInfos_ == nullptr) || (paramIndex >= paramCount_)) {
-        RT_LOG(RT_LOG_ERROR, "GetParamInfo failed, hasParamSummary=%d, paramIndex=%u, paramCount=%u.",
-               hasParamSummary_, paramIndex, paramCount_);
+        RT_LOG(
+            RT_LOG_ERROR, "GetParamInfo failed, hasParamSummary=%d, paramIndex=%u, paramCount=%u.", hasParamSummary_,
+            paramIndex, paramCount_);
         return RT_ERROR_INVALID_VALUE;
     }
-    
+
     if (paramOffset != nullptr) {
         *paramOffset = paramInfos_[paramIndex].info.offset;
     }
     if (paramSize != nullptr) {
         *paramSize = paramInfos_[paramIndex].info.size;
     }
-    
-    RT_LOG(RT_LOG_INFO, "GetParamInfo success, paramIndex=%u, offset=%u, size=%u.",
-           paramIndex, paramInfos_[paramIndex].info.offset, paramInfos_[paramIndex].info.size);
-    
+
+    RT_LOG(
+        RT_LOG_INFO, "GetParamInfo success, paramIndex=%u, offset=%u, size=%u.", paramIndex,
+        paramInfos_[paramIndex].info.offset, paramInfos_[paramIndex].info.size);
+
     return RT_ERROR_NONE;
 }
 
-void Kernel::SetStlKernelByKernelName(const char_t *kernelName)
+void Kernel::SetStlKernelByKernelName(const char_t* kernelName)
 {
     constexpr std::array<std::string_view, 4> stlNames = {
-        "mc62_aic_mte_stl",
-        "mc62_aic_su_cube_stl",
-        "mc62_aic_vec_simd_stl",
-        "mc62_aic_vec_simt_stl"
-    };
+        "mc62_aic_mte_stl", "mc62_aic_su_cube_stl", "mc62_aic_vec_simd_stl", "mc62_aic_vec_simt_stl"};
     isStlKernel_ = false;
     if (kernelName == nullptr) {
         return;
@@ -424,5 +464,5 @@ void Kernel::SetStlKernelByKernelName(const char_t *kernelName)
     }
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

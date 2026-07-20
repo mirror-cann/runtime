@@ -28,29 +28,28 @@ constexpr uint32_t LOAD_OPTION_LAZY_LOAD_DISABLE = 0U;
 static std::set<std::string> g_soNameCache;
 static std::mutex g_soNameCacheMutex;
 
-BinaryLoader::BinaryLoader(const char_t * const binPath, const rtLoadBinaryConfig_t * const optionalCfg) :
-                           loadOptions_(optionalCfg)
+BinaryLoader::BinaryLoader(const char_t* const binPath, const rtLoadBinaryConfig_t* const optionalCfg)
+    : loadOptions_(optionalCfg)
 {
     this->binPath_ = std::string(binPath);
     this->isLoadFromFile_ = true;
 }
 
-BinaryLoader::BinaryLoader(const void * const data, const uint64_t length,
-                           const rtLoadBinaryConfig_t * const optionalCfg) :
-                           loadOptions_(optionalCfg),
-                           binarySize_(static_cast<uint64_t>(length))
+BinaryLoader::BinaryLoader(const void* const data, const uint64_t length, const rtLoadBinaryConfig_t* const optionalCfg)
+    : loadOptions_(optionalCfg), binarySize_(static_cast<uint64_t>(length))
 {
-    this->binaryBuffer_ = const_cast<void *>(data);
+    this->binaryBuffer_ = const_cast<void*>(data);
 }
 
-static uint32_t ConvertMagic(const std::string &magicStr)
+static uint32_t ConvertMagic(const std::string& magicStr)
 {
     if (magicStr == "RT_DEV_BINARY_MAGIC_ELF") {
         return RT_DEV_BINARY_MAGIC_ELF;
     } else if (magicStr == "RT_DEV_BINARY_MAGIC_ELF_AICUBE") {
         return RT_DEV_BINARY_MAGIC_ELF_AICUBE;
-    } else if ((magicStr == "RT_DEV_BINARY_MAGIC_ELF_AIVEC") || (magicStr == "FFTS_BINARY_MAGIC_ELF_MIX_AIC") ||
-               (magicStr == "FFTS_BINARY_MAGIC_ELF_MIX_AIV")) {
+    } else if (
+        (magicStr == "RT_DEV_BINARY_MAGIC_ELF_AIVEC") || (magicStr == "FFTS_BINARY_MAGIC_ELF_MIX_AIC") ||
+        (magicStr == "FFTS_BINARY_MAGIC_ELF_MIX_AIV")) {
         return RT_DEV_BINARY_MAGIC_ELF_AIVEC;
     } else {
         RT_LOG(RT_LOG_ERROR, "Invalid magic=%s", magicStr.c_str());
@@ -58,7 +57,7 @@ static uint32_t ConvertMagic(const std::string &magicStr)
     }
 }
 
-static uint32_t ParseMagic(const nlohmann::json &kernelJson)
+static uint32_t ParseMagic(const nlohmann::json& kernelJson)
 {
     if (kernelJson.find("magic") == kernelJson.end()) {
         RT_LOG(RT_LOG_ERROR, "Magic not found in json file");
@@ -66,15 +65,15 @@ static uint32_t ParseMagic(const nlohmann::json &kernelJson)
     }
 
     try {
-        const auto &magicStr = kernelJson["magic"].get<std::string>();
+        const auto& magicStr = kernelJson["magic"].get<std::string>();
         return ConvertMagic(magicStr);
-    } catch (nlohmann::json::exception &e) {
+    } catch (nlohmann::json::exception& e) {
         RT_LOG(RT_LOG_ERROR, "Invalid magic in json file, because %s.", e.what());
         return 0U;
     }
 }
 
-static void ParseInterCrossSync(const nlohmann::json &kernelJson, ElfProgram * const prog)
+static void ParseInterCrossSync(const nlohmann::json& kernelJson, ElfProgram* const prog)
 {
     if (kernelJson.contains("intercoreSync") && kernelJson["intercoreSync"] == 1U) {
         RT_LOG(RT_LOG_DEBUG, "support inter core sync");
@@ -82,19 +81,19 @@ static void ParseInterCrossSync(const nlohmann::json &kernelJson, ElfProgram * c
     }
 }
 
-static rtError_t ParseDebugOptions(const nlohmann::json &kernelJson)
+static rtError_t ParseDebugOptions(const nlohmann::json& kernelJson)
 {
     if (kernelJson.find("debugOptions") == kernelJson.end()) {
         return RT_ERROR_NONE;
     }
     try {
-        const auto &debugOptions = kernelJson["debugOptions"].get<std::string>();
+        const auto& debugOptions = kernelJson["debugOptions"].get<std::string>();
         if (debugOptions.find("printf") != std::string::npos) {
-            RT_LOG(RT_LOG_ERROR, "Kernel debug option 'printf' is not supported, debugOptions=[%s]",
-                debugOptions.c_str());
+            RT_LOG(
+                RT_LOG_ERROR, "Kernel debug option 'printf' is not supported, debugOptions=[%s]", debugOptions.c_str());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
-    } catch (nlohmann::json::exception &e) {
+    } catch (nlohmann::json::exception& e) {
         RT_LOG(RT_LOG_ERROR, "Invalid debugOptions in json file, because %s.", e.what());
         return RT_ERROR_INVALID_VALUE;
     }
@@ -128,14 +127,16 @@ rtError_t BinaryLoader::ParseLoadOptions()
             RT_LOG(RT_LOG_DEBUG, "Parse binary load option isLazyLoad=%u", lazyLoadCfg);
         } else if (optionId == RT_LOAD_BINARY_OPT_MAGIC) {
             if (isLoadFromFile_) {
-                RT_LOG_INNER_MSG(RT_LOG_ERROR, "Binary load failed, RT_LOAD_BINARY_OPT_MAGIC does not support in load from file.");
+                RT_LOG_INNER_MSG(
+                    RT_LOG_ERROR, "Binary load failed, RT_LOAD_BINARY_OPT_MAGIC does not support in load from file.");
                 return RT_ERROR_INVALID_VALUE;
             }
             const uint32_t magic = loadOptions_->options[idx].value.magic;
             if ((magic != RT_DEV_BINARY_MAGIC_ELF) && (magic != RT_DEV_BINARY_MAGIC_ELF_AICUBE) &&
                 (magic != RT_DEV_BINARY_MAGIC_ELF_AIVEC)) {
-                RT_LOG_INNER_MSG(RT_LOG_ERROR, "magic %#x is invalid, valid value is {%#x, %#x, %#x}.",
-                    magic, RT_DEV_BINARY_MAGIC_ELF, RT_DEV_BINARY_MAGIC_ELF_AICUBE, RT_DEV_BINARY_MAGIC_ELF_AIVEC);
+                RT_LOG_INNER_MSG(
+                    RT_LOG_ERROR, "magic %#x is invalid, valid value is {%#x, %#x, %#x}.", magic,
+                    RT_DEV_BINARY_MAGIC_ELF, RT_DEV_BINARY_MAGIC_ELF_AICUBE, RT_DEV_BINARY_MAGIC_ELF_AIVEC);
                 return RT_ERROR_INVALID_VALUE;
             }
             magic_ = magic;
@@ -169,19 +170,21 @@ std::string BinaryLoader::GenerateSoNameFromData()
     return soName + ".so";
 }
 
-rtError_t BinaryLoader::SetCpuBinInfo(const rtLoadBinaryOptionValue_t &option)
+rtError_t BinaryLoader::SetCpuBinInfo(const rtLoadBinaryOptionValue_t& option)
 {
     const int32_t mode = option.cpuKernelMode;
     // 0, 1 user for load from file
-    COND_RETURN_AND_MSG_OUTER((isLoadFromFile_ && (mode != 0) && (mode != 1)), RT_ERROR_INVALID_VALUE,
-        ErrorCode::EE1017, "rtsBinaryLoadFromFile", "option.cpuKernelMode",
-        "When the AI CPU operator binary is loaded from a file, the loading mode " + std::to_string(mode) + " is invalid. "
-        + "The valid value range is [0: load only the JSON file, 1: load the CPU SO & JSON file]");
+    COND_RETURN_AND_MSG_OUTER(
+        (isLoadFromFile_ && (mode != 0) && (mode != 1)), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
+        "rtsBinaryLoadFromFile", "option.cpuKernelMode",
+        "When the AI CPU operator binary is loaded from a file, the loading mode " + std::to_string(mode) +
+            " is invalid. " + "The valid value range is [0: load only the JSON file, 1: load the CPU SO & JSON file]");
     // 2 only user for load from data
-    COND_RETURN_AND_MSG_OUTER(!isLoadFromFile_ && (mode != 2), RT_ERROR_INVALID_VALUE,
-        ErrorCode::EE1017, "rtsBinaryLoadFromData", "option.cpuKernelMode",
-        "When the AI CPU operator binary is loaded from data, the loading mode " + std::to_string(mode) + " is invalid. "
-        + "The valid value can only be 2: LoadFromData");
+    COND_RETURN_AND_MSG_OUTER(
+        !isLoadFromFile_ && (mode != 2), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "rtsBinaryLoadFromData",
+        "option.cpuKernelMode",
+        "When the AI CPU operator binary is loaded from data, the loading mode " + std::to_string(mode) +
+            " is invalid. " + "The valid value can only be 2: LoadFromData");
     switch (mode) {
         case 0: // 0: only need .json
         case 1: // 1: need .so and .json
@@ -201,8 +204,8 @@ rtError_t BinaryLoader::SetCpuBinInfo(const rtLoadBinaryOptionValue_t &option)
     isLoadCpu_ = true;
     cpuKernelMode_ = mode;
 
-    RT_LOG(RT_LOG_DEBUG,
-        "set cpu bin info, binPath_=[%s], soName=[%s], mode=%d", binPath_.c_str(), soName_.c_str(), mode);
+    RT_LOG(
+        RT_LOG_DEBUG, "set cpu bin info, binPath_=[%s], soName=[%s], mode=%d", binPath_.c_str(), soName_.c_str(), mode);
 
     return RT_ERROR_NONE;
 }
@@ -211,15 +214,16 @@ rtError_t BinaryLoader::ReadBinaryFile()
 {
     binRealPath_ = RealPath(binPath_);
     if (binRealPath_.empty()) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1012, "Read binary file", binPath_, "binPath", RtFmtMsg("Path %s cannot be accessed", binPath_.c_str()));
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE1012, "Read binary file", binPath_, "binPath",
+            RtFmtMsg("Path %s cannot be accessed", binPath_.c_str()));
         return RT_ERROR_INVALID_VALUE;
     }
 
-    RT_LOG(RT_LOG_DEBUG, "Binary file path, binPath=[%s], binRealPath=[%s]",
-        binPath_.c_str(), binRealPath_.c_str());
-    char_t *buffer;
+    RT_LOG(RT_LOG_DEBUG, "Binary file path, binPath=[%s], binRealPath=[%s]", binPath_.c_str(), binRealPath_.c_str());
+    char_t* buffer;
     const rtError_t ret = Runtime::Instance()->GetKernelBinByFileName(binRealPath_.c_str(), &buffer, &binarySize_);
-    binaryBuffer_ = static_cast<void *>(buffer);
+    binaryBuffer_ = static_cast<void*>(buffer);
     if (ret != RT_ERROR_NONE) {
         return RT_ERROR_INVALID_VALUE;
     }
@@ -227,7 +231,7 @@ rtError_t BinaryLoader::ReadBinaryFile()
     return RT_ERROR_NONE;
 }
 
-rtError_t BinaryLoader::ParseKernelJsonFile(ElfProgram * const prog) const
+rtError_t BinaryLoader::ParseKernelJsonFile(ElfProgram* const prog) const
 {
     nlohmann::json kernelJsonObj;
     std::string jsonFileRealPath;
@@ -286,10 +290,10 @@ ElfProgram* BinaryLoader::LoadFromFile()
         }
     }
 
-    ElfProgram *prog = new (std::nothrow) ElfProgram(kernelAttrType);
+    ElfProgram* prog = new (std::nothrow) ElfProgram(kernelAttrType);
     if (prog == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ElfProgram), "new");
-        char_t *buffer = RtPtrToPtr<char_t *, void *>(binaryBuffer_);
+        char_t* buffer = RtPtrToPtr<char_t*, void*>(binaryBuffer_);
         DELETE_A(buffer);
         return nullptr;
     }
@@ -313,7 +317,7 @@ ElfProgram* BinaryLoader::LoadFromFile()
 
 PlainProgram* BinaryLoader::LoadCpuKernelFromFile()
 {
-    PlainProgram *prog = nullptr;
+    PlainProgram* prog = nullptr;
     switch (cpuKernelMode_) {
         case 0:
             // RT_LOAD_BINARY_OPT_CPU_KERNEL_MODE=0
@@ -334,7 +338,7 @@ PlainProgram* BinaryLoader::LoadCpuKernelFromFile()
 
 PlainProgram* BinaryLoader::LoadCpuKernelFromData()
 {
-    PlainProgram *prog = new (std::nothrow) PlainProgram(RT_KERNEL_REG_TYPE_CPU, RT_KERNEL_ATTR_TYPE_AICPU);
+    PlainProgram* prog = new (std::nothrow) PlainProgram(RT_KERNEL_REG_TYPE_CPU, RT_KERNEL_ATTR_TYPE_AICPU);
     if (prog == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(PlainProgram), "new");
         return nullptr;
@@ -355,13 +359,14 @@ ElfProgram* BinaryLoader::LoadFromData() const
         }
     }
 
-    ElfProgram *prog = new (std::nothrow) ElfProgram(kernelAttrType);
+    ElfProgram* prog = new (std::nothrow) ElfProgram(kernelAttrType);
     if (prog == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(ElfProgram), "new");
         return nullptr;
     }
-    RT_LOG(RT_LOG_INFO, "New ElfProgram ok, magic=%u, kernelAttrType=%d, Runtime_alloc_size=%zu",
-        magic_, kernelAttrType, sizeof(ElfProgram));
+    RT_LOG(
+        RT_LOG_INFO, "New ElfProgram ok, magic=%u, kernelAttrType=%d, Runtime_alloc_size=%zu", magic_, kernelAttrType,
+        sizeof(ElfProgram));
 
     if (magic_ != 0) {
         prog->SetElfMagic(magic_);
@@ -387,7 +392,7 @@ ElfProgram* BinaryLoader::LoadProgram()
 
 PlainProgram* BinaryLoader::ParseJsonAndRegisterCpuKernel()
 {
-    PlainProgram *prog = new (std::nothrow) PlainProgram(RT_KERNEL_REG_TYPE_CPU, RT_KERNEL_ATTR_TYPE_AICPU);
+    PlainProgram* prog = new (std::nothrow) PlainProgram(RT_KERNEL_REG_TYPE_CPU, RT_KERNEL_ATTR_TYPE_AICPU);
     if (prog == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(PlainProgram), "new");
         return nullptr;
@@ -399,7 +404,8 @@ PlainProgram* BinaryLoader::ParseJsonAndRegisterCpuKernel()
     nlohmann::json jsonObj;
     rtError_t ret = GetJsonObj(jsonFilePath, jsonFileRealPath, jsonObj);
     if (ret != RT_ERROR_NONE) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1012, "Parse kernel json file", jsonFilePath, "jsonFilePath",
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE1012, "Parse kernel json file", jsonFilePath, "jsonFilePath",
             RtFmtMsg("Path %s cannot be accessed or file format is incorrect", jsonFilePath.c_str()));
         DELETE_O(prog);
         return nullptr;
@@ -418,9 +424,9 @@ PlainProgram* BinaryLoader::ParseJsonAndRegisterCpuKernel()
 }
 
 // RT_LOAD_BINARY_OPT_CPU_KERNEL_MODE=0  表示只加载json，自研算子仅需要加载json。做成自定义一样，自行检查是否已加载
-PlainProgram *BinaryLoader::LoadCpuMode0Program()
+PlainProgram* BinaryLoader::LoadCpuMode0Program()
 {
-    PlainProgram *prog = ParseJsonAndRegisterCpuKernel();
+    PlainProgram* prog = ParseJsonAndRegisterCpuKernel();
     if (prog == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Parse json and register cpu kernel failed");
         return nullptr;
@@ -429,7 +435,7 @@ PlainProgram *BinaryLoader::LoadCpuMode0Program()
     return prog;
 }
 
-PlainProgram *BinaryLoader::LoadCpuMode1Program()
+PlainProgram* BinaryLoader::LoadCpuMode1Program()
 {
     rtError_t ret = ReadBinaryFile();
     if (ret != RT_ERROR_NONE) {
@@ -437,8 +443,8 @@ PlainProgram *BinaryLoader::LoadCpuMode1Program()
         return nullptr;
     }
 
-    char_t *buffer = RtPtrToPtr<char_t *, void *>(binaryBuffer_);
-    PlainProgram *prog = ParseJsonAndRegisterCpuKernel();
+    char_t* buffer = RtPtrToPtr<char_t*, void*>(binaryBuffer_);
+    PlainProgram* prog = ParseJsonAndRegisterCpuKernel();
     if (prog == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Parse json and register cpu kernel failed");
         DELETE_A(buffer); // 如果prog为空，无法释放，此处需要显示释放
@@ -451,7 +457,7 @@ PlainProgram *BinaryLoader::LoadCpuMode1Program()
     return prog;
 }
 
-rtError_t BinaryLoader::LoadNonCpu(Program **prog)
+rtError_t BinaryLoader::LoadNonCpu(Program** prog)
 {
     // check runtime instance for inner calls
     NULL_PTR_RETURN_MSG(Runtime::Instance(), RT_ERROR_INSTANCE_NULL);
@@ -477,10 +483,10 @@ rtError_t BinaryLoader::LoadNonCpu(Program **prog)
     return RT_ERROR_NONE;
 }
 
-rtError_t BinaryLoader::LoadCpu(Program **prog)
+rtError_t BinaryLoader::LoadCpu(Program** prog)
 {
-   *prog = nullptr;
-   PlainProgram *curProg = nullptr;
+    *prog = nullptr;
+    PlainProgram* curProg = nullptr;
     if (isLoadFromFile_) {
         curProg = LoadCpuKernelFromFile();
     } else {
@@ -498,7 +504,7 @@ rtError_t BinaryLoader::LoadCpu(Program **prog)
     return RT_ERROR_NONE;
 }
 
-rtError_t BinaryLoader::Load(Program **prog)
+rtError_t BinaryLoader::Load(Program** prog)
 {
     const rtError_t ret = ParseLoadOptions();
     if (ret != RT_ERROR_NONE) {
@@ -512,5 +518,5 @@ rtError_t BinaryLoader::Load(Program **prog)
 
     return LoadNonCpu(prog);
 }
-} // runtime
-} // cce
+} // namespace runtime
+} // namespace cce

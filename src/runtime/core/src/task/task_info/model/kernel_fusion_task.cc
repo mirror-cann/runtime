@@ -14,9 +14,9 @@
 namespace cce {
 namespace runtime {
 
-rtError_t KernelFusionTaskInit(TaskInfo * const taskInfo, const FusionFlag fusFlag)
+rtError_t KernelFusionTaskInit(TaskInfo* const taskInfo, const FusionFlag fusFlag)
 {
-    KernelFusionTaskInfo *kernelFusionTaskInfo = &(taskInfo->u.kernelFusionTaskInfo);
+    KernelFusionTaskInfo* kernelFusionTaskInfo = &(taskInfo->u.kernelFusionTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_FUSION_ISSUE;
@@ -25,9 +25,9 @@ rtError_t KernelFusionTaskInit(TaskInfo * const taskInfo, const FusionFlag fusFl
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForKernelFusionTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+void ToCommandBodyForKernelFusionTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
-    KernelFusionTaskInfo *kernelFusionTaskInfo = &(taskInfo->u.kernelFusionTaskInfo);
+    KernelFusionTaskInfo* kernelFusionTaskInfo = &(taskInfo->u.kernelFusionTaskInfo);
     command->u.fusion.flag = kernelFusionTaskInfo->flag;
 }
 

@@ -21,7 +21,7 @@ namespace runtime {
 uint32_t Model::ModelGetNodes(void) const
 {
     uint32_t nodeNum = 0U;
-    for (Stream * const stm : streams_) {
+    for (Stream* const stm : streams_) {
         nodeNum += stm->GetDelayRecycleTaskSqeNum();
     }
 
@@ -33,12 +33,12 @@ rtError_t Model::ModelDebugDotPrint(void) const
     const uint32_t deviceId = context_->Device_()->Id_();
     RT_LOG(RT_LOG_EVENT, "model dot print begin, device_id=%u, model_id=%d.", deviceId, id_);
 
-    for (Stream * const stm : streams_) {
+    for (Stream* const stm : streams_) {
         stm->DebugDotPrintForModelStm();
     }
 
     if (modelType_ == RT_MODEL_CAPTURE_MODEL) {
-        const CaptureModel * const captureMdl = dynamic_cast<CaptureModel const *>(this);
+        const CaptureModel* const captureMdl = dynamic_cast<CaptureModel const*>(this);
         captureMdl->DebugDotPrintTaskGroups(deviceId);
     }
 
@@ -54,12 +54,14 @@ rtError_t Model::ModelDebugJsonPrint(const char* path, const unsigned int flags)
 
     std::string realFilePath = RealPathForFileNotExists(path);
     std::ofstream outputFile(realFilePath);
-    COND_RETURN_AND_MSG_OUTER(!outputFile.is_open(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
-        "Exporting the model running instance information in JSON format", path, "path", "Failed to open the JSON file path");
+    COND_RETURN_AND_MSG_OUTER(
+        !outputFile.is_open(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+        "Exporting the model running instance information in JSON format", path, "path",
+        "Failed to open the JSON file path");
     outputFile << "[\n";
     uint32_t streamCnt = 0;
     bool isLastStream = false;
-    for (Stream * const stm : streams_) {
+    for (Stream* const stm : streams_) {
         streamCnt++;
         isLastStream = (streamCnt == streams_.size()) ? true : false;
         stm->DebugDotPrintForModelStm();
@@ -69,7 +71,7 @@ rtError_t Model::ModelDebugJsonPrint(const char* path, const unsigned int flags)
     outputFile.close();
 
     if (modelType_ == RT_MODEL_CAPTURE_MODEL) {
-        const CaptureModel * const captureMdl = dynamic_cast<CaptureModel const *>(this);
+        const CaptureModel* const captureMdl = dynamic_cast<CaptureModel const*>(this);
         captureMdl->DebugDotPrintTaskGroups(deviceId);
     }
 

@@ -17,28 +17,30 @@
 namespace cce {
 namespace runtime {
 
-rtError_t FuncSymbolTable::Register(void *binHandle, const void *symbol, const char_t * const kernelName)
+rtError_t FuncSymbolTable::Register(void* binHandle, const void* symbol, const char_t* const kernelName)
 {
-    Program *prog = static_cast<Program *>(binHandle);
-    Kernel *kernel = const_cast<Kernel*>(prog->GetKernelByName(kernelName));
+    Program* prog = static_cast<Program*>(binHandle);
+    Kernel* kernel = const_cast<Kernel*>(prog->GetKernelByName(kernelName));
     COND_RETURN_ERROR_MSG_INNER(kernel == nullptr, RT_ERROR_INVALID_VALUE, "can't get kernel in programe.");
     funcSymbolMapLock_.Lock();
     auto it = funcSymbolMap_.find(symbol);
     if (it != funcSymbolMap_.end()) {
         funcSymbolMapLock_.Unlock();
-        RT_LOG(RT_LOG_WARNING, "Symbol=%p, binHandle=%p already registered, skip duplicate registration.", symbol, binHandle);
+        RT_LOG(
+            RT_LOG_WARNING, "Symbol=%p, binHandle=%p already registered, skip duplicate registration.", symbol,
+            binHandle);
         return RT_ERROR_NONE;
     }
     funcSymbolMap_.emplace(symbol, kernel);
     funcSymbolMapLock_.Unlock();
 
-    RT_LOG(RT_LOG_DEBUG, "Register function symbol success, symbol=%p",symbol);
+    RT_LOG(RT_LOG_DEBUG, "Register function symbol success, symbol=%p", symbol);
     return RT_ERROR_NONE;
 }
 
-Kernel *FuncSymbolTable::Lookup(const void *symbol)
+Kernel* FuncSymbolTable::Lookup(const void* symbol)
 {
-    Kernel *retKernel = nullptr;
+    Kernel* retKernel = nullptr;
     funcSymbolMapLock_.Lock();
     const auto iter = funcSymbolMap_.find(symbol);
     if (iter != funcSymbolMap_.end()) {

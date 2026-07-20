@@ -19,7 +19,7 @@ namespace cce {
 namespace runtime {
 namespace {
 
-rtError_t ReportApiHandleValidationError(const rtError_t errCode, const char_t *callerFuncName)
+rtError_t ReportApiHandleValidationError(const rtError_t errCode, const char_t* callerFuncName)
 {
     const std::string errorStr = RT_GET_ERRDESC(errCode);
     RT_LOG(RT_LOG_ERROR, "%s", errorStr.c_str());
@@ -30,7 +30,7 @@ rtError_t ReportApiHandleValidationError(const rtError_t errCode, const char_t *
 
 } // namespace
 
-rtError_t ValidateModelHandleForApi(rtModel_t handle, Model *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateModelHandleForApi(rtModel_t handle, Model*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<Model>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
@@ -40,7 +40,7 @@ rtError_t ValidateModelHandleForApi(rtModel_t handle, Model *&outRealObj, const 
     }
 }
 
-rtError_t ValidateLabelHandleForApi(rtLabel_t handle, Label *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateLabelHandleForApi(rtLabel_t handle, Label*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<Label>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
@@ -50,8 +50,8 @@ rtError_t ValidateLabelHandleForApi(rtLabel_t handle, Label *&outRealObj, const 
     }
 }
 
-rtError_t ValidateLabelHandleArrayForApi(rtLabel_t *handles, size_t count, std::vector<Label *> &outRealObjs,
-    const char_t *callerFuncName)
+rtError_t ValidateLabelHandleArrayForApi(
+    rtLabel_t* handles, size_t count, std::vector<Label*>& outRealObjs, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObjectArray<Label>(handles, count, outRealObjs);
     if (ret == RT_ERROR_NONE) {
@@ -61,7 +61,7 @@ rtError_t ValidateLabelHandleArrayForApi(rtLabel_t *handles, size_t count, std::
     }
 }
 
-rtError_t ValidateStreamHandleForApi(rtStream_t handle, Stream *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateStreamHandleForApi(rtStream_t handle, Stream*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<Stream>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
@@ -71,7 +71,7 @@ rtError_t ValidateStreamHandleForApi(rtStream_t handle, Stream *&outRealObj, con
     }
 }
 
-rtError_t ValidateEventHandleForApi(rtEvent_t handle, Event *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateEventHandleForApi(rtEvent_t handle, Event*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<Event>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
@@ -81,7 +81,7 @@ rtError_t ValidateEventHandleForApi(rtEvent_t handle, Event *&outRealObj, const 
     }
 }
 
-rtError_t ValidateNotifyHandleForApi(rtNotify_t handle, Notify *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateNotifyHandleForApi(rtNotify_t handle, Notify*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<Notify>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
@@ -91,7 +91,7 @@ rtError_t ValidateNotifyHandleForApi(rtNotify_t handle, Notify *&outRealObj, con
     }
 }
 
-rtError_t ValidateCountNotifyHandleForApi(rtCntNotify_t handle, CountNotify *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateCountNotifyHandleForApi(rtCntNotify_t handle, CountNotify*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<CountNotify>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
@@ -101,7 +101,7 @@ rtError_t ValidateCountNotifyHandleForApi(rtCntNotify_t handle, CountNotify *&ou
     }
 }
 
-rtError_t ValidateCondHandleHandleForApi(rtCondHandle_t handle, CondHandle *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateCondHandleHandleForApi(rtCondHandle_t handle, CondHandle*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<CondHandle>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
@@ -111,7 +111,7 @@ rtError_t ValidateCondHandleHandleForApi(rtCondHandle_t handle, CondHandle *&out
     }
 }
 
-rtError_t ValidateProgramHandleForApi(rtBinHandle handle, Program *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateProgramHandleForApi(rtBinHandle handle, Program*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<Program>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
@@ -121,7 +121,7 @@ rtError_t ValidateProgramHandleForApi(rtBinHandle handle, Program *&outRealObj, 
     }
 }
 
-rtError_t ValidateKernelHandleForApi(const void *handle, Kernel *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateKernelHandleForApi(const void* handle, Kernel*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<Kernel>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
@@ -131,16 +131,16 @@ rtError_t ValidateKernelHandleForApi(const void *handle, Kernel *&outRealObj, co
     }
 }
 
-rtError_t ValidateArgsHandleForApi(rtArgsHandle handle, RtArgsHandle *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateArgsHandleForApi(rtArgsHandle handle, RtArgsHandle*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<RtArgsHandle>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
         return RT_ERROR_NONE;
     }
 
-    RtArgsHandle * const legacyArgsHandle = RtPtrToPtr<RtArgsHandle *>(handle);
+    RtArgsHandle* const legacyArgsHandle = RtPtrToPtr<RtArgsHandle*>(handle);
     if (legacyArgsHandle != nullptr) {
-        RtArgsHandle *realArgsHandle = nullptr;
+        RtArgsHandle* realArgsHandle = nullptr;
         const rtError_t legacyRet = GetValidatedObject<RtArgsHandle>(
             RtPtrToPtr<rtArgsHandle>(RtInnerHandleAccessor<RtArgsHandle>::Get(legacyArgsHandle)), realArgsHandle);
         if ((legacyRet == RT_ERROR_NONE) && (realArgsHandle == legacyArgsHandle)) {
@@ -152,7 +152,7 @@ rtError_t ValidateArgsHandleForApi(rtArgsHandle handle, RtArgsHandle *&outRealOb
     return ReportApiHandleValidationError(ret, callerFuncName);
 }
 
-rtError_t ValidateParamHandleForApi(rtParaHandle handle, ParaDetail *&outRealObj, const char_t *callerFuncName)
+rtError_t ValidateParamHandleForApi(rtParaHandle handle, ParaDetail*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<ParaDetail>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
@@ -162,17 +162,17 @@ rtError_t ValidateParamHandleForApi(rtParaHandle handle, ParaDetail *&outRealObj
     }
 }
 
-rtError_t ValidateLaunchArgsHandleForApi(rtLaunchArgsHandle handle, rtLaunchArgs_t *&outRealObj,
-    const char_t *callerFuncName)
+rtError_t ValidateLaunchArgsHandleForApi(
+    rtLaunchArgsHandle handle, rtLaunchArgs_t*& outRealObj, const char_t* callerFuncName)
 {
     const rtError_t ret = GetValidatedObject<rtLaunchArgs_t>(handle, outRealObj);
     if (ret == RT_ERROR_NONE) {
         return RT_ERROR_NONE;
     }
 
-    rtLaunchArgs_t * const legacyLaunchArgs = RtPtrToPtr<rtLaunchArgs_t *>(handle);
+    rtLaunchArgs_t* const legacyLaunchArgs = RtPtrToPtr<rtLaunchArgs_t*>(handle);
     if (legacyLaunchArgs != nullptr) {
-        rtLaunchArgs_t *realLaunchArgs = nullptr;
+        rtLaunchArgs_t* realLaunchArgs = nullptr;
         const rtError_t legacyRet = GetValidatedObject<rtLaunchArgs_t>(
             RtPtrToPtr<rtLaunchArgsHandle>(RtInnerHandleAccessor<rtLaunchArgs_t>::Get(legacyLaunchArgs)),
             realLaunchArgs);

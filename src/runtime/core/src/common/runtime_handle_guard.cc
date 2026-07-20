@@ -17,16 +17,13 @@ namespace cce {
 namespace runtime {
 namespace {
 
-const rtInnerObject *GetInnerObject(const void *handle)
-{
-    return static_cast<const rtInnerObject *>(handle);
-}
+const rtInnerObject* GetInnerObject(const void* handle) { return static_cast<const rtInnerObject*>(handle); }
 
 constexpr size_t INVALID_HANDLE_REASON_MAX_LEN = 128U;
 
-const char *GetResourceNameByMagic(const uint64_t magic)
+const char* GetResourceNameByMagic(const uint64_t magic)
 {
-    const char *resourceName = "unknown";
+    const char* resourceName = "unknown";
     switch (magic) {
         case RT_MODEL_MAGIC:
             resourceName = "model";
@@ -70,19 +67,21 @@ const char *GetResourceNameByMagic(const uint64_t magic)
     return resourceName;
 }
 
-rtError_t ValidateInnerObject(const void *handle, const uint64_t expectedMagic)
+rtError_t ValidateInnerObject(const void* handle, const uint64_t expectedMagic)
 {
-    const char * const objectName = GetResourceNameByMagic(expectedMagic);
-    const auto * const innerObject = GetInnerObject(handle);
+    const char* const objectName = GetResourceNameByMagic(expectedMagic);
+    const auto* const innerObject = GetInnerObject(handle);
     const uint64_t actualMagic = innerObject->magic.load(std::memory_order_acquire);
 
     if (actualMagic != expectedMagic) {
-        const char * const destroyedMsg = (actualMagic == 0U) ? "(Already destroyed)" : "";
-        RT_LOG(RT_LOG_ERROR, "Validate %s failed, magic mismatch, expected=%#" PRIx64 ", actual=%#" PRIx64 ". %s",
+        const char* const destroyedMsg = (actualMagic == 0U) ? "(Already destroyed)" : "";
+        RT_LOG(
+            RT_LOG_ERROR, "Validate %s failed, magic mismatch, expected=%#" PRIx64 ", actual=%#" PRIx64 ". %s",
             objectName, expectedMagic, actualMagic, destroyedMsg);
 
         char reason[INVALID_HANDLE_REASON_MAX_LEN] = {0};
-        const int32_t ret = snprintf_s(reason, sizeof(reason), sizeof(reason) - 1U,
+        const int32_t ret = snprintf_s(
+            reason, sizeof(reason), sizeof(reason) - 1U,
             "1. The %s handle has been destroyed. 2. The handle type must be %s", objectName, objectName);
         if (ret < 0) {
             reason[0] = '\0';
@@ -96,19 +95,19 @@ rtError_t ValidateInnerObject(const void *handle, const uint64_t expectedMagic)
 
 } // namespace
 
-void InitializeInnerObject(rtInnerObject &inner, uint64_t magic, void *object)
+void InitializeInnerObject(rtInnerObject& inner, uint64_t magic, void* object)
 {
     inner.object = object;
     inner.magic.store(magic, std::memory_order_release);
 }
 
-void ResetInnerObject(rtInnerObject &inner)
+void ResetInnerObject(rtInnerObject& inner)
 {
     inner.magic.store(0U, std::memory_order_release);
     inner.object = nullptr;
 }
 
-rtError_t GetValidatedObjectImpl(const void *handle, uint64_t expectedMagic, void *&outRealObj)
+rtError_t GetValidatedObjectImpl(const void* handle, uint64_t expectedMagic, void*& outRealObj)
 {
     if (handle == nullptr) {
         outRealObj = nullptr;
@@ -120,7 +119,7 @@ rtError_t GetValidatedObjectImpl(const void *handle, uint64_t expectedMagic, voi
         return ret;
     }
 
-    const auto *inner = GetInnerObject(handle);
+    const auto* inner = GetInnerObject(handle);
     outRealObj = inner->object;
     return RT_ERROR_NONE;
 }

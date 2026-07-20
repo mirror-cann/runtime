@@ -32,11 +32,12 @@ constexpr uint32_t MASK_AICORE = 0x00000400U;
 constexpr uint32_t MASK_AICPU = 0x00000044U;
 constexpr uint32_t MASK_CCU = 0x00044000U;
 
-static void ConstructAicpuSubSqeResField(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, const Stream * const stm,
-    const uint32_t kernelFlag, uint32_t aicpuIndex)
+static void ConstructAicpuSubSqeResField(
+    TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe, const Stream* const stm, const uint32_t kernelFlag,
+    uint32_t aicpuIndex)
 {
-    FusionTaskInfo * const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
-    RtDavidStarsAicpuKernelSqe *const sqe = &(davidSqe->aicpuSqe);
+    FusionTaskInfo* const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
+    RtDavidStarsAicpuKernelSqe* const sqe = &(davidSqe->aicpuSqe);
 
     /* word4-5 */
     uint64_t addr = RtPtrToValue(fusionKernelTask->aicpuArgsDesc[aicpuIndex].soName);
@@ -54,27 +55,29 @@ static void ConstructAicpuSubSqeResField(TaskInfo * const taskInfo, rtDavidSqe_t
     ConstructDavidAICpuSqeForDavinciTaskResFieldPart(sqe, addr, kernelFlag, stm);
 
     /* word12-13 */
-    sqe->extraFieldLow = taskInfo->taskSn;  // send task id info to aicpu
+    sqe->extraFieldLow = taskInfo->taskSn; // send task id info to aicpu
     sqe->extraFieldHigh = 0U;
 
     return;
 }
 
-void ConstructAicpuSubSqeBase(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint32_t &sqeIndex,
-    uint32_t aicpuIndex, uint32_t taskIdx, uint64_t sqBaseAddr)
+void ConstructAicpuSubSqeBase(
+    TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe, uint32_t& sqeIndex, uint32_t aicpuIndex, uint32_t taskIdx,
+    uint64_t sqBaseAddr)
 {
-    FusionTaskInfo * const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
-    rtFunsionTaskInfo_t * const fusionKernelInfo =
-        RtPtrToPtr<rtFunsionTaskInfo_t *>(RtPtrToUnConstPtr<void *>(fusionKernelTask->fusionKernelInfo));
-    rtDavidSqe_t *sqeAddr = &davidSqe[sqeIndex];
+    FusionTaskInfo* const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
+    rtFunsionTaskInfo_t* const fusionKernelInfo =
+        RtPtrToPtr<rtFunsionTaskInfo_t*>(RtPtrToUnConstPtr<void*>(fusionKernelTask->fusionKernelInfo));
+    rtDavidSqe_t* sqeAddr = &davidSqe[sqeIndex];
     if (sqBaseAddr != 0ULL) {
         const uint32_t pos = taskInfo->id + sqeIndex;
         sqeAddr = GetSqPosAddr(sqBaseAddr, pos);
     }
     ConstructDavidSqeForHeadCommon(taskInfo, sqeAddr);
-    RtDavidStarsAicpuKernelSqe * const sqe = &(sqeAddr->aicpuSqe);
-    Stream * const stm = taskInfo->stream;
-    const uint16_t aicpuKernelType = static_cast<uint16_t>(fusionKernelInfo->subTask[taskIdx].task.aicpuInfo.kernelType);
+    RtDavidStarsAicpuKernelSqe* const sqe = &(sqeAddr->aicpuSqe);
+    Stream* const stm = taskInfo->stream;
+    const uint16_t aicpuKernelType =
+        static_cast<uint16_t>(fusionKernelInfo->subTask[taskIdx].task.aicpuInfo.kernelType);
     const uint32_t kernelFlag = fusionKernelInfo->subTask[taskIdx].task.aicpuInfo.flags;
 
     /* word0-1 */
@@ -100,7 +103,7 @@ void ConstructAicpuSubSqeBase(TaskInfo * const taskInfo, rtDavidSqe_t * const da
 
     /* word14 */
     sqe->subTopicId = 0U;
-    sqe->topicId = 3U; // EVENT_TS_HWTS_KERNEL
+    sqe->topicId = 3U;     // EVENT_TS_HWTS_KERNEL
     sqe->groupId = 0U;
     sqe->usrDataLen = 40U; /* size: word4-13 */
 
@@ -115,8 +118,10 @@ void ConstructAicpuSubSqeBase(TaskInfo * const taskInfo, rtDavidSqe_t * const da
         sqe->kernelCredit = static_cast<uint8_t>(GetAicoreKernelCredit(0U));
     }
 
-    RT_LOG(RT_LOG_INFO, "taskIdx=%u, sqeIndex=%u, aicpuIndex=%u, kfcArgsFmtOffset=%hu, kernelFlag=%u, aicpuKernelType=%hu.",
-        taskIdx, sqeIndex, aicpuIndex, sqe->res5, kernelFlag, aicpuKernelType);
+    RT_LOG(
+        RT_LOG_INFO,
+        "taskIdx=%u, sqeIndex=%u, aicpuIndex=%u, kfcArgsFmtOffset=%hu, kernelFlag=%u, aicpuKernelType=%hu.", taskIdx,
+        sqeIndex, aicpuIndex, sqe->res5, kernelFlag, aicpuKernelType);
 
     return;
 }
@@ -325,7 +330,7 @@ std::string BuildFusionKernelTaskName(FusionTaskInfo* fusionTaskInfo)
     }
     if ((sqeSubType & (1U << static_cast<uint32_t>(RT_FUSION_AICORE))) != 0U) {
         FusionTaskInfoAicPart* aicPart = &(fusionTaskInfo->aicPart);
-        const Kernel *kernel = aicPart->kernel;
+        const Kernel* kernel = aicPart->kernel;
         std::string aicName = (kernel != nullptr) ? kernel->Name_() : "AICORE";
         subTaskNames.push_back(aicName);
     }
@@ -341,35 +346,40 @@ std::string BuildFusionKernelTaskName(FusionTaskInfo* fusionTaskInfo)
 
 static rtError_t GetArgsInfoForFusionKernelTask(TaskInfo* taskInfo)
 {
-    FusionTaskInfo *const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
-    void *hostMem = nullptr;
-    COND_RETURN_ERROR_MSG_INNER((fusionKernelTask->args == nullptr) || (fusionKernelTask->argsSize == 0U),
-        RT_ERROR_INVALID_VALUE, "Get args info failed, address size=%u", fusionKernelTask->argsSize);
+    FusionTaskInfo* const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
+    void* hostMem = nullptr;
+    COND_RETURN_ERROR_MSG_INNER(
+        (fusionKernelTask->args == nullptr) || (fusionKernelTask->argsSize == 0U), RT_ERROR_INVALID_VALUE,
+        "Get args info failed, address size=%u", fusionKernelTask->argsSize);
     const auto dev = taskInfo->stream->Device_();
-    rtError_t error = dev->Driver_()->HostMemAlloc(&hostMem, static_cast<uint64_t>(fusionKernelTask->argsSize) + 1U,
-        dev->Id_());
+    rtError_t error =
+        dev->Driver_()->HostMemAlloc(&hostMem, static_cast<uint64_t>(fusionKernelTask->argsSize) + 1U, dev->Id_());
     ERROR_RETURN(error, "Malloc host memory for args failed, retCode=%#x", static_cast<uint32_t>(error));
-    error = dev->Driver_()->MemCopySync(hostMem, static_cast<uint64_t>(fusionKernelTask->argsSize) + 1U,
-        fusionKernelTask->args, static_cast<uint64_t>(fusionKernelTask->argsSize), RT_MEMCPY_DEVICE_TO_HOST);
-    COND_PROC_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, (void)dev->Driver_()->HostMemFree(hostMem);,
-        "Memcpy failed, size=%u, type=%d(RT_MEMCPY_DEVICE_TO_HOST), retCode=%#x",
-        fusionKernelTask->argsSize, static_cast<int32_t>(RT_MEMCPY_DEVICE_TO_HOST), static_cast<uint32_t>(error));
-    const uint32_t totalLen = fusionKernelTask->argsSize / static_cast<uint32_t>(sizeof(void *));
+    error = dev->Driver_()->MemCopySync(
+        hostMem, static_cast<uint64_t>(fusionKernelTask->argsSize) + 1U, fusionKernelTask->args,
+        static_cast<uint64_t>(fusionKernelTask->argsSize), RT_MEMCPY_DEVICE_TO_HOST);
+    COND_PROC_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, (void)dev->Driver_()->HostMemFree(hostMem);
+                                     , "Memcpy failed, size=%u, type=%d(RT_MEMCPY_DEVICE_TO_HOST), retCode=%#x",
+                                     fusionKernelTask->argsSize, static_cast<int32_t>(RT_MEMCPY_DEVICE_TO_HOST),
+                                     static_cast<uint32_t>(error));
+    const uint32_t totalLen = fusionKernelTask->argsSize / static_cast<uint32_t>(sizeof(void*));
     const uint32_t argsTimes = (totalLen % ARGS_PER_STRING_MAX_LEN > 0) ?
-        static_cast<uint32_t>((totalLen / ARGS_PER_STRING_MAX_LEN) + 1) :
-        static_cast<uint32_t>(totalLen / ARGS_PER_STRING_MAX_LEN);
+                                   static_cast<uint32_t>((totalLen / ARGS_PER_STRING_MAX_LEN) + 1) :
+                                   static_cast<uint32_t>(totalLen / ARGS_PER_STRING_MAX_LEN);
     for (uint32_t j = 1U; j <= argsTimes; j++) {
         std::stringstream ss;
         uint32_t i = 0U;
         const uint32_t curLen = totalLen > (j * ARGS_PER_STRING_MAX_LEN) ? (j * ARGS_PER_STRING_MAX_LEN) : totalLen;
         for (i = (j - 1U) * ARGS_PER_STRING_MAX_LEN; i < curLen - 1U; ++i) {
-            ss << RtPtrToPtr<uint64_t *, uint64_t>(*(RtPtrToPtr<uint64_t *, void *>(hostMem) + i)) << ", ";
+            ss << RtPtrToPtr<uint64_t*, uint64_t>(*(RtPtrToPtr<uint64_t*, void*>(hostMem) + i)) << ", ";
         }
-        ss << RtPtrToPtr<uint64_t *, uint64_t>(*(RtPtrToPtr<uint64_t *, void *>(hostMem) + i));
-        RT_LOG(RT_LOG_ERROR, "[FUSION_KERNEL_INFO] args(%u to %u) after execute:%s.",
-            (j - 1U) * ARGS_PER_STRING_MAX_LEN, curLen - 1U, ss.str().c_str());
+        ss << RtPtrToPtr<uint64_t*, uint64_t>(*(RtPtrToPtr<uint64_t*, void*>(hostMem) + i));
+        RT_LOG(
+            RT_LOG_ERROR, "[FUSION_KERNEL_INFO] args(%u to %u) after execute:%s.", (j - 1U) * ARGS_PER_STRING_MAX_LEN,
+            curLen - 1U, ss.str().c_str());
     }
-    RT_LOG(RT_LOG_ERROR, "fusion kernel print %u Times totalLen=(%u*8), argsSize=%u", argsTimes, totalLen,
+    RT_LOG(
+        RT_LOG_ERROR, "fusion kernel print %u Times totalLen=(%u*8), argsSize=%u", argsTimes, totalLen,
         fusionKernelTask->argsSize);
     (void)dev->Driver_()->HostMemFree(hostMem);
     return RT_ERROR_NONE;
@@ -377,7 +387,7 @@ static rtError_t GetArgsInfoForFusionKernelTask(TaskInfo* taskInfo)
 
 void DoCompleteSuccessForFusionKernelTask(TaskInfo* taskInfo, const uint32_t devId)
 {
-    Stream * const stream = taskInfo->stream;
+    Stream* const stream = taskInfo->stream;
     if ((taskInfo->mte_error == TS_ERROR_AICORE_MTE_ERROR) || (taskInfo->mte_error == TS_ERROR_LINK_ERROR) ||
         (taskInfo->mte_error == TS_ERROR_LOCAL_MEM_ERROR) || (taskInfo->mte_error == TS_ERROR_REMOTE_MEM_ERROR)) {
         taskInfo->errorCode = taskInfo->mte_error;
@@ -391,10 +401,10 @@ void DoCompleteSuccessForFusionKernelTask(TaskInfo* taskInfo, const uint32_t dev
     }
 }
 
-void FusionKernelTaskUnInit(TaskInfo *taskInfo)
+void FusionKernelTaskUnInit(TaskInfo* taskInfo)
 {
-    static_cast<DavidStream *>(taskInfo->stream)->ArgReleaseSingleTask(taskInfo, true);
-    FusionTaskInfo * const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
+    static_cast<DavidStream*>(taskInfo->stream)->ArgReleaseSingleTask(taskInfo, true);
+    FusionTaskInfo* const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
     fusionKernelTask->args = nullptr;
     for (uint32_t i = 0; i < FUSION_SUB_TASK_MAX_CPU_NUM; i++) {
         fusionKernelTask->aicpuArgsDesc[i].funcName = nullptr;
@@ -407,9 +417,9 @@ void PrintErrorInfoForFusionKernelTask(TaskInfo* taskInfo, const uint32_t devId)
 {
     const uint32_t taskId = taskInfo->id;
     const int32_t streamId = taskInfo->stream->Id_();
-    FusionTaskInfo *const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
+    FusionTaskInfo* const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
 
-    Stream *const reportStream = GetReportStream(taskInfo->stream);
+    Stream* const reportStream = GetReportStream(taskInfo->stream);
     std::string kernelNameStr = "";
     std::string kernelInfoExt = "";
     if ((fusionKernelTask != nullptr) && (fusionKernelTask->aicPart.kernel != nullptr)) {
@@ -421,23 +431,22 @@ void PrintErrorInfoForFusionKernelTask(TaskInfo* taskInfo, const uint32_t devId)
     kernelInfoExt = kernelInfoExt.empty() ? ("none") : kernelInfoExt;
 
     const rtError_t ret = GetArgsInfoForFusionKernelTask(taskInfo);
-    RT_LOG(RT_LOG_ERROR, "Fusion kernel execute failed, device_id=%u, stream_id=%d, report_stream_id=%d, task_id=%u,"
-        " flip_num=%hu, kernel_name=%s, kernel info ext=%s", devId, streamId, reportStream->Id_(), taskId,
-        taskInfo->flipNum, kernelNameStr.c_str(), kernelInfoExt.c_str());
-    STREAM_REPORT_ERR_MSG(reportStream, ERR_MODULE_TBE, "[FUSION_KERNEL_INFO] after execute: %s",
+    RT_LOG(
+        RT_LOG_ERROR,
+        "Fusion kernel execute failed, device_id=%u, stream_id=%d, report_stream_id=%d, task_id=%u,"
+        " flip_num=%hu, kernel_name=%s, kernel info ext=%s",
+        devId, streamId, reportStream->Id_(), taskId, taskInfo->flipNum, kernelNameStr.c_str(), kernelInfoExt.c_str());
+    STREAM_REPORT_ERR_MSG(
+        reportStream, ERR_MODULE_TBE, "[FUSION_KERNEL_INFO] after execute: %s",
         (ret != RT_ERROR_NONE) ? "(no result)" : "args print end");
 }
 
-void SetStarsResultForFusionKernelTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq)
+void SetStarsResultForFusionKernelTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq)
 {
     if ((logicCq.errorType & RT_STARS_EXIST_ERROR) != 0U) {
         static uint32_t errMap[TS_STARS_ERROR_MAX_INDEX] = {
-            TS_ERROR_TASK_EXCEPTION,
-            TS_ERROR_TASK_BUS_ERROR,
-            TS_ERROR_TASK_TIMEOUT,
-            TS_ERROR_TASK_SQE_ERROR,
-            TS_ERROR_TASK_RES_CONFLICT_ERROR,
-            TS_ERROR_TASK_SW_STATUS_ERROR};
+            TS_ERROR_TASK_EXCEPTION, TS_ERROR_TASK_BUS_ERROR,          TS_ERROR_TASK_TIMEOUT,
+            TS_ERROR_TASK_SQE_ERROR, TS_ERROR_TASK_RES_CONFLICT_ERROR, TS_ERROR_TASK_SW_STATUS_ERROR};
         const uint32_t errorIndex =
             static_cast<uint32_t>(BitScan(static_cast<uint64_t>(logicCq.errorType & RT_STARS_EXIST_ERROR)));
         taskInfo->errorCode = errMap[errorIndex];
@@ -455,11 +464,13 @@ void SetStarsResultForFusionKernelTask(TaskInfo* taskInfo, const rtLogicCqReport
             }
         }
 
-        RT_LOG(RT_LOG_ERROR, "FusionKernelTask errorCode=%u, logicCq:errType=%u, errCode=%u, "
-            "stream_id=%hu, task_id=%hu", taskInfo->errorCode, logicCq.errorType, logicCq.errorCode,
-            taskInfo->stream->Id_(), taskInfo->id);
+        RT_LOG(
+            RT_LOG_ERROR,
+            "FusionKernelTask errorCode=%u, logicCq:errType=%u, errCode=%u, "
+            "stream_id=%hu, task_id=%hu",
+            taskInfo->errorCode, logicCq.errorType, logicCq.errorCode, taskInfo->stream->Id_(), taskInfo->id);
     }
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

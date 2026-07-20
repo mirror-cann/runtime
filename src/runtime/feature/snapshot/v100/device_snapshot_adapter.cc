@@ -20,34 +20,34 @@ namespace cce {
 namespace runtime {
 
 namespace TaskHandlers {
-void HandleModelTaskUpdate(TaskInfo * const task, DeviceSnapshot *snapshot) {
+void HandleModelTaskUpdate(TaskInfo* const task, DeviceSnapshot* snapshot)
+{
     MdlUpdateTaskInfo* info = &(task->u.mdlUpdateTask);
     const size_t size = info->tilingTabLen * sizeof(TilingTabl);
     snapshot->AddOpVirtualAddr(info->tilingTabAddr, size);
     snapshot->AddOpVirtualAddr(info->tilingKeyAddr, sizeof(uint64_t));
     snapshot->AddOpVirtualAddr(info->blockDimAddr, sizeof(uint64_t));
 }
-}
+} // namespace TaskHandlers
 
-void DeviceSnapshot::RecordArgsAddrAndSize(TaskInfo * const task)
+void DeviceSnapshot::RecordArgsAddrAndSize(TaskInfo* const task)
 {
     if (task->type == TS_TASK_TYPE_KERNEL_AICORE || task->type == TS_TASK_TYPE_KERNEL_AIVEC) {
         // mix scene
-        if ((task->u.aicTaskInfo.kernel != nullptr) &&
-            (task->u.aicTaskInfo.kernel->GetMixType() != NO_MIX)) {
-                void *contextAddr = task->u.aicTaskInfo.descAlignBuf;
-                AddOpVirtualAddr(contextAddr, static_cast<size_t>(sizeof(rtFftsPlusMixAicAivCtx_t)));
-        } 
+        if ((task->u.aicTaskInfo.kernel != nullptr) && (task->u.aicTaskInfo.kernel->GetMixType() != NO_MIX)) {
+            void* contextAddr = task->u.aicTaskInfo.descAlignBuf;
+            AddOpVirtualAddr(contextAddr, static_cast<size_t>(sizeof(rtFftsPlusMixAicAivCtx_t)));
+        }
         // no mix scene
-        void *args = task->u.aicTaskInfo.comm.args;
+        void* args = task->u.aicTaskInfo.comm.args;
         const size_t size = task->u.aicTaskInfo.comm.argsSize;
         AddOpVirtualAddr(args, static_cast<size_t>(size));
     } else if (task->type == TS_TASK_TYPE_KERNEL_AICPU) {
-        void *args = task->u.aicpuTaskInfo.comm.args;
+        void* args = task->u.aicpuTaskInfo.comm.args;
         const size_t size = task->u.aicpuTaskInfo.comm.argsSize;
         AddOpVirtualAddr(args, static_cast<size_t>(size));
     } else if (task->type == TS_TASK_TYPE_FFTS_PLUS) {
-        FftsPlusTaskInfo *fftsPlusTask = &task->u.fftsPlusTask;
+        FftsPlusTaskInfo* fftsPlusTask = &task->u.fftsPlusTask;
         void* contextAddr = fftsPlusTask->descAlignBuf;
         const size_t size = fftsPlusTask->descBufLen;
         AddOpVirtualAddr(contextAddr, static_cast<size_t>(size));
@@ -57,14 +57,14 @@ void DeviceSnapshot::RecordArgsAddrAndSize(TaskInfo * const task)
     return;
 }
 
-void DeviceSnapshot::RecordOpAddrAndSize(const Stream * const stm)
+void DeviceSnapshot::RecordOpAddrAndSize(const Stream* const stm)
 {
     const std::vector<uint16_t>& taskIds = stm->GetDelayRecycleTaskId();
     const size_t size = taskIds.size();
-    Device *dev = stm->Device_();
+    Device* dev = stm->Device_();
     for (uint16_t i = 0U; i < size; i++) {
         const uint16_t taskId = taskIds[i];
-        TaskInfo *task = dev->GetTaskFactory()->GetTask(stm->Id_(), taskId);
+        TaskInfo* task = dev->GetTaskFactory()->GetTask(stm->Id_(), taskId);
         if (task == nullptr) {
             RT_LOG(RT_LOG_WARNING, "get task is nullptr, stream_id=%d, task_id=%u.", stm->Id_(), taskId);
             continue;

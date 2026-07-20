@@ -18,7 +18,7 @@ namespace cce {
 namespace runtime {
 class AsyncHwtsEngine : public HwtsEngine {
 public:
-    explicit AsyncHwtsEngine(Device * const dev);
+    explicit AsyncHwtsEngine(Device* const dev);
     ~AsyncHwtsEngine() override;
 
     rtError_t Init() override;
@@ -30,73 +30,56 @@ public:
     rtError_t Stop() override;
 
     // sending and receiving running entry
-    virtual void Run(const void * const param) override;
+    virtual void Run(const void* const param) override;
 
     bool CheckSendThreadAlive() override;
     bool CheckReceiveThreadAlive() override;
 
 protected:
-    rtError_t SubmitSend(TaskInfo * const workTask, uint32_t * const flipTaskId = nullptr) override;
+    rtError_t SubmitSend(TaskInfo* const workTask, uint32_t* const flipTaskId = nullptr) override;
 
 private:
     void SendingRun(void);
     // Entry of receiving process, called in receiving thread.
     void ReceivingRun(void);
-    void ProcessTaskReport(const rtTsReport_t &taskReport);
-    void ProcessErrorReport(const rtTsReport_t &errorReport) const;
-    void GetReportCommonInfo(const rtTsReport_t &tsReport, uint16_t &streamId, uint16_t &taskId,
-        uint16_t &sqId, uint16_t &sqHead, uint16_t &errorBit) const;
+    void ProcessTaskReport(const rtTsReport_t& taskReport);
+    void ProcessErrorReport(const rtTsReport_t& errorReport) const;
+    void GetReportCommonInfo(
+        const rtTsReport_t& tsReport, uint16_t& streamId, uint16_t& taskId, uint16_t& sqId, uint16_t& sqHead,
+        uint16_t& errorBit) const;
     // Entry of sending process, called in sending thread.
-    void TaskToCommand(TaskInfo * const runTask, rtTsCommand_t &cmdLocal, rtTsCmdSqBuf_t * const command) const;
-    void SendingWait(Stream * const stm, uint8_t &failCount) override;
+    void TaskToCommand(TaskInfo* const runTask, rtTsCommand_t& cmdLocal, rtTsCmdSqBuf_t* const command) const;
+    void SendingWait(Stream* const stm, uint8_t& failCount) override;
     void SendingNotify() override;
 
-    uint16_t GetPackageType(const rtTsReport_t &report) const;
-    void GetTsReportByIdx(void * const reportAddr, int32_t const idx, rtTsReport_t &tsReport) const;
+    uint16_t GetPackageType(const rtTsReport_t& report) const;
+    void GetTsReportByIdx(void* const reportAddr, int32_t const idx, rtTsReport_t& tsReport) const;
 
     // Submit task to process.
-    rtError_t SubmitPush(TaskInfo * const workTask, uint32_t * const flipTaskId = nullptr);
-    rtError_t PushFlipTask(const uint16_t preTaskId, Stream *stm);
+    rtError_t SubmitPush(TaskInfo* const workTask, uint32_t* const flipTaskId = nullptr);
+    rtError_t PushFlipTask(const uint16_t preTaskId, Stream* stm);
 
-    Notifier *GetNotifier() const
-    {
-        return notifier_;
-    }
+    Notifier* GetNotifier() const { return notifier_; }
 
-    void SetNotifier(Notifier *notifier)
-    {
-        notifier_ = notifier;
-    }
+    void SetNotifier(Notifier* notifier) { notifier_ = notifier; }
 
-    Scheduler *GetScheduler() const
-    {
-        return scheduler_;
-    }
+    Scheduler* GetScheduler() const { return scheduler_; }
 
-    void SetScheduler(Scheduler *scheduler)
-    {
-        scheduler_ = scheduler;
-    }
+    void SetScheduler(Scheduler* scheduler) { scheduler_ = scheduler; }
 
-    void DisableReceiveRunFlag()
-    {
-        receiveRunFlag_ = false;
-    }
+    void DisableReceiveRunFlag() { receiveRunFlag_ = false; }
 
-    void DisableSendRunFlag()
-    {
-        sendRunFlag_ = false;
-    }
+    void DisableSendRunFlag() { sendRunFlag_ = false; }
 
     std::atomic<bool> wflag_;
-    Notifier *notifier_;
-    Scheduler *scheduler_;
-    Thread *sendThread_;
-    Thread *receiveThread_;
+    Notifier* notifier_;
+    Scheduler* scheduler_;
+    Thread* sendThread_;
+    Thread* receiveThread_;
     volatile bool sendRunFlag_ = false;
     volatile bool receiveRunFlag_ = false;
 }; // class AsyncHwtsEngine
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_ASYNC_HWTS_ENGINE_HPP
+#endif // CCE_RUNTIME_ASYNC_HWTS_ENGINE_HPP

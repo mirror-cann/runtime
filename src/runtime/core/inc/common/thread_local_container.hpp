@@ -27,14 +27,15 @@ class ThreadLocalContainer {
 public:
     static LaunchArgment& GetLaunchArg(void);
 
-    static rtError_t SetTaskTag(const char_t * const inTaskTag);
+    static rtError_t SetTaskTag(const char_t* const inTaskTag);
     static void ResetTaskTag(void);
-    static void GetTaskTag(std::string &outTaskTag);
+    static void GetTaskTag(std::string& outTaskTag);
     static bool IsTaskTagValid(void);
     static uint32_t GetEnvFlags(void);
     static void SetEnvFlags(const uint32_t inEnvFlags);
     static rtArgsSizeInfo_t& GetArgsSizeInfo(void);
     static void* GetOrCreateArgsBuffer(uint64_t requiredSize);
+
 private:
     // always end with '\0', if first is '\0', means not set.
     static __THREAD_LOCAL__ LaunchArgment launchArg_;
@@ -61,15 +62,15 @@ public:
     static void SetHardwareSocVersion(const std::string& socVersion);
 
     static std::string GetUserSocVersion(void);
-    static void SetUserSocVersion(const std::string &inSocVersion);
+    static void SetUserSocVersion(const std::string& inSocVersion);
 
     static void UceMutexLock(void);
     static void UceMutexUnlock(void);
 
     static bool FindMemUceInfo(const uint32_t deviceId);
-    static void InsertMemUceInfo(const uint32_t deviceId, const rtMemUceInfo * const memUceInfo);
+    static void InsertMemUceInfo(const uint32_t deviceId, const rtMemUceInfo* const memUceInfo);
     static void DeleteMemUceInfo(const uint32_t deviceId);
-    static rtMemUceInfo *GetMemUceInfo(const uint32_t deviceId);
+    static rtMemUceInfo* GetMemUceInfo(const uint32_t deviceId);
     static uint8_t GetEventWorkMode(void);
     static bool IsEventHardMode(void);
     static void SetEventWorkMode(const uint8_t mode);
@@ -92,9 +93,9 @@ private:
     static std::mutex hostCpuFuncMutex_;
     static std::unordered_set<uint64_t> hostCpuFuncs_;
 };
-bool IsProcessTimeout(const mmTimespec &beginTime, int32_t timeout, int32_t *remainTime = nullptr);
+bool IsProcessTimeout(const mmTimespec& beginTime, int32_t timeout, int32_t* remainTime = nullptr);
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif // RUNTIME_THREAD_LOCAL_CONTAINER_HPP

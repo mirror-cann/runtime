@@ -18,15 +18,16 @@ class Profiler;
 
 class ProfileLogRecord {
 public:
-    ProfileLogRecord(const uint16_t recordType, const uint16_t opType, const Profiler * const profilerInfo);
-    ProfileLogRecord(const uint16_t opType, const Profiler * const profilerInfo);
+    ProfileLogRecord(const uint16_t recordType, const uint16_t opType, const Profiler* const profilerInfo);
+    ProfileLogRecord(const uint16_t opType, const Profiler* const profilerInfo);
     ~ProfileLogRecord() = default;
     void SaveRecord();
+
 private:
-    void PrintRecord(const rtProfileRecordSyncRt_t &recordSyncRt) const;
+    void PrintRecord(const rtProfileRecordSyncRt_t& recordSyncRt) const;
     rtProfileRecordSyncRt_t record_{};
 };
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_PROFILE_LOG_RECORD_HPP
+#endif // CCE_RUNTIME_PROFILE_LOG_RECORD_HPP

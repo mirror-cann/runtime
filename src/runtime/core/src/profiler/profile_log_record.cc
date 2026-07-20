@@ -12,8 +12,7 @@
 
 namespace cce {
 namespace runtime {
-ProfileLogRecord::ProfileLogRecord(const uint16_t recordType, const uint16_t opType,
-    const Profiler * const profilerInfo)
+ProfileLogRecord::ProfileLogRecord(const uint16_t recordType, const uint16_t opType, const Profiler* const profilerInfo)
 {
     record_.type = recordType;
     record_.rtOpType = opType;
@@ -25,17 +24,18 @@ ProfileLogRecord::ProfileLogRecord(const uint16_t recordType, const uint16_t opT
     return;
 }
 
-ProfileLogRecord::ProfileLogRecord(const uint16_t opType, const Profiler * const profilerInfo)
+ProfileLogRecord::ProfileLogRecord(const uint16_t opType, const Profiler* const profilerInfo)
 {
     ProfileLogRecord(PROFILE_RECORD_TYPE_RT_CALL_RT, opType, profilerInfo);
 }
 
-void ProfileLogRecord::PrintRecord(const rtProfileRecordSyncRt_t &recordSyncRt) const
+void ProfileLogRecord::PrintRecord(const rtProfileRecordSyncRt_t& recordSyncRt) const
 {
-    RT_LOG(RT_LOG_INFO, "RtApiCall: RecordType=%hu OperationType=%hu"
+    RT_LOG(
+        RT_LOG_INFO,
+        "RtApiCall: RecordType=%hu OperationType=%hu"
         " pid=%u tid=%u seq=%u start=%" PRIu64 " end=%" PRIu64 "",
-        recordSyncRt.type, recordSyncRt.rtOpType,
-        recordSyncRt.pid, recordSyncRt.tid, recordSyncRt.seqId,
+        recordSyncRt.type, recordSyncRt.rtOpType, recordSyncRt.pid, recordSyncRt.tid, recordSyncRt.seqId,
         recordSyncRt.startStamp, recordSyncRt.endStamp);
 }
 
@@ -46,5 +46,5 @@ void ProfileLogRecord::SaveRecord()
     return;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

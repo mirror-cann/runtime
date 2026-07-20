@@ -31,10 +31,7 @@ namespace runtime {
  * @param inFlight    Reference to inFlightWakeUps_ counter (drained to 0)
  */
 inline void CleanupRecycleThreadOnFailure(
-    std::atomic<bool> &alive,
-    Thread *&thread,
-    mmSem_t &sem,
-    std::atomic<int32_t> &inFlight)
+    std::atomic<bool>& alive, Thread*& thread, mmSem_t& sem, std::atomic<int32_t>& inFlight)
 {
     alive.store(false, std::memory_order_release);
     DELETE_O(thread);
@@ -44,7 +41,7 @@ inline void CleanupRecycleThreadOnFailure(
     (void)mmSemDestroy(&sem);
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_RECYCLE_THREAD_UTILS_HPP__
+#endif // __CCE_RUNTIME_RECYCLE_THREAD_UTILS_HPP__

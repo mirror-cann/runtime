@@ -22,8 +22,8 @@ namespace cce {
 namespace runtime {
 TIMESTAMP_EXTERN(rtsEventCreate);
 TIMESTAMP_EXTERN(rtsNotifyCreate);
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,13 +32,10 @@ constexpr uint64_t RT_EVENT_FLAG_VALID_MASK =
     (RT_EVENT_FLAG_SYNC | RT_EVENT_FLAG_TRACE_STREAM | RT_EVENT_FLAG_TIME_LINE | RT_EVENT_FLAG_EXTERNAL | RT_EVENT_MC2);
 
 VISIBILITY_DEFAULT
-rtError_t rtEventCreate(rtEvent_t *evt)
-{
-    return rtEventCreateWithFlag(evt, RT_EVENT_DEFAULT);
-}
+rtError_t rtEventCreate(rtEvent_t* evt) { return rtEventCreateWithFlag(evt, RT_EVENT_DEFAULT); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsEventCreate(rtEvent_t *evt, uint64_t flag)
+rtError_t rtsEventCreate(rtEvent_t* evt, uint64_t flag)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
     if ((flag & ~RT_EVENT_FLAG_VALID_MASK) != 0U) {
@@ -48,57 +45,48 @@ rtError_t rtsEventCreate(rtEvent_t *evt, uint64_t flag)
     if (flag == RT_EVENT_FLAG_DEFAULT) {
         flag = RT_EVENT_DEFAULT;
     }
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtsEventCreate);
-    const rtError_t error = apiInstance->EventCreate(RtPtrToPtr<Event **>(evt), flag);
+    const rtError_t error = apiInstance->EventCreate(RtPtrToPtr<Event**>(evt), flag);
     TIMESTAMP_END(rtsEventCreate);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
-    Event *realEvent = RtPtrToPtr<Event *>(*evt);
+    Event* realEvent = RtPtrToPtr<Event*>(*evt);
     *evt = ExportEmbeddedHandle<rtEvent_t>(realEvent);
     return ACL_RT_SUCCESS;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsEventCreateEx(rtEvent_t *evt, uint64_t flag)
+rtError_t rtsEventCreateEx(rtEvent_t* evt, uint64_t flag)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
     if (flag == RT_EVENT_FLAG_DEFAULT || (flag & ~RT_EVENT_FLAG_VALID_MASK) != 0U) {
         RT_LOG_OUTER_MSG_INVALID_PARAM(flag, "exclusive OR value with RT_EVENT_FLAG and cannot be 0");
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
     }
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const rtError_t error = apiInstance->EventCreateEx(RtPtrToPtr<Event **>(evt), flag);
+    const rtError_t error = apiInstance->EventCreateEx(RtPtrToPtr<Event**>(evt), flag);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
-    Event *realEvent = RtPtrToPtr<Event *>(*evt);
+    Event* realEvent = RtPtrToPtr<Event*>(*evt);
     *evt = ExportEmbeddedHandle<rtEvent_t>(realEvent);
     return ACL_RT_SUCCESS;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsEventDestroy(rtEvent_t evt)
+rtError_t rtsEventDestroy(rtEvent_t evt) { return rtEventDestroy(evt); }
+
+VISIBILITY_DEFAULT
+rtError_t rtsEventGetId(rtEvent_t evt, uint32_t* evtId) { return rtGetEventID(evt, evtId); }
+
+VISIBILITY_DEFAULT
+rtError_t rtsEventQueryStatus(rtEvent_t evt, rtEventRecordStatus* status)
 {
-    return rtEventDestroy(evt);
+    return rtEventQueryStatus(evt, RtPtrToPtr<rtEventStatus_t*>(status));
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsEventGetId(rtEvent_t evt, uint32_t *evtId)
-{
-    return rtGetEventID(evt, evtId);
-}
-
-VISIBILITY_DEFAULT
-rtError_t rtsEventQueryStatus(rtEvent_t evt, rtEventRecordStatus *status)
-{   
-    return rtEventQueryStatus(evt, RtPtrToPtr<rtEventStatus_t *>(status));
-}
-
-VISIBILITY_DEFAULT
-rtError_t rtsEventRecord(rtEvent_t evt, rtStream_t stm)
-{
-    return rtEventRecord(evt, stm);
-}
+rtError_t rtsEventRecord(rtEvent_t evt, rtStream_t stm) { return rtEventRecord(evt, stm); }
 
 VISIBILITY_DEFAULT
 rtError_t rtsEventWait(rtStream_t stream, rtEvent_t evt, uint32_t timeout)
@@ -113,31 +101,22 @@ rtError_t rtsEventSynchronize(rtEvent_t evt, const int32_t timeout)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsEventGetTimeStamp(uint64_t *timeStamp, rtEvent_t evt)
-{
-    return rtEventGetTimeStamp(timeStamp, evt);
-}
+rtError_t rtsEventGetTimeStamp(uint64_t* timeStamp, rtEvent_t evt) { return rtEventGetTimeStamp(timeStamp, evt); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsEventReset(rtEvent_t evt, rtStream_t stm)
-{
-    return rtEventReset(evt, stm);
-}
+rtError_t rtsEventReset(rtEvent_t evt, rtStream_t stm) { return rtEventReset(evt, stm); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsEventGetAvailNum(uint32_t *eventCount)
-{
-    return rtGetAvailEventNum(eventCount);
-}
+rtError_t rtsEventGetAvailNum(uint32_t* eventCount) { return rtGetAvailEventNum(eventCount); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsEventElapsedTime(float32_t *timeInterval, rtEvent_t startEvent, rtEvent_t endEvent)
+rtError_t rtsEventElapsedTime(float32_t* timeInterval, rtEvent_t startEvent, rtEvent_t endEvent)
 {
     return rtEventElapsedTime(timeInterval, startEvent, endEvent);
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsNotifyCreate(rtNotify_t *notify, uint64_t flag)
+rtError_t rtsNotifyCreate(rtNotify_t* notify, uint64_t flag)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
     if (flag != RT_NOTIFY_FLAG_DEFAULT && flag != RT_NOTIFY_FLAG_DOWNLOAD_TO_DEV) {
@@ -148,29 +127,23 @@ rtError_t rtsNotifyCreate(rtNotify_t *notify, uint64_t flag)
     const rtError_t rtRet = rtGetDevice(&deviceId);
     if (unlikely((rtRet) != ACL_RT_SUCCESS)) {
         return rtRet;
-    }    
-    
-    Api * const apiInstance = Api::Instance();
+    }
+
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const rtError_t error = apiInstance->NotifyCreate(deviceId, RtPtrToPtr<Notify **>(notify), flag);
+    const rtError_t error = apiInstance->NotifyCreate(deviceId, RtPtrToPtr<Notify**>(notify), flag);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
-    Notify *realNotify = RtPtrToPtr<Notify *>(*notify);
+    Notify* realNotify = RtPtrToPtr<Notify*>(*notify);
     *notify = ExportEmbeddedHandle<rtNotify_t>(realNotify);
     return ACL_RT_SUCCESS;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsNotifyDestroy(rtNotify_t notify)
-{
-    return rtNotifyDestroy(notify);
-}
+rtError_t rtsNotifyDestroy(rtNotify_t notify) { return rtNotifyDestroy(notify); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsNotifyRecord(rtNotify_t notify, rtStream_t stm)
-{
-    return rtNotifyRecord(notify, stm);
-}
+rtError_t rtsNotifyRecord(rtNotify_t notify, rtStream_t stm) { return rtNotifyRecord(notify, stm); }
 
 VISIBILITY_DEFAULT
 rtError_t rtsNotifyWaitAndReset(rtNotify_t notify, rtStream_t stm, uint32_t timeout)
@@ -182,17 +155,14 @@ rtError_t rtsNotifyWaitAndReset(rtNotify_t notify, rtStream_t stm, uint32_t time
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsNotifyGetId(rtNotify_t notify, uint32_t *notifyId)
-{
-    return rtGetNotifyID(notify, notifyId);
-}
+rtError_t rtsNotifyGetId(rtNotify_t notify, uint32_t* notifyId) { return rtGetNotifyID(notify, notifyId); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsNotifyBatchReset(rtNotify_t *notifies, uint32_t num)
+rtError_t rtsNotifyBatchReset(rtNotify_t* notifies, uint32_t num)
 {
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(notifies, RT_ERROR_INVALID_VALUE);
-    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(num <= 0, RT_ERROR_INVALID_VALUE, 
-        num, "(0, " + std::to_string(MAX_UINT32_NUM) + "]");
+    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(
+        num <= 0, RT_ERROR_INVALID_VALUE, num, "(0, " + std::to_string(MAX_UINT32_NUM) + "]");
 
     RT_LOG(RT_LOG_INFO, "start batch reset notify, num=%u.", num);
     // if notify reset err, break it and return
@@ -213,16 +183,16 @@ rtError_t rtNotifyResetAll()
     const rtError_t rtRet = rtGetDevice(&deviceId);
     if (unlikely((rtRet) != RT_ERROR_NONE)) {
         return rtRet;
-    }  
+    }
 
     RT_LOG(RT_LOG_INFO, "start to reset all notify, deviceId=%d.", deviceId);
     return rtResourceClean(deviceId, RT_NOTIFY_ID);
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsNotifyGetExportKey(rtNotify_t notify, char_t *key,  uint32_t len, uint64_t flag)
+rtError_t rtsNotifyGetExportKey(rtNotify_t notify, char_t* key, uint32_t len, uint64_t flag)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(notify, Notify, notifyPtr);
     const rtError_t error = apiInstance->IpcSetNotifyName(notifyPtr, key, len, flag);
@@ -232,7 +202,7 @@ rtError_t rtsNotifyGetExportKey(rtNotify_t notify, char_t *key,  uint32_t len, u
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsNotifyImportByKey(rtNotify_t *notify, const char_t *key, uint64_t flag)
+rtError_t rtsNotifyImportByKey(rtNotify_t* notify, const char_t* key, uint64_t flag)
 {
     return rtIpcOpenNotifyWithFlag(notify, key, static_cast<uint32_t>(flag & MAX_UINT32_NUM));
 }

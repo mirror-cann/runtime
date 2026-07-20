@@ -18,12 +18,12 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("ProfilingEnableTask")
-void ConstructSqeForProfilingEnableTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForProfilingEnableTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    ProfilingEnableTaskInfo *profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    ProfilingEnableTaskInfo* profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 1U;
@@ -37,19 +37,21 @@ void ConstructSqeForProfilingEnableTask(TaskInfo * const taskInfo, rtStarsSqe_t 
     sqe->kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
     sqe->u.dynamic_profiling_info.pid = profilingEnableTaskInfo->pid;
     PrintSqe(command, "ProfilingEnableTask");
-    RT_LOG(RT_LOG_INFO, "Launch ProfilingEnableTask succ, "
+    RT_LOG(
+        RT_LOG_INFO,
+        "Launch ProfilingEnableTask succ, "
         "sqe_type=%u, pre_p=%u, stream_id=%u, task_id=%u, task_type=%u, pid=%u.",
         sqe->type, sqe->pre_p, sqe->rt_streamID, sqe->task_id, sqe->task_type, profilingEnableTaskInfo->pid);
 }
 #endif
 
 #if F_DESC("ProfilingDisableTask")
-void ConstructSqeForProfilingDisableTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForProfilingDisableTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    ProfilingDisableTaskInfo *profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    ProfilingDisableTaskInfo* profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 1U;
@@ -63,17 +65,19 @@ void ConstructSqeForProfilingDisableTask(TaskInfo * const taskInfo, rtStarsSqe_t
     sqe->kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
     sqe->u.dynamic_profiling_info.pid = profilingDisableTaskInfo->pid;
     PrintSqe(command, "ProfilingDisableTask");
-    RT_LOG(RT_LOG_INFO, "Launch ProfilingDisableTask succ, "
+    RT_LOG(
+        RT_LOG_INFO,
+        "Launch ProfilingDisableTask succ, "
         "sqe_type=%u, pre_p=%u, stream_id=%u, task_id=%u, task_type=%u, pid=%u.",
         sqe->type, sqe->pre_p, sqe->rt_streamID, sqe->task_id, sqe->task_type, profilingDisableTaskInfo->pid);
 }
 #endif
 
 #if F_DESC("ProfilerTraceExTask")
-void ConstructSqeForProfilerTraceExTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForProfilerTraceExTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    Stream * const stm = taskInfo->stream;
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 1U;
@@ -96,10 +100,7 @@ void ConstructSqeForProfilerTraceExTask(TaskInfo* taskInfo, rtStarsSqe_t *const 
 #endif
 
 #if F_DESC("PCTraceTask")
-void PCTraceTaskUnInit(TaskInfo * const taskInfo)
-{
-    taskInfo->pcTrace.reset();
-}
+void PCTraceTaskUnInit(TaskInfo* const taskInfo) { taskInfo->pcTrace.reset(); }
 #endif
 
 #if F_DESC("ProfilingTaskRegister")
@@ -116,7 +117,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = &SetResultCommon,
         .setStarsResultFunc = &SetStarsResultCommon,
     };
-    
+
     // TS_TASK_TYPE_PROFILER_DYNAMIC_DISABLE
     TaskFuncSingle profilerDynamicDisableFuncs = {
         .toCommandFunc = &ToCommandBodyForDynamicProfilingDisableTask,
@@ -128,7 +129,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = &SetResultCommon,
         .setStarsResultFunc = &SetStarsResultCommon,
     };
-    
+
     // TS_TASK_TYPE_PROFILING_ENABLE
     TaskFuncSingle profilingEnableFuncs = {
         .toCommandFunc = &ToCommandBodyForProfilingEnableTask,
@@ -140,7 +141,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = &SetResultCommon,
         .setStarsResultFunc = &SetStarsResultCommon,
     };
-    
+
     // TS_TASK_TYPE_PROFILING_DISABLE
     TaskFuncSingle profilingDisableFuncs = {
         .toCommandFunc = &ToCommandBodyForProfilingDisableTask,
@@ -152,7 +153,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = &SetResultCommon,
         .setStarsResultFunc = &SetStarsResultCommon,
     };
-    
+
     // TS_TASK_TYPE_ONLINEPROF_START
     TaskFuncSingle onlineProfStartFuncs = {
         .toCommandFunc = &ToCommandBodyForOnlineProfEnableTask,
@@ -164,7 +165,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = &SetResultCommon,
         .setStarsResultFunc = &SetStarsResultCommon,
     };
-    
+
     // TS_TASK_TYPE_ONLINEPROF_STOP
     TaskFuncSingle onlineProfStopFuncs = {
         .toCommandFunc = &ToCommandBodyForOnlineProfDisableTask,
@@ -176,7 +177,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = &SetResultCommon,
         .setStarsResultFunc = &SetStarsResultCommon,
     };
-    
+
     // TS_TASK_TYPE_ADCPROF
     TaskFuncSingle adcProfFuncs = {
         .toCommandFunc = &ToCommandBodyForAdcProfTask,
@@ -188,7 +189,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = &SetResultCommon,
         .setStarsResultFunc = &SetStarsResultCommon,
     };
-    
+
     // TS_TASK_TYPE_PROFILER_TRACE
     TaskFuncSingle profilerTraceFuncs = {
         .toCommandFunc = &ToCommandBodyForProfilerTraceTask,
@@ -200,7 +201,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = &SetResultCommon,
         .setStarsResultFunc = &SetStarsResultCommon,
     };
-    
+
     // TS_TASK_TYPE_PROFILER_TRACE_EX
     TaskFuncSingle profilerTraceExFuncs = {
         .toCommandFunc = &ToCommandBodyForProfilerTraceExTask,
@@ -212,7 +213,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = &SetResultCommon,
         .setStarsResultFunc = &SetStarsResultCommon,
     };
-    
+
     // TS_TASK_TYPE_PCTRACE_ENABLE
     TaskFuncSingle pcTraceFuncs = {
         .toCommandFunc = &ToCommandBodyForPCTraceTask,
@@ -224,7 +225,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = &SetResultCommon,
         .setStarsResultFunc = &SetStarsResultCommon,
     };
-    
+
     const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_PROFILER_DYNAMIC_ENABLE, profilerDynamicEnableFuncs);
@@ -238,11 +239,11 @@ static bool ProfilingTaskRegister()
         RegTaskFunc(chip, TS_TASK_TYPE_PROFILER_TRACE_EX, profilerTraceExFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_PCTRACE_ENABLE, pcTraceFuncs);
     }
-    
+
     return true;
 }
 
 static bool g_profilingTaskRegister = ProfilingTaskRegister();
 #endif
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -12,8 +12,8 @@
 
 namespace cce {
 namespace runtime {
-rtError_t SymbolTable::Register(void *binHandle, const void *hostVar, const char *deviceVarName,
-                                size_t size, uint32_t flags)
+rtError_t SymbolTable::Register(
+    void* binHandle, const void* hostVar, const char* deviceVarName, size_t size, uint32_t flags)
 {
     UNUSED(binHandle);
     UNUSED(hostVar);
@@ -23,14 +23,14 @@ rtError_t SymbolTable::Register(void *binHandle, const void *hostVar, const char
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t SymbolTable::Lookup(const void *hostVar, SymbolEntry &entry)
+rtError_t SymbolTable::Lookup(const void* hostVar, SymbolEntry& entry)
 {
     UNUSED(hostVar);
     UNUSED(entry);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t SymbolTable::GetDeviceAddress(const void *hostVar, uint32_t deviceId, void **devPtr)
+rtError_t SymbolTable::GetDeviceAddress(const void* hostVar, uint32_t deviceId, void** devPtr)
 {
     UNUSED(hostVar);
     UNUSED(deviceId);
@@ -38,12 +38,12 @@ rtError_t SymbolTable::GetDeviceAddress(const void *hostVar, uint32_t deviceId, 
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t SymbolTable::GetSize(const void *hostVar, size_t *size)
+rtError_t SymbolTable::GetSize(const void* hostVar, size_t* size)
 {
     UNUSED(hostVar);
     UNUSED(size);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

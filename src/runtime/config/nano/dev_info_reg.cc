@@ -48,8 +48,7 @@ static const std::unordered_set<RtOptionalFeatureType> CHIP_NANO_FEATURE{
     RtOptionalFeatureType::RT_FEATURE_NOTIFY_WAIT,
     RtOptionalFeatureType::RT_FEATURE_KERNEL_UMA_SUPER_ARGS_ALLOC,
     RtOptionalFeatureType::RT_FEATURE_DEVICE_SPM_POOL,
-    RtOptionalFeatureType::RT_FEATURE_MODEL_ABORT_USE_DEFAULT_STREAM
-};
+    RtOptionalFeatureType::RT_FEATURE_MODEL_ABORT_USE_DEFAULT_STREAM};
 
 REGISTER_CHIP_FEATURE_SET(CHIP_NANO, CHIP_NANO_FEATURE);
 
@@ -194,5 +193,5 @@ static const DevProperties CHIP_NANO_PROPERTIES = {
 };
 
 REGISTER_DEV_PROPERTIES(CHIP_NANO, CHIP_NANO_PROPERTIES);
-}
-}
+} // namespace runtime
+} // namespace cce

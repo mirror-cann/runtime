@@ -17,14 +17,14 @@ namespace runtime {
 
 class XpuStreamSqCqManage : public StreamSqCqManage {
 public:
-    explicit XpuStreamSqCqManage(Device * const dev);
+    explicit XpuStreamSqCqManage(Device* const dev);
     ~XpuStreamSqCqManage() override = default;
     rtError_t AllocXpuStreamSqCq(const Stream* const newStm);
     rtError_t SetXpuTprtSqCqStatus(const uint32_t devId, const uint32_t sqId) const;
     rtError_t DeAllocXpuStreamSqCq(const uint32_t devId, const uint32_t streamId);
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_STREAM_SQCQ_MANAGE_HPP
+#endif // CCE_RUNTIME_STREAM_SQCQ_MANAGE_HPP

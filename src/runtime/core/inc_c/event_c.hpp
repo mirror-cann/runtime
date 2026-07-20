@@ -15,15 +15,15 @@
 namespace cce {
 namespace runtime {
 
-    rtError_t EvtRecord(Event * const evt, Stream * const stm);
-    rtError_t EvtWait(Event * const evt, Stream * const stm, const uint32_t timeout);
-    rtError_t EvtReset(Event * const evt, Stream * const stm);
-    rtError_t ProcStreamRecordTask(Stream * const stm, int32_t timeout);
-    rtError_t EvtRecordSoftwareMode(Event * const evt, Stream * const stm);
-    rtError_t EvtWaitSoftwareMode(Event * const evt, Stream * const stm);
-    rtError_t EvtResetSoftwareMode(Event * const evt, Stream * const stm);
+rtError_t EvtRecord(Event* const evt, Stream* const stm);
+rtError_t EvtWait(Event* const evt, Stream* const stm, const uint32_t timeout);
+rtError_t EvtReset(Event* const evt, Stream* const stm);
+rtError_t ProcStreamRecordTask(Stream* const stm, int32_t timeout);
+rtError_t EvtRecordSoftwareMode(Event* const evt, Stream* const stm);
+rtError_t EvtWaitSoftwareMode(Event* const evt, Stream* const stm);
+rtError_t EvtResetSoftwareMode(Event* const evt, Stream* const stm);
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif

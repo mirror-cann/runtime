@@ -39,5 +39,5 @@ static bool AclgraphCondTaskRegister()
 
 static bool g_aclgraphCondTaskRegister = AclgraphCondTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

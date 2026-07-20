@@ -23,7 +23,8 @@ void MemsetD32Optimized(uint32_t* dst, uint32_t value, size_t count);
 // Perform 32-bit fill on Host memory (using SIMD acceleration)
 rtError_t MemsetD32OnHost(void* dst, uint64_t destMax, uint32_t value, uint64_t count);
 // Perform 32-bit fill on Device memory (temporary Host memory + asynchronous copy)
-rtError_t MemsetD32OnDevice(void* dst, uint64_t destMax, uint32_t value, uint64_t count, Stream* stm, bool isAsync, uint32_t memDevId = 0U);
+rtError_t MemsetD32OnDevice(
+    void* dst, uint64_t destMax, uint32_t value, uint64_t count, Stream* stm, bool isAsync, uint32_t memDevId = 0U);
 rtError_t MemsetD32OnDeviceByMemcpy(
     void* dst, uint64_t destMax, uint32_t value, uint64_t count, Stream* stm, bool isAsync);
 rtError_t DevMemSetAsyncByMemcpy(Stream* stm, void* ptr, uint64_t destMax, uint32_t fillVal, uint64_t fillCount);
@@ -37,8 +38,7 @@ inline uint32_t ExpandByteToU32(uint32_t fillVal)
 }
 
 // Check if chip supports memset task
-inline bool IsSupportMemsetTask(const uint32_t memDevId, const uint32_t curDevId,
-    const DevProperties& props)
+inline bool IsSupportMemsetTask(const uint32_t memDevId, const uint32_t curDevId, const DevProperties& props)
 {
     // 1. Memory must belong to current device
     // 2. Chip supports memset task

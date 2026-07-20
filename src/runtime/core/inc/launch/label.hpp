@@ -35,7 +35,7 @@ public:
     explicit LabelAllocator(const uint16_t labelMax);
     ~LabelAllocator() override = default;
     // Singleton instance.
-    rtError_t LabelIdAlloc(uint16_t &idAlloc);
+    rtError_t LabelIdAlloc(uint16_t& idAlloc);
     rtError_t LabelIdFree(const uint16_t idFree);
 
 private:
@@ -49,98 +49,60 @@ private:
 class Label : public NoCopy {
 public:
     enum rtLabelMgrType_t {
-        LABEL_MGR_TYPE_RT    = 0,
+        LABEL_MGR_TYPE_RT = 0,
         LABEL_MGR_TYPE_MODEL,
         LABEL_MGR_TYPE_END,
     };
 
-    explicit Label(Model * const mdl);
+    explicit Label(Model* const mdl);
     ~Label() noexcept override;
 
-    rtError_t LabelIdAlloc(uint16_t &idAlloc);
+    rtError_t LabelIdAlloc(uint16_t& idAlloc);
     rtError_t LabelIdFree(const uint16_t idFree);
 
-    rtError_t Setup(Context * const curCtx);
+    rtError_t Setup(Context* const curCtx);
 
-    rtInnerObject *GetInnerHandle()
-    {
-        return &handle_;
-    }
-    const rtInnerObject *GetInnerHandle() const
-    {
-        return &handle_;
-    }
+    rtInnerObject* GetInnerHandle() { return &handle_; }
+    const rtInnerObject* GetInnerHandle() const { return &handle_; }
 
-    uint16_t Id_() const
-    {
-        return labelId_;
-    }
+    uint16_t Id_() const { return labelId_; }
 
-    const Context *Context_() const
-    {
-        return context_;
-    }
+    const Context* Context_() const { return context_; }
 
-    const Stream *Stream_() const
-    {
-        return stream_;
-    }
+    const Stream* Stream_() const { return stream_; }
 
-    void ForceSetStream(Stream * const stm)
-    {
-        stream_ = stm;
-    }
+    void ForceSetStream(Stream* const stm) { stream_ = stm; }
 
-    rtLabelMgrType_t MgrType_() const
-    {
-        return mgrType_;
-    }
+    rtLabelMgrType_t MgrType_() const { return mgrType_; }
 
-    const Model *Model_() const
-    {
-        return model_;
-    }
+    const Model* Model_() const { return model_; }
 
-    void SetSetFlag(const bool flag)
-    {
-        setFlag_ = flag;
-    }
-    bool SetFlag_() const
-    {
-        return setFlag_;
-    }
+    void SetSetFlag(const bool flag) { setFlag_ = flag; }
+    bool SetFlag_() const { return setFlag_; }
 
-    void *DevDstAddr_() const
-    {
-        return devDstAddr_;
-    }
+    void* DevDstAddr_() const { return devDstAddr_; }
 
-    void ResetLabelDevAddr()
-    {
-        devDstAddr_ = nullptr;
-    }
+    void ResetLabelDevAddr() { devDstAddr_ = nullptr; }
 
-    rtError_t Set(Stream * const stm);
-    rtError_t SetStream(Stream * const stm);
-    rtError_t Switch(const void * const ptr, const rtCondition_t condition, const uint32_t val, Stream * const stm);
-    rtError_t Goto(Stream * const stm);
-    rtError_t StreamGoto(Stream * const stm);
-    void UnbindModel()
-    {
-        model_ = nullptr;
-    }
-    rtError_t SetLabelDevAddr(void * const addr);
+    rtError_t Set(Stream* const stm);
+    rtError_t SetStream(Stream* const stm);
+    rtError_t Switch(const void* const ptr, const rtCondition_t condition, const uint32_t val, Stream* const stm);
+    rtError_t Goto(Stream* const stm);
+    rtError_t StreamGoto(Stream* const stm);
+    void UnbindModel() { model_ = nullptr; }
+    rtError_t SetLabelDevAddr(void* const addr);
+
 private:
-    Model *model_;
+    Model* model_;
     uint16_t labelId_;
-    Stream *stream_;
-    Context *context_;
+    Stream* stream_;
+    Context* context_;
     bool setFlag_;
     rtLabelMgrType_t mgrType_;
-    void *devDstAddr_;   // save label info device addr
-    rtInnerObject handle_ {};
+    void* devDstAddr_; // save label info device addr
+    rtInnerObject handle_{};
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_LABEL_HPP__
+#endif // __CCE_RUNTIME_LABEL_HPP__

@@ -16,15 +16,15 @@
 
 namespace cce {
 namespace runtime {
-    using PfnTaskToTprtSqe = void (*)(TaskInfo *taskInfo, TprtSqe_t *const tprtSqe);
-    using PfnTaskSetTprtResult = void (*)(TaskInfo *taskInfo, const TprtLogicCqReport_t &logicCq);
-    void XpuSetStarsResult(TaskInfo *taskInfo, const TprtLogicCqReport_t &logicCq);
-    void RegXpuTaskFunc(void);
-    void XpuComplete(TaskInfo *const taskInfo, const uint32_t devId = RT_MAX_DEV_NUM);
-    void ToConstructXpuSqe(TaskInfo *taskInfo, TprtSqe_t *const tprtSqe);
-    void XpuTaskUnInitProc(TaskInfo *taskInfo);
-    const char_t *GetXpuSqeDescByType(const uint8_t sqeType);
-    void XpuPrintErrorInfo(TaskInfo *taskInfo, const uint32_t devId);
-}  // namespace runtime
-}  // namespace cce
-#endif  // __CCE_RUNTIME_TASK_MANAGER_XPU_HPP__
+using PfnTaskToTprtSqe = void (*)(TaskInfo* taskInfo, TprtSqe_t* const tprtSqe);
+using PfnTaskSetTprtResult = void (*)(TaskInfo* taskInfo, const TprtLogicCqReport_t& logicCq);
+void XpuSetStarsResult(TaskInfo* taskInfo, const TprtLogicCqReport_t& logicCq);
+void RegXpuTaskFunc(void);
+void XpuComplete(TaskInfo* const taskInfo, const uint32_t devId = RT_MAX_DEV_NUM);
+void ToConstructXpuSqe(TaskInfo* taskInfo, TprtSqe_t* const tprtSqe);
+void XpuTaskUnInitProc(TaskInfo* taskInfo);
+const char_t* GetXpuSqeDescByType(const uint8_t sqeType);
+void XpuPrintErrorInfo(TaskInfo* taskInfo, const uint32_t devId);
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_TASK_MANAGER_XPU_HPP__

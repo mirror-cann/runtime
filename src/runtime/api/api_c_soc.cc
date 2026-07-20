@@ -42,15 +42,15 @@ const std::string GetSocVersionStr(const int32_t isHeterogenous)
         return GlobalContainer::GetSocVersion();
     }
 
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     if (rtInstance->GetIsUserSetSocVersion()) {
         return GlobalContainer::GetUserSocVersion();
     }
 
     if (halGetSocVersion != nullptr) {
-        const Context * const curCtx = rtInstance->CurrentContext();
+        const Context* const curCtx = rtInstance->CurrentContext();
         if (curCtx != nullptr) {
-            const Device * const device = curCtx->Device_();
+            const Device* const device = curCtx->Device_();
             if (device != nullptr) {
                 const std::string socVersion = GetSocVersionByDeviceId(device->Id_());
                 if (!socVersion.empty()) {
@@ -74,17 +74,17 @@ const std::string GetSocVersionStr(const int32_t isHeterogenous)
 
     return rtInstance->GetSocVersion();
 }
-}
+} // namespace
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 VISIBILITY_DEFAULT
-rtError_t rtGetSocVersion(char_t *ver, const uint32_t maxLen)
+rtError_t rtGetSocVersion(char_t* ver, const uint32_t maxLen)
 {
     errno_t rc;
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(ver, RT_ERROR_INVALID_VALUE);
     COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(maxLen == 0U, RT_ERROR_INVALID_VALUE, maxLen, "not equal to 0");
@@ -98,7 +98,8 @@ rtError_t rtGetSocVersion(char_t *ver, const uint32_t maxLen)
             std::stringstream ss;
             ss << std::hex << "ver=0x" << RtPtrToValue(ver) << ", src=0x" << RtPtrToValue(UNKNOWN_SOC_TYPE.c_str())
                << std::dec << ", maxLen=" << maxLen << ", count=" << UNKNOWN_SOC_TYPE.length() + 1U << ".";
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, __func__, "memcpy_s", std::to_string(rc).c_str(), strerror(rc), ss.str().c_str());
+            RT_LOG_OUTER_MSG_IMPL(
+                ErrorCode::EE1020, __func__, "memcpy_s", std::to_string(rc).c_str(), strerror(rc), ss.str().c_str());
             return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_SEC_HANDLE);
         }
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INSTANCE_VERSION);
@@ -108,9 +109,10 @@ rtError_t rtGetSocVersion(char_t *ver, const uint32_t maxLen)
     rc = memcpy_s(ver, static_cast<size_t>(maxLen), socName.c_str(), socName.length() + 1U);
     if (rc != EOK) {
         std::stringstream ss;
-        ss << std::hex << "ver=0x" << RtPtrToValue(ver) << ", src=0x" << RtPtrToValue(socName.c_str())
-           << std::dec << ", maxLen=" << maxLen << ", count=" << (socName.length() + 1U) << ".";
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, __func__, "memcpy_s", std::to_string(rc).c_str(), strerror(rc), ss.str().c_str());
+        ss << std::hex << "ver=0x" << RtPtrToValue(ver) << ", src=0x" << RtPtrToValue(socName.c_str()) << std::dec
+           << ", maxLen=" << maxLen << ", count=" << (socName.length() + 1U) << ".";
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE1020, __func__, "memcpy_s", std::to_string(rc).c_str(), strerror(rc), ss.str().c_str());
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_SEC_HANDLE);
     }
     RT_LOG(RT_LOG_INFO, "soc version is %s", ver);
@@ -118,20 +120,20 @@ rtError_t rtGetSocVersion(char_t *ver, const uint32_t maxLen)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtSetSocVersion(const char_t *ver)
+rtError_t rtSetSocVersion(const char_t* ver)
 {
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(ver, RT_ERROR_INVALID_VALUE);
     const std::string inputSocVersion(ver);
     rtChipType_t chipType = CHIP_END;
     const rtError_t ret = GetChipTypeFromPlatform(ver, chipType);
     if (ret != RT_ERROR_NONE) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(
-            ErrorCode::EE1011, inputSocVersion, "ver", "The input SoC version is not supported");
+        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1011, inputSocVersion, "ver", "The input SoC version is not supported");
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
     }
     if (!GlobalContainer::GetHardwareSocVersion().empty() &&
         (GlobalContainer::GetHardwareSocVersion() != inputSocVersion)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1011, inputSocVersion, "ver",
+        RT_LOG_OUTER_MSG_WITH_FUNC(
+            ErrorCode::EE1011, inputSocVersion, "ver",
             "The input SoC version does not match the actual SoC version " + GlobalContainer::GetHardwareSocVersion());
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
     }

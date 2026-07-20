@@ -39,6 +39,6 @@ constexpr uint16_t RT_MASK_BIT15 = 0x8000U;
 constexpr uint16_t RT_UPDATE_FOR_STREAM_EXTEND = 0b1;
 constexpr uint16_t RT_UPDATE_FOR_STREAM_EXTEND_FLAG_BIT = 15U;
 
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // __CCE_RUNTIME_FFTS_HPP__

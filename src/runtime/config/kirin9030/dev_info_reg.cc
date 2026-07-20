@@ -26,8 +26,9 @@ constexpr uint32_t RT_KIRIN9030_AIVECTOR_NUM = 1U;
 static constexpr uint32_t ASYNC_TASK_D2D_QOS = 6U;
 constexpr uint32_t TS_FEATURE_MC2_RTS_SUPPORT_HCCL_PROP = 23;
 static constexpr uint32_t RT_STARS_MAX_KERNEL_CREDIT_UINT32 = 254U; // STARS MAX KERNEL_CREDIT = 255.
-static constexpr uint32_t RT_STARS_DEFAULT_KERNEL_CREDIT_UINT32 = 254U; // The STARS reference time is 1090921693.184 us.
-static constexpr float64_t RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN = 0.001F;  // 0.001(us) = 1ns
+static constexpr uint32_t RT_STARS_DEFAULT_KERNEL_CREDIT_UINT32 =
+    254U;                                                           // The STARS reference time is 1090921693.184 us.
+static constexpr float64_t RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN = 0.001F; // 0.001(us) = 1ns
 
 static const DevProperties CHIP_KIRIN9030_PROPERTIES = {
     .engineType = "STARS",
@@ -74,10 +75,9 @@ static const DevProperties CHIP_KIRIN9030_PROPERTIES = {
     .starsDefaultKernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT,
     .KernelCreditScale = RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN,
     .isSupportInitFuncCallPara = true,
-    .rtsqVirtualAddr = {RT_STARS_BASE_ADDR + STARS_SIMPLE_RTSQ_FSM_SEL_REG,
-        STARS_SIMPLE_SQ_ENABLE_OFFSET,
-        STARS_SIMPLE_SQ_TAIL_OFFSET,
-        STARS_SIMPLE_SQ_HEAD_OFFSET},
+    .rtsqVirtualAddr =
+        {RT_STARS_BASE_ADDR + STARS_SIMPLE_RTSQ_FSM_SEL_REG, STARS_SIMPLE_SQ_ENABLE_OFFSET, STARS_SIMPLE_SQ_TAIL_OFFSET,
+         STARS_SIMPLE_SQ_HEAD_OFFSET},
     .rtsqFsmStateAddrCalMethod = RtsqFsmStateAddrCalMethod::FSM_ADDR_CALCULATE_BY_DEVICE_INFO,
     .starsBaseAddrMethod = StarsBaseAddrMethod::STARS_BASE_CALCULATE_STATIC,
     .rtSqEnableAddrCalMethod = RtSqEnableAddrCalMethod::RT_SQ_ENABLE_ADDR_CAL_STATIC,

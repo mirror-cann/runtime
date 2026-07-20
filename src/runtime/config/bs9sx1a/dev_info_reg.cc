@@ -13,4 +13,4 @@ namespace cce {
 namespace runtime {
 REGISTER_PLATFORM_LIB_INFO(CHIP_BS9SX1A, "libruntime_v100.so");
 }
-}
+} // namespace cce

@@ -15,7 +15,8 @@
 namespace cce {
 namespace runtime {
 
-void CheckKernelMemoryCorruption(Program *program, const Device *device, uint32_t deviceId, rtExceptionArgsInfo_t *kernelInfo)
+void CheckKernelMemoryCorruption(
+    Program* program, const Device* device, uint32_t deviceId, rtExceptionArgsInfo_t* kernelInfo)
 {
     UNUSED(program);
     UNUSED(device);
@@ -23,5 +24,5 @@ void CheckKernelMemoryCorruption(Program *program, const Device *device, uint32_
     UNUSED(kernelInfo);
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

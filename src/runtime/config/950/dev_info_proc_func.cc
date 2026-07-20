@@ -13,10 +13,7 @@
 
 namespace cce {
 namespace runtime {
-static bool HitBlackListErrors(uint32_t devId)
-{
-    return IsHitBlacklist(devId, g_mulBitEccEventIdBlkList);
-}
+static bool HitBlackListErrors(uint32_t devId) { return IsHitBlacklist(devId, g_mulBitEccEventIdBlkList); }
 
 static DevDynInfoProcFunc CHIP_DAVID_PROC_FUNC = {
     .devPropsUpdateFunc = nullptr,
@@ -24,5 +21,5 @@ static DevDynInfoProcFunc CHIP_DAVID_PROC_FUNC = {
 };
 
 REGISTER_DEV_INFO_PROC_FUNC(CHIP_DAVID, CHIP_DAVID_PROC_FUNC);
-}  // namespace runtime
+} // namespace runtime
 } // namespace cce

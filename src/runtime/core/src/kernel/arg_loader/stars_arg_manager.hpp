@@ -171,13 +171,15 @@ public:
     rtError_t AllocCopyPtr(
         const uint32_t size, const bool useArgPool, LoadPolicy policy, StarsArgLoaderResult* const result) override;
     rtError_t H2DArgCopy(const StarsArgLoaderResult* const result, void* const args, const uint32_t size) override;
-    void RecycleDevLoader(void * const handle) override;
+    void RecycleDevLoader(void* const handle) override;
     rtError_t LoadArgsFromArray(
         const bool useArgPool, const Kernel* kernel, void** argsArray, StarsArgLoaderResult* result) override;
     rtError_t LoadSimtArgsFromArray(
-        const bool useArgPool, const Kernel* kernel, SimtArgsArray* simtArgsArray, StarsArgLoaderResult* result) override;
+        const bool useArgPool, const Kernel* kernel, SimtArgsArray* simtArgsArray,
+        StarsArgLoaderResult* result) override;
     rtError_t LoadSimtHostArgs(
         const bool useArgPool, SimtArgsHost* simtArgsHost, StarsArgLoaderResult* result) override;
+
 private:
     struct memTsegInfo memTsegInfo_;
     rtError_t ParseArgsCpyWqe(const StarsArgLoaderResult* const result, const uint32_t size) const;
@@ -194,18 +196,19 @@ public:
         const uint32_t size, const bool useArgPool, LoadPolicy policy, StarsArgLoaderResult* const result) override;
     rtError_t AllocNoCopyPtr(StarsArgLoaderResult* const result) override;
     rtError_t H2DArgCopy(const StarsArgLoaderResult* const result, void* const args, const uint32_t size) override;
-    void RecycleDevLoader(void * const handle) override;
+    void RecycleDevLoader(void* const handle) override;
     rtError_t LoadArgsFromArray(
         const bool useArgPool, const Kernel* kernel, void** argsArray, StarsArgLoaderResult* result) override;
     rtError_t LoadSimtArgsFromArray(
-        const bool useArgPool, const Kernel* kernel, SimtArgsArray* simtArgsArray, StarsArgLoaderResult* result) override;
+        const bool useArgPool, const Kernel* kernel, SimtArgsArray* simtArgsArray,
+        StarsArgLoaderResult* result) override;
     rtError_t LoadSimtHostArgs(
         const bool useArgPool, SimtArgsHost* simtArgsHost, StarsArgLoaderResult* result) override;
 
 private:
     rtError_t PrepareSimtArgsBuffer(
-        const uint32_t totalArgsSize, const bool useArgPool, const rtDim3& gridDim,
-        const rtDim3& blockDim, StarsArgLoaderResult* result, void** argsBuffer);
+        const uint32_t totalArgsSize, const bool useArgPool, const rtDim3& gridDim, const rtDim3& blockDim,
+        StarsArgLoaderResult* result, void** argsBuffer);
 };
 
 } // namespace runtime

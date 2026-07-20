@@ -28,13 +28,13 @@ public:
 
     ~XpuArgManage() override;
 
-    void RecycleDevLoader(void * const handle) override;
+    void RecycleDevLoader(void* const handle) override;
     bool CreateArgRes() override;
     void ReleaseArgRes() override;
     void FreeArgMem() override;
     rtError_t H2DArgCopy(const StarsArgLoaderResult* const result, void* const args, const uint32_t size) override;
 
-    rtError_t MallocArgMem(void *&devAddr, void *&hostAddr) override;
+    rtError_t MallocArgMem(void*& devAddr, void*& hostAddr) override;
     bool AllocStmPool(const uint32_t size, StarsArgLoaderResult* const result) override;
     rtError_t AllocCopyPtr(
         const uint32_t size, const bool useArgPool, LoadPolicy policy, StarsArgLoaderResult* const result) override;
@@ -47,6 +47,6 @@ public:
         const bool useArgPool, SimtArgsHost* simtArgsHost, StarsArgLoaderResult* result) override;
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 #endif

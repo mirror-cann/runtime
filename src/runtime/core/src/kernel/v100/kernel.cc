@@ -18,7 +18,7 @@
 namespace cce {
 namespace runtime {
 
-rtError_t GetPrefetchCnt(Kernel * const kernel)
+rtError_t GetPrefetchCnt(Kernel* const kernel)
 {
     UNUSED(kernel);
     return RT_ERROR_NONE;
@@ -29,10 +29,7 @@ rtError_t LoadKernelArgs(Stream* stm, const rtArgsEx_t* argsInfo, StarsArgLoader
     return stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_NO_MIX);
 }
 
-rtError_t PostUpdateKernelParams(TaskInfo* taskInfo)
-{
-    return WaitAsyncCopyComplete(taskInfo);
-}
+rtError_t PostUpdateKernelParams(TaskInfo* taskInfo) { return WaitAsyncCopyComplete(taskInfo); }
 
 void SetAicoreArgsSuperKernel(TaskInfo* taskInfo, const rtArgsEx_t* argsInfo, StarsArgLoaderResult& result)
 {
@@ -42,17 +39,14 @@ void SetAicoreArgsSuperKernel(TaskInfo* taskInfo, const rtArgsEx_t* argsInfo, St
     }
 }
 
-rtError_t CheckDynSizeValid(TaskInfo* const taskInfo, const Kernel * const kernel)
+rtError_t CheckDynSizeValid(TaskInfo* const taskInfo, const Kernel* const kernel)
 {
     UNUSED(taskInfo);
     UNUSED(kernel);
     return RT_ERROR_NONE;
 }
 
-void BackupTaskArgHandle(TaskInfo* taskInfo)
-{
-    UNUSED(taskInfo);
-}
+void BackupTaskArgHandle(TaskInfo* taskInfo) { UNUSED(taskInfo); }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

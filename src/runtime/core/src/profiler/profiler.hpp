@@ -18,7 +18,7 @@
 #include "task.hpp"
 
 #ifndef PROF_RUNTIME_PROFILE_LOG_MASK
-#define PROF_RUNTIME_PROFILE_LOG_MASK    0x00002000ULL
+#define PROF_RUNTIME_PROFILE_LOG_MASK 0x00002000ULL
 #endif
 
 namespace cce {
@@ -31,53 +31,44 @@ class ApiProfileLogDecorator;
 
 class Profiler : public NoCopy {
 public:
-    explicit Profiler(Api * const apiObj);
+    explicit Profiler(Api* const apiObj);
     ~Profiler() override;
 
     rtError_t Init();
 
     bool IsEnabled(const uint32_t devId) const;
 
-    const ApiProfileDecorator *GetApiProfileDecorator() const
-    {
-        return apiProfileDecorator_;
-    }
+    const ApiProfileDecorator* GetApiProfileDecorator() const { return apiProfileDecorator_; }
 
-    const ApiProfileLogDecorator *GetApiProfileLogDecorator_() const
-    {
-        return apiProfileLogDecorator_;
-    }
+    const ApiProfileLogDecorator* GetApiProfileLogDecorator_() const { return apiProfileLogDecorator_; }
 
-    rtProfCfg_t *ProfCfgPtr()
-    {
-        return &profCfg_;
-    }
-    
-    RuntimeProfApiData &GetProfApiData() const;
-    ProfApiContext *PushProfApiContext() const;
-    bool PopProfApiContext(ProfApiContext &profApiContext) const;
-    ProfApiContext *GetTopProfApiContext() const;
+    rtProfCfg_t* ProfCfgPtr() { return &profCfg_; }
+
+    RuntimeProfApiData& GetProfApiData() const;
+    ProfApiContext* PushProfApiContext() const;
+    bool PopProfApiContext(ProfApiContext& profApiContext) const;
+    ProfApiContext* GetTopProfApiContext() const;
     TaskTrackInfo& GetProfTaskTrackData(void) const;
-    void ReportProfApi(const uint32_t devId, RuntimeProfApiData &profApiData) const;
-    void ReportTaskTrack(TaskInfo * const taskInfo, const uint32_t devId) const;
-    void ModifyTrackData(TaskInfo * const taskInfo, const uint32_t devId, RuntimeProfTrackData *trackData) const;
-    void ReportDestroyFlipTask(const Stream * const stm, const uint32_t devId) const;
+    void ReportProfApi(const uint32_t devId, RuntimeProfApiData& profApiData) const;
+    void ReportTaskTrack(TaskInfo* const taskInfo, const uint32_t devId) const;
+    void ModifyTrackData(TaskInfo* const taskInfo, const uint32_t devId, RuntimeProfTrackData* trackData) const;
+    void ReportDestroyFlipTask(const Stream* const stm, const uint32_t devId) const;
     void ReportStreamSynctaskFinish(const uint16_t profileType) const;
 
-    void ReportReceivingRun(const TaskInfo * const taskInfo, const uint32_t devId) const;
+    void ReportReceivingRun(const TaskInfo* const taskInfo, const uint32_t devId) const;
     void ReportSend(const uint16_t taskId, const uint16_t stmId) const;
-    void ReportRecv(const TaskInfo * const taskInfo) const;
+    void ReportRecv(const TaskInfo* const taskInfo) const;
 
     void RuntimeProfilerStart(void) const;
     void RuntimeProfilerStop(void) const;
-    void TsProfilerStart(const uint64_t profConfig, const uint32_t devId, Device * const dev);
-    void TsProfilerStop(const uint64_t profConfig, const uint32_t devId, Device * const dev);
-    void TsProfilerStart(const uint64_t profConfig, const uint32_t devId, Device * const dev,
-        const bool needOpenTimeline);
-    void TsProfilerStop(const uint64_t profConfig, const uint32_t devId, Device * const dev,
-        const bool needCloseTimeline);
+    void TsProfilerStart(const uint64_t profConfig, const uint32_t devId, Device* const dev);
+    void TsProfilerStop(const uint64_t profConfig, const uint32_t devId, Device* const dev);
+    void TsProfilerStart(
+        const uint64_t profConfig, const uint32_t devId, Device* const dev, const bool needOpenTimeline);
+    void TsProfilerStop(
+        const uint64_t profConfig, const uint32_t devId, Device* const dev, const bool needCloseTimeline);
     void TrackDataInit(void) const;
-    void ReportTrackData(const Stream *const s, const uint16_t taskId) const;
+    void ReportTrackData(const Stream* const s, const uint16_t taskId) const;
     void SetTrackProfEnable(bool trackProfEnable, uint32_t cacheFlag = 0)
     {
         if (trackProfEnable) {
@@ -89,35 +80,17 @@ public:
         }
     }
 
-    bool GetTrackProfEnable() const
-    {
-        return  trackProfEnable_;
-    }
+    bool GetTrackProfEnable() const { return trackProfEnable_; }
 
-    void SetApiProfEnable(bool apiProfEnable)
-    {
-        apiProfEnable_ = apiProfEnable;
-    }
+    void SetApiProfEnable(bool apiProfEnable) { apiProfEnable_ = apiProfEnable; }
 
-    bool GetApiProfEnable() const
-    {
-        return apiProfEnable_;
-    }
+    bool GetApiProfEnable() const { return apiProfEnable_; }
 
-    void SetProfLogEnable(bool apiProfLogEnable)
-    {
-        apiProfLogEnable_ = apiProfLogEnable;
-    }
+    void SetProfLogEnable(bool apiProfLogEnable) { apiProfLogEnable_ = apiProfLogEnable; }
 
-    bool GetProfLogEnable() const
-    {
-        return apiProfLogEnable_;
-    }
+    bool GetProfLogEnable() const { return apiProfLogEnable_; }
 
-    uint32_t GetProcessId() const
-    {
-        return processId_;
-    }
+    uint32_t GetProcessId() const { return processId_; }
 
     static uint32_t GetThreadId()
     {
@@ -127,24 +100,18 @@ public:
         return threadId_;
     }
 
-    static uint32_t GetSeq()
-    {
-        return seq_;
-    }
+    static uint32_t GetSeq() { return seq_; }
 
-    static void SeqAdd()
-    {
-        seq_++;
-    }
+    static void SeqAdd() { seq_++; }
 
-    void InsertStream(Stream * const stm);
-    void EraseStream(Stream * const stm);
+    void InsertStream(Stream* const stm);
+    void EraseStream(Stream* const stm);
     rtError_t ReportCacheTrack(uint32_t cacheFlag);
 
 private:
-    Api *api_;
-    ApiProfileDecorator *apiProfileDecorator_;
-    ApiProfileLogDecorator *apiProfileLogDecorator_;
+    Api* api_;
+    ApiProfileDecorator* apiProfileDecorator_;
+    ApiProfileLogDecorator* apiProfileLogDecorator_;
     rtProfCfg_t profCfg_;
 
     bool trackProfEnable_;
@@ -155,10 +122,10 @@ private:
     static __THREAD_LOCAL__ uint32_t threadId_;
     static __THREAD_LOCAL__ uint32_t seq_;
     std::mutex streamSetMutex_;
-    std::unordered_set<Stream *> streamSet_;
+    std::unordered_set<Stream*> streamSet_;
 };
-void ReportStreamSqInfoForProfiling(const Stream *stream, uint16_t streamStatus);
-}  // namespace runtime
-}  // namespace cce
+void ReportStreamSqInfoForProfiling(const Stream* stream, uint16_t streamStatus);
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_PROFILER_HPP
+#endif // CCE_RUNTIME_PROFILER_HPP

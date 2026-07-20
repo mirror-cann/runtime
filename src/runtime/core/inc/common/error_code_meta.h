@@ -11,7 +11,7 @@
 #ifndef RUNTIME_ERROR_CODE_META_H
 #define RUNTIME_ERROR_CODE_META_H
 
-#include "dlog_pub.h"  // DLOG_ERROR, DLOG_WARN
+#include "dlog_pub.h" // DLOG_ERROR, DLOG_WARN
 
 // ============================================================
 //  X-Macro 错误码元数据表
@@ -21,140 +21,101 @@
 //        - 消息模板含 ErrorCode 后缀及 \n，和 PrintErrMsgToLog 原输出一致
 //        - 日志级别: DLOG_ERROR 或 DLOG_WARN
 // ============================================================
-#define RUNTIME_ERROR_CODE_TABLE(X)                                           \
-    /* EE1001 - Invalid_Argument */                                           \
-    X(EE1001, "EE1001",                                                       \
-      ("extend_info"),                                                        \
-      "The argument is invalid. Reason: %s. ErrorCode=EE1001.\n",              \
-      DLOG_ERROR)                                                             \
-    /* EE1002 - Execution_Error_Stream_Synchronize_Timeout */                 \
-    X(EE1002, "EE1002",                                                       \
-      ("extend_info"),                                                        \
-      "Stream synchronize timeout. %s. ErrorCode=EE1002.\n",                  \
-      DLOG_ERROR)                                                             \
-    /* EE1003 - Invalid_Argument */                                           \
-    X(EE1003, "EE1003",                                                       \
-      ("func", "value", "param", "expect"),                                   \
-      "%s failed because value %s for parameter %s is invalid. "              \
-      "Expected value: %s. ErrorCode=EE1003.\n",                              \
-      DLOG_ERROR)                                                             \
-    /* EE1004 - Invalid_Argument_Null_Pointer */                              \
-    X(EE1004, "EE1004",                                                       \
-      ("func", "param"),                                                      \
-      "%s failed because %s cannot be a NULL pointer. ErrorCode=EE1004.\n",   \
-      DLOG_ERROR)                                                             \
-    /* EE1005 - Not_Supported */                                              \
-    X(EE1005, "EE1005",                                                       \
-      ("func"),                                                               \
-      "The current system or device does not support %s. "                    \
-      "ErrorCode=EE1005.\n",                                                  \
-      DLOG_ERROR)                                                             \
-    /* EE1006 - Not_Supported */                                              \
-    X(EE1006, "EE1006",                                                       \
-      ("func", "type", "reason"),                                             \
-      "%s failed. %s is not supported. Reason: %s."                           \
-      "ErrorCode=EE1006.\n",                                                  \
-      DLOG_ERROR)                                                             \
-    /* EE1007 - Resource_Error_Bind_Stream */                                 \
-    X(EE1007, "EE1007",                                                       \
-      ("id", "reason"),                                                       \
-      "Failed to bind stream (stream_id=%s). Reason: %s. ErrorCode=EE1007.\n",    \
-      DLOG_ERROR)                                                             \
-    /* EE1009 - Execution_Error_Model */                                      \
-    X(EE1009, "EE1009",                                                       \
-      ("id", "reason"),                                                       \
-      "Failed to execute model (model_id=%s). Reason: %s. "                      \
-      "ErrorCode=EE1009.\n",                                                  \
-      DLOG_ERROR)                                                             \
-    /* EE1010 - Execution_Error_Invalid_Context */                            \
-    X(EE1010, "EE1010",                                                       \
-      ("func", "object", "extend_info"),                                      \
-      "%s execution failed because %s does not belong to the current "        \
-      "context. Extended information: %s. ErrorCode=EE1010.\n",               \
-      DLOG_ERROR)                                                             \
-    /* EE1011 - Invalid_Argument */                                           \
-    X(EE1011, "EE1011",                                                       \
-      ("func", "value", "param", "reason"),                                   \
-      "%s failed. Value %s for parameter %s is invalid. "                     \
-      "Reason: %s. ErrorCode=EE1011.\n",                                      \
-      DLOG_ERROR)                                                             \
-    /* EE1012 - Invalid_Argument */                                           \
-    X(EE1012, "EE1012",                                                       \
-      ("func", "value", "param", "reason"),                                   \
-      "%s failed. Value %s for %s is invalid. "                               \
-      "Reason: %s. ErrorCode=EE1012.\n",                                      \
-      DLOG_ERROR)                                                             \
-    /* EE1013 - Resource_Error_Insufficient_Host_Memory */                    \
-    X(EE1013, "EE1013",                                                       \
-      ("buf_size", "alloc_interface"),                                        \
-      "Failed to allocate %s bytes host memory via %s for Runtime. "          \
-      "ErrorCode=EE1013.\n",                                                  \
-      DLOG_ERROR)                                                             \
-    /* EE1014 - File_Operation_Error_Parse */                                 \
-    X(EE1014, "EE1014",                                                       \
-      ("reason"),                                                             \
-      "Failed to parse the binary file of the operator. "                     \
-      "Reason: %s. ErrorCode=EE1014.\n",                                      \
-      DLOG_ERROR)                                                             \
-    /* EE1015 - Package_Error_Incorrect_Driver_Version */                     \
-    X(EE1015, "EE1015",                                                       \
-      ("func", "reason"),                                                     \
-      "%s failed. Reason: The driver version capacity is insufficient. %s "   \
-      "ErrorCode=EE1015.\n",                                                  \
-      DLOG_ERROR)                                                             \
-    /* EE1016 - Not_Supported */                                              \
-    X(EE1016, "EE1016",                                                       \
-      ("func", "reason"),                                                     \
-      "%s failed. Reason: %s. ErrorCode=EE1016.\n",                           \
-      DLOG_ERROR)                                                             \
-    /* EE1017 - Invalid_Argument */                                           \
-    X(EE1017, "EE1017",                                                       \
-      ("func", "param", "reason"),                                            \
-      "%s failed. Parameter %s is invalid. Reason: %s. ErrorCode=EE1017.\n",  \
-      DLOG_ERROR)                                                             \
-    /* EE1018 - Invalid_Argument_API_Call_Sequence */                         \
-    X(EE1018, "EE1018",                                                       \
-      ("func", "reason"),                                                     \
-      "%s failed. Reason: %s. ErrorCode=EE1018.\n",                           \
-      DLOG_ERROR)                                                             \
-    /* EE1019 - Execution_Error */                                            \
-    X(EE1019, "EE1019",                                                       \
-      ("func", "reason"),                                                     \
-      "%s failed. "                                                           \
-      "Reason: %s. ErrorCode=EE1019.\n",                                      \
-      DLOG_ERROR)                                                             \
-    /* EE1020 - Invalid_Argument */                                           \
-    X(EE1020, "EE1020",                                                       \
-      ("func1", "func2", "ret_code", "reason", "extend_info"),                \
-      "%s failed. Reason: Standard function %s failed. "                      \
-      "[Errno %s] %s. %s ErrorCode=EE1020.\n",                                \
-      DLOG_ERROR)                                                             \
-    /* EE1021 - Resource_Error */                                               \
-    X(EE1021, "EE1021",                                                         \
-      ("resource_type", "api"),                                                 \
-      "The runtime module failed to create host %s through API %s. ErrorCode=EE1021.\n", \
-      DLOG_ERROR)                                                               \
-    /* EE1022 - Invalid_Argument */                                           \
-    X(EE1022, "EE1022",                                                       \
-      ("func", "values", "params", "reason"),                                 \
-      "%s failed. Values %s for parameters %s are invalid. "                  \
-      "Reason: %s. ErrorCode=EE1022.\n",                                      \
-      DLOG_ERROR)                                                             \
-    /* EE1023 - Resource_Error */                                              \
-    X(EE1023, "EE1023",                                                       \
-      ("func", "reason"),                                                     \
-      "%s failed. Reason: %s. ErrorCode=EE1023.\n",                           \
-      DLOG_ERROR)                                                             \
-    /* EE2002 - Config_Error_Invalid_Environment_Variable */                  \
-    X(EE2002, "EE2002",                                                       \
-      ("value", "env", "expect"),                                             \
-      "Value %s for environment variable %s is invalid. "                     \
-      "Expected value: %s. ErrorCode=EE2002.\n",                              \
-      DLOG_ERROR)                                                             \
-    /* WE0001 - Not_Supported (Warning 级别) */                                \
-    X(WE0001, "WE0001",                                                       \
-      ("function", "type"),                                                   \
-      "Failed to %s because %s is not supported. ErrorCode=WE0001.\n",        \
+#define RUNTIME_ERROR_CODE_TABLE(X)                                                                                \
+    /* EE1001 - Invalid_Argument */                                                                                \
+    X(EE1001, "EE1001", ("extend_info"), "The argument is invalid. Reason: %s. ErrorCode=EE1001.\n", DLOG_ERROR)   \
+    /* EE1002 - Execution_Error_Stream_Synchronize_Timeout */                                                      \
+    X(EE1002, "EE1002", ("extend_info"), "Stream synchronize timeout. %s. ErrorCode=EE1002.\n", DLOG_ERROR)        \
+    /* EE1003 - Invalid_Argument */                                                                                \
+    X(EE1003, "EE1003", ("func", "value", "param", "expect"),                                                      \
+      "%s failed because value %s for parameter %s is invalid. "                                                   \
+      "Expected value: %s. ErrorCode=EE1003.\n",                                                                   \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1004 - Invalid_Argument_Null_Pointer */                                                                   \
+    X(EE1004, "EE1004", ("func", "param"), "%s failed because %s cannot be a NULL pointer. ErrorCode=EE1004.\n",   \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1005 - Not_Supported */                                                                                   \
+    X(EE1005, "EE1005", ("func"),                                                                                  \
+      "The current system or device does not support %s. "                                                         \
+      "ErrorCode=EE1005.\n",                                                                                       \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1006 - Not_Supported */                                                                                   \
+    X(EE1006, "EE1006", ("func", "type", "reason"),                                                                \
+      "%s failed. %s is not supported. Reason: %s."                                                                \
+      "ErrorCode=EE1006.\n",                                                                                       \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1007 - Resource_Error_Bind_Stream */                                                                      \
+    X(EE1007, "EE1007", ("id", "reason"), "Failed to bind stream (stream_id=%s). Reason: %s. ErrorCode=EE1007.\n", \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1009 - Execution_Error_Model */                                                                           \
+    X(EE1009, "EE1009", ("id", "reason"),                                                                          \
+      "Failed to execute model (model_id=%s). Reason: %s. "                                                        \
+      "ErrorCode=EE1009.\n",                                                                                       \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1010 - Execution_Error_Invalid_Context */                                                                 \
+    X(EE1010, "EE1010", ("func", "object", "extend_info"),                                                         \
+      "%s execution failed because %s does not belong to the current "                                             \
+      "context. Extended information: %s. ErrorCode=EE1010.\n",                                                    \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1011 - Invalid_Argument */                                                                                \
+    X(EE1011, "EE1011", ("func", "value", "param", "reason"),                                                      \
+      "%s failed. Value %s for parameter %s is invalid. "                                                          \
+      "Reason: %s. ErrorCode=EE1011.\n",                                                                           \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1012 - Invalid_Argument */                                                                                \
+    X(EE1012, "EE1012", ("func", "value", "param", "reason"),                                                      \
+      "%s failed. Value %s for %s is invalid. "                                                                    \
+      "Reason: %s. ErrorCode=EE1012.\n",                                                                           \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1013 - Resource_Error_Insufficient_Host_Memory */                                                         \
+    X(EE1013, "EE1013", ("buf_size", "alloc_interface"),                                                           \
+      "Failed to allocate %s bytes host memory via %s for Runtime. "                                               \
+      "ErrorCode=EE1013.\n",                                                                                       \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1014 - File_Operation_Error_Parse */                                                                      \
+    X(EE1014, "EE1014", ("reason"),                                                                                \
+      "Failed to parse the binary file of the operator. "                                                          \
+      "Reason: %s. ErrorCode=EE1014.\n",                                                                           \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1015 - Package_Error_Incorrect_Driver_Version */                                                          \
+    X(EE1015, "EE1015", ("func", "reason"),                                                                        \
+      "%s failed. Reason: The driver version capacity is insufficient. %s "                                        \
+      "ErrorCode=EE1015.\n",                                                                                       \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1016 - Not_Supported */                                                                                   \
+    X(EE1016, "EE1016", ("func", "reason"), "%s failed. Reason: %s. ErrorCode=EE1016.\n", DLOG_ERROR)              \
+    /* EE1017 - Invalid_Argument */                                                                                \
+    X(EE1017, "EE1017", ("func", "param", "reason"),                                                               \
+      "%s failed. Parameter %s is invalid. Reason: %s. ErrorCode=EE1017.\n", DLOG_ERROR)                           \
+    /* EE1018 - Invalid_Argument_API_Call_Sequence */                                                              \
+    X(EE1018, "EE1018", ("func", "reason"), "%s failed. Reason: %s. ErrorCode=EE1018.\n", DLOG_ERROR)              \
+    /* EE1019 - Execution_Error */                                                                                 \
+    X(EE1019, "EE1019", ("func", "reason"),                                                                        \
+      "%s failed. "                                                                                                \
+      "Reason: %s. ErrorCode=EE1019.\n",                                                                           \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1020 - Invalid_Argument */                                                                                \
+    X(EE1020, "EE1020", ("func1", "func2", "ret_code", "reason", "extend_info"),                                   \
+      "%s failed. Reason: Standard function %s failed. "                                                           \
+      "[Errno %s] %s. %s ErrorCode=EE1020.\n",                                                                     \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1021 - Resource_Error */                                                                                  \
+    X(EE1021, "EE1021", ("resource_type", "api"),                                                                  \
+      "The runtime module failed to create host %s through API %s. ErrorCode=EE1021.\n", DLOG_ERROR)               \
+    /* EE1022 - Invalid_Argument */                                                                                \
+    X(EE1022, "EE1022", ("func", "values", "params", "reason"),                                                    \
+      "%s failed. Values %s for parameters %s are invalid. "                                                       \
+      "Reason: %s. ErrorCode=EE1022.\n",                                                                           \
+      DLOG_ERROR)                                                                                                  \
+    /* EE1023 - Resource_Error */                                                                                  \
+    X(EE1023, "EE1023", ("func", "reason"), "%s failed. Reason: %s. ErrorCode=EE1023.\n", DLOG_ERROR)              \
+    /* EE2002 - Config_Error_Invalid_Environment_Variable */                                                       \
+    X(EE2002, "EE2002", ("value", "env", "expect"),                                                                \
+      "Value %s for environment variable %s is invalid. "                                                          \
+      "Expected value: %s. ErrorCode=EE2002.\n",                                                                   \
+      DLOG_ERROR)                                                                                                  \
+    /* WE0001 - Not_Supported (Warning 级别) */                                                                  \
+    X(WE0001, "WE0001", ("function", "type"), "Failed to %s because %s is not supported. ErrorCode=WE0001.\n",     \
       DLOG_WARN)
 
 #endif // RUNTIME_ERROR_CODE_META_H

@@ -21,8 +21,8 @@ namespace runtime {
 // MemWaitInstrSqePreForSoftwareSq
 // MemWaitInstrSqeNextForSoftwareSq
 // MemWaitInstrSqePreForSoftwareSqAndDynamicProf
-void ConstructDynamicSqHeadGotoR(const uint64_t sqIdMemAddr, const uint32_t sqHead, const uint8_t endOffset,
-    RtStarsDynamicSqHeadGotoR &gotoBlock)
+void ConstructDynamicSqHeadGotoR(
+    const uint64_t sqIdMemAddr, const uint32_t sqHead, const uint8_t endOffset, RtStarsDynamicSqHeadGotoR& gotoBlock)
 {
     constexpr rtStarsCondIsaRegister_t r0 = RT_STARS_COND_ISA_REGISTER_R0;
     constexpr rtStarsCondIsaRegister_t r1 = RT_STARS_COND_ISA_REGISTER_R1;
@@ -36,11 +36,11 @@ void ConstructDynamicSqHeadGotoR(const uint64_t sqIdMemAddr, const uint32_t sqHe
     ConstructLHWI(r4, static_cast<uint64_t>(sqHead), gotoBlock.lhwiSqHead);
     ConstructLLWI(r4, static_cast<uint64_t>(sqHead), gotoBlock.llwiSqHead);
     // r4 = sqHead << 16，goto_r操作数中高16位承载目标head。
-    ConstructOpImmSlli(r4, r4, static_cast<uint8_t>(UINT16_BIT_NUM), RT_STARS_COND_ISA_OP_IMM_FUNC3_SLLI,
+    ConstructOpImmSlli(
+        r4, r4, static_cast<uint8_t>(UINT16_BIT_NUM), RT_STARS_COND_ISA_OP_IMM_FUNC3_SLLI,
         RT_STARS_COND_ISA_OP_IMM_FUNC7_SLLI, gotoBlock.slliSqHead);
     // r3 = sqId | (sqHead << 16)，低位保留运行时SQ ID，高位写入目标head。
-    ConstructOpOp(r3, r4, r3, RT_STARS_COND_ISA_OP_FUNC3_OR, RT_STARS_COND_ISA_OP_FUNC7_OR,
-        gotoBlock.opSqHead);
+    ConstructOpOp(r3, r4, r3, RT_STARS_COND_ISA_OP_FUNC3_OR, RT_STARS_COND_ISA_OP_FUNC7_OR, gotoBlock.opSqHead);
     // 根据r3动态修改SQ head，避免goto_i固化capture阶段无效SQ ID。
     ConstructGotoR(r3, r5, gotoBlock.gotoDynamic);
     // 当前动态goto块不再继续执行，直接跳到function-call end。
@@ -48,8 +48,7 @@ void ConstructDynamicSqHeadGotoR(const uint64_t sqIdMemAddr, const uint32_t sqHe
     ConstructBranch(r0, r0, RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ, endOffset, gotoBlock.endBranch);
 }
 
-void ConstructExternalWaitFuncCall(RtStarsExternalWaitFuncCall &fc,
-    const RtStarsExternalWaitFuncCallPara &fcPara)
+void ConstructExternalWaitFuncCall(RtStarsExternalWaitFuncCall& fc, const RtStarsExternalWaitFuncCallPara& fcPara)
 {
     constexpr rtStarsCondIsaRegister_t r0 = RT_STARS_COND_ISA_REGISTER_R0;
     constexpr rtStarsCondIsaRegister_t r1 = RT_STARS_COND_ISA_REGISTER_R1;
@@ -58,17 +57,17 @@ void ConstructExternalWaitFuncCall(RtStarsExternalWaitFuncCall &fc,
     constexpr rtStarsCondIsaRegister_t r4 = RT_STARS_COND_ISA_REGISTER_R4;
     constexpr rtStarsCondIsaRegister_t r5 = RT_STARS_COND_ISA_REGISTER_R5;
 
-    constexpr uint8_t waitRefreshLoadOffset = static_cast<uint8_t>(
-        offsetof(RtStarsExternalWaitFuncCall, lhwiWaitRefreshAddr) / sizeof(uint32_t));
-    constexpr uint8_t waitFailedOffset = static_cast<uint8_t>(
-        offsetof(RtStarsExternalWaitFuncCall, gotoPreDynamic) / sizeof(uint32_t));
-    constexpr uint8_t waitSuccessOffset = static_cast<uint8_t>(
-        offsetof(RtStarsExternalWaitFuncCall, gotoNextDynamic) / sizeof(uint32_t));
+    constexpr uint8_t waitRefreshLoadOffset =
+        static_cast<uint8_t>(offsetof(RtStarsExternalWaitFuncCall, lhwiWaitRefreshAddr) / sizeof(uint32_t));
+    constexpr uint8_t waitFailedOffset =
+        static_cast<uint8_t>(offsetof(RtStarsExternalWaitFuncCall, gotoPreDynamic) / sizeof(uint32_t));
+    constexpr uint8_t waitSuccessOffset =
+        static_cast<uint8_t>(offsetof(RtStarsExternalWaitFuncCall, gotoNextDynamic) / sizeof(uint32_t));
     constexpr uint8_t endOffset = static_cast<uint8_t>(offsetof(RtStarsExternalWaitFuncCall, end) / sizeof(uint32_t));
 
     ConstructOpImmAndi(r0, r4, 0U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.initLoopIndex);
-    ConstructOpImmAndi(r0, r5, static_cast<uint32_t>(fcPara.maxLoop), RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI,
-        fc.loadMaxLoop);
+    ConstructOpImmAndi(
+        r0, r5, static_cast<uint32_t>(fcPara.maxLoop), RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.loadMaxLoop);
     ConstructLHWI(r1, fcPara.waitRefreshAddr, fc.lhwiWaitRefreshAddr);
     ConstructLLWI(r1, fcPara.waitRefreshAddr, fc.llwiWaitRefreshAddr);
     ConstructLoad(r1, 0U, r2, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.loadWaitAddrFromRefresh);

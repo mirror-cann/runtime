@@ -28,7 +28,7 @@ static bool BarrierTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
 
-    const auto &chips = GetDavidChips();
+    const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_BARRIER, funcs);
     }
@@ -39,5 +39,5 @@ static bool BarrierTaskRegister()
 
 static bool g_barrierTaskRegister = BarrierTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

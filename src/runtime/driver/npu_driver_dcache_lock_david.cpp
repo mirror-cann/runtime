@@ -19,7 +19,7 @@
 namespace cce {
 namespace runtime {
 
-rtError_t DcacheLockSendTask(const Context *ctx, const uint32_t blockDim, const void * const funcAddr, Stream *stream)
+rtError_t DcacheLockSendTask(const Context* ctx, const uint32_t blockDim, const void* const funcAddr, Stream* stream)
 {
     (void)ctx;
     // 算子args需要3个uint64的占位符
@@ -39,34 +39,37 @@ rtError_t DcacheLockSendTask(const Context *ctx, const uint32_t blockDim, const 
     return RT_ERROR_NONE;
 }
 
-rtError_t AllocAddrForDcache(const uint32_t deviceId, void *&dcacheAddr, const uint64_t size, void *&drvHandle)
+rtError_t AllocAddrForDcache(const uint32_t deviceId, void*& dcacheAddr, const uint64_t size, void*& drvHandle)
 {
 #ifndef CFG_DEV_PLATFORM_PC
     COND_RETURN_WARN(&halMemCreate == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halMemCtl does not exist");
-    COND_RETURN_WARN(&halMemGetAddressReserveRange == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        &halMemGetAddressReserveRange == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halMemGetAddressReserveRange does not exist");
-    COND_RETURN_WARN(&halMemAddressReserve == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        &halMemAddressReserve == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halMemAddressReserve does not exist");
-    COND_RETURN_WARN(&halMemMap == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halMemMap does not exist");
+    COND_RETURN_WARN(&halMemMap == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halMemMap does not exist");
     size_t outSize = 0;
     struct drv_mem_prop prop;
-    drv_mem_handle_t *handle = nullptr;
+    drv_mem_handle_t* handle = nullptr;
     prop.side = MEM_DEV_SIDE;
     prop.devid = deviceId;
     prop.pg_type = MEM_HUGE_PAGE_TYPE;
     prop.mem_type = MEM_HBM_TYPE;
     prop.module_id = MODULEID_RUNTIME;
     prop.reserve = 0ULL;
-    const uint64_t readSize = (size % MEM_CTRL_TWO_M_GRANULARITY == 0U) ? size :
-        ((size / MEM_CTRL_TWO_M_GRANULARITY + 1U) * MEM_CTRL_TWO_M_GRANULARITY);
+    const uint64_t readSize = (size % MEM_CTRL_TWO_M_GRANULARITY == 0U) ?
+                                  size :
+                                  ((size / MEM_CTRL_TWO_M_GRANULARITY + 1U) * MEM_CTRL_TWO_M_GRANULARITY);
     drvError_t drvRet = halMemCreate(&handle, readSize, &prop, 0U);
     if (drvRet != DRV_ERROR_NONE || handle == nullptr) {
-        RT_LOG(RT_LOG_WARNING, "drv api] halMemCreate failed, drvRet=%u, size=%lld, readSize=%lld.",
-            drvRet, size, readSize);
+        RT_LOG(
+            RT_LOG_WARNING, "drv api] halMemCreate failed, drvRet=%u, size=%lld, readSize=%lld.", drvRet, size,
+            readSize);
         return RT_ERROR_DCACHE_MEM_ALLOC_FAIL;
     }
-    void *addr = nullptr; 
+    void* addr = nullptr;
     const uint64_t offset = deviceId * DCACHE_LOCK_DEVICE_OFFSET;
     drvRet = halMemGetAddressReserveRange(&addr, &outSize, MEM_ADDR_RESERVE_TYPE_DCACHE, 0U);
     if ((drvRet != DRV_ERROR_NONE) || (addr == nullptr) || (static_cast<uint64_t>(outSize) < offset)) {
@@ -75,8 +78,8 @@ rtError_t AllocAddrForDcache(const uint32_t deviceId, void *&dcacheAddr, const u
         return RT_ERROR_DCACHE_MEM_ALLOC_FAIL;
     }
 
-    void *readVaAddr = RtPtrToPtr<void *>((RtPtrToPtr<uint8_t *>(addr) + offset));
-    void *outAddr = nullptr; 
+    void* readVaAddr = RtPtrToPtr<void*>((RtPtrToPtr<uint8_t*>(addr) + offset));
+    void* outAddr = nullptr;
     drvRet = halMemAddressReserve(&outAddr, readSize, 0U, readVaAddr, static_cast<uint64_t>(MEM_NORMAL_PAGE_TYPE));
     if ((drvRet != DRV_ERROR_NONE) || (outAddr != readVaAddr)) {
         (void)halMemRelease(handle);
@@ -91,8 +94,10 @@ rtError_t AllocAddrForDcache(const uint32_t deviceId, void *&dcacheAddr, const u
         return RT_ERROR_DCACHE_MEM_ALLOC_FAIL;
     }
     dcacheAddr = outAddr;
-    drvHandle = RtPtrToPtr<void *>(handle);
-    RT_LOG(RT_LOG_INFO, "readVaAddr=%p, dcacheAddr=0x%p, outSize=%zd, handle=%p, drvHandle=%p.", readVaAddr, dcacheAddr, outSize, handle, drvHandle);
+    drvHandle = RtPtrToPtr<void*>(handle);
+    RT_LOG(
+        RT_LOG_INFO, "readVaAddr=%p, dcacheAddr=0x%p, outSize=%zd, handle=%p, drvHandle=%p.", readVaAddr, dcacheAddr,
+        outSize, handle, drvHandle);
     return RT_ERROR_NONE;
 #else
     (void)deviceId;
@@ -103,7 +108,7 @@ rtError_t AllocAddrForDcache(const uint32_t deviceId, void *&dcacheAddr, const u
 #endif
 }
 
-void FreeDcacheAddr(const uint32_t deviceId, void *&dcacheAddr, void *&drvHandle)
+void FreeDcacheAddr(const uint32_t deviceId, void*& dcacheAddr, void*& drvHandle)
 {
     (void)deviceId;
     if (dcacheAddr != nullptr && drvHandle != nullptr) {
@@ -112,10 +117,10 @@ void FreeDcacheAddr(const uint32_t deviceId, void *&dcacheAddr, void *&drvHandle
         COND_RETURN_VOID_WARN(&halMemRelease == nullptr, "[drv api] halMemRelease does not exist");
         (void)halMemUnmap(dcacheAddr);
         (void)halMemAddressFree(dcacheAddr);
-        (void)halMemRelease(RtPtrToPtr<drv_mem_handle_t *>(drvHandle));
+        (void)halMemRelease(RtPtrToPtr<drv_mem_handle_t*>(drvHandle));
         dcacheAddr = nullptr;
         drvHandle = nullptr;
     }
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

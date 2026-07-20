@@ -18,10 +18,9 @@
 namespace cce {
 namespace runtime {
 
-MemoryPoolManager::MemoryPoolManager(Device *dev, int32_t initialPoolsNum) : NoCopy(), device_(dev),
-    driver_(dev->Driver_()), numPools_(initialPoolsNum)
-{
-}
+MemoryPoolManager::MemoryPoolManager(Device* dev, int32_t initialPoolsNum)
+    : NoCopy(), device_(dev), driver_(dev->Driver_()), numPools_(initialPoolsNum)
+{}
 
 TIMESTAMP_EXTERN(ReleaseMemoryPoolManager);
 MemoryPoolManager::~MemoryPoolManager() noexcept
@@ -45,20 +44,22 @@ rtError_t MemoryPoolManager::Init()
 {
     // Init 在单线程初始化阶段调用，无需加锁
     rtError_t error = RT_ERROR_NONE;
-    MemoryPool *mPool;
+    MemoryPool* mPool;
     for (int32_t i = 0; i < numPools_; ++i) {
         mPool = new (std::nothrow) MemoryPool(device_, true);
-        COND_GOTO_MSG_OUTER(mPool == nullptr, MEMORY_POOL_FREE, error,
-            RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(MemoryPool)).c_str(), "new");
+        COND_GOTO_MSG_OUTER(
+            mPool == nullptr, MEMORY_POOL_FREE, error, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+            std::to_string(sizeof(MemoryPool)).c_str(), "new");
         error = mPool->Init();
-        COND_GOTO_ERROR_MSG_AND_ASSIGN_INNER(error != RT_ERROR_NONE, MEMORY_POOL_FREE, error,
-            RT_ERROR_MEMORY_ALLOCATION, "Failed to allocate device memory.");
+        COND_GOTO_ERROR_MSG_AND_ASSIGN_INNER(
+            error != RT_ERROR_NONE, MEMORY_POOL_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
+            "Failed to allocate device memory.");
         pools_.push_back(mPool);
     }
     return error;
 MEMORY_POOL_FREE:
     DELETE_O(mPool);
-    for(auto pool : pools_) {
+    for (auto pool : pools_) {
         DELETE_O(pool);
     }
     pools_.clear();
@@ -76,8 +77,8 @@ void* MemoryPoolManager::Allocate(const size_t size, const bool readOnly)
         if (readOnly == pool->GetReadOnlyFlag()) {
             void* block = pool->Allocate(size);
             if (block != nullptr) {
-                RT_LOG(RT_LOG_DEBUG,
-                    "drv devId=%u, alloc size=%u, pool=%#" PRIx64 ", addr=%#" PRIx64 ", readOnly=%d.",
+                RT_LOG(
+                    RT_LOG_DEBUG, "drv devId=%u, alloc size=%u, pool=%#" PRIx64 ", addr=%#" PRIx64 ", readOnly=%d.",
                     device_->Id_(), size, pool, pool->GetAddr(), readOnly);
                 return block;
             }
@@ -89,7 +90,7 @@ void* MemoryPoolManager::Allocate(const size_t size, const bool readOnly)
     if (error != RT_ERROR_NONE) {
         return nullptr;
     }
-    return pools_.back()->Allocate(size);  // 使用刚刚添加的池
+    return pools_.back()->Allocate(size); // 使用刚刚添加的池
 }
 
 TIMESTAMP_EXTERN(MemoryPoolManagerRelease);
@@ -126,9 +127,10 @@ bool MemoryPoolManager::TryRelease(void* ptr, size_t size)
 PoolMemInfo MemoryPoolManager::GetPoolMemInfo(void* ptr)
 {
     std::shared_lock<std::shared_mutex> lock(mutex_);
-    for (MemoryPool *pool : pools_) {
+    for (MemoryPool* pool : pools_) {
         if (pool->Contains(ptr)) {
-            RT_LOG(RT_LOG_DEBUG, "GetPoolMemInfo device_id=%u, pool=%#" PRIx64 ", addr=%#" PRIx64 ", ptr=%#" PRIx64,
+            RT_LOG(
+                RT_LOG_DEBUG, "GetPoolMemInfo device_id=%u, pool=%#" PRIx64 ", addr=%#" PRIx64 ", ptr=%#" PRIx64,
                 device_->Id_(), pool, pool->GetAddr(), ptr);
             return {pool->GetAddr(), pool->GetMemoryPoolAdviseMutex(), true};
         }
@@ -141,12 +143,14 @@ rtError_t MemoryPoolManager::AddMemoryPool(const bool readOnly)
 {
     // 调用者必须已持有 mutex_ 写锁（由 Allocate 保证）
     rtError_t error = RT_ERROR_NONE;
-    MemoryPool *pool = new (std::nothrow) MemoryPool(device_, readOnly);
-    COND_RETURN_AND_MSG_OUTER(pool == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        std::to_string(sizeof(MemoryPool)).c_str(), "new");
+    MemoryPool* pool = new (std::nothrow) MemoryPool(device_, readOnly);
+    COND_RETURN_AND_MSG_OUTER(
+        pool == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(MemoryPool)).c_str(),
+        "new");
     error = pool->Init();
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_INNER(error != RT_ERROR_NONE, MEMORY_POOL_FREE, error,
-        RT_ERROR_MEMORY_ALLOCATION, "Failed to allocate device memory.");
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_INNER(
+        error != RT_ERROR_NONE, MEMORY_POOL_FREE, error, RT_ERROR_MEMORY_ALLOCATION,
+        "Failed to allocate device memory.");
     pools_.push_back(pool);
     ++numPools_;
     return RT_ERROR_NONE;
@@ -184,7 +188,7 @@ void MemoryPoolManager::CheckAndReleasePools()
         while ((it != pools_.cend()) && (freePoolCount > maxFreePools_)) {
             if ((*it)->GetUsedSize() == 0) {
                 delete *it;
-                it = pools_.erase(it);  // 从 deque 中移除并释放内存池
+                it = pools_.erase(it); // 从 deque 中移除并释放内存池
                 --freePoolCount;
                 if (numPools_ > 0) {
                     --numPools_;
@@ -196,12 +200,13 @@ void MemoryPoolManager::CheckAndReleasePools()
     }
 }
 
-std::mutex *MemoryPoolManager::GetMemoryPoolAdviseMutex(void *ptr)
+std::mutex* MemoryPoolManager::GetMemoryPoolAdviseMutex(void* ptr)
 {
     std::shared_lock<std::shared_mutex> lock(mutex_);
-    for (MemoryPool *pool : pools_) {
+    for (MemoryPool* pool : pools_) {
         if (pool->Contains(ptr)) {
-            RT_LOG(RT_LOG_DEBUG, "drv device_id=%u, pool=%#" PRIx64 ", addr=%#" PRIx64 ", ptr=%#" PRIx64 "",
+            RT_LOG(
+                RT_LOG_DEBUG, "drv device_id=%u, pool=%#" PRIx64 ", addr=%#" PRIx64 ", ptr=%#" PRIx64 "",
                 device_->Id_(), pool, pool->GetAddr(), ptr);
             return pool->GetMemoryPoolAdviseMutex();
         }
@@ -211,12 +216,13 @@ std::mutex *MemoryPoolManager::GetMemoryPoolAdviseMutex(void *ptr)
     return nullptr;
 }
 
-const void *MemoryPoolManager::GetMemoryPoolBaseAddr(void *ptr)
+const void* MemoryPoolManager::GetMemoryPoolBaseAddr(void* ptr)
 {
     std::shared_lock<std::shared_mutex> lock(mutex_);
-    for (MemoryPool *pool : pools_) {
+    for (MemoryPool* pool : pools_) {
         if (pool->Contains(ptr)) {
-            RT_LOG(RT_LOG_DEBUG, "drv device_id=%u, pool=%#" PRIx64 ", addr=%#" PRIx64 ", ptr=%#" PRIx64 "",
+            RT_LOG(
+                RT_LOG_DEBUG, "drv device_id=%u, pool=%#" PRIx64 ", addr=%#" PRIx64 ", ptr=%#" PRIx64 "",
                 device_->Id_(), pool, pool->GetAddr(), ptr);
             return pool->GetAddr();
         }
@@ -226,5 +232,5 @@ const void *MemoryPoolManager::GetMemoryPoolBaseAddr(void *ptr)
     return nullptr;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

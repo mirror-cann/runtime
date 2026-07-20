@@ -47,8 +47,9 @@ rtError_t TTLVWordDecoder::DecodeUnknownData()
         outputStr_ += res + " ";
         cnt--;
     }
-    ret = TTLVDecoderUtils::PhaseValueHex(static_cast<uint16_t>(surplus),
-        static_cast<const uint8_t *>(buffer_) + static_cast<uint32_t>(msgLen_) - surplus, dataStr);
+    ret = TTLVDecoderUtils::PhaseValueHex(
+        static_cast<uint16_t>(surplus), static_cast<const uint8_t*>(buffer_) + static_cast<uint32_t>(msgLen_) - surplus,
+        dataStr);
     COND_RETURN_WITH_NOLOG(ret != RT_ERROR_NONE, ret);
     outputStr_ += contextDescStr + dataStr;
     return RT_ERROR_NONE;
@@ -69,17 +70,17 @@ rtError_t TTLVWordDecoder::DecodeWord()
     return ret;
 }
 
-rtError_t TTLVWordDecoder::DecoderBasicType(uint64_t &res) const
+rtError_t TTLVWordDecoder::DecoderBasicType(uint64_t& res) const
 {
     return TTLVDecoderUtils::DefaultPhaseValue(msgLen_, buffer_, res);
 }
 
 rtError_t TTLVWordDecoder::DecoderString()
 {
-    std::string str(static_cast<const char_t *>(buffer_), msgLen_);
+    std::string str(static_cast<const char_t*>(buffer_), msgLen_);
     outputStr_.swap(str);
     return RT_ERROR_NONE;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

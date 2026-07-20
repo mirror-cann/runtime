@@ -19,17 +19,20 @@
 
 namespace cce {
 namespace runtime {
-UmaArgLoader::UmaArgLoader(Device * const dev)
-    : ArgLoader(dev), argAllocator_(nullptr), superArgAllocator_(nullptr), maxArgAllocator_(nullptr),
-    argPcieBarAllocator_(nullptr), randomAllocator_(nullptr), handleAllocator_(nullptr),
-    kernelInfoAllocator_(nullptr), itemSize_(0U), maxItemSize_(0U)
-{
-}
+UmaArgLoader::UmaArgLoader(Device* const dev)
+    : ArgLoader(dev),
+      argAllocator_(nullptr),
+      superArgAllocator_(nullptr),
+      maxArgAllocator_(nullptr),
+      argPcieBarAllocator_(nullptr),
+      randomAllocator_(nullptr),
+      handleAllocator_(nullptr),
+      kernelInfoAllocator_(nullptr),
+      itemSize_(0U),
+      maxItemSize_(0U)
+{}
 
-UmaArgLoader::~UmaArgLoader()
-{
-    TearDown();
-}
+UmaArgLoader::~UmaArgLoader() { TearDown(); }
 
 void UmaArgLoader::TearDown(void) noexcept
 {
@@ -58,60 +61,62 @@ rtError_t UmaArgLoader::Init()
         (void)device_->Driver_()->CheckSupportPcieBarCopy(device_->Id_(), val, false);
         isPcieBarSupport = (val == RT_CAPABILITY_SUPPORT);
         uint32_t argAllocatorSize = initCount;
-        if(device_->GetDevProperties().argsAllocatorSize != 0U){
+        if (device_->GetDevProperties().argsAllocatorSize != 0U) {
             argAllocatorSize = device_->GetDevProperties().argsAllocatorSize;
         }
         argAllocator_ = new (std::nothrow) H2DCopyMgr(
             device_, itemSize_, argAllocatorSize, device_->GetDevProperties().maxSupportTaskNum,
             BufferAllocator::LINEAR, COPY_POLICY_DEFAULT); // 512 cell for init
-        COND_RETURN_AND_MSG_OUTER(argAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
+        COND_RETURN_AND_MSG_OUTER(
+            argAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
         if (device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_KERNEL_UMA_SUPER_ARGS_ALLOC)) {
             const uint32_t superArgAllocatorSize = device_->GetDevProperties().superArgAllocatorSize;
             superArgAllocator_ = new (std::nothrow) H2DCopyMgr(
                 device_, MULTI_GRAPH_SUPER_ARG_ENTRY_SIZE, superArgAllocatorSize,
                 device_->GetDevProperties().maxSupportTaskNum, BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
 
-            COND_RETURN_AND_MSG_OUTER(superArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-                ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
-            const uint32_t maxArgAllocatorSize =  device_->GetDevProperties().maxArgAllocatorSize;
+            COND_RETURN_AND_MSG_OUTER(
+                superArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(H2DCopyMgr),
+                "new");
+            const uint32_t maxArgAllocatorSize = device_->GetDevProperties().maxArgAllocatorSize;
             maxArgAllocator_ = new (std::nothrow) H2DCopyMgr(
                 device_, maxItemSize_, maxArgAllocatorSize, device_->GetDevProperties().maxSupportTaskNum,
                 BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
 
-            COND_RETURN_AND_MSG_OUTER(maxArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-                ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
+            COND_RETURN_AND_MSG_OUTER(
+                maxArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
         } else {
             // only when the aicpu does not exist, do this
             if (Runtime::Instance()->GetAicpuCnt() != 0) {
                 maxArgAllocator_ = new (std::nothrow) H2DCopyMgr(
                     device_, maxItemSize_, ARG_MAX_ENTRY_INIT_NUM, device_->GetDevProperties().maxSupportTaskNum,
                     BufferAllocator::LINEAR, COPY_POLICY_DEFAULT);
-                COND_RETURN_AND_MSG_OUTER(maxArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-                    ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
+                COND_RETURN_AND_MSG_OUTER(
+                    maxArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(H2DCopyMgr),
+                    "new");
             }
         }
     }
 
     randomAllocator_ = new (std::nothrow) H2DCopyMgr(device_, COPY_POLICY_SYNC);
-    COND_RETURN_AND_MSG_OUTER(randomAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        randomAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
 
     RT_LOG(RT_LOG_INFO, "new BufferAllocator superArgAllocator_ ok, Runtime_alloc_size %zu", sizeof(BufferAllocator));
     const uint32_t handleAllocatorSize = device_->GetDevProperties().handleAllocatorSize;
     handleAllocator_ = new (std::nothrow) BufferAllocator(
         static_cast<uint32_t>(sizeof(Handle)), handleAllocatorSize, device_->GetDevProperties().maxSupportTaskNum);
 
-    COND_RETURN_AND_MSG_OUTER(handleAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(BufferAllocator), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        handleAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(BufferAllocator), "new");
     RT_LOG(RT_LOG_INFO, "new BufferAllocator handleAllocator_ ok, Runtime_alloc_size %zu", sizeof(BufferAllocator));
-    const uint32_t kernelInfoAllocatorSize =  device_->GetDevProperties().kernelInfoAllocatorSize;
+    const uint32_t kernelInfoAllocatorSize = device_->GetDevProperties().kernelInfoAllocatorSize;
     kernelInfoAllocator_ = new (std::nothrow) BufferAllocator(
         KERNEL_INFO_ENTRY_SIZE, kernelInfoAllocatorSize, device_->GetDevProperties().maxSupportTaskNum,
         BufferAllocator::LINEAR, &MallocBuffer, &FreeBuffer, device_);
 
-    COND_RETURN_AND_MSG_OUTER(kernelInfoAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, sizeof(BufferAllocator), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        kernelInfoAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(BufferAllocator), "new");
     RT_LOG(RT_LOG_INFO, "new BufferAllocator kernelInfoAllocator_ ok, Runtime_alloc_size %zu", sizeof(BufferAllocator));
 
     RT_LOG(RT_LOG_INFO, "ALLOC PCIE is support[%d]", static_cast<int32_t>(isPcieBarSupport));
@@ -119,46 +124,45 @@ rtError_t UmaArgLoader::Init()
         argPcieBarAllocator_ = new (std::nothrow) H2DCopyMgr(
             device_, PCIE_BAR_COPY_SIZE, 1024U, device_->GetDevProperties().maxSupportTaskNum, BufferAllocator::LINEAR,
             COPY_POLICY_PCIE_BAR);
-        COND_RETURN_AND_MSG_OUTER(argPcieBarAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
+        COND_RETURN_AND_MSG_OUTER(
+            argPcieBarAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
     }
     return RT_ERROR_NONE;
 }
 
-void *UmaArgLoader::MallocBuffer(const size_t size, void * const para)
+void* UmaArgLoader::MallocBuffer(const size_t size, void* const para)
 {
-    void *addr = nullptr;
-    Device * const dev = static_cast<Device *>(para);
+    void* addr = nullptr;
+    Device* const dev = static_cast<Device*>(para);
     (void)dev->Driver_()->DevMemAlloc(&addr, static_cast<uint64_t>(size), RT_MEMORY_HBM, dev->Id_());
     return addr;
 }
 
-void UmaArgLoader::FreeBuffer(void * const addr, void * const para)
+void UmaArgLoader::FreeBuffer(void* const addr, void* const para)
 {
-    Device * const dev = static_cast<Device *>(para);
+    Device* const dev = static_cast<Device*>(para);
     (void)dev->Driver_()->DevMemFree(addr, dev->Id_());
 }
 
-void UmaArgLoader::UpdateArgsAddr(const void * const kerArgs, const rtArgsEx_t *argsInfo) const
+void UmaArgLoader::UpdateArgsAddr(const void* const kerArgs, const rtArgsEx_t* argsInfo) const
 {
     if (argsInfo->hasTiling != 0) {
         // set tiling data offset to tiling addr
-        *(RtPtrToPtr<uint64_t *, char_t *>(RtPtrToPtr<char_t *, void *>(argsInfo->args) + argsInfo->tilingAddrOffset)) =
-            RtPtrToValue<const void *>(kerArgs) + argsInfo->tilingDataOffset;
+        *(RtPtrToPtr<uint64_t*, char_t*>(RtPtrToPtr<char_t*, void*>(argsInfo->args) + argsInfo->tilingAddrOffset)) =
+            RtPtrToValue<const void*>(kerArgs) + argsInfo->tilingDataOffset;
     }
     UpdateAddrField(kerArgs, argsInfo->args, argsInfo->hostInputInfoNum, argsInfo->hostInputInfoPtr);
 }
 
-
-void UmaArgLoader::UpdateAicpuArgsEx(const void * const kerArgs, const rtAicpuArgsEx_t *argsInfo) const
+void UmaArgLoader::UpdateAicpuArgsEx(const void* const kerArgs, const rtAicpuArgsEx_t* argsInfo) const
 {
     UpdateAddrField(kerArgs, argsInfo->args, argsInfo->hostInputInfoNum, argsInfo->hostInputInfoPtr);
     UpdateAddrField(kerArgs, argsInfo->args, argsInfo->kernelOffsetInfoNum, argsInfo->kernelOffsetInfoPtr);
 }
 
-rtError_t UmaArgLoader::LoadInputOutputArgsHuge(const Stream * const stm, void *&kerArgs, H2DCopyMgr * const umaArgAllocator,
-                                            bool &copyArgs, const uint32_t size,
-                                            const void * const args, const rtArgsEx_t * const argsInfo) const
+rtError_t UmaArgLoader::LoadInputOutputArgsHuge(
+    const Stream* const stm, void*& kerArgs, H2DCopyMgr* const umaArgAllocator, bool& copyArgs, const uint32_t size,
+    const void* const args, const rtArgsEx_t* const argsInfo) const
 {
     rtError_t error = RT_ERROR_NONE;
     RT_LOG(RT_LOG_DEBUG, "hugeargs size=%u, use randomAllocator.", size);
@@ -171,17 +175,17 @@ rtError_t UmaArgLoader::LoadInputOutputArgsHuge(const Stream * const stm, void *
         UpdateArgsAddr(umaArgAllocator->GetDevAddr(kerArgs), argsInfo);
         const uint64_t cpySize = static_cast<uint64_t>(size);
         error = umaArgAllocator->H2DMemCopy(kerArgs, args, cpySize);
-        ERROR_RETURN(error, "H2DMemCopy, kind=%d, retCode=%#x.",
-            static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
+        ERROR_RETURN(
+            error, "H2DMemCopy, kind=%d, retCode=%#x.", static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE),
+            static_cast<uint32_t>(error));
     }
 
     return error;
 }
 
-
-rtError_t UmaArgLoader::LoadInputOutputArgs(const Stream * const stm, void *&kerArgs, H2DCopyMgr * const umaArgAllocator,
-                                            bool &copyArgs, const uint32_t size,
-                                            const void * const args, const rtArgsEx_t * const argsInfo) const
+rtError_t UmaArgLoader::LoadInputOutputArgs(
+    const Stream* const stm, void*& kerArgs, H2DCopyMgr* const umaArgAllocator, bool& copyArgs, const uint32_t size,
+    const void* const args, const rtArgsEx_t* const argsInfo) const
 {
     rtError_t error = RT_ERROR_NONE;
     if ((stm->NonSupportModelCompile()) || (stm->GetModelNum() == 0U) || (argsInfo->isNoNeedH2DCopy == 0U)) {
@@ -196,30 +200,32 @@ rtError_t UmaArgLoader::LoadInputOutputArgs(const Stream * const stm, void *&ker
         UpdateArgsAddr(umaArgAllocator->GetDevAddr(kerArgs), argsInfo);
 
         const uint32_t argItemSize = (size > itemSize_) ? maxItemSize_ : itemSize_;
-        const uint64_t cpySize = ((argItemSize > size) ?
-            static_cast<uint64_t>(size) : static_cast<uint64_t>(argItemSize));
+        const uint64_t cpySize =
+            ((argItemSize > size) ? static_cast<uint64_t>(size) : static_cast<uint64_t>(argItemSize));
         error = umaArgAllocator->H2DMemCopy(kerArgs, args, cpySize);
-        ERROR_RETURN(error, "H2DMemCopy, kind=%d, retCode=%#x.",
-            static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
+        ERROR_RETURN(
+            error, "H2DMemCopy, kind=%d, retCode=%#x.", static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE),
+            static_cast<uint32_t>(error));
     }
 
     return error;
 }
 
-rtError_t UmaArgLoader::LoadInputOutputArgsForMix(const Stream * const stm, void *kerArgs, H2DCopyMgr * const umaArgAllocator,
-                                                  bool &copyArgs, const uint32_t size,
-                                                  const void * const args, const rtArgsEx_t * const argsInfo) const
+rtError_t UmaArgLoader::LoadInputOutputArgsForMix(
+    const Stream* const stm, void* kerArgs, H2DCopyMgr* const umaArgAllocator, bool& copyArgs, const uint32_t size,
+    const void* const args, const rtArgsEx_t* const argsInfo) const
 {
     rtError_t error = RT_ERROR_NONE;
     if ((stm->GetModelNum() == 0U) || (argsInfo->isNoNeedH2DCopy == 0U)) {
         RT_LOG(RT_LOG_INFO, "args loader load for mix");
-        void *devAddr = static_cast<void *>(RtPtrToPtr<char_t *, void *>(umaArgAllocator->GetDevAddr(kerArgs)) +
-                                                                       CONTEXT_ALIGN_LEN);
+        void* devAddr =
+            static_cast<void*>(RtPtrToPtr<char_t*, void*>(umaArgAllocator->GetDevAddr(kerArgs)) + CONTEXT_ALIGN_LEN);
         copyArgs = true;
         UpdateArgsAddr(devAddr, argsInfo);
         error = umaArgAllocator->H2DMemCopy(devAddr, args, size);
-        ERROR_RETURN(error, "H2DMemCopy, kind=%d, retCode=%#x.",
-            static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
+        ERROR_RETURN(
+            error, "H2DMemCopy, kind=%d, retCode=%#x.", static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE),
+            static_cast<uint32_t>(error));
     }
 
     return error;
@@ -227,14 +233,14 @@ rtError_t UmaArgLoader::LoadInputOutputArgsForMix(const Stream * const stm, void
 
 rtError_t UmaArgLoader::AllocCopyPtrWithGenericPolicy(const uint32_t size, ArgLoaderResult* const result)
 {
-    Handle *argHandle = nullptr;
+    Handle* argHandle = nullptr;
     result->handle = handleAllocator_->AllocItem();
     NULL_PTR_RETURN(result->handle, RT_ERROR_MEMORY_ALLOCATION);
-    argHandle = static_cast<Handle *>(result->handle);
+    argHandle = static_cast<Handle*>(result->handle);
     argHandle->freeArgs = false;
     bool isRandom = false;
 
-    H2DCopyMgr *umaArgAllocator = nullptr;
+    H2DCopyMgr* umaArgAllocator = nullptr;
     if ((argPcieBarAllocator_ != nullptr) && (size <= PCIE_BAR_COPY_SIZE)) {
         umaArgAllocator = argPcieBarAllocator_;
     } else if (size <= itemSize_) {
@@ -248,7 +254,7 @@ rtError_t UmaArgLoader::AllocCopyPtrWithGenericPolicy(const uint32_t size, ArgLo
         isRandom = true;
     }
 
-    void *kerArgs = nullptr;
+    void* kerArgs = nullptr;
     if (isRandom) {
         kerArgs = umaArgAllocator->AllocDevMem(size);
     } else {
@@ -267,22 +273,23 @@ rtError_t UmaArgLoader::AllocCopyPtrWithGenericPolicy(const uint32_t size, ArgLo
     return RT_ERROR_NONE;
 }
 
-rtError_t UmaArgLoader::LoadForMix(const rtArgsEx_t * const argsInfo,
-                                   Stream * const stm, ArgLoaderResult * const result, bool &mixOpt)
+rtError_t UmaArgLoader::LoadForMix(
+    const rtArgsEx_t* const argsInfo, Stream* const stm, ArgLoaderResult* const result, bool& mixOpt)
 {
-    Handle *argHandle = nullptr;
+    Handle* argHandle = nullptr;
     rtError_t error = RT_ERROR_NONE;
-    void *kerArgs = argsInfo->args;
+    void* kerArgs = argsInfo->args;
     bool copyArgs = false;
     const uint32_t size = argsInfo->argsSize;
-    void * const args = argsInfo->args;
-    H2DCopyMgr *umaArgAllocator = argPcieBarAllocator_;
+    void* const args = argsInfo->args;
+    H2DCopyMgr* umaArgAllocator = argPcieBarAllocator_;
 
     if ((umaArgAllocator == nullptr) || (size > PCIE_BAR_COPY_SIZE)) {
-        ERROR_RETURN_MSG_INNER(RT_ERROR_INVALID_VALUE, "The value %u of argsInfo->argsSize must be less than or equal to %u.",
-            size, PCIE_BAR_COPY_SIZE);
+        ERROR_RETURN_MSG_INNER(
+            RT_ERROR_INVALID_VALUE, "The value %u of argsInfo->argsSize must be less than or equal to %u.", size,
+            PCIE_BAR_COPY_SIZE);
     }
-    argHandle = static_cast<Handle *>(handleAllocator_->AllocItem());
+    argHandle = static_cast<Handle*>(handleAllocator_->AllocItem());
     NULL_PTR_RETURN(argHandle, RT_ERROR_MEMORY_ALLOCATION);
     kerArgs = umaArgAllocator->AllocDevMem();
     if (kerArgs == nullptr) {
@@ -292,18 +299,19 @@ rtError_t UmaArgLoader::LoadForMix(const rtArgsEx_t * const argsInfo,
 
     if (argsInfo->isNoNeedH2DCopy == 0U) {
         RT_LOG(RT_LOG_INFO, "args loader load for mix");
-        error = LoadInputOutputArgsForMix(stm, kerArgs, umaArgAllocator, copyArgs, size, args,
-            argsInfo);
-        ERROR_GOTO_MSG_INNER(error, RECYCLE, "Load args(size=%u) failed, retCode=%#x.", size, static_cast<uint32_t>(error));
+        error = LoadInputOutputArgsForMix(stm, kerArgs, umaArgAllocator, copyArgs, size, args, argsInfo);
+        ERROR_GOTO_MSG_INNER(
+            error, RECYCLE, "Load args(size=%u) failed, retCode=%#x.", size, static_cast<uint32_t>(error));
     }
 
     argHandle->kerArgs = umaArgAllocator->GetDevAddr(kerArgs);
     argHandle->freeArgs = true;
     argHandle->argsAlloc = umaArgAllocator;
-    result->kerArgs = copyArgs ?
-        static_cast<void *>(RtPtrToPtr<char_t *, void *>(umaArgAllocator->GetDevAddr(kerArgs)) + CONTEXT_ALIGN_LEN) :
-        argsInfo->args;
-    result->handle = static_cast<void *>(argHandle);
+    result->kerArgs =
+        copyArgs ?
+            static_cast<void*>(RtPtrToPtr<char_t*, void*>(umaArgAllocator->GetDevAddr(kerArgs)) + CONTEXT_ALIGN_LEN) :
+            argsInfo->args;
+    result->handle = static_cast<void*>(argHandle);
     mixOpt = (stm->GetModelNum() == 0) ? true : false;
     return RT_ERROR_NONE;
 
@@ -313,22 +321,21 @@ RECYCLE:
     return error;
 }
 TIMESTAMP_EXTERN(LoadInputOutputArgsHuge);
-rtError_t UmaArgLoader::Load(const rtArgsEx_t * const argsInfo,
-                             Stream * const stm, ArgLoaderResult * const result)
+rtError_t UmaArgLoader::Load(const rtArgsEx_t* const argsInfo, Stream* const stm, ArgLoaderResult* const result)
 {
-    Handle *argHandle = nullptr;
+    Handle* argHandle = nullptr;
     rtError_t error;
-    void *kerArgs = argsInfo->args;
+    void* kerArgs = argsInfo->args;
     bool copyArgs = false;
     const uint32_t size = argsInfo->argsSize;
-    void * const args = argsInfo->args;
-    H2DCopyMgr *umaArgAllocator = ((size > itemSize_) && (maxArgAllocator_ != nullptr)) ?
-        maxArgAllocator_ : argAllocator_;
+    void* const args = argsInfo->args;
+    H2DCopyMgr* umaArgAllocator =
+        ((size > itemSize_) && (maxArgAllocator_ != nullptr)) ? maxArgAllocator_ : argAllocator_;
 
     if ((argPcieBarAllocator_ != nullptr) && (size <= PCIE_BAR_COPY_SIZE)) {
         umaArgAllocator = argPcieBarAllocator_;
     }
-    argHandle = static_cast<Handle *>(handleAllocator_->AllocItem());
+    argHandle = static_cast<Handle*>(handleAllocator_->AllocItem());
     NULL_PTR_RETURN(argHandle, RT_ERROR_MEMORY_ALLOCATION);
     if (argsInfo->isNoNeedH2DCopy == 0U) {
         if (size > (ARG_ENTRY_INCRETMENT_SIZE + ARG_ENTRY_SIZE)) {
@@ -337,26 +344,24 @@ rtError_t UmaArgLoader::Load(const rtArgsEx_t * const argsInfo,
             error = LoadInputOutputArgsHuge(stm, kerArgs, umaArgAllocator, copyArgs, size, args, argsInfo);
             TIMESTAMP_END(LoadInputOutputArgsHuge);
         } else {
-            error = LoadInputOutputArgs(stm, kerArgs, umaArgAllocator, copyArgs, size, args,
-                argsInfo);
+            error = LoadInputOutputArgs(stm, kerArgs, umaArgAllocator, copyArgs, size, args, argsInfo);
             if ((error == RT_ERROR_MEMORY_ALLOCATION) && (umaArgAllocator == argPcieBarAllocator_) &&
                 device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_KERNEL_ARGS_ALLOC_DEFAULT)) {
-                umaArgAllocator = ((size > itemSize_) && (maxArgAllocator_ != nullptr)) ?
-                    maxArgAllocator_ : argAllocator_;
-                error = LoadInputOutputArgs(stm, kerArgs, umaArgAllocator, copyArgs, size, args,
-                                            argsInfo);
-                RT_LOG(RT_LOG_DEBUG, "alloc pcie bar failed, rollback.");                            
+                umaArgAllocator =
+                    ((size > itemSize_) && (maxArgAllocator_ != nullptr)) ? maxArgAllocator_ : argAllocator_;
+                error = LoadInputOutputArgs(stm, kerArgs, umaArgAllocator, copyArgs, size, args, argsInfo);
+                RT_LOG(RT_LOG_DEBUG, "alloc pcie bar failed, rollback.");
             }
         }
-        ERROR_GOTO_MSG_INNER(error, RECYCLE, "Load args(size=%u) failed, retCode=%#x.", size,
-            static_cast<uint32_t>(error));
+        ERROR_GOTO_MSG_INNER(
+            error, RECYCLE, "Load args(size=%u) failed, retCode=%#x.", size, static_cast<uint32_t>(error));
     }
 
     argHandle->kerArgs = kerArgs;
     argHandle->freeArgs = copyArgs;
     argHandle->argsAlloc = umaArgAllocator;
     result->kerArgs = copyArgs ? umaArgAllocator->GetDevAddr(kerArgs) : kerArgs;
-    result->handle = static_cast<void *>(argHandle);
+    result->handle = static_cast<void*>(argHandle);
     return RT_ERROR_NONE;
 
 RECYCLE:
@@ -367,23 +372,23 @@ RECYCLE:
     return error;
 }
 
-rtError_t UmaArgLoader::PureLoad(const uint32_t size, const void * const args, ArgLoaderResult * const result)
+rtError_t UmaArgLoader::PureLoad(const uint32_t size, const void* const args, ArgLoaderResult* const result)
 {
-    Handle *argHandle = nullptr;
+    Handle* argHandle = nullptr;
     rtError_t error;
-    void *kerArgs = nullptr;
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_GE, size > (ARG_ENTRY_INCRETMENT_SIZE + ARG_ENTRY_SIZE),
-        RT_ERROR_INVALID_VALUE, "size=%u is more than MaxSize=%u", size,
-        (ARG_ENTRY_INCRETMENT_SIZE + ARG_ENTRY_SIZE));
+    void* kerArgs = nullptr;
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_GE, size > (ARG_ENTRY_INCRETMENT_SIZE + ARG_ENTRY_SIZE), RT_ERROR_INVALID_VALUE,
+        "size=%u is more than MaxSize=%u", size, (ARG_ENTRY_INCRETMENT_SIZE + ARG_ENTRY_SIZE));
 
     // auto choose policcy
-    H2DCopyMgr *umaArgAllocator = ((size > itemSize_) && (maxArgAllocator_ != nullptr))
-                                  ? maxArgAllocator_ : argAllocator_;
+    H2DCopyMgr* umaArgAllocator =
+        ((size > itemSize_) && (maxArgAllocator_ != nullptr)) ? maxArgAllocator_ : argAllocator_;
     if ((argPcieBarAllocator_ != nullptr) && (size <= PCIE_BAR_COPY_SIZE)) {
         umaArgAllocator = argPcieBarAllocator_;
     }
 
-    argHandle = static_cast<Handle *>(handleAllocator_->AllocItem());
+    argHandle = static_cast<Handle*>(handleAllocator_->AllocItem());
     NULL_PTR_RETURN(argHandle, RT_ERROR_MEMORY_ALLOCATION);
 
     std::function<void()> const resRecycle = [&umaArgAllocator, &kerArgs, &argHandle, this]() {
@@ -399,51 +404,54 @@ rtError_t UmaArgLoader::PureLoad(const uint32_t size, const void * const args, A
     const uint32_t argItemSize = (size > itemSize_) ? maxItemSize_ : itemSize_;
     const uint64_t cpySize = ((argItemSize > size) ? static_cast<uint64_t>(size) : static_cast<uint64_t>(argItemSize));
     error = umaArgAllocator->H2DMemCopy(kerArgs, args, cpySize);
-    ERROR_RETURN(error, "H2DMemCopy, kind=%d, retCode=%#x.",
-        static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), error);
+    ERROR_RETURN(error, "H2DMemCopy, kind=%d, retCode=%#x.", static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), error);
 
     argHandle->kerArgs = kerArgs;
     argHandle->freeArgs = true;
     argHandle->argsAlloc = umaArgAllocator;
     // real DevAddr for PCIE_DMA
     result->kerArgs = umaArgAllocator->GetDevAddr(kerArgs);
-    result->handle = static_cast<void *>(argHandle);
+    result->handle = static_cast<void*>(argHandle);
 
     resGuard.ReleaseGuard();
     return RT_ERROR_NONE;
 }
 
-rtError_t UmaArgLoader::LoadCpuKernelArgs(const rtArgsEx_t * const argsInfo, Stream * const stm,
-                                          ArgLoaderResult * const result)
+rtError_t UmaArgLoader::LoadCpuKernelArgs(
+    const rtArgsEx_t* const argsInfo, Stream* const stm, ArgLoaderResult* const result)
 {
-    H2DCopyMgr *umaArgAllocator = nullptr;
-    Handle *argHandle = nullptr;
-    void *kerArgs = nullptr;
+    H2DCopyMgr* umaArgAllocator = nullptr;
+    Handle* argHandle = nullptr;
+    void* kerArgs = nullptr;
     rtError_t error;
     bool copyArgs = false;
 
     if ((stm->NonSupportModelCompile()) || (argsInfo->isNoNeedH2DCopy == 0)) {
         uint64_t cpySize;
         if (argsInfo->argsSize > MULTI_GRAPH_ARG_ENTRY_SIZE) {
-            COND_RETURN_ERROR(superArgAllocator_ == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-                "superArgAllocator_ is nullptr.");
+            COND_RETURN_ERROR(
+                superArgAllocator_ == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "superArgAllocator_ is nullptr.");
             kerArgs = superArgAllocator_->AllocDevMem();
             umaArgAllocator = superArgAllocator_;
-            cpySize = ((argsInfo->argsSize < MULTI_GRAPH_SUPER_ARG_ENTRY_SIZE) ?
-                static_cast<uint64_t>(argsInfo->argsSize) : static_cast<uint64_t>(MULTI_GRAPH_SUPER_ARG_ENTRY_SIZE));
+            cpySize =
+                ((argsInfo->argsSize < MULTI_GRAPH_SUPER_ARG_ENTRY_SIZE) ?
+                     static_cast<uint64_t>(argsInfo->argsSize) :
+                     static_cast<uint64_t>(MULTI_GRAPH_SUPER_ARG_ENTRY_SIZE));
             RT_LOG(RT_LOG_DEBUG, "LoadCpuKernelArgs super arg_size %u.", argsInfo->argsSize);
         } else {
             kerArgs = argAllocator_->AllocDevMem();
             umaArgAllocator = argAllocator_;
-            cpySize = ((argsInfo->argsSize < itemSize_) ?
-                static_cast<uint64_t>(argsInfo->argsSize) : static_cast<uint64_t>(itemSize_));
+            cpySize =
+                ((argsInfo->argsSize < itemSize_) ? static_cast<uint64_t>(argsInfo->argsSize) :
+                                                    static_cast<uint64_t>(itemSize_));
         }
         NULL_PTR_RETURN(kerArgs, RT_ERROR_MEMORY_ALLOCATION)
         UpdateArgsAddr(umaArgAllocator->GetDevAddr(kerArgs), argsInfo);
 
         copyArgs = true;
         error = umaArgAllocator->H2DMemCopy(kerArgs, argsInfo->args, cpySize);
-        ERROR_GOTO(error, RECYCLE, "Synchronize memcpy failed, kind=%d, retCode=%#x.",
+        ERROR_GOTO(
+            error, RECYCLE, "Synchronize memcpy failed, kind=%d, retCode=%#x.",
             static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
     }
 
@@ -451,7 +459,7 @@ rtError_t UmaArgLoader::LoadCpuKernelArgs(const rtArgsEx_t * const argsInfo, Str
     result->handle = handleAllocator_->AllocItem();
     NULL_PTR_GOTO_MSG_INNER(result->handle, RECYCLE, error, RT_ERROR_MEMORY_ALLOCATION);
 
-    argHandle = static_cast<Handle *>(result->handle);
+    argHandle = static_cast<Handle*>(result->handle);
     argHandle->freeArgs = copyArgs;
     argHandle->kerArgs = kerArgs;
     argHandle->argsAlloc = umaArgAllocator;
@@ -464,12 +472,12 @@ RECYCLE:
     return error;
 }
 
-rtError_t UmaArgLoader::LoadCpuKernelArgsEx(const rtAicpuArgsEx_t * const argsInfo, Stream * const stm,
-                                            ArgLoaderResult * const result)
+rtError_t UmaArgLoader::LoadCpuKernelArgsEx(
+    const rtAicpuArgsEx_t* const argsInfo, Stream* const stm, ArgLoaderResult* const result)
 {
-    Handle *handle = nullptr;
-    void *kerArgs = nullptr;
-    H2DCopyMgr *umaArgAllocator = nullptr;
+    Handle* handle = nullptr;
+    void* kerArgs = nullptr;
+    H2DCopyMgr* umaArgAllocator = nullptr;
     rtError_t error;
     const uint32_t size = argsInfo->argsSize;
     bool copyArgs = false;
@@ -484,8 +492,8 @@ rtError_t UmaArgLoader::LoadCpuKernelArgsEx(const rtAicpuArgsEx_t * const argsIn
             umaArgAllocator = randomAllocator_;
             cpySize = static_cast<uint64_t>(size);
         } else if (size > itemSize_) {
-            COND_RETURN_ERROR(maxArgAllocator_ == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-                "maxArgAllocator_ is nullptr.");
+            COND_RETURN_ERROR(
+                maxArgAllocator_ == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "maxArgAllocator_ is nullptr.");
             kerArgs = maxArgAllocator_->AllocDevMem();
             umaArgAllocator = maxArgAllocator_;
             cpySize = ((size < maxItemSize_) ? static_cast<uint64_t>(size) : static_cast<uint64_t>(maxItemSize_));
@@ -508,8 +516,9 @@ rtError_t UmaArgLoader::LoadCpuKernelArgsEx(const rtAicpuArgsEx_t * const argsIn
                 RT_LOG(RT_LOG_DEBUG, "alloc pcie bar failed, rollback.");
             } else {
                 umaArgAllocator = argPcieBarAllocator_;
-                cpySize = ((size < PCIE_BAR_COPY_SIZE) ?
-                    static_cast<uint64_t>(size) : static_cast<uint64_t>(PCIE_BAR_COPY_SIZE));
+                cpySize =
+                    ((size < PCIE_BAR_COPY_SIZE) ? static_cast<uint64_t>(size) :
+                                                   static_cast<uint64_t>(PCIE_BAR_COPY_SIZE));
             }
         }
         NULL_PTR_RETURN(kerArgs, RT_ERROR_MEMORY_ALLOCATION)
@@ -517,16 +526,17 @@ rtError_t UmaArgLoader::LoadCpuKernelArgsEx(const rtAicpuArgsEx_t * const argsIn
         copyArgs = true;
         RT_LOG(RT_LOG_DEBUG, "H2DMemCopy src:%p, dst:%p, size:%u.", argsInfo->args, kerArgs, size);
         error = umaArgAllocator->H2DMemCopy(kerArgs, argsInfo->args, cpySize);
-        ERROR_GOTO(error, RECYCLE, "Load cpu kernel args failed, kind=%d, retCode=%#x.",
+        ERROR_GOTO(
+            error, RECYCLE, "Load cpu kernel args failed, kind=%d, retCode=%#x.",
             static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
     }
 
     result->kerArgs = (copyArgs ? umaArgAllocator->GetDevAddr(kerArgs) : argsInfo->args);
     result->handle = handleAllocator_->AllocItem();
-    COND_PROC_GOTO_MSG_CALL(ERR_MODULE_DRV, result->handle == nullptr, RECYCLE,
-        error = RT_ERROR_MEMORY_ALLOCATION, "handle alloc failed");
+    COND_PROC_GOTO_MSG_CALL(
+        ERR_MODULE_DRV, result->handle == nullptr, RECYCLE, error = RT_ERROR_MEMORY_ALLOCATION, "handle alloc failed");
 
-    handle = static_cast<Handle *>(result->handle);
+    handle = static_cast<Handle*>(result->handle);
     handle->kerArgs = kerArgs;
     handle->freeArgs = copyArgs;
     handle->argsAlloc = umaArgAllocator;
@@ -539,9 +549,11 @@ RECYCLE:
     return error;
 }
 
-rtError_t UmaArgLoader::GetKernelInfoDevAddr(const char_t * const name, const KernelInfoType type, void ** const addr)
+rtError_t UmaArgLoader::GetKernelInfoDevAddr(const char_t* const name, const KernelInfoType type, void** const addr)
 {
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(name, RT_ERROR_KERNEL_NAME, "Querying the start address of the corresponding operator on the device based on the kernel name.");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        name, RT_ERROR_KERNEL_NAME,
+        "Querying the start address of the corresponding operator on the device based on the kernel name.");
 
     rtError_t error;
     switch (type) {
@@ -556,9 +568,9 @@ rtError_t UmaArgLoader::GetKernelInfoDevAddr(const char_t * const name, const Ke
             break;
         }
         default: {
-            RT_LOG(RT_LOG_ERROR, "Invalid kernel info type=%d, valid type is [%d, %d).",
-                static_cast<int32_t>(type), static_cast<int32_t>(SO_NAME),
-                static_cast<int32_t>(MAX_NAME));
+            RT_LOG(
+                RT_LOG_ERROR, "Invalid kernel info type=%d, valid type is [%d, %d).", static_cast<int32_t>(type),
+                static_cast<int32_t>(SO_NAME), static_cast<int32_t>(MAX_NAME));
             error = RT_ERROR_KERNEL_TYPE;
             break;
         }
@@ -566,9 +578,10 @@ rtError_t UmaArgLoader::GetKernelInfoDevAddr(const char_t * const name, const Ke
     return error;
 }
 
-void UmaArgLoader::FindKernelInfoName(std::string &name, std::unordered_map<std::string, void *> &nameMap, const void *addr) const
+void UmaArgLoader::FindKernelInfoName(
+    std::string& name, std::unordered_map<std::string, void*>& nameMap, const void* addr) const
 {
-    for (std::pair<std::string, void *> iter : nameMap) {
+    for (std::pair<std::string, void*> iter : nameMap) {
         if (iter.second == addr) {
             name = iter.first;
             RT_LOG(RT_LOG_INFO, "Find kernel info name %s success!", name.c_str());
@@ -578,7 +591,7 @@ void UmaArgLoader::FindKernelInfoName(std::string &name, std::unordered_map<std:
     return;
 }
 
-void UmaArgLoader::GetKernelInfoFromAddr(std::string &name, const KernelInfoType type, void* addr)
+void UmaArgLoader::GetKernelInfoFromAddr(std::string& name, const KernelInfoType type, void* addr)
 {
     switch (type) {
         case SO_NAME: {
@@ -592,10 +605,9 @@ void UmaArgLoader::GetKernelInfoFromAddr(std::string &name, const KernelInfoType
             break;
         }
         default: {
-            RT_LOG(RT_LOG_ERROR,
-                             "Invalid kernel info type, current type = %d, valid type is %d or %d.",
-                             static_cast<int32_t>(type), static_cast<int32_t>(SO_NAME),
-                             static_cast<int32_t>(KERNEL_NAME));
+            RT_LOG(
+                RT_LOG_ERROR, "Invalid kernel info type, current type = %d, valid type is %d or %d.",
+                static_cast<int32_t>(type), static_cast<int32_t>(SO_NAME), static_cast<int32_t>(KERNEL_NAME));
             break;
         }
     }
@@ -604,19 +616,19 @@ void UmaArgLoader::GetKernelInfoFromAddr(std::string &name, const KernelInfoType
 
 void UmaArgLoader::RestoreAiCpuKernelInfo(void)
 {
-    for (std::pair<std::string, void *> iter : soNameMap_) {
+    for (std::pair<std::string, void*> iter : soNameMap_) {
         std::string name = iter.first;
-        const void * const src = name.data();
-        void * const dst = static_cast<void *>(iter.second);
+        const void* const src = name.data();
+        void* const dst = static_cast<void*>(iter.second);
         const size_t cpySize = strnlen(name.c_str(), static_cast<size_t>(KERNEL_INFO_ENTRY_SIZE - 1U)) + 1UL;
         RT_LOG(RT_LOG_INFO, "addr=%p, SoName=%s, len=%u", dst, name.c_str(), cpySize);
         drv_->MemCopySync(dst, cpySize, src, cpySize, RT_MEMCPY_HOST_TO_DEVICE);
     }
 
-    for (std::pair<std::string, void *> iter : kernelNameMap_) {
+    for (std::pair<std::string, void*> iter : kernelNameMap_) {
         std::string name = iter.first;
-        const void * const src = name.data();
-        void * const dst = static_cast<void *>(iter.second);
+        const void* const src = name.data();
+        void* const dst = static_cast<void*>(iter.second);
         const size_t cpySize = strnlen(name.c_str(), static_cast<size_t>(KERNEL_INFO_ENTRY_SIZE - 1U)) + 1UL;
         RT_LOG(RT_LOG_INFO, "addr=%p, kernelName=%s, len=%u", dst, name.c_str(), cpySize);
         drv_->MemCopySync(dst, cpySize, src, cpySize, RT_MEMCPY_HOST_TO_DEVICE);
@@ -632,14 +644,13 @@ bool UmaArgLoader::CheckPcieBar(void)
     }
 }
 
-rtError_t UmaArgLoader::LoadStreamSwitchNArgs(Stream * const stm, const void * const valuePtr,
-                                              const uint32_t valueSize, Stream ** const trueStreamPtr,
-                                              const uint32_t elementSize, const rtSwitchDataType_t dataType,
-                                              StreamSwitchNLoadResult * const result)
+rtError_t UmaArgLoader::LoadStreamSwitchNArgs(
+    Stream* const stm, const void* const valuePtr, const uint32_t valueSize, Stream** const trueStreamPtr,
+    const uint32_t elementSize, const rtSwitchDataType_t dataType, StreamSwitchNLoadResult* const result)
 {
     rtError_t error;
-    void *valueDevAddr = nullptr;
-    void *streamIdDevAddr = nullptr;
+    void* valueDevAddr = nullptr;
+    void* streamIdDevAddr = nullptr;
     uint64_t valueDevSize;
     uint64_t streamIdDevSize;
     std::vector<uint32_t> vecStreamId(elementSize);
@@ -654,22 +665,24 @@ rtError_t UmaArgLoader::LoadStreamSwitchNArgs(Stream * const stm, const void * c
     }
     streamIdDevSize = sizeof(uint32_t) * elementSize;
 
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     rtMemType_t memType = rtInstance->GetTsMemType(MEM_REQUEST_FEATURE_DEFAULT, valueDevSize);
 
-    RT_LOG(RT_LOG_DEBUG, "memType=%u, chip type=%d.", static_cast<uint32_t>(memType),
-           static_cast<int32_t>(rtInstance->GetChipType()));
+    RT_LOG(
+        RT_LOG_DEBUG, "memType=%u, chip type=%d.", static_cast<uint32_t>(memType),
+        static_cast<int32_t>(rtInstance->GetChipType()));
 
     error = drv_->DevMemAlloc(&valueDevAddr, valueDevSize, memType, device_->Id_());
-    ERROR_RETURN(error, "Failed to alloc dev value memory, memType=%u, deviceId=%u, retCode=%#x",
-        static_cast<uint32_t>(memType), device_->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN(
+        error, "Failed to alloc dev value memory, memType=%u, deviceId=%u, retCode=%#x", static_cast<uint32_t>(memType),
+        device_->Id_(), static_cast<uint32_t>(error));
 
     error = drv_->MemCopySync(valueDevAddr, valueDevSize, valuePtr, valueDevSize, RT_MEMCPY_HOST_TO_DEVICE);
     if (error != RT_ERROR_NONE) {
         (void)drv_->DevMemFree(valueDevAddr, device_->Id_());
-        RT_LOG(RT_LOG_ERROR,
-               "Failed to copy value to device when load stream switchN args, kind=%d, retCode=%#x",
-               static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
+        RT_LOG(
+            RT_LOG_ERROR, "Failed to copy value to device when load stream switchN args, kind=%d, retCode=%#x",
+            static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
         return error;
     }
     stm->PushbackSwitchNArgs(valueDevAddr);
@@ -678,18 +691,20 @@ rtError_t UmaArgLoader::LoadStreamSwitchNArgs(Stream * const stm, const void * c
     error = drv_->DevMemAlloc(&streamIdDevAddr, streamIdDevSize, memType, device_->Id_());
     if (error != RT_ERROR_NONE) {
         (void)drv_->DevMemFree(valueDevAddr, device_->Id_());
-        RT_LOG(RT_LOG_ERROR, "Failed to alloc device stream ID memory, memType=%u, deviceId=%u, retCode=%#x",
+        RT_LOG(
+            RT_LOG_ERROR, "Failed to alloc device stream ID memory, memType=%u, deviceId=%u, retCode=%#x",
             static_cast<uint32_t>(memType), device_->Id_(), static_cast<uint32_t>(error));
         return error;
     }
 
-    error = drv_->MemCopySync(streamIdDevAddr, streamIdDevSize, vecStreamId.data(),
-                              streamIdDevSize, RT_MEMCPY_HOST_TO_DEVICE);
+    error = drv_->MemCopySync(
+        streamIdDevAddr, streamIdDevSize, vecStreamId.data(), streamIdDevSize, RT_MEMCPY_HOST_TO_DEVICE);
     if (error != RT_ERROR_NONE) {
         (void)drv_->DevMemFree(valueDevAddr, device_->Id_());
         (void)drv_->DevMemFree(streamIdDevAddr, device_->Id_());
-        RT_LOG(RT_LOG_ERROR, "Failed to copy true stream ID to device, kind=%d, retCode=%#x",
-               static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
+        RT_LOG(
+            RT_LOG_ERROR, "Failed to copy true stream ID to device, kind=%d, retCode=%#x",
+            static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
         return error;
     }
 
@@ -700,9 +715,8 @@ rtError_t UmaArgLoader::LoadStreamSwitchNArgs(Stream * const stm, const void * c
     return RT_ERROR_NONE;
 }
 
-rtError_t UmaArgLoader::FindOrInsertDevAddr(const char_t * const name,
-                                            std::unordered_map<std::string, void *> &nameMap,
-                                            void ** const addr) const
+rtError_t UmaArgLoader::FindOrInsertDevAddr(
+    const char_t* const name, std::unordered_map<std::string, void*>& nameMap, void** const addr) const
 {
     rtError_t error = RT_ERROR_NONE;
     std::string kernelInfoName(name);
@@ -713,7 +727,7 @@ rtError_t UmaArgLoader::FindOrInsertDevAddr(const char_t * const name,
     }
 
     // Alloc device addr and insert to map
-    void * const devAddr = kernelInfoAllocator_->AllocItem();
+    void* const devAddr = kernelInfoAllocator_->AllocItem();
     if (devAddr == nullptr) {
         RT_LOG(RT_LOG_ERROR, "devAddr is nullptr! Alloc addr for kernel info name %s failed.", name);
         return RT_ERROR_MEMORY_ALLOCATION;
@@ -724,17 +738,15 @@ rtError_t UmaArgLoader::FindOrInsertDevAddr(const char_t * const name,
         char tempName[KERNEL_INFO_ENTRY_SIZE];
         (void)memset_s(&tempName[0], KERNEL_INFO_ENTRY_SIZE, 0, KERNEL_INFO_ENTRY_SIZE);
         (void)memcpy_s(&tempName[0], cpySize - 1, name, cpySize - 1);
-        error = drv_->MemCopySync(devAddr, cpySize, static_cast<const void *>(&tempName[0]),
-            cpySize, RT_MEMCPY_HOST_TO_DEVICE);
+        error = drv_->MemCopySync(
+            devAddr, cpySize, static_cast<const void*>(&tempName[0]), cpySize, RT_MEMCPY_HOST_TO_DEVICE);
     } else {
-        error = drv_->MemCopySync(devAddr, cpySize, static_cast<const void *>(name),
-            cpySize, RT_MEMCPY_HOST_TO_DEVICE);
+        error = drv_->MemCopySync(devAddr, cpySize, static_cast<const void*>(name), cpySize, RT_MEMCPY_HOST_TO_DEVICE);
     }
 
     if (error != RT_ERROR_NONE) {
         kernelInfoAllocator_->FreeByItem(devAddr);
-        RT_LOG(RT_LOG_ERROR, "MemCopySync for so name %s failed, retCode=%#x",
-                         name, static_cast<uint32_t>(error));
+        RT_LOG(RT_LOG_ERROR, "MemCopySync for so name %s failed, retCode=%#x", name, static_cast<uint32_t>(error));
         return error;
     }
 
@@ -744,14 +756,14 @@ rtError_t UmaArgLoader::FindOrInsertDevAddr(const char_t * const name,
     return RT_ERROR_NONE;
 }
 
-rtError_t UmaArgLoader::Release(void * const argHandle)
+rtError_t UmaArgLoader::Release(void* const argHandle)
 {
     const rtError_t error = RT_ERROR_NONE;
     if (argHandle == nullptr) {
         return error;
     }
 
-    Handle *hdl = static_cast<Handle *>(argHandle);
+    Handle* hdl = static_cast<Handle*>(argHandle);
     if (hdl->freeArgs) {
         hdl->argsAlloc->FreeDevMem(hdl->kerArgs);
         RT_LOG(RT_LOG_DEBUG, "Release arg memory!");
@@ -935,5 +947,5 @@ rtError_t UmaArgLoader::AllocCopyPtrWithSpecificPolicy(uint32_t size, LoadPolicy
 
     return RT_ERROR_NONE;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

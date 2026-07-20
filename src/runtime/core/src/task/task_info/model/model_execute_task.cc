@@ -29,57 +29,56 @@
 namespace cce {
 namespace runtime {
 namespace {
-const std::set<int32_t> MEM_ERROR_CODE = {TS_ERROR_AICORE_MTE_ERROR,
-                                          TS_ERROR_SDMA_LINK_ERROR,
-                                          TS_ERROR_SDMA_POISON_ERROR,
-                                          TS_ERROR_LINK_ERROR,
-                                          TS_ERROR_LOCAL_MEM_ERROR,
-                                          TS_ERROR_REMOTE_MEM_ERROR};
-} // namespace 
+const std::set<int32_t> MEM_ERROR_CODE = {TS_ERROR_AICORE_MTE_ERROR,  TS_ERROR_SDMA_LINK_ERROR,
+                                          TS_ERROR_SDMA_POISON_ERROR, TS_ERROR_LINK_ERROR,
+                                          TS_ERROR_LOCAL_MEM_ERROR,   TS_ERROR_REMOTE_MEM_ERROR};
+} // namespace
 #if F_DESC("ModelExecuteTask")
 
 // 针对model exe性能优化需求，host侧和device侧内存释放挪到model粒度释放
-static rtError_t FreeFuncCallMemForModelExecuteTask(const TaskInfo * const taskInfo)
+static rtError_t FreeFuncCallMemForModelExecuteTask(const TaskInfo* const taskInfo)
 {
     UNUSED(taskInfo);
     return RT_ERROR_NONE;
 }
 
 // save func data to host memory
-static rtError_t SaveFuncCallDataForModelExecuteTask(TaskInfo * const taskInfo,
-    const std::vector<uint64_t> &headSq, const std::vector<uint64_t> &streamSvmAddr)
+static rtError_t SaveFuncCallDataForModelExecuteTask(
+    TaskInfo* const taskInfo, const std::vector<uint64_t>& headSq, const std::vector<uint64_t>& streamSvmAddr)
 {
     const size_t headSqArrMax = headSq.size();
     const size_t streamSvmArrMax = streamSvmAddr.size();
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
 
-    uint8_t *dstMem =
-        RtPtrToPtr<uint8_t *>(modelExecuteTaskInfo->model->GetFuncCallHostMem()) + sizeof(RtStarsModelExeFuncCall);
+    uint8_t* dstMem =
+        RtPtrToPtr<uint8_t*>(modelExecuteTaskInfo->model->GetFuncCallHostMem()) + sizeof(RtStarsModelExeFuncCall);
 
-    rtError_t ret = memcpy_s(dstMem, (headSqArrMax * sizeof(uint64_t)),
-                             headSq.data(), (headSqArrMax * sizeof(uint64_t)));
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
+    rtError_t ret =
+        memcpy_s(dstMem, (headSqArrMax * sizeof(uint64_t)), headSq.data(), (headSqArrMax * sizeof(uint64_t)));
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
         "Failed to call memcpy_s to copy headSq.data(), src=%p, dest=%p, dest_max=%zu, count=%zu, retCode=%#x.",
         headSq.data(), dstMem, headSqArrMax * sizeof(uint64_t), headSqArrMax * sizeof(uint64_t), ret);
-    
+
     dstMem = dstMem + headSqArrMax * sizeof(uint64_t);
-    ret = memcpy_s(dstMem, (streamSvmArrMax * sizeof(uint64_t)), streamSvmAddr.data(),
-        (streamSvmArrMax * sizeof(uint64_t)));
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
+    ret = memcpy_s(
+        dstMem, (streamSvmArrMax * sizeof(uint64_t)), streamSvmAddr.data(), (streamSvmArrMax * sizeof(uint64_t)));
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
         "Failed to call memcpy_s to copy streamSvmAddr.data(), src=%p, dest=%p, dest_max=%zu, count=%zu, retCode=%#x.",
         streamSvmAddr.data(), dstMem, streamSvmArrMax * sizeof(uint64_t), streamSvmArrMax * sizeof(uint64_t), ret);
     return RT_ERROR_NONE;
 }
 
-rtError_t FreeFuncCallHostMemAndSvmMem(TaskInfo * const taskInfo)
+rtError_t FreeFuncCallHostMemAndSvmMem(TaskInfo* const taskInfo)
 {
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
     Model* model = modelExecuteTaskInfo->model;
     if ((model == nullptr) || (model->Context_() == nullptr)) {
         return RT_ERROR_NONE;
     }
-    Device * const dev = model->Context_()->Device_();
-    Driver * const deviceDrv = dev->Driver_();
+    Device* const dev = model->Context_()->Device_();
+    Driver* const deviceDrv = dev->Driver_();
 
     if (model->GetFuncCallHostMem() != nullptr) {
         free(model->GetFuncCallHostMem());
@@ -101,50 +100,52 @@ rtError_t FreeFuncCallHostMemAndSvmMem(TaskInfo * const taskInfo)
     return RT_ERROR_NONE;
 }
 
-static rtError_t DfxCombineFuncCallDevMemAlloc(Model *model, TaskInfo * const taskInfo)
+static rtError_t DfxCombineFuncCallDevMemAlloc(Model* model, TaskInfo* const taskInfo)
 {
     rtError_t ret;
-    void *devMem = nullptr;
-    void *dfxPtr = nullptr;
-    Stream * const stream = taskInfo->stream;
-    const Device *dev = stream->Device_();
-    const uint64_t allocSize = model->GetFunCallMemSize() +
-        TS_STARS_COND_DFX_SIZE + static_cast<uint64_t>(FUNC_CALL_INSTR_ALIGN_SIZE);
+    void* devMem = nullptr;
+    void* dfxPtr = nullptr;
+    Stream* const stream = taskInfo->stream;
+    const Device* dev = stream->Device_();
+    const uint64_t allocSize =
+        model->GetFunCallMemSize() + TS_STARS_COND_DFX_SIZE + static_cast<uint64_t>(FUNC_CALL_INSTR_ALIGN_SIZE);
     ret = dev->Driver_()->DevMemAlloc(&devMem, allocSize, RT_MEMORY_DDR, dev->Id_());
     if ((ret != RT_ERROR_NONE) || (devMem == nullptr)) {
-        RT_LOG(RT_LOG_ERROR, "alloc func call memory failed, retCode=%#x, size=%" PRIu64 "(bytes), device_id=%u",
-                    ret, model->GetFunCallMemSize(), dev->Id_());
+        RT_LOG(
+            RT_LOG_ERROR, "alloc func call memory failed, retCode=%#x, size=%" PRIu64 "(bytes), device_id=%u", ret,
+            model->GetFunCallMemSize(), dev->Id_());
         return ret;
     }
 
     model->SetBaseFuncCallSvmMem(devMem);
     // instr addr should align to 256b
-    if ((RtPtrToPtr<uintptr_t, void *>(devMem) & 0xFFULL) != 0ULL) {
+    if ((RtPtrToPtr<uintptr_t, void*>(devMem) & 0xFFULL) != 0ULL) {
         // 2 ^ 8 is 256 align
-        const uintptr_t devMemAlign = (((RtPtrToPtr<uintptr_t, void *>(devMem)) >> 8U) + 1UL) << 8U;
-        devMem = RtPtrToPtr<void *, const uintptr_t>(devMemAlign);
+        const uintptr_t devMemAlign = (((RtPtrToPtr<uintptr_t, void*>(devMem)) >> 8U) + 1UL) << 8U;
+        devMem = RtPtrToPtr<void*, const uintptr_t>(devMemAlign);
     }
-    model->SetFuncCallSvmMem(RtPtrToValue<const void *>(devMem));
+    model->SetFuncCallSvmMem(RtPtrToValue<const void*>(devMem));
 
-    dfxPtr = RtValueToPtr<void *>(model->GetFuncCallSvmMem() + model->GetFunCallMemSize());
+    dfxPtr = RtValueToPtr<void*>(model->GetFuncCallSvmMem() + model->GetFunCallMemSize());
     model->SetDfxPtr(dfxPtr);
     return RT_ERROR_NONE;
 }
 
-static rtError_t DfxSplitFuncCallDevMemAlloc(Model *model, TaskInfo * const taskInfo)
+static rtError_t DfxSplitFuncCallDevMemAlloc(Model* model, TaskInfo* const taskInfo)
 {
     rtError_t ret;
-    void *devMem = nullptr;
-    void *devMemDfx = nullptr;
-    Stream * const stream = taskInfo->stream;
-    const Device *dev = stream->Device_();
+    void* devMem = nullptr;
+    void* devMemDfx = nullptr;
+    Stream* const stream = taskInfo->stream;
+    const Device* dev = stream->Device_();
     constexpr bool readonly = true;
     uint64_t allocSize = model->GetFunCallMemSize() + static_cast<uint64_t>(FUNC_CALL_INSTR_ALIGN_SIZE);
     // alloc funcCall devMem which is readonly.
     ret = dev->Driver_()->DevMemAlloc(&devMem, allocSize, RT_MEMORY_DDR, dev->Id_(), MODULEID_RUNTIME, true, readonly);
     if ((ret != RT_ERROR_NONE) || (devMem == nullptr)) {
-        RT_LOG(RT_LOG_ERROR, "alloc funcCall memory failed, retCode=%#x, size=%" PRIu64 "(bytes), device_id=%u",
-                    ret, model->GetFunCallMemSize(), dev->Id_());
+        RT_LOG(
+            RT_LOG_ERROR, "alloc funcCall memory failed, retCode=%#x, size=%" PRIu64 "(bytes), device_id=%u", ret,
+            model->GetFunCallMemSize(), dev->Id_());
         return ret;
     }
     // alloc funcCall devMem for dfx, cannot use readonly and need align.
@@ -153,43 +154,44 @@ static rtError_t DfxSplitFuncCallDevMemAlloc(Model *model, TaskInfo * const task
     if ((ret != RT_ERROR_NONE) || (devMemDfx == nullptr)) {
         (void)dev->Driver_()->DevMemFree(devMem, dev->Id_());
         devMem = nullptr;
-        RT_LOG(RT_LOG_ERROR, "alloc funcCall dfx memory failed, retCode=%#x, size=%" PRIu64 "(bytes), device_id=%u",
-                    ret, model->GetFunCallMemSize(), dev->Id_());
+        RT_LOG(
+            RT_LOG_ERROR, "alloc funcCall dfx memory failed, retCode=%#x, size=%" PRIu64 "(bytes), device_id=%u", ret,
+            model->GetFunCallMemSize(), dev->Id_());
         return ret;
     }
 
     model->SetBaseFuncCallSvmMem(devMem);
     // instr addr should align to 256b
-    if ((RtPtrToPtr<uintptr_t, void *>(devMem) & 0xFFULL) != 0ULL) {
+    if ((RtPtrToPtr<uintptr_t, void*>(devMem) & 0xFFULL) != 0ULL) {
         // 2 ^ 8 is 256 align
-        const uintptr_t devMemAlign = (((RtPtrToPtr<uintptr_t, void *>(devMem)) >> 8U) + 1UL) << 8U;
-        devMem = RtPtrToPtr<void *, const uintptr_t>(devMemAlign);
+        const uintptr_t devMemAlign = (((RtPtrToPtr<uintptr_t, void*>(devMem)) >> 8U) + 1UL) << 8U;
+        devMem = RtPtrToPtr<void*, const uintptr_t>(devMemAlign);
     }
-    model->SetFuncCallSvmMem(RtPtrToValue<const void *>(devMem));
+    model->SetFuncCallSvmMem(RtPtrToValue<const void*>(devMem));
 
     model->SetFuncCallDfxBaseSvmMem(devMemDfx);
-    if ((RtPtrToPtr<uintptr_t, void *>(devMemDfx) & 0xFFULL) != 0ULL) {
+    if ((RtPtrToPtr<uintptr_t, void*>(devMemDfx) & 0xFFULL) != 0ULL) {
         // 2 ^ 8 is 256 align
-        const uintptr_t devMemDfxAlign = (((RtPtrToPtr<uintptr_t, void *>(devMemDfx)) >> 8U) + 1UL) << 8U;
-        devMemDfx = RtPtrToPtr<void *, const uintptr_t>(devMemDfxAlign);
+        const uintptr_t devMemDfxAlign = (((RtPtrToPtr<uintptr_t, void*>(devMemDfx)) >> 8U) + 1UL) << 8U;
+        devMemDfx = RtPtrToPtr<void*, const uintptr_t>(devMemDfxAlign);
     }
     model->SetDfxPtr(devMemDfx);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t AllocFuncCallMemForModelExecuteTask(TaskInfo * const taskInfo, rtStarsModelExeFuncCallPara_t &funcCallPara)
+rtError_t AllocFuncCallMemForModelExecuteTask(TaskInfo* const taskInfo, rtStarsModelExeFuncCallPara_t& funcCallPara)
 {
     // aclgraph重新分配sq后需要重新构造FuncCallPara，headSqArrMax有可能改变，需要释放后重新申请内存
     (void)FreeFuncCallHostMemAndSvmMem(taskInfo);
 
     std::vector<uint64_t> headSqArr;
     std::vector<uint64_t> streamSvmAddrArr;
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
     Model* model = modelExecuteTaskInfo->model;
 
-    std::list<Stream *> const headStmList = model->GetHeadStreamList_();
-    for (Stream * const stm : headStmList) {
+    std::list<Stream*> const headStmList = model->GetHeadStreamList_();
+    for (Stream* const stm : headStmList) {
         (void)headSqArr.emplace_back(stm->GetSqId());
         (void)streamSvmAddrArr.emplace_back(RtPtrToValue(stm->GetExecutedTimesSvm()));
 
@@ -198,7 +200,8 @@ rtError_t AllocFuncCallMemForModelExecuteTask(TaskInfo * const taskInfo, rtStars
 
     const uint64_t headSqArrMax = headSqArr.size();
     const uint64_t streamSvmArrMax = streamSvmAddrArr.size();
-    COND_RETURN_ERROR_MSG_INNER((headSqArrMax == 0ULL), RT_ERROR_MODEL_EXECUTOR,
+    COND_RETURN_ERROR_MSG_INNER(
+        (headSqArrMax == 0ULL), RT_ERROR_MODEL_EXECUTOR,
         "The head stream of the model does not have the corresponding SQ ID, headSqArrMax=%" PRIu64 ".", headSqArrMax);
 
     const uint64_t funCallMemSize =
@@ -206,13 +209,15 @@ rtError_t AllocFuncCallMemForModelExecuteTask(TaskInfo * const taskInfo, rtStars
     model->SetFunCallMemSize(funCallMemSize);
 
     model->SetFuncCallHostMem(malloc(funCallMemSize));
-    COND_RETURN_AND_MSG_OUTER(model->GetFuncCallHostMem() == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        funCallMemSize, "malloc");
+    COND_RETURN_AND_MSG_OUTER(
+        model->GetFuncCallHostMem() == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, funCallMemSize,
+        "malloc");
 
-    RT_LOG(RT_LOG_INFO, "funcCallHostMem=%#" PRIx64 ", funCallMemSize=%#" PRIx64, model->GetFuncCallHostMem(),
-           model->GetFunCallMemSize());
+    RT_LOG(
+        RT_LOG_INFO, "funcCallHostMem=%#" PRIx64 ", funCallMemSize=%#" PRIx64, model->GetFuncCallHostMem(),
+        model->GetFunCallMemSize());
 
-    //save data to funcCallHostMem
+    // save data to funcCallHostMem
     rtError_t ret = SaveFuncCallDataForModelExecuteTask(taskInfo, headSqArr, streamSvmAddrArr);
     COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "save funcCall data failed, retCode=%#x.", ret);
 
@@ -234,19 +239,20 @@ rtError_t AllocFuncCallMemForModelExecuteTask(TaskInfo * const taskInfo, rtStars
     funcCallPara.headSqArrMax = headSqArrMax;
     funcCallPara.streamSvmArrMax = streamSvmArrMax;
 
-    RT_LOG(RT_LOG_DEBUG,
-           "first execute. funcCallHostMem=%#" PRIx64 ", funCallMemSize=%#" PRIx64 ", funcCallSvmMem=%#" PRIx64
-           ", baseFuncCallSvmMem=%#" PRIx64 ", dfxAddr=%#" PRIx64,
-           model->GetFuncCallHostMem(), model->GetFunCallMemSize(), model->GetFuncCallSvmMem(),
-           model->GetBaseFuncCallSvmMem(), model->GetDfxPtr());
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "first execute. funcCallHostMem=%#" PRIx64 ", funCallMemSize=%#" PRIx64 ", funcCallSvmMem=%#" PRIx64
+        ", baseFuncCallSvmMem=%#" PRIx64 ", dfxAddr=%#" PRIx64,
+        model->GetFuncCallHostMem(), model->GetFunCallMemSize(), model->GetFuncCallSvmMem(),
+        model->GetBaseFuncCallSvmMem(), model->GetDfxPtr());
 
     return RT_ERROR_NONE;
 }
 
-static rtError_t ConstructFuncCallPara(TaskInfo * const taskInfo, rtStarsModelExeFuncCallPara_t &funcCallPara)
+static rtError_t ConstructFuncCallPara(TaskInfo* const taskInfo, rtStarsModelExeFuncCallPara_t& funcCallPara)
 {
-    Stream * const stream = taskInfo->stream;
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    Stream* const stream = taskInfo->stream;
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
 
     const rtError_t ret = AllocFuncCallMemForModelExecuteTask(taskInfo, funcCallPara);
     ERROR_RETURN(ret, "alloc func call svm failed, retCode=%#x.", ret);
@@ -255,22 +261,23 @@ static rtError_t ConstructFuncCallPara(TaskInfo * const taskInfo, rtStarsModelEx
     const DevProperties props = taskInfo->stream->Device_()->GetDevProperties();
     funcCallPara.sqTailOffset = props.sqTailOffset;
     funcCallPara.sqFsmSelBasAddr = static_cast<uint64_t>(props.fsmSelBase);
-    if (props.starsResourceAddrCalculateMethod == 
+    if (props.starsResourceAddrCalculateMethod ==
         StarsResourceAddrCalculateMethod::STARS_RESOURCE_ADDR_CALCULATE_BY_DEVICE_INFO) {
         const uint64_t chipAddr = taskInfo->stream->Device_()->GetChipAddr();
         const uint64_t chipOffset = taskInfo->stream->Device_()->GetChipOffset();
-        const uint64_t dieOffset  = taskInfo->stream->Device_()->GetDieOffset();
+        const uint64_t dieOffset = taskInfo->stream->Device_()->GetDieOffset();
         funcCallPara.sqFsmSelBasAddr = funcCallPara.sqFsmSelBasAddr +
-            (chipOffset * static_cast<uint64_t>(stream->Device_()->GetPhyChipId())) +
-            (dieOffset * static_cast<uint64_t>(stream->Device_()->GetPhyDieId())) + chipAddr;
+                                       (chipOffset * static_cast<uint64_t>(stream->Device_()->GetPhyChipId())) +
+                                       (dieOffset * static_cast<uint64_t>(stream->Device_()->GetPhyDieId())) + chipAddr;
     }
     if (props.starsBaseMethod == StarsBaseMethod::STARS_BASE_CALCULATE_BY_DRIVER) {
         const uint64_t baseAddr = taskInfo->stream->Device_()->GetStarsRegBaseAddr();
-        RT_LOG(RT_LOG_INFO, "baseAddr=0x%llx", baseAddr);    
+        RT_LOG(RT_LOG_INFO, "baseAddr=0x%llx", baseAddr);
         if (baseAddr == 0ULL) {
-            RT_LOG(RT_LOG_ERROR, "invalid device_id, physic chip_id=%u, die_id=%u, stream_id=%d.",
-                    taskInfo->stream->Device_()->Id_(), taskInfo->stream->Device_()->GetPhyChipId(),
-                    taskInfo->stream->Device_()->GetPhyDieId(), taskInfo->stream->Id_());
+            RT_LOG(
+                RT_LOG_ERROR, "invalid device_id, physic chip_id=%u, die_id=%u, stream_id=%d.",
+                taskInfo->stream->Device_()->Id_(), taskInfo->stream->Device_()->GetPhyChipId(),
+                taskInfo->stream->Device_()->GetPhyDieId(), taskInfo->stream->Id_());
             return RT_ERROR_DEVICE_INVALID;
         }
         funcCallPara.sqFsmSelBasAddr = baseAddr + DAVID_SIMPLE_RTSQ_FSM_SEL_REG;
@@ -280,16 +287,16 @@ static rtError_t ConstructFuncCallPara(TaskInfo * const taskInfo, rtStarsModelEx
     return RT_ERROR_NONE;
 }
 
-static void PrintDebugInfoForModelExecute(const Model *model)
+static void PrintDebugInfoForModelExecute(const Model* model)
 {
     if (CheckLogLevel(static_cast<int32_t>(RUNTIME), DLOG_DEBUG) == 1) {
-        const uint32_t *const cmdF = RtPtrToPtr<const uint32_t *>(model->GetFuncCallHostMem());
+        const uint32_t* const cmdF = RtPtrToPtr<const uint32_t*>(model->GetFuncCallHostMem());
         for (size_t i = 0UL; i < (sizeof(RtStarsModelExeFuncCall) / sizeof(uint32_t)); i++) {
             RT_LOG(RT_LOG_DEBUG, "model execute before h2d instr[%zu]=0x%08x", i, *(cmdF + i));
         }
 
-        const uint64_t *const cmdS = RtPtrToPtr<const uint64_t *>(
-            RtPtrToPtr<uint8_t *>(model->GetFuncCallHostMem()) + sizeof(RtStarsModelExeFuncCall));
+        const uint64_t* const cmdS = RtPtrToPtr<const uint64_t*>(
+            RtPtrToPtr<uint8_t*>(model->GetFuncCallHostMem()) + sizeof(RtStarsModelExeFuncCall));
         for (size_t i = 0UL; i < ((model->GetFunCallMemSize() - sizeof(RtStarsModelExeFuncCall)) / sizeof(uint64_t));
              i++) {
             RT_LOG(RT_LOG_DEBUG, "model execute before h2d sq data[%zu]=%#" PRIx64, i, *(cmdS + i));
@@ -297,11 +304,11 @@ static void PrintDebugInfoForModelExecute(const Model *model)
     }
 }
 
-rtError_t PrepareSqeInfoForModelExecuteTask(TaskInfo * const taskInfo)
+rtError_t PrepareSqeInfoForModelExecuteTask(TaskInfo* const taskInfo)
 {
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
     Model* model = modelExecuteTaskInfo->model;
-    Stream * const stream = taskInfo->stream;
+    Stream* const stream = taskInfo->stream;
     const auto dev = stream->Device_();
 
     if (!stream->Device_()->IsStarsPlatform()) {
@@ -310,7 +317,7 @@ rtError_t PrepareSqeInfoForModelExecuteTask(TaskInfo * const taskInfo)
     rtError_t ret = RT_ERROR_NONE;
     if (unlikely(model->GetFirstExecute())) {
         std::unique_lock<std::mutex> lock(model->GetFirstExecuteMutex());
-        if(model->GetFirstExecute()){
+        if (model->GetFirstExecute()) {
             RtStarsModelExeFuncCall funcCall = {};
             rtStarsModelExeFuncCallPara_t funcCallPara = {};
             funcCallPara.deltaOffset = 0ULL;
@@ -318,27 +325,34 @@ rtError_t PrepareSqeInfoForModelExecuteTask(TaskInfo * const taskInfo)
             ret = ConstructFuncCallPara(taskInfo, funcCallPara);
             COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "construct func call para failed, retCode=%#x.", ret);
 
-            RT_LOG(RT_LOG_DEBUG, "Func call para, funcCallAddr=%#" PRIx64 ", headSqArrAddr=%#" PRIx64
-                    ", headSqArrMax=%#" PRIx64 ", streamSvmArrAddr=%#" PRIx64 ", streamSvmArrMax=%#" PRIx64
-                    ", sqFsmSelBasAddr=%#" PRIx64 ", dfxAddr=%#" PRIx64,
-                    funcCallPara.funcCallAddr, funcCallPara.headSqArrAddr,funcCallPara.headSqArrMax,
-                    funcCallPara.streamSvmArrAddr, funcCallPara.streamSvmArrMax,
-                    funcCallPara.sqFsmSelBasAddr, funcCallPara.dfxAddr);
+            RT_LOG(
+                RT_LOG_DEBUG,
+                "Func call para, funcCallAddr=%#" PRIx64 ", headSqArrAddr=%#" PRIx64 ", headSqArrMax=%#" PRIx64
+                ", streamSvmArrAddr=%#" PRIx64 ", streamSvmArrMax=%#" PRIx64 ", sqFsmSelBasAddr=%#" PRIx64
+                ", dfxAddr=%#" PRIx64,
+                funcCallPara.funcCallAddr, funcCallPara.headSqArrAddr, funcCallPara.headSqArrMax,
+                funcCallPara.streamSvmArrAddr, funcCallPara.streamSvmArrMax, funcCallPara.sqFsmSelBasAddr,
+                funcCallPara.dfxAddr);
 
             ConstrucModelExeFuncCall(funcCallPara, funcCall);
-            ret = memcpy_s(model->GetFuncCallHostMem(), sizeof(RtStarsModelExeFuncCall),
-                reinterpret_cast<void *>(&funcCall), sizeof(RtStarsModelExeFuncCall));
-            COND_PROC_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE, (void)FreeFuncCallHostMemAndSvmMem(taskInfo),
+            ret = memcpy_s(
+                model->GetFuncCallHostMem(), sizeof(RtStarsModelExeFuncCall), reinterpret_cast<void*>(&funcCall),
+                sizeof(RtStarsModelExeFuncCall));
+            COND_PROC_RETURN_ERROR_MSG_INNER(
+                ret != EOK, RT_ERROR_SEC_HANDLE, (void)FreeFuncCallHostMemAndSvmMem(taskInfo),
                 "Failed to call memcpy_s to copy funcCall, src=%p, dest=%p, dest_max=%zu, count=%zu, retCode=%#x.",
-                RtPtrToPtr<void *>(&funcCall), model->GetFuncCallHostMem(), sizeof(RtStarsModelExeFuncCall),
+                RtPtrToPtr<void*>(&funcCall), model->GetFuncCallHostMem(), sizeof(RtStarsModelExeFuncCall),
                 sizeof(RtStarsModelExeFuncCall), ret);
-            RT_LOG(RT_LOG_DEBUG,"model first execute.funcCallHostMem=%#" PRIx64, model->GetFuncCallHostMem());
+            RT_LOG(RT_LOG_DEBUG, "model first execute.funcCallHostMem=%#" PRIx64, model->GetFuncCallHostMem());
 
-            const rtMemcpyKind_t kind = (
-                taskInfo->stream->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_MEM_COPY_DOT_D2D_ONLY)) ? 
-                RT_MEMCPY_DEVICE_TO_DEVICE : RT_MEMCPY_HOST_TO_DEVICE;
-            ret = (dev->Driver_())->MemCopySync(RtValueToPtr<void *>(model->GetFuncCallSvmMem()),
-                model->GetFunCallMemSize(), model->GetFuncCallHostMem(), model->GetFunCallMemSize(), kind);
+            const rtMemcpyKind_t kind = (taskInfo->stream->Device_()->IsSupportFeature(
+                                            RtOptionalFeatureType::RT_FEATURE_DEVICE_MEM_COPY_DOT_D2D_ONLY)) ?
+                                            RT_MEMCPY_DEVICE_TO_DEVICE :
+                                            RT_MEMCPY_HOST_TO_DEVICE;
+            ret = (dev->Driver_())
+                      ->MemCopySync(
+                          RtValueToPtr<void*>(model->GetFuncCallSvmMem()), model->GetFunCallMemSize(),
+                          model->GetFuncCallHostMem(), model->GetFunCallMemSize(), kind);
 
             PrintDebugInfoForModelExecute(model);
 
@@ -351,37 +365,40 @@ rtError_t PrepareSqeInfoForModelExecuteTask(TaskInfo * const taskInfo)
         }
     } else {
         if (!dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_MODEL_EXECUTE_COPY_ONCE)) {
-            ret = (dev->Driver_())->MemCopySync((void*)(uintptr_t)(model->GetFuncCallSvmMem()),
-                model->GetFunCallMemSize(), model->GetFuncCallHostMem(), model->GetFunCallMemSize(), RT_MEMCPY_DEVICE_TO_DEVICE);
+            ret = (dev->Driver_())
+                      ->MemCopySync(
+                          (void*)(uintptr_t)(model->GetFuncCallSvmMem()), model->GetFunCallMemSize(),
+                          model->GetFuncCallHostMem(), model->GetFunCallMemSize(), RT_MEMCPY_DEVICE_TO_DEVICE);
             if (ret != RT_ERROR_NONE) {
                 (void)FreeFuncCallHostMemAndSvmMem(taskInfo);
-                RT_LOG(RT_LOG_ERROR, "MemCopySync for model exe func call failed without first execute, retCode=%#x.", ret);
+                RT_LOG(
+                    RT_LOG_ERROR, "MemCopySync for model exe func call failed without first execute, retCode=%#x.",
+                    ret);
                 return ret;
             }
         }
-        RT_LOG(RT_LOG_DEBUG, "not model first execute, funcCallHostMem=%#" PRIx64 ", funCallMemSize=%#" PRIx64
-                ", funcCallSvmMem=%#" PRIx64 ", baseFuncCallSvmMem=%#" PRIx64 ", dfxAddr=%#" PRIx64,
-                model->GetFuncCallHostMem(), model->GetFunCallMemSize(), model->GetFuncCallSvmMem(),
-                model->GetBaseFuncCallSvmMem(), model->GetDfxPtr());
+        RT_LOG(
+            RT_LOG_DEBUG,
+            "not model first execute, funcCallHostMem=%#" PRIx64 ", funCallMemSize=%#" PRIx64
+            ", funcCallSvmMem=%#" PRIx64 ", baseFuncCallSvmMem=%#" PRIx64 ", dfxAddr=%#" PRIx64,
+            model->GetFuncCallHostMem(), model->GetFunCallMemSize(), model->GetFuncCallSvmMem(),
+            model->GetBaseFuncCallSvmMem(), model->GetDfxPtr());
     }
 
     return ret;
 }
 
-void ModelExecuteTaskUnInit(TaskInfo * const taskInfo)
-{
-    (void)FreeFuncCallMemForModelExecuteTask(taskInfo);
-}
+void ModelExecuteTaskUnInit(TaskInfo* const taskInfo) { (void)FreeFuncCallMemForModelExecuteTask(taskInfo); }
 
-rtError_t ModelExecuteTaskInit(TaskInfo * const taskInfo, Model *const modelPtr, const uint32_t modelIndex,
-                               const uint32_t firstTaskIndex)
+rtError_t ModelExecuteTaskInit(
+    TaskInfo* const taskInfo, Model* const modelPtr, const uint32_t modelIndex, const uint32_t firstTaskIndex)
 {
     if (modelPtr == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Failed to init ModelExecuteTask, modelPtr null.");
         return RT_ERROR_MODEL_NULL;
     }
 
-    ModelExecuteTaskInfo *modelExecTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    ModelExecuteTaskInfo* modelExecTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
 
     TaskCommonInfoInit(taskInfo);
 
@@ -396,38 +413,41 @@ rtError_t ModelExecuteTaskInit(TaskInfo * const taskInfo, Model *const modelPtr,
     return PrepareSqeInfoForModelExecuteTask(taskInfo);
 }
 
-void SetStarsResultForModelExecuteTask(TaskInfo * const taskInfo, const rtLogicCqReport_t &logicCq)
+void SetStarsResultForModelExecuteTask(TaskInfo* const taskInfo, const rtLogicCqReport_t& logicCq)
 {
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
 
     if ((logicCq.errorType & static_cast<uint8_t>(RT_STARS_EXIST_ERROR)) != 0U) {
         const uint32_t starsDefineErrorCode = logicCq.errorCode;
         if ((starsDefineErrorCode & static_cast<uint32_t>(RT_STARS_CQE_ERR_TYPE_EXCEPTION)) != 0U) {
             taskInfo->errorCode = TS_ERROR_ILLEGAL_PARAM;
-            RT_LOG(RT_LOG_ERROR, "model status is busy when execute, model_id=%u, stream_id=%hu, task_id=%hu",
+            RT_LOG(
+                RT_LOG_ERROR, "model status is busy when execute, model_id=%u, stream_id=%hu, task_id=%hu",
                 modelExecuteTaskInfo->modelId, taskInfo->stream->Id_(), taskInfo->id);
             return;
         }
         if (logicCq.errorType == 0x4U) {
             taskInfo->errorCode = TS_ERROR_TASK_TIMEOUT;
-            RT_LOG(RT_LOG_ERROR, "ModelExecuteTask timeout, model_id=%u, stream_id=%hu, task_id=%hu",
-                   modelExecuteTaskInfo->modelId, taskInfo->stream->Id_(), taskInfo->id);
+            RT_LOG(
+                RT_LOG_ERROR, "ModelExecuteTask timeout, model_id=%u, stream_id=%hu, task_id=%hu",
+                modelExecuteTaskInfo->modelId, taskInfo->stream->Id_(), taskInfo->id);
             return;
         }
 
         if (logicCq.errorCode == 0) {
             taskInfo->errorCode = TS_ERROR_ILLEGAL_PARAM;
-            RT_LOG(RT_LOG_ERROR, "ModelExecuteTask goto error instr, model_id=%u, stream_id=%hu, task_id=%hu",
-                   modelExecuteTaskInfo->modelId, taskInfo->stream->Id_(), taskInfo->id);
+            RT_LOG(
+                RT_LOG_ERROR, "ModelExecuteTask goto error instr, model_id=%u, stream_id=%hu, task_id=%hu",
+                modelExecuteTaskInfo->modelId, taskInfo->stream->Id_(), taskInfo->id);
         }
     }
     return;
 }
 
-void ToCommandBodyForModelExecuteTask(TaskInfo * const taskInfo, rtCommand_t * const command)
+void ToCommandBodyForModelExecuteTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
     command->u.modelExecuteTask.model_id = static_cast<uint16_t>(modelExecuteTaskInfo->modelId);
     command->u.modelExecuteTask.first_task_id = static_cast<uint16_t>(modelExecuteTaskInfo->firstTaskId);
@@ -435,38 +455,38 @@ void ToCommandBodyForModelExecuteTask(TaskInfo * const taskInfo, rtCommand_t * c
     command->u.modelExecuteTask.asid_baddr =
         static_cast<uint64_t>((stream->Device_()->GetTTBR_()) & (0x0000FFFFFFFFFFFFU));
     command->u.modelExecuteTask.SMMU_subStreamID = static_cast<uint16_t>(stream->Device_()->GetSSID_());
-    RT_LOG(RT_LOG_DEBUG, "ModelExecute SMMU_subStreamID=%u",
+    RT_LOG(
+        RT_LOG_DEBUG, "ModelExecute SMMU_subStreamID=%u",
         static_cast<uint32_t>(command->u.modelExecuteTask.SMMU_subStreamID));
     command->u.modelExecuteTask.tcr = stream->Device_()->GetTCR_();
     command->u.modelExecuteTask.sch_group_id = modelExecuteTaskInfo->model->GetSchGroupId();
 }
 
-void PrintErrorModelExecuteTaskFuncCall(TaskInfo *const task)
+void PrintErrorModelExecuteTaskFuncCall(TaskInfo* const task)
 {
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(task->u.modelExecuteTaskInfo);
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(task->u.modelExecuteTaskInfo);
     Model* model = modelExecuteTaskInfo->model;
     if (model->GetFuncCallSvmMem() == 0ULL) {
         RT_LOG(RT_LOG_ERROR, "FuncCallSvmMem is nullptr.");
         return;
     }
-    RT_LOG(RT_LOG_ERROR, "funcCallSvmMem=0x%llx, funCallMemSize=%u.", model->GetFuncCallSvmMem(), model->GetFunCallMemSize());
-    uint8_t *starsModelExefuncCall = new (std::nothrow) uint8_t[model->GetFunCallMemSize()];
+    RT_LOG(
+        RT_LOG_ERROR, "funcCallSvmMem=0x%llx, funCallMemSize=%u.", model->GetFuncCallSvmMem(),
+        model->GetFunCallMemSize());
+    uint8_t* starsModelExefuncCall = new (std::nothrow) uint8_t[model->GetFunCallMemSize()];
     if (starsModelExefuncCall == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(uint8_t) * (model->GetFunCallMemSize()), "new");
         return;
     }
-    const auto ret = task->stream->Device_()->Driver_()->MemCopySync(starsModelExefuncCall,
-        model->GetFunCallMemSize(),
-        RtValueToPtr<void *>(model->GetFuncCallSvmMem()),
-        model->GetFunCallMemSize(),
-        RT_MEMCPY_DEVICE_TO_HOST);
+    const auto ret = task->stream->Device_()->Driver_()->MemCopySync(
+        starsModelExefuncCall, model->GetFunCallMemSize(), RtValueToPtr<void*>(model->GetFuncCallSvmMem()),
+        model->GetFunCallMemSize(), RT_MEMCPY_DEVICE_TO_HOST);
     if (ret == RT_ERROR_NONE) {
-        const uint32_t *cmd = RtPtrToPtr<const uint32_t *>(starsModelExefuncCall);
+        const uint32_t* cmd = RtPtrToPtr<const uint32_t*>(starsModelExefuncCall);
         for (size_t i = 0UL; i < (sizeof(RtStarsModelExeFuncCall) / sizeof(uint32_t)); i += 8UL) {
-            RT_LOG(RT_LOG_ERROR,
-                "FuncCall data : %08x %08x %08x %08x %08x %08x %08x %08x",
-                *(cmd + i), *(cmd + i + 1U), *(cmd + i + 2U), *(cmd + i + 3U),
-                *(cmd + i + 4U), *(cmd + i + 5U), *(cmd + i + 6U), *(cmd + i + 7U));
+            RT_LOG(
+                RT_LOG_ERROR, "FuncCall data : %08x %08x %08x %08x %08x %08x %08x %08x", *(cmd + i), *(cmd + i + 1U),
+                *(cmd + i + 2U), *(cmd + i + 3U), *(cmd + i + 4U), *(cmd + i + 5U), *(cmd + i + 6U), *(cmd + i + 7U));
         }
     }
     delete[] starsModelExefuncCall;
@@ -474,68 +494,68 @@ void PrintErrorModelExecuteTaskFuncCall(TaskInfo *const task)
     return;
 }
 
-void PrintErrorInfoForModelExecuteTask(TaskInfo * const taskInfo, const uint32_t devId)
+void PrintErrorInfoForModelExecuteTask(TaskInfo* const taskInfo, const uint32_t devId)
 {
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
     const uint32_t taskId = taskInfo->id;
     const int32_t streamId = stream->Id_();
     if (stream->Device_()->IsStarsPlatform()) {
         uint64_t dfx[8U];
-        (void)taskInfo->stream->Device_()->Driver_()->MemCopySync(dfx, sizeof(dfx),
-            modelExecuteTaskInfo->model->GetDfxPtr(), sizeof(dfx), RT_MEMCPY_DEVICE_TO_HOST);
-        RT_LOG(RT_LOG_ERROR, "stream_id=%u, task_id=%u, sqVirtualAddr=%" PRIu64 ", head equal tail flag=%" PRIu64 ".",
-                streamId, taskId, dfx[0U], dfx[1U]);
+        (void)taskInfo->stream->Device_()->Driver_()->MemCopySync(
+            dfx, sizeof(dfx), modelExecuteTaskInfo->model->GetDfxPtr(), sizeof(dfx), RT_MEMCPY_DEVICE_TO_HOST);
+        RT_LOG(
+            RT_LOG_ERROR, "stream_id=%u, task_id=%u, sqVirtualAddr=%" PRIu64 ", head equal tail flag=%" PRIu64 ".",
+            streamId, taskId, dfx[0U], dfx[1U]);
 
         PrintErrorModelExecuteTaskFuncCall(taskInfo);
     }
 
-    RT_LOG(RT_LOG_ERROR,
+    RT_LOG(
+        RT_LOG_ERROR,
         "model execute task failed, device_id=%u, model stream_id=%d, model task_id=%u, flip_num=%hu, "
-        "model_id=%u, first_task_id=%u", devId, streamId, taskId,
-        taskInfo->flipNum, modelExecuteTaskInfo->modelId, modelExecuteTaskInfo->firstTaskId);
+        "model_id=%u, first_task_id=%u",
+        devId, streamId, taskId, taskInfo->flipNum, modelExecuteTaskInfo->modelId, modelExecuteTaskInfo->firstTaskId);
 }
 
-TaskInfo *GetRealReportFaultTaskForModelExecuteTask(TaskInfo * const taskInfo)
+TaskInfo* GetRealReportFaultTaskForModelExecuteTask(TaskInfo* const taskInfo)
 {
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
-    Device *const dev = stream->Device_();
+    Device* const dev = stream->Device_();
 
-    TaskInfo *taskPtr = GetTaskInfo(dev, modelExecuteTaskInfo->errorStreamId, modelExecuteTaskInfo->errorTaskId, true);
+    TaskInfo* taskPtr = GetTaskInfo(dev, modelExecuteTaskInfo->errorStreamId, modelExecuteTaskInfo->errorTaskId, true);
     return taskPtr;
 }
 
-void ReportErrorInfoForModelExecuteTask(TaskInfo * const taskInfo, const uint32_t devId)
+void ReportErrorInfoForModelExecuteTask(TaskInfo* const taskInfo, const uint32_t devId)
 {
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    Stream* const stream = taskInfo->stream;
     const uint32_t errorCode = taskInfo->errorCode;
 
-    if ((errorCode == TS_ERROR_END_OF_SEQUENCE) ||
-        (errorCode == TS_MODEL_ABORT_NORMAL) ||
+    if ((errorCode == TS_ERROR_END_OF_SEQUENCE) || (errorCode == TS_MODEL_ABORT_NORMAL) ||
         (errorCode == TS_ERROR_MODEL_ABORTED)) {
         return;
     }
     rtError_t rtErrCode = RT_ERROR_TSFW_RESERVED;
-    RT_LOG(RT_LOG_ERROR, "model execute error, retCode=%#x, [%s].",
-           errorCode, GetTsErrCodeMap(errorCode, &rtErrCode));
+    RT_LOG(RT_LOG_ERROR, "model execute error, retCode=%#x, [%s].", errorCode, GetTsErrCodeMap(errorCode, &rtErrCode));
     PrintErrorInfo(taskInfo, devId);
 
-    TaskInfo *taskPtr = GetRealReportFaultTaskForModelExecuteTask(taskInfo);
+    TaskInfo* taskPtr = GetRealReportFaultTaskForModelExecuteTask(taskInfo);
 
-    COND_RETURN_VOID(taskPtr == nullptr,
-                     "Can not find task_id=%u of stream_id=%u!",
-                     modelExecuteTaskInfo->errorTaskId,
-                     modelExecuteTaskInfo->errorStreamId);
-    CaptureModel *captureModel = dynamic_cast<CaptureModel *>(taskPtr->stream->Model_());
+    COND_RETURN_VOID(
+        taskPtr == nullptr, "Can not find task_id=%u of stream_id=%u!", modelExecuteTaskInfo->errorTaskId,
+        modelExecuteTaskInfo->errorStreamId);
+    CaptureModel* captureModel = dynamic_cast<CaptureModel*>(taskPtr->stream->Model_());
     uint32_t subModelId = MAX_UINT32_NUM;
     if ((captureModel != nullptr) && captureModel->IsSubCaptureModel()) {
         subModelId = captureModel->Id_();
     }
-    RT_LOG(RT_LOG_ERROR, "Real fault task, device_id=%u, sub_model_id=%u, stream_id=%d, task_id=%hu, type=%d[%s].",
+    RT_LOG(
+        RT_LOG_ERROR, "Real fault task, device_id=%u, sub_model_id=%u, stream_id=%d, task_id=%hu, type=%d[%s].",
         taskPtr->stream->Device_()->Id_(), subModelId, taskPtr->stream->Id_(), taskPtr->id, taskPtr->type,
         taskPtr->typeName);
 
@@ -550,26 +570,27 @@ void ReportErrorInfoForModelExecuteTask(TaskInfo * const taskInfo, const uint32_
     // if lost socket, set error code for GE handle this error
     if (unlikely((taskPtr->drvErr == static_cast<uint32_t>(RT_ERROR_SOCKET_CLOSE))) ||
         (taskInfo->drvErr == static_cast<uint32_t>(RT_ERROR_SOCKET_CLOSE))) {
-        RT_LOG(RT_LOG_ERROR,
+        RT_LOG(
+            RT_LOG_ERROR,
             "Set stream drv error, error stream_id=%u, task_id=%u, model stream_id=%d, task_id=%hu, "
             "task driver error=%#x, ModelExecuteTask driver error=%#x.",
             modelExecuteTaskInfo->errorStreamId, modelExecuteTaskInfo->errorTaskId,
-            static_cast<uint32_t>(stream->Id_()),
-            taskInfo->id, taskPtr->drvErr, taskInfo->drvErr);
+            static_cast<uint32_t>(stream->Id_()), taskInfo->id, taskPtr->drvErr, taskInfo->drvErr);
         stream->SetDrvErr(static_cast<uint32_t>(RT_ERROR_SOCKET_CLOSE));
     }
-    TaskFailCallBack(modelExecuteTaskInfo->errorStreamId, modelExecuteTaskInfo->errorTaskId,
-        taskInfo->tid, errorCode, stream->Device_(), true);
+    TaskFailCallBack(
+        modelExecuteTaskInfo->errorStreamId, modelExecuteTaskInfo->errorTaskId, taskInfo->tid, errorCode,
+        stream->Device_(), true);
 }
 
-void DoCompleteSuccessForModelExecuteTask(TaskInfo * const taskInfo, const uint32_t devId)
+void DoCompleteSuccessForModelExecuteTask(TaskInfo* const taskInfo, const uint32_t devId)
 {
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    Stream* const stream = taskInfo->stream;
     uint32_t errorCode = taskInfo->errorCode;
 
     if (unlikely(errorCode != static_cast<uint32_t>(RT_ERROR_NONE))) {
-        TaskInfo *errTaskPtr = GetRealReportFaultTaskForModelExecuteTask(taskInfo);
+        TaskInfo* errTaskPtr = GetRealReportFaultTaskForModelExecuteTask(taskInfo);
         if (errTaskPtr != nullptr) {
             if (MEM_ERROR_CODE.find(errTaskPtr->mte_error) != MEM_ERROR_CODE.end()) {
                 errorCode = static_cast<int32_t>(errTaskPtr->mte_error);
@@ -584,11 +605,11 @@ void DoCompleteSuccessForModelExecuteTask(TaskInfo * const taskInfo, const uint3
     }
 }
 
-static void ModelExecuteTaskaProcError(TaskInfo * const taskInfo, const uint32_t errCode)
+static void ModelExecuteTaskaProcError(TaskInfo* const taskInfo, const uint32_t errCode)
 {
     rtStarsCqeSwStatus_t swStatus = {};
     swStatus.value = errCode;
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
 
     if (swStatus.model_exec.result == static_cast<uint16_t>(TS_STARS_MODEL_STREAM_EXE_FAILED)) {
         taskInfo->errorCode = TS_MODEL_STREAM_EXE_FAILED;
@@ -605,15 +626,16 @@ static void ModelExecuteTaskaProcError(TaskInfo * const taskInfo, const uint32_t
 
     modelExecuteTaskInfo->errorTaskId = swStatus.model_exec.task_id;
     modelExecuteTaskInfo->errorStreamId = swStatus.model_exec.stream_id;
-    RT_LOG(RT_LOG_WARNING, "errorCode=0x%x, errorTaskId=%u, errorStreamId=%u.",
-        taskInfo->errorCode, modelExecuteTaskInfo->errorTaskId, modelExecuteTaskInfo->errorStreamId);
+    RT_LOG(
+        RT_LOG_WARNING, "errorCode=0x%x, errorTaskId=%u, errorStreamId=%u.", taskInfo->errorCode,
+        modelExecuteTaskInfo->errorTaskId, modelExecuteTaskInfo->errorStreamId);
 }
 
-static void ModelExecuteTaskProcErrorForSoftwareSq(TaskInfo * const taskInfo, const uint32_t errCode)
+static void ModelExecuteTaskProcErrorForSoftwareSq(TaskInfo* const taskInfo, const uint32_t errCode)
 {
     rtStarsCqeSwStatus_t swStatus = {};
     swStatus.value = errCode;
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
 
     if (swStatus.model_exec_ex.result == static_cast<uint16_t>(TS_STARS_MODEL_STREAM_EXE_FAILED)) {
         taskInfo->errorCode = TS_MODEL_STREAM_EXE_FAILED;
@@ -632,20 +654,20 @@ static void ModelExecuteTaskProcErrorForSoftwareSq(TaskInfo * const taskInfo, co
     modelExecuteTaskInfo->errorStreamId = modelExecuteTaskInfo->model->GetStreamIdBySqId(swStatus.model_exec_ex.sq_id);
     if ((modelExecuteTaskInfo->errorStreamId == UINT32_MAX) && (modelExecuteTaskInfo->model != nullptr) &&
         (modelExecuteTaskInfo->model->GetModelType() == RT_MODEL_CAPTURE_MODEL)) {
-        CaptureModel *captureModel = dynamic_cast<CaptureModel *>(modelExecuteTaskInfo->model);
+        CaptureModel* captureModel = dynamic_cast<CaptureModel*>(modelExecuteTaskInfo->model);
         modelExecuteTaskInfo->errorStreamId = FindStreamIdInSubModels(captureModel, swStatus.model_exec_ex.sq_id);
     }
-    RT_LOG(RT_LOG_WARNING, "errorCode=0x%x, errorTaskId=%u, errorStreamId=%u, sqId=%hu.",
-        taskInfo->errorCode, modelExecuteTaskInfo->errorTaskId, modelExecuteTaskInfo->errorStreamId,
-        swStatus.model_exec_ex.sq_id);
+    RT_LOG(
+        RT_LOG_WARNING, "errorCode=0x%x, errorTaskId=%u, errorStreamId=%u, sqId=%hu.", taskInfo->errorCode,
+        modelExecuteTaskInfo->errorTaskId, modelExecuteTaskInfo->errorStreamId, swStatus.model_exec_ex.sq_id);
 }
 
-static void DoCompleteStarsErrorForModelExecuteTask(TaskInfo * const taskInfo,
-                                                    const uint32_t devId, const uint32_t errCode)
+static void DoCompleteStarsErrorForModelExecuteTask(
+    TaskInfo* const taskInfo, const uint32_t devId, const uint32_t errCode)
 {
     /* 71 and 81 support */
-    Device *const dev = taskInfo->stream->Device_();
-    if ((dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MODEL_ACL_GRAPH_SOFTWARE_ENABLE)) && 
+    Device* const dev = taskInfo->stream->Device_();
+    if ((dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MODEL_ACL_GRAPH_SOFTWARE_ENABLE)) &&
         (dev->CheckFeatureSupport(TS_FEATURE_SOFTWARE_SQ_ENABLE))) {
         ModelExecuteTaskProcErrorForSoftwareSq(taskInfo, errCode);
     } else {
@@ -654,9 +676,9 @@ static void DoCompleteStarsErrorForModelExecuteTask(TaskInfo * const taskInfo,
     DoCompleteSuccessForModelExecuteTask(taskInfo, devId);
 }
 
-rtError_t WaitExecFinishForModelExecuteTask(const TaskInfo *const taskInfo)
+rtError_t WaitExecFinishForModelExecuteTask(const TaskInfo* const taskInfo)
 {
-    Stream * const stream = taskInfo->stream;
+    Stream* const stream = taskInfo->stream;
     rtError_t error = RT_ERROR_NONE;
     if (!(stream->IsPendingListEmpty(RT_HOST_TASK_TYPE_MEMCPY))) {
         error = stream->ExecPendingList(RT_HOST_TASK_TYPE_MEMCPY);
@@ -664,23 +686,23 @@ rtError_t WaitExecFinishForModelExecuteTask(const TaskInfo *const taskInfo)
     return error;
 }
 
-static bool ModelIsExistInContext(const Model *mdl, const Stream *stream)
+static bool ModelIsExistInContext(const Model* mdl, const Stream* stream)
 {
     if (stream != nullptr && stream->Context_() != nullptr) {
-        Context *context = stream->Context_();
+        Context* context = stream->Context_();
         return context->ModelIsExistInContext(mdl);
     }
     return false;
 }
 
-void ReportModelEndGraphErrorForNotifyWaitTask(TaskInfo *taskInfo, const uint32_t devId)
+void ReportModelEndGraphErrorForNotifyWaitTask(TaskInfo* taskInfo, const uint32_t devId)
 {
     if (!Runtime::Instance()->ChipIsHaveStars()) {
         return;
     }
 
     RT_LOG(RT_LOG_DEBUG, "Report model endGraph errcode=0x%x.", taskInfo->errorCode);
-    Model *mdl = taskInfo->u.notifywaitTask.u.notify->GetEndGraphModel();
+    Model* mdl = taskInfo->u.notifywaitTask.u.notify->GetEndGraphModel();
     if (!ModelIsExistInContext(mdl, taskInfo->stream)) {
         RT_LOG(RT_LOG_ERROR, "this model is not in current context.");
         return;
@@ -691,8 +713,9 @@ void ReportModelEndGraphErrorForNotifyWaitTask(TaskInfo *taskInfo, const uint32_
     /* In stars, modelExecute task is always followed by an endgraph task, modelExecuteTaskId = endgraphTaskId - 1 */
     mdlExecTsk.id = taskInfo->id - 1U;
     mdlExecTsk.tid = taskInfo->tid;
-    RT_LOG(RT_LOG_INFO, "stream_id=%d, task_id=%hu, model_id=%u, tid=%u",
-        mdlExecTsk.stream->Id_(), mdlExecTsk.id, mdl->Id_(), mdlExecTsk.tid);
+    RT_LOG(
+        RT_LOG_INFO, "stream_id=%d, task_id=%hu, model_id=%u, tid=%u", mdlExecTsk.stream->Id_(), mdlExecTsk.id,
+        mdl->Id_(), mdlExecTsk.tid);
 
     (void)ModelExecuteTaskInit(&mdlExecTsk, mdl, mdl->Id_(), 0U);
     (void)DoCompleteStarsErrorForModelExecuteTask(&mdlExecTsk, devId, taskInfo->errorCode);
@@ -700,5 +723,5 @@ void ReportModelEndGraphErrorForNotifyWaitTask(TaskInfo *taskInfo, const uint32_
 }
 
 #endif
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

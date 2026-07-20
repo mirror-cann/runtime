@@ -20,20 +20,21 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("CreateStreamTask")
-void SetResultForCreateStreamTask(TaskInfo * const taskInfo, const void *const data, const uint32_t dataSize)
+void SetResultForCreateStreamTask(TaskInfo* const taskInfo, const void* const data, const uint32_t dataSize)
 {
     UNUSED(dataSize);
-    Stream * const stream = taskInfo->stream;
+    Stream* const stream = taskInfo->stream;
 
     if ((stream->Flags() & RT_STREAM_PRIMARY_FIRST_DEFAULT) != 0U) {
-        const uint32_t *const tsData = static_cast<const uint32_t *>(data);
+        const uint32_t* const tsData = static_cast<const uint32_t*>(data);
         const uint32_t payLoad = *tsData;
         // for create stream task, payLoad(0~11 bit): error code, payLoad(12~31 bit): tsch build version
         const uint32_t tschVersion = static_cast<uint32_t>(payLoad >> 12U);
-        Device *const devicePtr = stream->Device_();
-        const Stream *const defaultStream = devicePtr->PrimaryStream_();
+        Device* const devicePtr = stream->Device_();
+        const Stream* const defaultStream = devicePtr->PrimaryStream_();
         if (defaultStream == nullptr) {
-            RT_LOG_INNER_MSG(RT_LOG_ERROR,
+            RT_LOG_INNER_MSG(
+                RT_LOG_ERROR,
                 "SetResultForCreateStreamTask failed because defaultStream cannot be a NULL pointer, deviceId=%u.",
                 taskInfo->stream->Device_()->Id_());
             return;
@@ -48,10 +49,10 @@ void SetResultForCreateStreamTask(TaskInfo * const taskInfo, const void *const d
 
 #if F_DESC("SetSqLockUnlockTask")
 // Construct the sq lock or unlock sqe.
-void ConstructSqeForSetSqLockUnlockTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForSetSqLockUnlockTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    Stream * const stm = taskInfo->stream;
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 0U;
@@ -66,7 +67,9 @@ void ConstructSqeForSetSqLockUnlockTask(TaskInfo* taskInfo, rtStarsSqe_t *const 
     sqe->kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
 
     PrintSqe(command, "SetSqLockUnlock");
-    RT_LOG(RT_LOG_INFO, "send SetSqLockUnlock succ,"
+    RT_LOG(
+        RT_LOG_INFO,
+        "send SetSqLockUnlock succ,"
         "sqe_type=%u,pre_p=%u,stream_id=%u,task_id=%u,task_type=%u.",
         sqe->type, sqe->pre_p, sqe->rt_streamID, sqe->task_id, sqe->task_type);
 
@@ -75,11 +78,11 @@ void ConstructSqeForSetSqLockUnlockTask(TaskInfo* taskInfo, rtStarsSqe_t *const 
 #endif
 
 #if F_DESC("StreamActiveTask")
-void ConstructSqeForStreamActiveTask(TaskInfo* taskInfo, rtStarsSqe_t * const command)
+void ConstructSqeForStreamActiveTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    StreamActiveTaskInfo *streamActiveTask = &(taskInfo->u.streamactiveTask);
-    Stream * const stream = taskInfo->stream;
-    RtStarsFunctionCallSqe &sqe = command->fuctionCallSqe;
+    StreamActiveTaskInfo* streamActiveTask = &(taskInfo->u.streamactiveTask);
+    Stream* const stream = taskInfo->stream;
+    RtStarsFunctionCallSqe& sqe = command->fuctionCallSqe;
     sqe.kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
     sqe.csc = 1U;
     sqe.sqeHeader.l1_lock = 0U;
@@ -91,24 +94,25 @@ void ConstructSqeForStreamActiveTask(TaskInfo* taskInfo, rtStarsSqe_t * const co
     sqe.sqeHeader.task_id = taskInfo->id;
     sqe.conds_sub_type = CONDS_SUB_TYPE_STREAM_ACTIVE;
 
-    const uint64_t funcAddr = RtPtrToValue<void *>(streamActiveTask->funcCallSvmMem);
+    const uint64_t funcAddr = RtPtrToValue<void*>(streamActiveTask->funcCallSvmMem);
     constexpr uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsStreamActiveFc));
 
     // func call size is rs2[19:0]*4Byte
     ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
 
     PrintSqe(command, "StreamActiveTask");
-    RT_LOG(RT_LOG_INFO, "StreamActiveTask stream_id=%d,task_id=%hu,active_stream_id=%u.",
-        stream->Id_(), taskInfo->id, streamActiveTask->activeStreamId);
+    RT_LOG(
+        RT_LOG_INFO, "StreamActiveTask stream_id=%d,task_id=%hu,active_stream_id=%u.", stream->Id_(), taskInfo->id,
+        streamActiveTask->activeStreamId);
 }
 
 #endif
 
 #if F_DESC("OverflowSwitchSetTask")
-void ConstructSqeForOverflowSwitchSetTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForOverflowSwitchSetTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    RtStarsPhSqe * const sqe = &(command->phSqe);
-    OverflowSwitchSetTaskInfo *overflowSwiSet = &taskInfo->u.overflowSwitchSetTask;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
+    OverflowSwitchSetTaskInfo* overflowSwiSet = &taskInfo->u.overflowSwitchSetTask;
 
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->pre_p = 1U;
@@ -124,17 +128,18 @@ void ConstructSqeForOverflowSwitchSetTask(TaskInfo* taskInfo, rtStarsSqe_t *cons
 
     PrintSqe(command, "OverflowSwitchSetTask");
     const std::string switchFlag = overflowSwiSet->switchFlag ? "on" : "off";
-    RT_LOG(RT_LOG_INFO, "OverflowSwitchSetTask target stream_id=%d switch %s",
-        overflowSwiSet->targetStm->Id_(), switchFlag.c_str());
+    RT_LOG(
+        RT_LOG_INFO, "OverflowSwitchSetTask target stream_id=%d switch %s", overflowSwiSet->targetStm->Id_(),
+        switchFlag.c_str());
 }
 #endif
 
 #if F_DESC("StreamTagSetTask")
-void ConstructSqeForStreamTagSetTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForStreamTagSetTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    StreamTagSetTaskInfo *stmTagSetTsk = &taskInfo->u.stmTagSetTask;
+    StreamTagSetTaskInfo* stmTagSetTsk = &taskInfo->u.stmTagSetTask;
 
-    RtStarsPhSqe * const sqe = &(command->phSqe);
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->pre_p = 1U;
     sqe->wr_cqe = taskInfo->stream->GetStarsWrCqeFlag();
@@ -148,17 +153,18 @@ void ConstructSqeForStreamTagSetTask(TaskInfo* taskInfo, rtStarsSqe_t *const com
     sqe->u.stream_set_tag_info.geOpTag = stmTagSetTsk->geOpTag;
 
     PrintSqe(command, "StreamTagSetTask");
-    RT_LOG(RT_LOG_INFO, "StreamTagSetTask target stream id=%d, sqe stream id =%hu, geOpTag=%u",
+    RT_LOG(
+        RT_LOG_INFO, "StreamTagSetTask target stream id=%d, sqe stream id =%hu, geOpTag=%u",
         stmTagSetTsk->targetStm->Id_(), sqe->rt_streamID, stmTagSetTsk->geOpTag);
 }
 #endif
 
 #if F_DESC("CallbackLaunchTask")
-void ConstructSqeForCallbackLaunchTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForCallbackLaunchTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     uint32_t pid = 0U;
-    RtStarsHostfuncCallbackSqe *const sqe = &(command->callbackSqe);
-    Stream *stm = taskInfo->stream;
+    RtStarsHostfuncCallbackSqe* const sqe = &(command->callbackSqe);
+    Stream* stm = taskInfo->stream;
 
     sqe->header.type = RT_STARS_SQE_TYPE_AICPU;
     sqe->header.l1_lock = 0U;
@@ -166,7 +172,7 @@ void ConstructSqeForCallbackLaunchTask(TaskInfo* taskInfo, rtStarsSqe_t *const c
     sqe->header.ie = RT_STARS_SQE_INT_DIR_NO;
     sqe->header.pre_p = RT_STARS_SQE_INT_DIR_NO;
     sqe->header.post_p = RT_STARS_SQE_INT_DIR_NO;
-    sqe->header.wr_cqe = 1U;    // callback need write cqe
+    sqe->header.wr_cqe = 1U; // callback need write cqe
     sqe->header.reserved = 0U;
     sqe->header.block_dim = 1U;
     sqe->header.rt_stream_id = static_cast<uint16_t>(stm->Id_());
@@ -195,24 +201,25 @@ void ConstructSqeForCallbackLaunchTask(TaskInfo* taskInfo, rtStarsSqe_t *const c
 
     sqe->event_id = static_cast<uint16_t>(taskInfo->u.callbackLaunchTask.eventId);
     sqe->isBlock = taskInfo->u.callbackLaunchTask.isBlock;
-    sqe->task_id = taskInfo->id;  //  send taskId callback cqe
+    sqe->task_id = taskInfo->id; //  send taskId callback cqe
 
     uint64_t addr = RtPtrToValue<rtCallback_t>(taskInfo->u.callbackLaunchTask.callBackFunc);
     sqe->hostfunc_addr_low = static_cast<uint32_t>(addr);
     sqe->hostfuncAddrHigh = static_cast<uint16_t>(addr >> UINT32_BIT_NUM);
 
-    addr = RtPtrToValue<void *>(taskInfo->u.callbackLaunchTask.fnData);
+    addr = RtPtrToValue<void*>(taskInfo->u.callbackLaunchTask.fnData);
     sqe->fndata_low = static_cast<uint32_t>(addr);
     sqe->fndata_high = static_cast<uint16_t>(addr >> UINT32_BIT_NUM);
 
     sqe->subTopicId = 0U;
-    sqe->topicId = 26U;     // EVENT_TS_CALLBACK_MSG
+    sqe->topicId = 26U;      // EVENT_TS_CALLBACK_MSG
     sqe->group_id = 11U;     // 11U, drv defined
     sqe->usr_data_len = 32U; // word 4 to word 11
     sqe->dest_pid = pid;
 
     PrintSqe(command, "CallbackLaunch");
-    RT_LOG(RT_LOG_INFO, "CallbackLaunch, topic_type=%hu, stream_id=%hu, task_id=%hu, event_id=%hu, isBlock=%hu, pid=%u",
+    RT_LOG(
+        RT_LOG_INFO, "CallbackLaunch, topic_type=%hu, stream_id=%hu, task_id=%hu, event_id=%hu, isBlock=%hu, pid=%u",
         sqe->topic_type, sqe->stream_id, taskInfo->id, sqe->event_id, sqe->isBlock, sqe->dest_pid);
 }
 #endif
@@ -220,17 +227,19 @@ void ConstructSqeForCallbackLaunchTask(TaskInfo* taskInfo, rtStarsSqe_t *const c
 #if F_DESC("SqeUpdateTask")
 rtError_t WaitAsyncCopyCompleteForUpdateTask(TaskInfo* taskInfo)
 {
-    SqeUpdateTaskInfo *sqeUpdateTask = &(taskInfo->u.sqeUpdateTask);
+    SqeUpdateTaskInfo* sqeUpdateTask = &(taskInfo->u.sqeUpdateTask);
     if (sqeUpdateTask->updateArgHandle == nullptr) {
         return RT_ERROR_NONE;
     }
-    Handle *argHdl = static_cast<Handle *>(sqeUpdateTask->updateArgHandle);
+    Handle* argHdl = static_cast<Handle*>(sqeUpdateTask->updateArgHandle);
     if (!(argHdl->freeArgs) || argHdl->argsAlloc == nullptr || argHdl->kerArgs == nullptr) {
         return RT_ERROR_NONE;
     }
     const rtError_t error = argHdl->argsAlloc->H2DMemCopyWaitFinish(argHdl->kerArgs);
     if (error != RT_ERROR_NONE) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "H2DMemCopyWaitFinish for args cpy result failed, retCode=%#x.", static_cast<uint32_t>(error));
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "H2DMemCopyWaitFinish for args cpy result failed, retCode=%#x.",
+            static_cast<uint32_t>(error));
         return error;
     }
 
@@ -239,11 +248,11 @@ rtError_t WaitAsyncCopyCompleteForUpdateTask(TaskInfo* taskInfo)
 #endif
 
 #if F_DESC("FlipTask")
-void ConstructSqeForFlipTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForFlipTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    FlipTaskInfo *flipTaskInfo = &(taskInfo->u.flipTask);
-    Stream *const stm = taskInfo->stream;
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    FlipTaskInfo* flipTaskInfo = &(taskInfo->u.flipTask);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 1U;
@@ -262,8 +271,10 @@ void ConstructSqeForFlipTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
     sqe->u.flip_task_info.streamId = flipTaskInfo->streamId;
     sqe->u.flip_task_info.subType = flipTaskInfo->subType;
     PrintSqe(command, "FlipTask");
-    RT_LOG(RT_LOG_INFO, "launch FlipTask succ, sqe_type=%u, pre_p=%u, stream_id=%u, task_id=%u, flip_num=%u, sub_type=%u.",
-           sqe->type, sqe->pre_p, sqe->rt_streamID, sqe->task_id, flipTaskInfo->flipNumReport, sqe->u.flip_task_info.subType);
+    RT_LOG(
+        RT_LOG_INFO, "launch FlipTask succ, sqe_type=%u, pre_p=%u, stream_id=%u, task_id=%u, flip_num=%u, sub_type=%u.",
+        sqe->type, sqe->pre_p, sqe->rt_streamID, sqe->task_id, flipTaskInfo->flipNumReport,
+        sqe->u.flip_task_info.subType);
 }
 #endif
 
@@ -389,5 +400,5 @@ static bool StreamTaskRegister()
 
 static bool g_streamTaskRegister = StreamTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

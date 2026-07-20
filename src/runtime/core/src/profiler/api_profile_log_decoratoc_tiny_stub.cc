@@ -14,22 +14,22 @@
 
 namespace cce {
 namespace runtime {
-rtError_t ApiProfileLogDecorator::UbDbSend(rtUbDbInfo_t * const dbInfo, Stream * const stm)
+rtError_t ApiProfileLogDecorator::UbDbSend(rtUbDbInfo_t* const dbInfo, Stream* const stm)
 {
     UNUSED(dbInfo);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiProfileLogDecorator::UbDirectSend(rtUbWqeInfo_t * const wqeInfo, Stream * const stm)
+rtError_t ApiProfileLogDecorator::UbDirectSend(rtUbWqeInfo_t* const wqeInfo, Stream* const stm)
 {
     UNUSED(wqeInfo);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiProfileLogDecorator::CntNotifyCreate(const int32_t deviceId, CountNotify ** const retCntNotify,
-                                                  const uint32_t flag)
+rtError_t ApiProfileLogDecorator::CntNotifyCreate(
+    const int32_t deviceId, CountNotify** const retCntNotify, const uint32_t flag)
 {
     UNUSED(deviceId);
     UNUSED(retCntNotify);
@@ -37,23 +37,14 @@ rtError_t ApiProfileLogDecorator::CntNotifyCreate(const int32_t deviceId, CountN
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiProfileLogDecorator::CntNotifyDestroy(CountNotify * const inCntNotify)
+rtError_t ApiProfileLogDecorator::CntNotifyDestroy(CountNotify* const inCntNotify)
 {
     UNUSED(inCntNotify);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiProfileLogDecorator::CntNotifyRecord(CountNotify * const inCntNotify, Stream * const stm,
-                                                  const rtCntNtyRecordInfo_t * const info)
-{
-    UNUSED(inCntNotify);
-    UNUSED(stm);
-    UNUSED(info);
-    return RT_ERROR_FEATURE_NOT_SUPPORT;
-}
-
-rtError_t ApiProfileLogDecorator::CntNotifyWaitWithTimeout(CountNotify * const inCntNotify, Stream * const stm,
-                                                           const rtCntNtyWaitInfo_t * const info)
+rtError_t ApiProfileLogDecorator::CntNotifyRecord(
+    CountNotify* const inCntNotify, Stream* const stm, const rtCntNtyRecordInfo_t* const info)
 {
     UNUSED(inCntNotify);
     UNUSED(stm);
@@ -61,15 +52,24 @@ rtError_t ApiProfileLogDecorator::CntNotifyWaitWithTimeout(CountNotify * const i
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiProfileLogDecorator::CntNotifyReset(CountNotify * const inCntNotify, Stream * const stm)
+rtError_t ApiProfileLogDecorator::CntNotifyWaitWithTimeout(
+    CountNotify* const inCntNotify, Stream* const stm, const rtCntNtyWaitInfo_t* const info)
+{
+    UNUSED(inCntNotify);
+    UNUSED(stm);
+    UNUSED(info);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t ApiProfileLogDecorator::CntNotifyReset(CountNotify* const inCntNotify, Stream* const stm)
 {
     UNUSED(inCntNotify);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiProfileLogDecorator::GetCntNotifyAddress(CountNotify * const inCntNotify,
-                                                      uint64_t * const cntNotifyAddress, rtNotifyType_t const regType)
+rtError_t ApiProfileLogDecorator::GetCntNotifyAddress(
+    CountNotify* const inCntNotify, uint64_t* const cntNotifyAddress, rtNotifyType_t const regType)
 {
     UNUSED(inCntNotify);
     UNUSED(cntNotifyAddress);
@@ -77,22 +77,21 @@ rtError_t ApiProfileLogDecorator::GetCntNotifyAddress(CountNotify * const inCntN
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiProfileLogDecorator::WriteValue(rtWriteValueInfo_t * const info, Stream * const stm)
+rtError_t ApiProfileLogDecorator::WriteValue(rtWriteValueInfo_t* const info, Stream* const stm)
 {
     UNUSED(info);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiProfileLogDecorator::CCULaunch(rtCcuTaskInfo_t *taskInfo,  Stream * const stm)
+rtError_t ApiProfileLogDecorator::CCULaunch(rtCcuTaskInfo_t* taskInfo, Stream* const stm)
 {
     UNUSED(taskInfo);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiProfileLogDecorator::FusionLaunch(void * const fusionInfo, Stream * const stm,
-    rtFusionArgsEx_t *argsInfo)
+rtError_t ApiProfileLogDecorator::FusionLaunch(void* const fusionInfo, Stream* const stm, rtFusionArgsEx_t* argsInfo)
 {
     UNUSED(fusionInfo);
     UNUSED(stm);
@@ -100,7 +99,7 @@ rtError_t ApiProfileLogDecorator::FusionLaunch(void * const fusionInfo, Stream *
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiProfileLogDecorator::RDMASend(const uint32_t sqIndex, const uint32_t wqeIndex, Stream * const stm)
+rtError_t ApiProfileLogDecorator::RDMASend(const uint32_t sqIndex, const uint32_t wqeIndex, Stream* const stm)
 {
     UNUSED(sqIndex);
     UNUSED(wqeIndex);
@@ -108,12 +107,12 @@ rtError_t ApiProfileLogDecorator::RDMASend(const uint32_t sqIndex, const uint32_
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiProfileLogDecorator::RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Stream * const stm)
+rtError_t ApiProfileLogDecorator::RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Stream* const stm)
 {
     UNUSED(dbIndex);
     UNUSED(dbInfo);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -24,22 +24,22 @@ extern "C" {
 #endif // __cplusplus
 
 VISIBILITY_DEFAULT
-rtError_t rtModelCreate(rtModel_t *mdl, uint32_t flag)
+rtError_t rtModelCreate(rtModel_t* mdl, uint32_t flag)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const rtError_t error = apiInstance->ModelCreate(RtPtrToPtr<Model **>(mdl), flag);
+    const rtError_t error = apiInstance->ModelCreate(RtPtrToPtr<Model**>(mdl), flag);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
-    Model *realModel = RtPtrToPtr<Model *>(*mdl);
+    Model* realModel = RtPtrToPtr<Model*>(*mdl);
     *mdl = ExportEmbeddedHandle<rtModel_t>(realModel);
     return ACL_RT_SUCCESS;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtSetModelName(rtModel_t mdl, const char_t *mdlName)
+rtError_t rtSetModelName(rtModel_t mdl, const char_t* mdlName)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(mdl, Model, realModel);
     const rtError_t error = apiInstance->ModelNameSet(realModel, mdlName);
@@ -51,18 +51,17 @@ VISIBILITY_DEFAULT
 rtError_t rtModelExecuteSync(rtModel_t mdl, rtStream_t stm, uint32_t flag, int32_t timeout)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(mdl, Model, realModel);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    const rtError_t error = apiInstance->ModelExecute(realModel,
-        exeStream, flag, timeout);
+    const rtError_t error = apiInstance->ModelExecute(realModel, exeStream, flag, timeout);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsModelCreate(rtModel_t *mdl, uint32_t flag)
+rtError_t rtsModelCreate(rtModel_t* mdl, uint32_t flag)
 {
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flag != 0), ACL_ERROR_RT_PARAM_INVALID, flag, "0");
     return rtModelCreate(mdl, flag);
@@ -72,20 +71,24 @@ VISIBILITY_DEFAULT
 rtError_t rtsModelBindStream(rtModel_t mdl, rtStream_t stm, uint32_t flag)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(((flag != RT_MODEL_STREAM_FLAG_HEAD) && (flag != RT_MODEL_STREAM_FLAG_DEFAULT)),
-        ACL_ERROR_RT_PARAM_INVALID, flag, "RT_MODEL_STREAM_FLAG_HEAD or RT_MODEL_STREAM_FLAG_DEFAULT");
-    Api * const apiInstance = Api::Instance();
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+        ((flag != RT_MODEL_STREAM_FLAG_HEAD) && (flag != RT_MODEL_STREAM_FLAG_DEFAULT)), ACL_ERROR_RT_PARAM_INVALID,
+        flag, "RT_MODEL_STREAM_FLAG_HEAD or RT_MODEL_STREAM_FLAG_DEFAULT");
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(mdl, Model, realModel);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, bindStream);
-    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER((bindStream != nullptr) &&
-        ((bindStream->Flags() & RT_STREAM_PERSISTENT) == 0), RT_ERROR_INVALID_VALUE,
+    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER(
+        (bindStream != nullptr) && ((bindStream->Flags() & RT_STREAM_PERSISTENT) == 0), RT_ERROR_INVALID_VALUE,
         ErrorCode::EE1017, __func__, "stm", "Non-persistent stream cannot be bound to a model");
     if ((bindStream != nullptr) && (bindStream->GetModelNum() != 0)) {
-        const Model * const bindModel = bindStream->Model_();
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1007, bindStream->Id_(),
-            RtFmtMsg("The current stream has been bound to a model (model_id=%u) and cannot be bound to the input model (model_id=%u)",
-            (bindModel == nullptr) ? UINT32_MAX : bindModel->Id_(), realModel->Id_()));
+        const Model* const bindModel = bindStream->Model_();
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE1007, bindStream->Id_(),
+            RtFmtMsg(
+                "The current stream has been bound to a model (model_id=%u) and cannot be bound to the input model "
+                "(model_id=%u)",
+                (bindModel == nullptr) ? UINT32_MAX : bindModel->Id_(), realModel->Id_()));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_STREAM_MODEL);
     }
 
@@ -100,7 +103,7 @@ VISIBILITY_DEFAULT
 rtError_t rtsEndGraph(rtModel_t mdl, rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(mdl, Model, realModel);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
@@ -119,22 +122,16 @@ rtError_t rtsModelLoadComplete(rtModel_t mdl, void* reserve)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsModelUnbindStream(rtModel_t mdl, rtStream_t stm)
-{
-    return rtModelUnbindStream(mdl, stm);
-}
+rtError_t rtsModelUnbindStream(rtModel_t mdl, rtStream_t stm) { return rtModelUnbindStream(mdl, stm); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsModelDestroy(rtModel_t mdl)
-{
-    return rtModelDestroy(mdl);
-}
+rtError_t rtsModelDestroy(rtModel_t mdl) { return rtModelDestroy(mdl); }
 
 VISIBILITY_DEFAULT
 rtError_t rtsModelExecute(rtModel_t mdl, int32_t timeout)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(mdl, Model, realModel);
     const rtError_t error = apiInstance->ModelExecuteSync(realModel, timeout);
@@ -146,7 +143,7 @@ VISIBILITY_DEFAULT
 rtError_t rtsModelExecuteAsync(rtModel_t mdl, rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(mdl, Model, realModel);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
@@ -156,30 +153,28 @@ rtError_t rtsModelExecuteAsync(rtModel_t mdl, rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsLabelCreate(rtLabel_t *lbl)
+rtError_t rtsLabelCreate(rtLabel_t* lbl)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const rtError_t error = apiInstance->LabelCreate(RtPtrToPtr<Label **>(lbl), nullptr);
+    const rtError_t error = apiInstance->LabelCreate(RtPtrToPtr<Label**>(lbl), nullptr);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
-    Label *realLabel = RtPtrToPtr<Label *>(*lbl);
+    Label* realLabel = RtPtrToPtr<Label*>(*lbl);
     *lbl = ExportEmbeddedHandle<rtLabel_t>(realLabel);
     return ACL_RT_SUCCESS;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsLabelDestroy(rtLabel_t lbl)
-{
-    return rtLabelDestroy(lbl);
-}
+rtError_t rtsLabelDestroy(rtLabel_t lbl) { return rtLabelDestroy(lbl); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsLabelSwitchListCreate(rtLabel_t *labels, size_t num, void **labelList)
+rtError_t rtsLabelSwitchListCreate(rtLabel_t* labels, size_t num, void** labelList)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(((num == 0U) || (num > static_cast<size_t>(MAX_UINT16_NUM))),
-        RT_ERROR_INVALID_VALUE, num, "(0, " + std::to_string(MAX_UINT16_NUM) + "]");
+    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(
+        ((num == 0U) || (num > static_cast<size_t>(MAX_UINT16_NUM))), RT_ERROR_INVALID_VALUE, num,
+        "(0, " + std::to_string(MAX_UINT16_NUM) + "]");
     RT_VALIDATE_AND_UNWRAP_OBJECT_ARRAY(labels, num, Label, realLabels);
     const rtError_t error = apiInstance->LabelSwitchListCreate(realLabels.data(), num, labelList);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -187,33 +182,24 @@ rtError_t rtsLabelSwitchListCreate(rtLabel_t *labels, size_t num, void **labelLi
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsLabelSwitchListDestroy(void *labelList)
-{
-    return rtsFree(labelList);
-}
+rtError_t rtsLabelSwitchListDestroy(void* labelList) { return rtsFree(labelList); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsLabelSet(rtLabel_t lbl, rtStream_t stm)
-{
-    return rtLabelSet(lbl, stm);
-}
+rtError_t rtsLabelSet(rtLabel_t lbl, rtStream_t stm) { return rtLabelSet(lbl, stm); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsLabelSwitchByIndex(void *ptr, uint32_t maxValue, void *labelInfoPtr, rtStream_t stm)
+rtError_t rtsLabelSwitchByIndex(void* ptr, uint32_t maxValue, void* labelInfoPtr, rtStream_t stm)
 {
     return rtLabelSwitchByIndex(ptr, maxValue, labelInfoPtr, stm);
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsModelSetName(rtModel_t mdl, const char_t *mdlName)
-{
-    return rtSetModelName(mdl, mdlName);
-}
+rtError_t rtsModelSetName(rtModel_t mdl, const char_t* mdlName) { return rtSetModelName(mdl, mdlName); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsModelGetName(rtModel_t mdl, const uint32_t maxLen, char_t * const mdlName)
+rtError_t rtsModelGetName(rtModel_t mdl, const uint32_t maxLen, char_t* const mdlName)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(mdl, Model, realModel);
     const rtError_t error = apiInstance->ModelGetName(realModel, maxLen, mdlName);
@@ -222,16 +208,10 @@ rtError_t rtsModelGetName(rtModel_t mdl, const uint32_t maxLen, char_t * const m
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsModelGetId(rtModel_t mdl, uint32_t *modelId)
-{
-    return rtModelGetId(mdl, modelId);
-}
+rtError_t rtsModelGetId(rtModel_t mdl, uint32_t* modelId) { return rtModelGetId(mdl, modelId); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsModelAbort(rtModel_t mdl)
-{
-    return rtModelAbort(mdl);
-}
+rtError_t rtsModelAbort(rtModel_t mdl) { return rtModelAbort(mdl); }
 
 #ifdef __cplusplus
 }

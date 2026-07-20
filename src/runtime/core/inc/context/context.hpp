@@ -40,15 +40,15 @@
 #include "mmpa_linux.h"
 #include "cond_handle.hpp"
 
-#define CHECK_CONTEXT_VALID_WITH_RETURN(tmpCtx, ERRCODE) \
-    { \
-        const bool isValidFlag = ContextManage::CheckContextIsValid((tmpCtx)); \
+#define CHECK_CONTEXT_VALID_WITH_RETURN(tmpCtx, ERRCODE)                                    \
+    {                                                                                       \
+        const bool isValidFlag = ContextManage::CheckContextIsValid((tmpCtx));              \
         COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_GE, !isValidFlag, (ERRCODE), "ctx is NULL!"); \
     }
-#define CHECK_CONTEXT_VALID_WITH_PROC_RETURN(tmpCtx, ERRCODE, PROC) \
-    { \
+#define CHECK_CONTEXT_VALID_WITH_PROC_RETURN(tmpCtx, ERRCODE, PROC)     \
+    {                                                                   \
         const bool flag = ContextManage::CheckContextIsValid((tmpCtx)); \
-        COND_PROC_RETURN_WARN(!flag, (ERRCODE), PROC, "ctx is NULL!"); \
+        COND_PROC_RETURN_WARN(!flag, (ERRCODE), PROC, "ctx is NULL!");  \
     }
 #define RT_STARS_MODEL_RDMADB_TASK_NUM (2U)
 namespace cce {
@@ -70,10 +70,10 @@ class DvppGrp;
 class SqeInfo;
 
 enum TearDownStatus {
-    TEARDOWN_NOT_EXECUTE   = 0,      // TDT threads is idle
-    TEARDOWN_WORKING       = 1,      // TDT threads is working
-    TEARDOWN_ERROR         = 2,      // TDT threads begin to stop
-    TEARDOWN_SUCCESS       = 3       // TDT threads stopped
+    TEARDOWN_NOT_EXECUTE = 0, // TDT threads is idle
+    TEARDOWN_WORKING = 1,     // TDT threads is working
+    TEARDOWN_ERROR = 2,       // TDT threads begin to stop
+    TEARDOWN_SUCCESS = 3      // TDT threads stopped
 };
 
 enum class ContextState : uint8_t {
@@ -95,9 +95,11 @@ constexpr uint64_t MEM_BLOCK_SIZE = 64ULL * 1024ULL * 1024ULL; // 64MB:64 * 1024
 constexpr uint32_t TS_NUM_ADC = 2U;
 constexpr uint32_t OVERFLOW_ADDR_MAX_SIZE = 512U;
 extern bool g_isAddrFlatDevice;
-rtError_t LaunchAicpuKernelForCpuSo(const rtKernelLaunchNames_t * const launchNames, const rtArgsEx_t * const argsInfo, Stream * const stm);
+rtError_t LaunchAicpuKernelForCpuSo(
+    const rtKernelLaunchNames_t* const launchNames, const rtArgsEx_t* const argsInfo, Stream* const stm);
 class ContextCallBack : public ThreadRunnable {
-    void Run(const void * const param) override;
+    void Run(const void* const param) override;
+
 public:
     std::atomic<bool> callBackThreadRunFlag_{false};
 };
@@ -105,7 +107,7 @@ public:
 class Context : public NoCopy {
 public:
     static constexpr uint64_t MEM_ALIGN_SIZE = 0x40ULL;
-    Context(Device * const ctxDevice, const bool primaryCtx);
+    Context(Device* const ctxDevice, const bool primaryCtx);
     ~Context() override;
 
     // init context
@@ -118,31 +120,34 @@ public:
     // Wait event recorded to complete.
     rtError_t Synchronize(int32_t timeout);
 
-    rtError_t DatadumpInfoLoad(const void * const dumpInfo, const uint32_t length, const uint32_t flag);
+    rtError_t DatadumpInfoLoad(const void* const dumpInfo, const uint32_t length, const uint32_t flag);
 
-    rtError_t AicpuInfoLoad(const void * const aicpuInfo, const uint32_t length);
+    rtError_t AicpuInfoLoad(const void* const aicpuInfo, const uint32_t length);
 
-    rtError_t DebugRegister(Model * const mdl, const uint32_t flag, const void * const addr, uint32_t * const streamId,
-                            uint32_t * const taskId);
+    rtError_t DebugRegister(
+        Model* const mdl, const uint32_t flag, const void* const addr, uint32_t* const streamId,
+        uint32_t* const taskId);
 
-    rtError_t DebugUnRegister(Model * const mdl);
+    rtError_t DebugUnRegister(Model* const mdl);
 
-    rtError_t DebugRegisterForStream(Stream * const debugStream, const uint32_t flag, const void * const addr,
-                                     uint32_t * const streamId, uint32_t * const taskId);
+    rtError_t DebugRegisterForStream(
+        Stream* const debugStream, const uint32_t flag, const void* const addr, uint32_t* const streamId,
+        uint32_t* const taskId);
 
-    rtError_t DebugUnRegisterForStream(Stream * const debugStream);
+    rtError_t DebugUnRegisterForStream(Stream* const debugStream);
 
-    rtError_t GetDevArgsAddr(Stream * const stm, const rtArgsEx_t * const argsInfo, void ** const devArgsAddr,
-        void ** const argsHandle) const;
-    rtError_t LaunchSqeUpdateTask(const void * const src, const uint64_t cpySize, uint32_t sqId, uint32_t pos,
-                                  Stream * const stm);
+    rtError_t GetDevArgsAddr(
+        Stream* const stm, const rtArgsEx_t* const argsInfo, void** const devArgsAddr, void** const argsHandle) const;
+    rtError_t LaunchSqeUpdateTask(
+        const void* const src, const uint64_t cpySize, uint32_t sqId, uint32_t pos, Stream* const stm);
 
-    virtual rtError_t StreamCreate(const uint32_t prio, const uint32_t flag, Stream ** const result, DvppGrp *grp = nullptr,
-    	const bool isSoftWareSqEnable = false, const bool isAutoSplitEnable = false);
-    
-    virtual rtError_t StreamDestroy(Stream * const stm, bool flag = true);
+    virtual rtError_t StreamCreate(
+        const uint32_t prio, const uint32_t flag, Stream** const result, DvppGrp* grp = nullptr,
+        const bool isSoftWareSqEnable = false, const bool isAutoSplitEnable = false);
 
-    rtError_t CreateAutoSplitSlaveStream(Stream * const masterStm, Stream **newSlaveStream);
+    virtual rtError_t StreamDestroy(Stream* const stm, bool flag = true);
+
+    rtError_t CreateAutoSplitSlaveStream(Stream* const masterStm, Stream** newSlaveStream);
 
     void SetStreamsStatus(rtError_t status);
 
@@ -150,7 +155,7 @@ public:
 
     rtError_t StreamsKill(void);
 
-    rtError_t StreamsQuery(uint32_t &status);
+    rtError_t StreamsQuery(uint32_t& status);
 
     rtError_t StreamsTaskClean(void);
 
@@ -158,206 +163,187 @@ public:
 
     rtError_t StreamsUpdate(void);
 
-    rtError_t StreamBeginCapture(Stream * const stm, const rtStreamCaptureMode mode, Model * const mdl = nullptr);
+    rtError_t StreamBeginCapture(Stream* const stm, const rtStreamCaptureMode mode, Model* const mdl = nullptr);
 
-    rtError_t StreamEndCapture(Stream * const stm, Model ** const captureMdl);
+    rtError_t StreamEndCapture(Stream* const stm, Model** const captureMdl);
 
-    rtError_t StreamGetCaptureInfo(const Stream * const stm, rtStreamCaptureStatus * const status,
-        Model ** const captureMdl) const;
-    
-    rtError_t StreamBeginTaskUpdate(Stream * const stm, TaskGroup * handle) const;
+    rtError_t StreamGetCaptureInfo(
+        const Stream* const stm, rtStreamCaptureStatus* const status, Model** const captureMdl) const;
 
-    rtError_t StreamEndTaskUpdate(Stream * const stm) const;
+    rtError_t StreamBeginTaskUpdate(Stream* const stm, TaskGroup* handle) const;
 
-    rtError_t StreamAddCondTask(CondHandle *condHandle, rtCondTaskParams params, Stream * const stm, uint32_t flags);
-    rtError_t SubmitCaptureConditionTask(CondHandle *condHandle, Stream * const stm);
-    
-    rtError_t ModelGetNodes(const Model * const mdl, uint32_t * const num);
+    rtError_t StreamEndTaskUpdate(Stream* const stm) const;
 
-    rtError_t CreateSubCaptureModels(CondHandle *condHandle, rtCondTaskParams params, Stream * const stm);
+    rtError_t StreamAddCondTask(CondHandle* condHandle, rtCondTaskParams params, Stream* const stm, uint32_t flags);
+    rtError_t SubmitCaptureConditionTask(CondHandle* condHandle, Stream* const stm);
 
-    rtError_t ModelDebugDotPrint(const Model * const mdl);
-    
-    rtError_t ModelDebugJsonPrint(const Model * const mdl, const char* path, const uint32_t flags);
+    rtError_t ModelGetNodes(const Model* const mdl, uint32_t* const num);
 
-    rtError_t StreamAddToModel(Stream * const stm, Model * const captureMdl);
+    rtError_t CreateSubCaptureModels(CondHandle* condHandle, rtCondTaskParams params, Stream* const stm);
 
-    rtError_t ThreadExchangeCaptureMode(rtStreamCaptureMode * const mode) const;
+    rtError_t ModelDebugDotPrint(const Model* const mdl);
 
-    rtError_t StreamBeginTaskGrp(Stream * const stm);
+    rtError_t ModelDebugJsonPrint(const Model* const mdl, const char* path, const uint32_t flags);
 
-    rtError_t StreamEndTaskGrp(Stream * const stm, TaskGroup ** const handle) const;
+    rtError_t StreamAddToModel(Stream* const stm, Model* const captureMdl);
 
-    rtError_t StreamAddToCaptureModelProc(Stream * const stm, Model * const captureMdl, const bool isOriginal = false);
+    rtError_t ThreadExchangeCaptureMode(rtStreamCaptureMode* const mode) const;
 
-    rtError_t ModelCreate(Model ** const result, ModelType type = RT_MODEL_NORMAL);
+    rtError_t StreamBeginTaskGrp(Stream* const stm);
 
-    rtError_t AllocCascadeCaptureStream(const Stream * const stm, Model *const captureModel, Stream **newCaptureStream);
+    rtError_t StreamEndTaskGrp(Stream* const stm, TaskGroup** const handle) const;
 
-    void FreeCascadeCaptureStream(Stream * const cascadeCaptureStm);
+    rtError_t StreamAddToCaptureModelProc(Stream* const stm, Model* const captureMdl, const bool isOriginal = false);
 
-    rtError_t CreateNotify(Notify **notify, uint32_t flag);
- 
-    rtError_t AddNotifyToAddedCaptureStream(Stream * const oriSingleStm, CaptureModel * const captureMdl);
+    rtError_t ModelCreate(Model** const result, ModelType type = RT_MODEL_NORMAL);
+
+    rtError_t AllocCascadeCaptureStream(const Stream* const stm, Model* const captureModel, Stream** newCaptureStream);
+
+    void FreeCascadeCaptureStream(Stream* const cascadeCaptureStm);
+
+    rtError_t CreateNotify(Notify** notify, uint32_t flag);
+
+    rtError_t AddNotifyToAddedCaptureStream(Stream* const oriSingleStm, CaptureModel* const captureMdl);
 
     rtError_t SetNotifyForExeModel(CaptureModel* const captureMdl);
 
-    rtError_t ModelDestroy(Model *mdl);
+    rtError_t ModelDestroy(Model* mdl);
 
-    void SubModelDestroy(Model *subMdl);
+    void SubModelDestroy(Model* subMdl);
 
-    rtError_t ModelBindStream(Model * const mdl, Stream * const stm, const uint32_t flag);
+    rtError_t ModelBindStream(Model* const mdl, Stream* const stm, const uint32_t flag);
 
-    rtError_t ModelUnbindStream(Model * const mdl, Stream * const stm);
+    rtError_t ModelUnbindStream(Model* const mdl, Stream* const stm);
 
-    rtError_t ModelAddStream(Model * const mdl, Stream * const stm, const uint32_t flag);
+    rtError_t ModelAddStream(Model* const mdl, Stream* const stm, const uint32_t flag);
 
-    rtError_t ModelDelStream(Model * const mdl, Stream * const stm);
+    rtError_t ModelDelStream(Model* const mdl, Stream* const stm);
 
-    rtError_t ModelLoadComplete(Model * const mdl) const;
+    rtError_t ModelLoadComplete(Model* const mdl) const;
 
-    rtError_t ModelAddEndGraph(Model * const mdl, Stream * const stm, const uint32_t flags);
+    rtError_t ModelAddEndGraph(Model* const mdl, Stream* const stm, const uint32_t flags);
 
-    bool CheckSubModelsIsEndCapture(const Stream * const captureStream) const;
+    bool CheckSubModelsIsEndCapture(const Stream* const captureStream) const;
 
-    rtError_t ModelExecutorSet(Model * const mdl, const uint8_t flags) const;
+    rtError_t ModelExecutorSet(Model* const mdl, const uint8_t flags) const;
 
-    rtError_t ModelNameSet(Model * const mdl, const char_t * const name) const;
+    rtError_t ModelNameSet(Model* const mdl, const char_t* const name) const;
 
-    rtError_t ModelGetName(const Model * const mdl, const uint32_t maxLen, char_t * const mdlName) const;
+    rtError_t ModelGetName(const Model* const mdl, const uint32_t maxLen, char_t* const mdlName) const;
 
-    rtError_t ModelAbort(Model * const mdl) const;
+    rtError_t ModelAbort(Model* const mdl) const;
 
     rtError_t ModelAbortById(uint32_t modelId) const;
 
-    rtError_t ModelExit(Model * const mdl, Stream * const stm);
+    rtError_t ModelExit(Model* const mdl, Stream* const stm);
 
-    rtError_t ModelBindQueue(Model * const mdl, const uint32_t queueId, const rtModelQueueFlag_t flag) const;
+    rtError_t ModelBindQueue(Model* const mdl, const uint32_t queueId, const rtModelQueueFlag_t flag) const;
 
-    rtError_t CallbackLaunch(const rtCallback_t callBackFunc, void * const fnData, Stream * const stm,
-        const bool isBlock, const int32_t evtId);
+    rtError_t CallbackLaunch(
+        const rtCallback_t callBackFunc, void* const fnData, Stream* const stm, const bool isBlock,
+        const int32_t evtId);
 
-    rtError_t RDMASend(const uint32_t sqIndex, const uint32_t wqeIndex, Stream * const stm);
+    rtError_t RDMASend(const uint32_t sqIndex, const uint32_t wqeIndex, Stream* const stm);
 
-    rtError_t RdmaDbSendToDev(const uint32_t dbIndex, const uint64_t dbInfo, Stream * const stm, const uint32_t taskSqe = 0U) const;
+    rtError_t RdmaDbSendToDev(
+        const uint32_t dbIndex, const uint64_t dbInfo, Stream* const stm, const uint32_t taskSqe = 0U) const;
 
-    rtError_t RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Stream * const stm);
+    rtError_t RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Stream* const stm);
 
-    rtError_t ProfilerTrace(const uint64_t id, const bool notifyFlag, const uint32_t flags, Stream * const stm);
+    rtError_t ProfilerTrace(const uint64_t id, const bool notifyFlag, const uint32_t flags, Stream* const stm);
 
-    rtError_t ProfilerTraceEx(const uint64_t id, const uint64_t modelId, const uint16_t tagId, Stream *stm);
+    rtError_t ProfilerTraceEx(const uint64_t id, const uint64_t modelId, const uint16_t tagId, Stream* stm);
 
-    rtError_t SetStreamSqLockUnlock(Stream * const stm, const bool isLock);
+    rtError_t SetStreamSqLockUnlock(Stream* const stm, const bool isLock);
 
-    rtError_t NopTask(Stream * const stm) const;
+    rtError_t NopTask(Stream* const stm) const;
 
-    rtError_t CopyTilingTabToDev(Program * const programHdl, const Device * const device,
-                                 void **devCopyMem, uint32_t *TilingTabLen);
+    rtError_t CopyTilingTabToDev(
+        Program* const programHdl, const Device* const device, void** devCopyMem, uint32_t* TilingTabLen);
 
-    rtError_t ModelTaskUpdate(const Stream *desStm, uint32_t desTaskId, Stream *sinkStm,
-                              rtMdlTaskUpdateInfo_t *para);
+    rtError_t ModelTaskUpdate(const Stream* desStm, uint32_t desTaskId, Stream* sinkStm, rtMdlTaskUpdateInfo_t* para);
 
-    rtError_t StreamClear(const Stream * const stm, rtClearStep_t step) const;
+    rtError_t StreamClear(const Stream* const stm, rtClearStep_t step) const;
     bool IsStreamAbortSupported();
-    rtError_t StreamAbort(Stream * const stm);
+    rtError_t StreamAbort(Stream* const stm);
 
-    rtError_t GetStackBuffer(const rtBinHandle binHandle, const uint32_t coreType, const uint32_t coreId,
-                             const void **stack, uint32_t *stackSize) const;
+    rtError_t GetStackBuffer(
+        const rtBinHandle binHandle, const uint32_t coreType, const uint32_t coreId, const void** stack,
+        uint32_t* stackSize) const;
     rtError_t DebugSetDumpMode(const uint64_t mode);
-    rtError_t DebugGetStalledCore(rtDbgCoreInfo_t *const coreInfo);
-    rtError_t DebugReadAICore(rtDebugMemoryParam_t *const param);
-    rtError_t GetExceptionRegInfo(const rtExceptionInfo_t * const exceptionInfo,
-        rtExceptionErrRegInfo_t **exceptionErrRegInfo, uint32_t *num) const;
-    Stream *GetCtrlSQStream() const;
+    rtError_t DebugGetStalledCore(rtDbgCoreInfo_t* const coreInfo);
+    rtError_t DebugReadAICore(rtDebugMemoryParam_t* const param);
+    rtError_t GetExceptionRegInfo(
+        const rtExceptionInfo_t* const exceptionInfo, rtExceptionErrRegInfo_t** exceptionErrRegInfo,
+        uint32_t* num) const;
+    Stream* GetCtrlSQStream() const;
 
-    void SetDefaultStream(Stream *stm)
-    {
-        defaultStream_ = stm;
-    }
-    Stream *DefaultStream_() const
-    {
-        return defaultStream_;
-    }
+    void SetDefaultStream(Stream* stm) { defaultStream_ = stm; }
+    Stream* DefaultStream_() const { return defaultStream_; }
 
-    Stream *OnlineStream_() const
-    {
-        return onlineStream_;
-    }
+    Stream* OnlineStream_() const { return onlineStream_; }
 
-    Device *Device_() const
-    {
-        return device_;
-    }
+    Device* Device_() const { return device_; }
 
-    bool IsPrimary() const
-    {
-        return isPrimary_;
-    }
+    bool IsPrimary() const { return isPrimary_; }
 
-    uint32_t UserDeviceId() const
-    {
-        return userDeviceId_;
-    }
+    uint32_t UserDeviceId() const { return userDeviceId_; }
 
-    rtTaskGenCallback TaskGenCallback_() const
-    {
-        return taskGenCallback_;
-    }
+    rtTaskGenCallback TaskGenCallback_() const { return taskGenCallback_; }
 
-    void InsertStreamList(Stream * const stm)
+    void InsertStreamList(Stream* const stm)
     {
         std::unique_lock<std::mutex> taskLock(streamLock_);
         try {
-            for (const Stream * const ownedStream : streams_) {
+            for (const Stream* const ownedStream : streams_) {
                 if (ownedStream == stm) {
                     return;
                 }
             }
             streams_.push_back(stm);
-        } catch (std::exception &e) {
+        } catch (std::exception& e) {
             RT_LOG(RT_LOG_ERROR, "%s", e.what());
         }
     }
 
-    Module *GetModuleWithoutCreate(const Program * const prog);
+    Module* GetModuleWithoutCreate(const Program* const prog);
 
-    Module *GetModule(Program * const prog);
-    void PutModule(Module * const delModule);
+    Module* GetModule(Program* const prog);
+    void PutModule(Module* const delModule);
     rtError_t ReleaseModule(const uint32_t id);
 
-    rtError_t StartOnlineProf(Stream * const stm, const uint32_t sampleNum);
-    rtError_t StopOnlineProf(Stream * const stm);
-    rtError_t GetOnlineProfData(const Stream * const stm, rtProfDataInfo_t * const pProfData,
-                                const uint32_t profDataNum) const;
+    rtError_t StartOnlineProf(Stream* const stm, const uint32_t sampleNum);
+    rtError_t StopOnlineProf(Stream* const stm);
+    rtError_t GetOnlineProfData(
+        const Stream* const stm, rtProfDataInfo_t* const pProfData, const uint32_t profDataNum) const;
 
-    rtError_t AdcProfiler(Stream * const stm, const uint64_t addr, const uint32_t length);
-    rtError_t LabelSwitchListCreate(Label ** const labels, const size_t num, void ** const labelList) const;
+    rtError_t AdcProfiler(Stream* const stm, const uint64_t addr, const uint32_t length);
+    rtError_t LabelSwitchListCreate(Label** const labels, const size_t num, void** const labelList) const;
 
-    rtError_t FftsPlusTaskLaunch(const rtFftsPlusTaskInfo_t * const fftsPlusTaskInfo, Stream * const stm,
-                                 const uint32_t flag);
-    rtError_t CmoAddrTaskLaunch(rtCmoAddrInfo * const cmoAddrInfo, const uint64_t destMax, const rtCmoOpCode_t cmoOpCode,
-        Stream * const stm, const uint32_t flag);
-    rtError_t NpuGetFloatStatus(void * const outputAddrPtr, const uint64_t outputSize, const uint32_t checkMode,
-        Stream * const stm, bool isDebug = false);
-    rtError_t NpuClearFloatStatus(const uint32_t checkMode, Stream * const stm, bool isDebug = false);
-    rtError_t SetStreamOverflowSwitch(Stream * const stm, const uint32_t flags);
+    rtError_t FftsPlusTaskLaunch(
+        const rtFftsPlusTaskInfo_t* const fftsPlusTaskInfo, Stream* const stm, const uint32_t flag);
+    rtError_t CmoAddrTaskLaunch(
+        rtCmoAddrInfo* const cmoAddrInfo, const uint64_t destMax, const rtCmoOpCode_t cmoOpCode, Stream* const stm,
+        const uint32_t flag);
+    rtError_t NpuGetFloatStatus(
+        void* const outputAddrPtr, const uint64_t outputSize, const uint32_t checkMode, Stream* const stm,
+        bool isDebug = false);
+    rtError_t NpuClearFloatStatus(const uint32_t checkMode, Stream* const stm, bool isDebug = false);
+    rtError_t SetStreamOverflowSwitch(Stream* const stm, const uint32_t flags);
 
-    rtError_t DvppGroupCreate(DvppGrp **grp, const uint32_t flags);
-    rtError_t DvppGroupDestory(DvppGrp *grp);
-    rtError_t DvppWaitGroupReport(DvppGrp * const grp, const rtDvppGrpCallback callBackFunc, const int32_t timeout);
-    rtError_t SetStreamTag(Stream * const stm, const uint32_t geOpTag) const;
+    rtError_t DvppGroupCreate(DvppGrp** grp, const uint32_t flags);
+    rtError_t DvppGroupDestory(DvppGrp* grp);
+    rtError_t DvppWaitGroupReport(DvppGrp* const grp, const rtDvppGrpCallback callBackFunc, const int32_t timeout);
+    rtError_t SetStreamTag(Stream* const stm, const uint32_t geOpTag) const;
 
     rtError_t CtxSetSysParamOpt(const rtSysParamOpt configOpt, const int64_t configVal);
-    rtError_t CtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t * const configVal);
-    rtError_t GetSatStatusForStars(const uint64_t outputSize, Stream * const curStm);
-    rtError_t SetUpdateAddrTask(uint64_t devAddr, uint64_t len, Stream *stm);
+    rtError_t CtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t* const configVal);
+    rtError_t GetSatStatusForStars(const uint64_t outputSize, Stream* const curStm);
+    rtError_t SetUpdateAddrTask(uint64_t devAddr, uint64_t len, Stream* stm);
 
-    rtError_t LaunchRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo, Stream * const stm, const void *reserve) const;
+    rtError_t LaunchRandomNumTask(const rtRandomNumTaskInfo_t* taskInfo, Stream* const stm, const void* reserve) const;
 
-    void ContextThreadBind()
-    {
-        (void)threadRefCount_.fetch_add(1U, std::memory_order_acq_rel);
-    }
+    void ContextThreadBind() { (void)threadRefCount_.fetch_add(1U, std::memory_order_acq_rel); }
 
     uint64_t ContextThreadUnbind()
     {
@@ -370,29 +356,14 @@ public:
         return 0U;
     }
 
-    uint64_t GetThreadRefCount() const
-    {
-        return threadRefCount_.load(std::memory_order_acquire);
-    }
+    uint64_t GetThreadRefCount() const { return threadRefCount_.load(std::memory_order_acquire); }
 
-    void ResetThreadRefCount()
-    {
-        threadRefCount_.store(0U, std::memory_order_release);
-    }
+    void ResetThreadRefCount() { threadRefCount_.store(0U, std::memory_order_release); }
 
-    void SetContextDeleteStatus()
-    {
-        isNeedDelete_.Set(true);
-    }
-    bool GetContextIsNeedDelStatus() const
-    {
-        return isNeedDelete_.Value();
-    }
+    void SetContextDeleteStatus() { isNeedDelete_.Set(true); }
+    bool GetContextIsNeedDelStatus() const { return isNeedDelete_.Value(); }
 
-    ContextState GetState() const
-    {
-        return lifecycleState_.load(std::memory_order_acquire);
-    }
+    ContextState GetState() const { return lifecycleState_.load(std::memory_order_acquire); }
 
     bool IsStateAccessible(const ContextAccessMode accessMode) const
     {
@@ -406,11 +377,11 @@ public:
         return (state == ContextState::CTX_STATE_INITIALIZING) || (state == ContextState::CTX_STATE_FINALIZING);
     }
 
-    bool TrySwitchState(const ContextState expectedState, const ContextState targetState,
-        const char_t * const trigger = nullptr);
+    bool TrySwitchState(
+        const ContextState expectedState, const ContextState targetState, const char_t* const trigger = nullptr);
 
-    void SetState(const ContextState state, const char_t * const trigger = nullptr);
-    void AttachDevice(Device * const device)
+    void SetState(const ContextState state, const char_t* const trigger = nullptr);
+    void AttachDevice(Device* const device)
     {
         device_ = device;
         resourcesReleased_.store(false, std::memory_order_release);
@@ -420,79 +391,47 @@ public:
 
     bool TryDeleteIfNeeded();
 
-    void SetCallBackThreadExistFlag()
-    {
-        callBackThreadExist_.Set(true);
-    }
+    void SetCallBackThreadExistFlag() { callBackThreadExist_.Set(true); }
 
-    bool GetCallBackThreadExistFlag() const
-    {
-        return callBackThreadExist_.Value();
-    }
+    bool GetCallBackThreadExistFlag() const { return callBackThreadExist_.Value(); }
 
     bool TearDownIsCanExecute();
     void SetTearDownExecuteResult(TearDownStatus status)
     {
         tearDownStatus_ = status;
         if (status == TEARDOWN_ERROR) {
-            (void)TrySwitchState(ContextState::CTX_STATE_FINALIZING, ContextState::CTX_STATE_ACTIVE,
-                "SetTearDownExecuteResultError");
+            (void)TrySwitchState(
+                ContextState::CTX_STATE_FINALIZING, ContextState::CTX_STATE_ACTIVE, "SetTearDownExecuteResultError");
         } else if (status == TEARDOWN_SUCCESS) {
-            (void)TrySwitchState(ContextState::CTX_STATE_FINALIZING, ContextState::CTX_STATE_FINALIZED,
+            (void)TrySwitchState(
+                ContextState::CTX_STATE_FINALIZING, ContextState::CTX_STATE_FINALIZED,
                 "SetTearDownExecuteResultSuccess");
         }
     }
 
-    void SetINFMode(bool mode)
-    {
-        infMode_ = mode;
-    }
+    void SetINFMode(bool mode) { infMode_ = mode; }
 
-    bool IsINFMode() const
-    {
-        return infMode_;
-    }
+    bool IsINFMode() const { return infMode_; }
 
-    rtError_t GetNotifyAddress(Notify * const notify, uint64_t &addr, Stream * const stm);
+    rtError_t GetNotifyAddress(Notify* const notify, uint64_t& addr, Stream* const stm);
 
-    void *CtxGetOverflowAddr() const
-    {
-        return overflowAddr_;
-    }
-    uint64_t CtxGetOverflowAddrOffset() const
-    {
-        return overflowAddrOffset_;
-    }
+    void* CtxGetOverflowAddr() const { return overflowAddr_; }
+    uint64_t CtxGetOverflowAddrOffset() const { return overflowAddrOffset_; }
 
-    void SetFailureError(const rtError_t error)
-    {
-        failureError_.Set(error);
-    }
+    void SetFailureError(const rtError_t error) { failureError_.Set(error); }
 
-    rtError_t GetFailureError() const
-    {
-        return failureError_.Value();
-    }
+    rtError_t GetFailureError() const { return failureError_.Value(); }
 
-    bool GetAicpuExecuteModel() const
-    {
-        return containAicpuExecuteModel_;
-    }
-    void SetAicpuExecuteModel()
-    {
-        containAicpuExecuteModel_ = true;
-    }
+    bool GetAicpuExecuteModel() const { return containAicpuExecuteModel_; }
+    void SetAicpuExecuteModel() { containAicpuExecuteModel_ = true; }
 
-    const std::list<Stream *> StreamList_() const
-    {
-        return streams_;
-    }
+    const std::list<Stream*> StreamList_() const { return streams_; }
 
-    rtError_t SyncStreamsWithTimeout(const std::list<Stream *> &streams, int32_t timeout, const mmTimespec start) const;
-	rtError_t CheckMemAlign(const void * const addr, const rtDataType_t type) const;
-    bool IsStreamInContext(Stream * const stm);
+    rtError_t SyncStreamsWithTimeout(const std::list<Stream*>& streams, int32_t timeout, const mmTimespec start) const;
+    rtError_t CheckMemAlign(const void* const addr, const rtDataType_t type) const;
+    bool IsStreamInContext(Stream* const stm);
     rtError_t ResourceReset(void);
- 
+
     rtError_t GetContextLastErr()
     {
         const rtError_t error = lastErr_.Value();
@@ -500,17 +439,11 @@ public:
         return error;
     }
 
-    rtError_t PeekContextLastErr() const
-    {
-        return lastErr_.Value();
-    }
+    rtError_t PeekContextLastErr() const { return lastErr_.Value(); }
 
-    void SetContextLastErr(rtError_t errcode)
-    {
-        lastErr_.Set(errcode);
-    }
+    void SetContextLastErr(rtError_t errcode) { lastErr_.Set(errcode); }
 
-    bool ModelIsExistInContext(const Model *mdl);
+    bool ModelIsExistInContext(const Model* mdl);
     bool CheckCanFreeModulePool(uint32_t poolIdx);
     bool CheckCanFreePorgPool(uint32_t poolIdx) const;
     void TryToRecycleModulePool();
@@ -519,130 +452,98 @@ public:
     void TryToRecycleDevPool(uint32_t latestPoolIdx) const;
     rtError_t TaskReclaimforSyncDevice(const mmTimespec startTime, int32_t timeout);
 
-    std::mutex &GetCaptureLock()
-    {
-        return captureLock_;
-    }
+    std::mutex& GetCaptureLock() { return captureLock_; }
 
-    rtStreamCaptureMode GetContextCaptureMode(void) const
-    {
-        return captureMode_;
-    }
+    rtStreamCaptureMode GetContextCaptureMode(void) const { return captureMode_; }
 
-    void SetContextCaptureMode(rtStreamCaptureMode mode)
-    {
-        captureMode_ = mode;
-    }
+    void SetContextCaptureMode(rtStreamCaptureMode mode) { captureMode_ = mode; }
 
-    uint32_t GetCaptureModeRefNum(rtStreamCaptureMode mode)
-    {
-        return captureModeRefNum_[mode];
-    }
+    uint32_t GetCaptureModeRefNum(rtStreamCaptureMode mode) { return captureModeRefNum_[mode]; }
 
-    void CaptureModeEnter(Stream * const stm, rtStreamCaptureMode mode);
-    void CaptureModeExit(Stream * const stm);
+    void CaptureModeEnter(Stream* const stm, rtStreamCaptureMode mode);
+    void CaptureModeExit(Stream* const stm);
     bool IsCaptureModeSupport(void) const;
 
-    const std::list<Model *> &GetModelList() const
-    {
-        return models_;
-    }
+    const std::list<Model*>& GetModelList() const { return models_; }
 
-    SpinLock &GetModelLock()
-    {
-        return modelLock_;
-    }
-    rtError_t SetMemcpyDesc(rtMemcpyDesc_t desc, const void * const srcAddr, const void * const dstAddr, const size_t count);
+    SpinLock& GetModelLock() { return modelLock_; }
+    rtError_t SetMemcpyDesc(
+        rtMemcpyDesc_t desc, const void* const srcAddr, const void* const dstAddr, const size_t count);
 
-    void SetContextForceReset(const bool isForceReset)
-    {
-        isForceReset_ = isForceReset;
-    }
+    void SetContextForceReset(const bool isForceReset) { isForceReset_ = isForceReset; }
 
-    bool IsContextForceReset() const
-    {
-        return isForceReset_;
-    }
+    bool IsContextForceReset() const { return isForceReset_; }
 
-    rtError_t UpdateEndGraphTask(Stream * const origCaptureStream, Stream * const exeStream, Notify *ntf) const;
-    rtError_t UpdateSuModelExeStreamNotifyWaitSqe(TaskInfo *taskInfo,
-        Stream * const exeStream) const;
-    rtError_t SendAndRecvDebugTask(RtDebugSendInfo * const sendInfo, rtDebugReportInfo_t * const reportInfo) const;
-    uint64_t GetCallBackThreadId() const
-    {
-        return callBackThreadId_;
-    }
+    rtError_t UpdateEndGraphTask(Stream* const origCaptureStream, Stream* const exeStream, Notify* ntf) const;
+    rtError_t UpdateSuModelExeStreamNotifyWaitSqe(TaskInfo* taskInfo, Stream* const exeStream) const;
+    rtError_t SendAndRecvDebugTask(RtDebugSendInfo* const sendInfo, rtDebugReportInfo_t* const reportInfo) const;
+    uint64_t GetCallBackThreadId() const { return callBackThreadId_; }
     rtError_t CreateContextCallBackThread();
     void DestroyContextCallBackThread();
     std::mutex callbackTheadMutex_;
-    virtual rtError_t CheckStatus(const Stream * const stm = nullptr, const bool isBlockDefault = true);
-    rtError_t CheckTaskSend(const TaskInfo * const workTask);
+    virtual rtError_t CheckStatus(const Stream* const stm = nullptr, const bool isBlockDefault = true);
+    rtError_t CheckTaskSend(const TaskInfo* const workTask);
     // ctxMode_ 只是遇错模式的配置,是否出错从GetFailureError获取.
-    TsStreamFailureMode GetCtxMode() const
-    {
-        return ctxMode_;
-    }
-    void SetCtxMode(const TsStreamFailureMode flag)
-    {
-        ctxMode_ = flag;
-    }
+    TsStreamFailureMode GetCtxMode() const { return ctxMode_; }
+    void SetCtxMode(const TsStreamFailureMode flag) { ctxMode_ = flag; }
     rtError_t SyncAllStreamToGetError();
     void ProcessReportFastRingBuffer() const;
-    rtError_t TryRecycleCaptureModelResource(const uint32_t allocSqNum, const uint32_t ntfCnt,
-        const CaptureModel * const excludeMdl);
-    rtError_t TryRecycleCaptureModelJettyResource(const CaptureModel * const excludeMdl, JettyType type);
+    rtError_t TryRecycleCaptureModelResource(
+        const uint32_t allocSqNum, const uint32_t ntfCnt, const CaptureModel* const excludeMdl);
+    rtError_t TryRecycleCaptureModelJettyResource(const CaptureModel* const excludeMdl, JettyType type);
 
     void PushContextErrMsg();
     void PopContextErrMsg();
-    virtual rtError_t TearDownStream(Stream *stm, bool flag = true) const;
+    virtual rtError_t TearDownStream(Stream* stm, bool flag = true) const;
 
 private:
     rtError_t Init();
     rtError_t OnlineStreamInit(const rtChipType_t chipType);
-    void RestoreOwnedStream(Stream * const stm);
-    void FlushPendingTasksBeforeStreamTearDown(Stream *stm) const;
-    rtError_t TearDownStreamAndFinalize(Stream *stm, bool flag, bool *destroyTaskRecycledStream = nullptr) const;
-    rtError_t TearDownOwnedStream(Stream *stm, bool flag, bool *destroyTaskRecycledStream = nullptr) const;
-    bool WillStreamBeDeletedOnTearDown(const Stream *stm) const;
+    void RestoreOwnedStream(Stream* const stm);
+    void FlushPendingTasksBeforeStreamTearDown(Stream* stm) const;
+    rtError_t TearDownStreamAndFinalize(Stream* stm, bool flag, bool* destroyTaskRecycledStream = nullptr) const;
+    rtError_t TearDownOwnedStream(Stream* stm, bool flag, bool* destroyTaskRecycledStream = nullptr) const;
+    bool WillStreamBeDeletedOnTearDown(const Stream* stm) const;
     void TearDownModelsOnContextTearDown();
     rtError_t TearDownOwnedStreamsOnContextTearDown();
     rtError_t TearDownOwnedStreamsForPrimaryRelease();
-    rtError_t TearDownContextStream(Stream *&stream, const char * const streamName) const;
-    rtError_t TearDownContextStreamForPrimaryRelease(Stream *&stream, const char * const streamName) const;
-    rtError_t TearDownStreamForPrimaryRelease(Stream *&stream, bool flag = true) const;
-    rtError_t HandlePrimaryReleaseStreamTearDownFailure(Stream *&stream, Stream *tdStream, rtError_t error,
-        bool destroyTaskRecycledStream) const;
-    rtError_t DeleteStreamNoThrowForPrimaryRelease(Stream *&stream) const;
-    void PrepareModelForDelete(Model *mdl) const;
-    void DeleteModelOnContextTearDown(Model *mdl) const;
+    rtError_t TearDownContextStream(Stream*& stream, const char* const streamName) const;
+    rtError_t TearDownContextStreamForPrimaryRelease(Stream*& stream, const char* const streamName) const;
+    rtError_t TearDownStreamForPrimaryRelease(Stream*& stream, bool flag = true) const;
+    rtError_t HandlePrimaryReleaseStreamTearDownFailure(
+        Stream*& stream, Stream* tdStream, rtError_t error, bool destroyTaskRecycledStream) const;
+    rtError_t DeleteStreamNoThrowForPrimaryRelease(Stream*& stream) const;
+    void PrepareModelForDelete(Model* mdl) const;
+    void DeleteModelOnContextTearDown(Model* mdl) const;
     void ReleaseModulesAfterTearDown();
     void ReleaseOverflowAddrAfterTearDown();
     void ResetCallbackAfterTearDown();
     void ReleaseDeviceAfterTearDown();
     void ResetResourceFieldsAfterTearDown();
-    void LogStateTransition(const ContextState fromState, const ContextState toState,
-        const char_t * const trigger) const;
+    void LogStateTransition(
+        const ContextState fromState, const ContextState toState, const char_t* const trigger) const;
 
     bool IsStreamNotSync(const uint32_t flags) const;
 
     void TryAllocFastCq();
 
-    rtError_t CheckCaptureModelValidity(Model * const captureMdl) const;
+    rtError_t CheckCaptureModelValidity(Model* const captureMdl) const;
     rtError_t SetOverflowAddr();
+
 protected:
-    std::list<Stream *> TakeOwnedStreamsForTearDown();
-    Device *device_;
+    std::list<Stream*> TakeOwnedStreamsForTearDown();
+    Device* device_;
 
 private:
-    Stream *defaultStream_;
-    Stream *onlineStream_;   /* process online task */
+    Stream* defaultStream_;
+    Stream* onlineStream_; /* process online task */
 
-    std::list<Stream *> streams_;
+    std::list<Stream*> streams_;
     SpinLock modelLock_;
-    std::list<Model *> models_;
+    std::list<Model*> models_;
 
     std::mutex moduleLock_;
-    ObjAllocator<Module *> *moduleAllocator_;
+    ObjAllocator<Module*>* moduleAllocator_;
 
     bool isPrimary_;
     rtTaskGenCallback taskGenCallback_;
@@ -653,7 +554,7 @@ private:
     std::atomic<bool> deleteScheduled_;
     std::atomic<bool> resourcesReleased_;
     bool infMode_;
-    void *overflowAddr_ = nullptr;
+    void* overflowAddr_ = nullptr;
     uint64_t overflowAddrOffset_ = INVALID_CONTEXT_OVERFLOW_OFFSET;
     std::vector<std::pair<bool, int64_t>> sysParamOpt_;
     std::mutex sysParamOptLock_;
@@ -677,7 +578,7 @@ private:
 public:
     std::mutex streamLock_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_CONTEXT_HPP
+#endif // CCE_RUNTIME_CONTEXT_HPP

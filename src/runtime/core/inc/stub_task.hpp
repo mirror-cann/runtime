@@ -23,47 +23,45 @@ class Model;
 class Notify;
 struct EventResource;
 
-void RecycleThreadDoForStarsV2(Device *deviceInfo);
+void RecycleThreadDoForStarsV2(Device* deviceInfo);
 
-TaskInfo* GetTaskInfo(const Device * const dev, uint32_t streamId, uint32_t pos, bool posIsSqHead = false);
+TaskInfo* GetTaskInfo(const Device* const dev, uint32_t streamId, uint32_t pos, bool posIsSqHead = false);
 
-rtError_t TaskReclaimByStream(const Stream * const stm, const bool limited, const bool needLog = true);
+rtError_t TaskReclaimByStream(const Stream* const stm, const bool limited, const bool needLog = true);
 
-void ProfStart(Profiler * const profiler, const uint64_t profConfig, const uint32_t devId, const Device * const dev);
+void ProfStart(Profiler* const profiler, const uint64_t profConfig, const uint32_t devId, const Device* const dev);
 
-void ProfStop(Profiler * const profiler, const uint64_t profConfig, const uint32_t devId, const Device * const dev);
+void ProfStop(Profiler* const profiler, const uint64_t profConfig, const uint32_t devId, const Device* const dev);
 
-rtError_t SetTimeoutConfigTaskSubmitDavid(Stream * const stm, const rtTaskTimeoutType_t type, const uint32_t timeout);
+rtError_t SetTimeoutConfigTaskSubmitDavid(Stream* const stm, const rtTaskTimeoutType_t type, const uint32_t timeout);
 
-rtError_t AicpuMdlDestroy(Model * const mdl);
+rtError_t AicpuMdlDestroy(Model* const mdl);
 
-rtError_t ModelSubmitExecuteTask(Model * const mdl, Stream * const streamIn);
+rtError_t ModelSubmitExecuteTask(Model* const mdl, Stream* const streamIn);
 
-rtError_t ModelLoadCompleteByStream(Model * const mdl);
+rtError_t ModelLoadCompleteByStream(Model* const mdl);
 
-rtError_t MdlBindTaskSubmit(Model * const mdl, Stream * const streamIn,
-    const uint32_t flag);
+rtError_t MdlBindTaskSubmit(Model* const mdl, Stream* const streamIn, const uint32_t flag);
 
-rtError_t MdlUnBindTaskSubmit(Model * const mdl, Stream * const streamIn,
-    const bool force);
+rtError_t MdlUnBindTaskSubmit(Model* const mdl, Stream* const streamIn, const bool force);
 
 rtError_t NtyWait(
     Notify* const inNotify, Stream* const streamIn, const uint32_t timeOut, const bool isEndGraphNotify = false,
     Model* const captureModel = nullptr, std::vector<EventResource>* externalWaitRetainedResources = nullptr);
 
-rtError_t SyncGetDeviceMsg(Device * const dev, const void * const devMemAddr, const uint32_t devMemSize,
-    const rtGetDevMsgType_t getDevMsgType);
+rtError_t SyncGetDeviceMsg(
+    Device* const dev, const void* const devMemAddr, const uint32_t devMemSize, const rtGetDevMsgType_t getDevMsgType);
 
-rtError_t ProcRingBufferTaskDavid(const Device *const dev, const void * const devMem, const bool delFlag,
-    const uint32_t len);
+rtError_t ProcRingBufferTaskDavid(
+    const Device* const dev, const void* const devMem, const bool delFlag, const uint32_t len);
 
-rtError_t TaskReclaimAllStream(const Device * const dev);
+rtError_t TaskReclaimAllStream(const Device* const dev);
 
-rtError_t UpdateTimeoutConfigTaskSubmitDavid(Stream * const stm, const RtTimeoutConfig &timeoutConfig);
+rtError_t UpdateTimeoutConfigTaskSubmitDavid(Stream* const stm, const RtTimeoutConfig& timeoutConfig);
 
-void ConstructStarsSqeForNotifyRecordTask(TaskInfo *taskInfo, uint8_t *const command);
-void ConstructStarsSqeForConditionNotifyWait(TaskInfo *taskInfo, uint8_t *const command);
+void ConstructStarsSqeForNotifyRecordTask(TaskInfo* taskInfo, uint8_t* const command);
+void ConstructStarsSqeForConditionNotifyWait(TaskInfo* taskInfo, uint8_t* const command);
 
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

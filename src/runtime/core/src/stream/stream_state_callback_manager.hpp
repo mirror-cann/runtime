@@ -17,40 +17,39 @@
 namespace cce {
 namespace runtime {
 
-struct StreamStateCallbackInfo{
-    StreamStateCallback     type;
-    rtStreamStateCallback   callback;
-    rtsStreamStateCallback  callbackV2;
-    void                    *args;
+struct StreamStateCallbackInfo {
+    StreamStateCallback type;
+    rtStreamStateCallback callback;
+    rtsStreamStateCallback callbackV2;
+    void* args;
 };
 
 class StreamStateCallbackManager {
 public:
-    static StreamStateCallbackManager &Instance();
+    static StreamStateCallbackManager& Instance();
 
-    rtError_t RegStreamStateCallback(const char_t *regName, void *callback, void *args,
-        StreamStateCallback type);
+    rtError_t RegStreamStateCallback(const char_t* regName, void* callback, void* args, StreamStateCallback type);
 
-    void Notify(Stream * const stm, const bool isCreate);
+    void Notify(Stream* const stm, const bool isCreate);
 
 private:
     StreamStateCallbackManager() = default;
 
     ~StreamStateCallbackManager() = default;
 
-    StreamStateCallbackManager(const StreamStateCallbackManager &other) = delete;
+    StreamStateCallbackManager(const StreamStateCallbackManager& other) = delete;
 
-    StreamStateCallbackManager &operator=(const StreamStateCallbackManager &other) = delete;
+    StreamStateCallbackManager& operator=(const StreamStateCallbackManager& other) = delete;
 
-    StreamStateCallbackManager(StreamStateCallbackManager &&other) = delete;
+    StreamStateCallbackManager(StreamStateCallbackManager&& other) = delete;
 
-    StreamStateCallbackManager &operator=(StreamStateCallbackManager &&other) = delete;
+    StreamStateCallbackManager& operator=(StreamStateCallbackManager&& other) = delete;
 
 private:
     std::unordered_map<std::string, StreamStateCallbackInfo> callbackMap_;
     std::mutex mapMutex_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_STREAM_STATE_CALLBACK_MANAGER_HPP
+#endif // CCE_RUNTIME_STREAM_STATE_CALLBACK_MANAGER_HPP

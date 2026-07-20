@@ -38,8 +38,9 @@ bool g_isAddrFlatDevice = false;
 
 rtError_t GroupDevice::FillCache(struct capability_group_info capGroupInfos[], const uint32_t groupCount)
 {
-    const rtError_t error = Driver_()->GetCapabilityGroupInfo(static_cast<int32_t>(Id_()),
-        static_cast<int32_t>(DevGetTsId()), -1,  capGroupInfos, static_cast<int32_t>(groupCount));
+    const rtError_t error = Driver_()->GetCapabilityGroupInfo(
+        static_cast<int32_t>(Id_()), static_cast<int32_t>(DevGetTsId()), -1, capGroupInfos,
+        static_cast<int32_t>(groupCount));
     COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
 
     groupInfoCache_.clear();
@@ -61,7 +62,9 @@ rtError_t GroupDevice::FillCache(struct capability_group_info capGroupInfos[], c
         rtGrpInfo.aivectorNum = capGroupInfos[i].aivector_number;
         rtGrpInfo.sdmaNum = capGroupInfos[i].sdma_number;
         rtGrpInfo.activeStreamNum = capGroupInfos[i].active_sq_number;
-        RT_LOG(RT_LOG_INFO, "get groupID=%u, extend_attribute=%u, vfID=%u, poolID=%u, poolIDMax=%u, "
+        RT_LOG(
+            RT_LOG_INFO,
+            "get groupID=%u, extend_attribute=%u, vfID=%u, poolID=%u, poolIDMax=%u, "
             "aicoreNum=%u, aivectorNum=%u.",
             capGroupInfos[i].group_id, capGroupInfos[i].extend_attribute, capGroupInfos[i].vfid,
             capGroupInfos[i].poolid, capGroupInfos[i].poolid_max, capGroupInfos[i].aicore_number,
@@ -70,7 +73,8 @@ rtError_t GroupDevice::FillCache(struct capability_group_info capGroupInfos[], c
             if (defaultGroup_ == -1) {
                 defaultGroup_ = rtGrpInfo.groupId;
             } else {
-                RT_LOG_INNER_MSG(RT_LOG_ERROR, "More than one default group is detected: %d and %d.", defaultGroup_,
+                RT_LOG_INNER_MSG(
+                    RT_LOG_ERROR, "More than one default group is detected: %d and %d.", defaultGroup_,
                     rtGrpInfo.groupId);
                 groupInfoCache_.clear();
                 defaultGroup_ = -1;
@@ -88,33 +92,37 @@ rtError_t GroupDevice::GroupInfoSetup()
     (void)memset_s(&capabilityInfo, sizeof(halCapabilityInfo), 0U, sizeof(halCapabilityInfo));
     rtError_t error = Driver_()->GetChipCapability(Id_(), &capabilityInfo);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "GetChipCapability failed, retCode=%#x, deviceId=%u.",
-                         static_cast<uint32_t>(error), Id_());
+        RT_LOG(
+            RT_LOG_ERROR, "GetChipCapability failed, retCode=%#x, deviceId=%u.", static_cast<uint32_t>(error), Id_());
         return error;
     }
     RT_LOG(RT_LOG_INFO, "ts_group_number=%u.", capabilityInfo.ts_group_number);
     if (capabilityInfo.ts_group_number > 0U) {
-        capability_group_info * const capGroupInfos =
+        capability_group_info* const capGroupInfos =
             new (std::nothrow) capability_group_info[capabilityInfo.ts_group_number];
-        COND_RETURN_AND_MSG_OUTER(capGroupInfos == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, 
+        COND_RETURN_AND_MSG_OUTER(
+            capGroupInfos == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
             capabilityInfo.ts_group_number * sizeof(capability_group_info), "new");
-        (void)memset_s(capGroupInfos, sizeof(capability_group_info) * capabilityInfo.ts_group_number,
-            0U, sizeof(capability_group_info) * capabilityInfo.ts_group_number);
+        (void)memset_s(
+            capGroupInfos, sizeof(capability_group_info) * capabilityInfo.ts_group_number, 0U,
+            sizeof(capability_group_info) * capabilityInfo.ts_group_number);
         error = FillCache(capGroupInfos, capabilityInfo.ts_group_number);
-        delete []capGroupInfos;
+        delete[] capGroupInfos;
         if (error == RT_ERROR_DRV_NOT_SUPPORT) {
             return RT_ERROR_NONE;
         }
         if (error != RT_ERROR_NONE) {
-            RT_LOG(RT_LOG_ERROR, "FillCache failed, retCode=%#x, tsGroupNum=%u.",
-                             static_cast<uint32_t>(error), capabilityInfo.ts_group_number);
+            RT_LOG(
+                RT_LOG_ERROR, "FillCache failed, retCode=%#x, tsGroupNum=%u.", static_cast<uint32_t>(error),
+                capabilityInfo.ts_group_number);
             return error;
         }
     }
 
     if ((groupInfoCache_.size() > 1U) && (defaultGroup_ == -1)) {
-        RT_LOG(RT_LOG_WARNING, "Multiple groups have been created, but no default group exists."
-                               "Please use rtSetGroup to set a group first!");
+        RT_LOG(
+            RT_LOG_WARNING, "Multiple groups have been created, but no default group exists."
+                            "Please use rtSetGroup to set a group first!");
     }
 
     return RT_ERROR_NONE;
@@ -139,20 +147,21 @@ rtError_t GroupDevice::QueryGroupInfo()
     isFirstQryGrpInfoMux_.unlock();
     return RT_ERROR_NONE;
 }
-rtError_t GroupDevice::GetGroupInfo(const int32_t grpId, rtGroupInfo_t * const info, const uint32_t cnt)
+rtError_t GroupDevice::GetGroupInfo(const int32_t grpId, rtGroupInfo_t* const info, const uint32_t cnt)
 {
     if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP_INFO_SETUP_DOT_ON_DEMIND)) {
         (void)QueryGroupInfo();
     }
 
     if (groupInfoCache_.empty() || ((grpId != -1) && (groupInfoCache_.find(grpId) == groupInfoCache_.end()))) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to get group info, groupId=%d, count=%u, groupInfo size=%zu(bytes).",
-                         grpId, cnt, groupInfoCache_.size());
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Failed to get group info, groupId=%d, count=%u, groupInfo size=%zu(bytes).", grpId, cnt,
+            groupInfoCache_.size());
         return RT_ERROR_GROUP_NOT_CREATE;
     }
     if (grpId == -1) {
         uint32_t i = 0U;
-        for (const auto &it:groupInfoCache_) {
+        for (const auto& it : groupInfoCache_) {
             info[i] = it.second;
             i++;
         }
@@ -162,9 +171,10 @@ rtError_t GroupDevice::GetGroupInfo(const int32_t grpId, rtGroupInfo_t * const i
     return RT_ERROR_NONE;
 }
 
-rtError_t GroupDevice::GetGroupCount(uint32_t * const cnt)
+rtError_t GroupDevice::GetGroupCount(uint32_t* const cnt)
 {
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(cnt, RT_ERROR_INVALID_VALUE, "Obtaining the number of available computing power groups");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        cnt, RT_ERROR_INVALID_VALUE, "Obtaining the number of available computing power groups");
 
     if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP_INFO_SETUP_DOT_ON_DEMIND)) {
         (void)QueryGroupInfo();
@@ -178,8 +188,8 @@ rtError_t GroupDevice::SetGroup(const int32_t grpId)
 {
     const int32_t maxGroupId = GetDevProperties().maxGroupId;
     if ((grpId < MIN_GROUP_ID) || (grpId > maxGroupId)) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Specifying the group used for the current operation",
-            grpId,
+        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(
+            "Specifying the group used for the current operation", grpId,
             "[" + std::to_string(MIN_GROUP_ID) + ", " + std::to_string(maxGroupId) + "]");
         return RT_ERROR_INVALID_VALUE;
     }
@@ -210,5 +220,5 @@ rtError_t GroupDevice::ResetGroup()
     poolIdMax_ = lastPoolIdMax_;
     return RT_ERROR_NONE;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

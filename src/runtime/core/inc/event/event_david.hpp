@@ -28,68 +28,53 @@ struct DavidRecordTaskInfo {
 
 class DavidEvent : public Event {
 public:
-    DavidEvent(Device *device, uint64_t eventFlag, Context *ctx, bool isNewMode = false);
+    DavidEvent(Device* device, uint64_t eventFlag, Context* ctx, bool isNewMode = false);
     ~DavidEvent() noexcept override;
     rtError_t Query(void) override;
-    rtError_t QueryEventStatus(rtEventStatus_t * const status) override;
-    rtError_t QueryEventWaitStatus(const bool disableThread, bool &waitFlag) override;
+    rtError_t QueryEventStatus(rtEventStatus_t* const status) override;
+    rtError_t QueryEventWaitStatus(const bool disableThread, bool& waitFlag) override;
     rtError_t Synchronize(int32_t timeout = -1) override;
-    rtError_t ElapsedTime(float32_t * const timeInterval, Event * const base) override;
-    rtError_t GetTimeStamp(uint64_t * const recTimestamp) override;
-    rtError_t QueryEventTask(rtEventStatus_t * const status) override;
+    rtError_t ElapsedTime(float32_t* const timeInterval, Event* const base) override;
+    rtError_t GetTimeStamp(uint64_t* const recTimestamp) override;
+    rtError_t QueryEventTask(rtEventStatus_t* const status) override;
     rtError_t WaitTask(const int32_t timeout) override;
     rtError_t ReclaimTask(const bool evtWaitTask) override;
-    void RecordDavidEventComplete(const TaskInfo * const tsk, const uint64_t recTimestamp);
-    bool WaitSendCheck(const Stream * const stm, int32_t &eventId) override;
+    void RecordDavidEventComplete(const TaskInfo* const tsk, const uint64_t recTimestamp);
+    bool WaitSendCheck(const Stream* const stm, int32_t& eventId) override;
     bool TryFreeEventIdAndCheckCanBeDelete(const int32_t id, bool isNeedDestroy) override;
-    bool DavidUpdateRecordMapAndDestroyEvent(TaskInfo *taskInfo);
-    bool DavidUpdateWaitMapAndDestroyEvent(TaskInfo *taskInfo);
+    bool DavidUpdateRecordMapAndDestroyEvent(TaskInfo* taskInfo);
+    bool DavidUpdateWaitMapAndDestroyEvent(TaskInfo* taskInfo);
     rtError_t ClearRecordStatus() override;
-    rtError_t AllocEventIdResource(Stream * const stm, int32_t &eventId) override;
-    void UpdateLatestRecord(const DavidRecordTaskInfo &recordInfo, const DavidEventState_t latestStatus,
-        const uint64_t timeStamp);
+    rtError_t AllocEventIdResource(Stream* const stm, int32_t& eventId) override;
+    void UpdateLatestRecord(
+        const DavidRecordTaskInfo& recordInfo, const DavidEventState_t latestStatus, const uint64_t timeStamp);
     rtError_t GenEventId() override;
     bool IsEventInModel() override;
     rtError_t ReAllocId() override;
-    bool IsEventWithoutWaitTask() const override {
-        return (((eventFlag_ & (RT_EVENT_DDSYNC | RT_EVENT_DDSYNC_NS | RT_EVENT_MC2 | RT_EVENT_EXTERNAL | RT_EVENT_IPC)) == 0U));
-    }
-    bool IsCntNotify() const
+    bool IsEventWithoutWaitTask() const override
     {
-        return isCntNotify_;
+        return (
+            ((eventFlag_ & (RT_EVENT_DDSYNC | RT_EVENT_DDSYNC_NS | RT_EVENT_MC2 | RT_EVENT_EXTERNAL | RT_EVENT_IPC)) ==
+             0U));
     }
-    uint32_t CntValue() const
-    {
-        return cntValue_;
-    }
-    void SetCntValue(uint32_t val)
-    {
-        cntValue_ = val;
-    }
-    void SetRecordStatus(DavidEventState_t status)
-    {
-        status_ = status;
-    }
-    DavidEventState_t GetRecordStatus() const
-    {
-        return status_;
-    }
+    bool IsCntNotify() const { return isCntNotify_; }
+    uint32_t CntValue() const { return cntValue_; }
+    void SetCntValue(uint32_t val) { cntValue_ = val; }
+    void SetRecordStatus(DavidEventState_t status) { status_ = status; }
+    DavidEventState_t GetRecordStatus() const { return status_; }
     void SetLatestRecordInfo(uint32_t taskId, int32_t stmId)
     {
         latestRecordTask_.taskId = taskId;
         latestRecordTask_.streamId = stmId;
     }
-    DavidRecordTaskInfo GetLatestRecordInfo()
-    {
-        return latestRecordTask_;
-    }
+    DavidRecordTaskInfo GetLatestRecordInfo() { return latestRecordTask_; }
 
 private:
-    bool              isCntNotify_{false};
-    uint32_t          cntValue_{0U};
+    bool isCntNotify_{false};
+    uint32_t cntValue_{0U};
     DavidEventState_t status_;
     DavidRecordTaskInfo latestRecordTask_{0, 0U};
 };
-}
-}
-#endif  // CCE_RUNTIME_EVENT_DAVID_HPP
+} // namespace runtime
+} // namespace cce
+#endif // CCE_RUNTIME_EVENT_DAVID_HPP

@@ -22,7 +22,7 @@ namespace runtime {
  */
 class ProfilingAgent {
 public:
-    static ProfilingAgent &Instance();
+    static ProfilingAgent& Instance();
 
     void SetMsprofReporterCallback(MsprofReporterCallback const callback);
 
@@ -30,35 +30,34 @@ public:
 
     rtError_t UnInit() const;
 
-    void ReportProfApi(const uint32_t devId, RuntimeProfApiData &profApiData) const;
+    void ReportProfApi(const uint32_t devId, RuntimeProfApiData& profApiData) const;
 
     MsprofReporterCallback GetMsprofReporterCallback() const;
 
 private:
-
     ProfilingAgent() = default;
 
     ~ProfilingAgent() = default;
 
-    ProfilingAgent(const ProfilingAgent &other) = delete;
+    ProfilingAgent(const ProfilingAgent& other) = delete;
 
-    ProfilingAgent &operator=(const ProfilingAgent &other) = delete;
+    ProfilingAgent& operator=(const ProfilingAgent& other) = delete;
 
-    ProfilingAgent(ProfilingAgent &&other) = delete;
+    ProfilingAgent(ProfilingAgent&& other) = delete;
 
-    ProfilingAgent &operator=(ProfilingAgent &&other) = delete;
+    ProfilingAgent& operator=(ProfilingAgent&& other) = delete;
 
     rtError_t RegisterProfTypeInfo() const;
 
 private:
     MsprofReporterCallback profReporterCallback_;
 };
-ProfApiContext *ProfilerPushProfApiContext(void);
-bool ProfilerPopProfApiContext(ProfApiContext &profApiContext);
-ProfApiContext *ProfilerGetTopProfApiContext(void);
-RuntimeProfApiData &ProfilerGetProfApiData(void);
-TaskTrackInfo &ProfilerGetProfTaskTrackData(void);
-}
-}
+ProfApiContext* ProfilerPushProfApiContext(void);
+bool ProfilerPopProfApiContext(ProfApiContext& profApiContext);
+ProfApiContext* ProfilerGetTopProfApiContext(void);
+RuntimeProfApiData& ProfilerGetProfApiData(void);
+TaskTrackInfo& ProfilerGetProfTaskTrackData(void);
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_PROFILING_AGENT_HPP

@@ -17,10 +17,7 @@
 
 namespace cce {
 namespace runtime {
-XpuContext::XpuContext(Device *const ctxDevice, const bool primaryCtx)
-    : Context(ctxDevice, primaryCtx)
-{
-}
+XpuContext::XpuContext(Device* const ctxDevice, const bool primaryCtx) : Context(ctxDevice, primaryCtx) {}
 
 XpuContext::~XpuContext()
 {
@@ -32,7 +29,7 @@ rtError_t XpuContext::TearDown()
 {
     (void)TrySwitchState(ContextState::CTX_STATE_ACTIVE, ContextState::CTX_STATE_FINALIZING, "XpuContextTearDown");
     std::unique_lock<std::mutex> taskLock(streamLock_);
-    for (Stream * const tdStream : StreamList_()) {
+    for (Stream* const tdStream : StreamList_()) {
         RT_LOG(RT_LOG_INFO, "Tear down stream abandon, stream_id=%d.", tdStream->Id_());
         (void)TearDownStream(tdStream);
     }
@@ -43,7 +40,7 @@ rtError_t XpuContext::TearDown()
     return RT_ERROR_NONE;
 }
 
-rtError_t XpuContext::TearDownStream(Stream *stm, bool flag) const
+rtError_t XpuContext::TearDownStream(Stream* stm, bool flag) const
 {
     const rtError_t error = stm->TearDown(false, flag);
     if (unlikely(error != RT_ERROR_NONE)) {
@@ -62,7 +59,8 @@ rtError_t XpuContext::Setup()
 }
 
 rtError_t XpuContext::StreamCreate(
-    const uint32_t prio, const uint32_t flag, Stream **const result, DvppGrp *grp, const bool isSoftWareSqEnable, const bool isAutoSplitEnable)
+    const uint32_t prio, const uint32_t flag, Stream** const result, DvppGrp* grp, const bool isSoftWareSqEnable,
+    const bool isAutoSplitEnable)
 {
     UNUSED(grp);
     UNUSED(isSoftWareSqEnable);
@@ -81,7 +79,7 @@ rtError_t XpuContext::StreamCreate(
         return error;
     }
 
-    Stream *newStream = new (std::nothrow) XpuStream(Device_(), flag);
+    Stream* newStream = new (std::nothrow) XpuStream(Device_(), flag);
     if (newStream == nullptr) {
         error = RT_ERROR_STREAM_NEW;
         RT_LOG(RT_LOG_ERROR, "Stream create failed, stream is nullptr.");
@@ -101,12 +99,12 @@ rtError_t XpuContext::StreamCreate(
     return RT_ERROR_NONE;
 }
 
-rtError_t XpuContext::CheckStatus(const Stream *const stm, const bool isBlockDefault)
+rtError_t XpuContext::CheckStatus(const Stream* const stm, const bool isBlockDefault)
 {
     (void)isBlockDefault;
     (void)stm;
     rtError_t status = GetFailureError();
     return status;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

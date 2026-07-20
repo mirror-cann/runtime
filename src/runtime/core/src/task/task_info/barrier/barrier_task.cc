@@ -17,17 +17,18 @@ namespace runtime {
 
 #if F_DESC("BarrierTask")
 
-rtError_t BarrierTaskInit(TaskInfo *taskInfo, const rtBarrierTaskInfo_t *const barrierTaskInfo, const Stream *const stm,
-                          const uint32_t flag)
+rtError_t BarrierTaskInit(
+    TaskInfo* taskInfo, const rtBarrierTaskInfo_t* const barrierTaskInfo, const Stream* const stm, const uint32_t flag)
 {
     (void)flag;
     TaskCommonInfoInit(taskInfo);
     taskInfo->typeName = "BARRIER";
     taskInfo->type = TS_TASK_TYPE_BARRIER;
 
-    Model *barrierModel = stm->Model_();
+    Model* barrierModel = stm->Model_();
     rtError_t error;
-    COND_RETURN_ERROR_MSG_INNER((barrierModel == nullptr), RT_ERROR_MODEL_NULL,
+    COND_RETURN_ERROR_MSG_INNER(
+        (barrierModel == nullptr), RT_ERROR_MODEL_NULL,
         "The stream that delivers the barrier task is not in the model, deviceId=%u, streamId=%d, taskId=%u.",
         taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), taskInfo->id);
 
@@ -36,24 +37,26 @@ rtError_t BarrierTaskInit(TaskInfo *taskInfo, const rtBarrierTaskInfo_t *const b
     uint16_t tmpCmoId = 0U;
     for (uint8_t i = 0U; i < barrierTaskInfo->logicIdNum; i++) {
         error = barrierModel->GetCmoId(barrierTaskInfo->cmoInfo[i].logicId, tmpCmoId);
-        ERROR_RETURN_MSG_INNER(error, "Failed to get CmoId, deviceId=%u, streamId=%d, taskId=%u.",
-            taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), taskInfo->id);
+        ERROR_RETURN_MSG_INNER(
+            error, "Failed to get CmoId, deviceId=%u, streamId=%d, taskId=%u.", taskInfo->stream->Device_()->Id_(),
+            taskInfo->stream->Id_(), taskInfo->id);
         taskInfo->u.barrierTask.barrierMsg.cmoInfo[i].cmoId = tmpCmoId;
         taskInfo->u.barrierTask.barrierMsg.cmoInfo[i].cmoType = barrierTaskInfo->cmoInfo[i].cmoType;
         taskInfo->u.barrierTask.barrierMsg.cmoIdNum++;
     }
 
-    RT_LOG(RT_LOG_DEBUG, "Barrier Task Info: IdNum=%hhu, logicId(%u,%u,%u,%u,%u,%u), cmotype(%hu,%hu,%hu,%hu,%hu,%hu).",
+    RT_LOG(
+        RT_LOG_DEBUG, "Barrier Task Info: IdNum=%hhu, logicId(%u,%u,%u,%u,%u,%u), cmotype(%hu,%hu,%hu,%hu,%hu,%hu).",
         barrierTaskInfo->logicIdNum, barrierTaskInfo->cmoInfo[0U].logicId, barrierTaskInfo->cmoInfo[1U].logicId,
-        barrierTaskInfo->cmoInfo[2U].logicId, barrierTaskInfo->cmoInfo[3U].logicId, // 2U is index, 3U is index
-        barrierTaskInfo->cmoInfo[4U].logicId, barrierTaskInfo->cmoInfo[5U].logicId, // 4U is index, 5U is index
+        barrierTaskInfo->cmoInfo[2U].logicId, barrierTaskInfo->cmoInfo[3U].logicId,  // 2U is index, 3U is index
+        barrierTaskInfo->cmoInfo[4U].logicId, barrierTaskInfo->cmoInfo[5U].logicId,  // 4U is index, 5U is index
         barrierTaskInfo->cmoInfo[0U].cmoType, barrierTaskInfo->cmoInfo[1U].cmoType,
-        barrierTaskInfo->cmoInfo[2U].cmoType, barrierTaskInfo->cmoInfo[3U].cmoType, // 2U is index, 3U is index
+        barrierTaskInfo->cmoInfo[2U].cmoType, barrierTaskInfo->cmoInfo[3U].cmoType,  // 2U is index, 3U is index
         barrierTaskInfo->cmoInfo[4U].cmoType, barrierTaskInfo->cmoInfo[5U].cmoType); // 4U is index, 5U is index
     return RT_ERROR_NONE;
 }
 
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

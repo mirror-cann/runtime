@@ -18,17 +18,11 @@ __THREAD_LOCAL__ char_t ThreadLocalContainer::taskTag_[TASK_TAG_MAX_LEN] = {};
 __THREAD_LOCAL__ uint32_t ThreadLocalContainer::envFlags_ = 0U;
 __THREAD_LOCAL__ rtArgsSizeInfo_t ThreadLocalContainer::argsSize_ = {nullptr, 0};
 thread_local ArgsBufferGuard ThreadLocalContainer::argsBufferGuard_;
-LaunchArgment& ThreadLocalContainer::GetLaunchArg(void)
-{
-    return launchArg_;
-}
+LaunchArgment& ThreadLocalContainer::GetLaunchArg(void) { return launchArg_; }
 
-void ThreadLocalContainer::GetTaskTag(std::string &outTaskTag)
-{
-    outTaskTag = taskTag_;
-}
+void ThreadLocalContainer::GetTaskTag(std::string& outTaskTag) { outTaskTag = taskTag_; }
 
-rtError_t ThreadLocalContainer::SetTaskTag(const char_t * const inTaskTag)
+rtError_t ThreadLocalContainer::SetTaskTag(const char_t* const inTaskTag)
 {
     if (inTaskTag == nullptr) {
         RT_LOG(RT_LOG_ERROR, "inTaskTag is null");
@@ -69,19 +63,10 @@ bool ThreadLocalContainer::IsTaskTagValid(void)
     return taskTag_[0] != '\0';
 }
 
-uint32_t ThreadLocalContainer::GetEnvFlags(void)
-{
-    return envFlags_;
-}
-void ThreadLocalContainer::SetEnvFlags(const uint32_t inEnvFlags)
-{
-    envFlags_ = inEnvFlags;
-}
+uint32_t ThreadLocalContainer::GetEnvFlags(void) { return envFlags_; }
+void ThreadLocalContainer::SetEnvFlags(const uint32_t inEnvFlags) { envFlags_ = inEnvFlags; }
 
-rtArgsSizeInfo_t& ThreadLocalContainer::GetArgsSizeInfo(void)
-{
-    return argsSize_;
-}
+rtArgsSizeInfo_t& ThreadLocalContainer::GetArgsSizeInfo(void) { return argsSize_; }
 
 void* ThreadLocalContainer::GetOrCreateArgsBuffer(uint64_t requiredSize)
 {
@@ -101,21 +86,15 @@ std::unordered_map<uint32_t, rtMemUceInfo> GlobalContainer::memUceInfoMap_;
 std::mutex GlobalContainer::hostCpuFuncMutex_;
 std::unordered_set<uint64_t> GlobalContainer::hostCpuFuncs_;
 
-rtChipType_t GlobalContainer::GetRtChipType(void)
-{
-    return chipType_;
-}
-void GlobalContainer::SetRtChipType(const rtChipType_t inChipType)
-{
-    chipType_ = inChipType;
-}
+rtChipType_t GlobalContainer::GetRtChipType(void) { return chipType_; }
+void GlobalContainer::SetRtChipType(const rtChipType_t inChipType) { chipType_ = inChipType; }
 
 std::string GlobalContainer::GetSocVersion(void)
 {
     const std::lock_guard<std::mutex> lock(socVersionMutex_);
     return socVersion_;
 }
-void GlobalContainer::SetSocVersion(const std::string &socVersion)
+void GlobalContainer::SetSocVersion(const std::string& socVersion)
 {
     const std::lock_guard<std::mutex> lock(socVersionMutex_);
     socVersion_ = socVersion;
@@ -127,7 +106,7 @@ std::string GlobalContainer::GetHardwareSocVersion(void)
     return hardwareSocVersion_;
 }
 
-void GlobalContainer::SetHardwareSocVersion(const std::string &socVersion)
+void GlobalContainer::SetHardwareSocVersion(const std::string& socVersion)
 {
     const std::lock_guard<std::mutex> lock(socVersionMutex_);
     hardwareSocVersion_ = socVersion;
@@ -139,7 +118,7 @@ std::string GlobalContainer::GetUserSocVersion(void)
     return userSocVersion_;
 }
 
-void GlobalContainer::SetUserSocVersion(const std::string &inSocVersion)
+void GlobalContainer::SetUserSocVersion(const std::string& inSocVersion)
 {
     const std::lock_guard<std::mutex> lock(socVersionMutex_);
     userSocVersion_ = inSocVersion;
@@ -162,54 +141,30 @@ bool GlobalContainer::IsHostCpuFunc(const uint64_t funcAddr)
     return hostCpuFuncs_.find(funcAddr) != hostCpuFuncs_.end();
 }
 
-void GlobalContainer::UceMutexLock(void)
-{
-    uceMutex_.lock();
-}
-void GlobalContainer::UceMutexUnlock(void)
-{
-    uceMutex_.unlock();
-}
+void GlobalContainer::UceMutexLock(void) { uceMutex_.lock(); }
+void GlobalContainer::UceMutexUnlock(void) { uceMutex_.unlock(); }
 bool GlobalContainer::FindMemUceInfo(const uint32_t deviceId)
 {
     return memUceInfoMap_.find(deviceId) != memUceInfoMap_.end();
 }
-void GlobalContainer::InsertMemUceInfo(const uint32_t deviceId, const rtMemUceInfo * const memUceInfo)
+void GlobalContainer::InsertMemUceInfo(const uint32_t deviceId, const rtMemUceInfo* const memUceInfo)
 {
     memUceInfoMap_[deviceId] = *memUceInfo;
 }
-void GlobalContainer::DeleteMemUceInfo(const uint32_t deviceId)
-{
-    memUceInfoMap_.erase(deviceId);
-}
-rtMemUceInfo *GlobalContainer::GetMemUceInfo(const uint32_t deviceId)
-{
-    return &memUceInfoMap_[deviceId];
-}
-uint8_t GlobalContainer::GetEventWorkMode(void)
-{
-    return eventWorkMode_;
-}
+void GlobalContainer::DeleteMemUceInfo(const uint32_t deviceId) { memUceInfoMap_.erase(deviceId); }
+rtMemUceInfo* GlobalContainer::GetMemUceInfo(const uint32_t deviceId) { return &memUceInfoMap_[deviceId]; }
+uint8_t GlobalContainer::GetEventWorkMode(void) { return eventWorkMode_; }
 bool GlobalContainer::IsEventHardMode(void)
 {
     return (eventWorkMode_ == static_cast<uint8_t>(CaptureEventModeType::HARDWARE_MODE));
 }
-void GlobalContainer::SetEventWorkMode(const uint8_t mode)
-{
-    eventWorkMode_ = mode;
-}
-uint64_t GlobalContainer::GetEventModeRefCount()
-{
-    return eventModeSetRefCount;
-}
-void GlobalContainer::SetEventModeRefCount(uint8_t value)
-{
-    eventModeSetRefCount = value;
-}
+void GlobalContainer::SetEventWorkMode(const uint8_t mode) { eventWorkMode_ = mode; }
+uint64_t GlobalContainer::GetEventModeRefCount() { return eventModeSetRefCount; }
+void GlobalContainer::SetEventModeRefCount(uint8_t value) { eventModeSetRefCount = value; }
 
-bool IsProcessTimeout(const mmTimespec &beginTime, int32_t timeout, int32_t *remainTime)
+bool IsProcessTimeout(const mmTimespec& beginTime, int32_t timeout, int32_t* remainTime)
 {
-    if (timeout < 0) {// never timeout
+    if (timeout < 0) { // never timeout
         if (remainTime != nullptr) {
             *remainTime = timeout;
         }
@@ -227,5 +182,5 @@ bool IsProcessTimeout(const mmTimespec &beginTime, int32_t timeout, int32_t *rem
     return false;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

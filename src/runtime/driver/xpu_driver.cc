@@ -19,10 +19,7 @@ namespace cce {
 namespace runtime {
 bool g_xpuDriverRegResult = DriverFactory::RegDriver(XPU_DRIVER, &XpuDriver::Instance_);
 
-XpuDriver::XpuDriver() : NpuDriver()
-{
-    InitDrvErrCodeMap();
-}
+XpuDriver::XpuDriver() : NpuDriver() { InitDrvErrCodeMap(); }
 
 void XpuDriver::InitDrvErrCodeMap()
 {
@@ -54,11 +51,12 @@ rtError_t XpuDriver::GetDrvErrCode(const uint32_t errCode)
     return it->second;
 }
 
-rtError_t XpuDriver::XpuDriverDeviceOpen(const uint32_t devId, TprtCfgInfo_t *devInfo) const
+rtError_t XpuDriver::XpuDriverDeviceOpen(const uint32_t devId, TprtCfgInfo_t* devInfo) const
 {
     rtError_t error = RT_ERROR_NONE;
-	error = TprtDeviceOpen(devId, devInfo);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Open device failed, device_id=%u, error=%u.", devId, error);
+    error = TprtDeviceOpen(devId, devInfo);
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Open device failed, device_id=%u, error=%u.", devId, error);
     return RT_ERROR_NONE;
 }
 
@@ -66,7 +64,8 @@ rtError_t XpuDriver::XpuDriverDeviceClose(const uint32_t devId) const
 {
     rtError_t error = RT_ERROR_NONE;
     error = TprtDeviceClose(devId);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Close device failed, device_id=%u, error=%u.", devId, error);
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Close device failed, device_id=%u, error=%u.", devId, error);
     return RT_ERROR_NONE;
 }
 
@@ -77,8 +76,9 @@ rtError_t XpuDriver::XpuDriverSetSqCqStatus(const uint32_t devId, const uint32_t
     opInfo.reqId = sqId;
     opInfo.prop = TPRT_SQCQ_PROP_SQ_SET_STATUS_QUIT;
     const uint32_t ret = TprtOpSqCqInfo(devId, &opInfo);
-    COND_RETURN_ERROR_MSG_INNER(ret != TPRT_SUCCESS, GetDrvErrCode(ret),
-        "[tprt api] tprtOpSqCqInfo device_id=%u, sq_id=%u, retCode=%u.", devId, sqId, ret);
+    COND_RETURN_ERROR_MSG_INNER(
+        ret != TPRT_SUCCESS, GetDrvErrCode(ret), "[tprt api] tprtOpSqCqInfo device_id=%u, sq_id=%u, retCode=%u.", devId,
+        sqId, ret);
     return RT_ERROR_NONE;
 }
 
@@ -92,13 +92,9 @@ rtError_t XpuDriver::XpuDriverDeviceSqCqAlloc(const uint32_t devId, const uint32
     cqInfo.reqId = cqId;
     cqInfo.inputType = TPRT_ALLOC_CQ_TYPE;
     uint32_t error = TprtSqCqCreate(devId, &sqInfo, &cqInfo);
-    COND_RETURN_ERROR_MSG_INNER(error != TPRT_SUCCESS,
-        GetDrvErrCode(error),
-        "AllocXpuStreamSqCq failed, device_id=%u, sq_id=%u, cq_id=%u, retCode=%u.",
-        devId,
-        sqId,
-        cqId,
-        error);
+    COND_RETURN_ERROR_MSG_INNER(
+        error != TPRT_SUCCESS, GetDrvErrCode(error),
+        "AllocXpuStreamSqCq failed, device_id=%u, sq_id=%u, cq_id=%u, retCode=%u.", devId, sqId, cqId, error);
     return RT_ERROR_NONE;
 }
 
@@ -112,17 +108,14 @@ rtError_t XpuDriver::XpuDriverSqCqDestroy(const uint32_t devId, const uint32_t s
     cqInfo.reqId = cqId;
     cqInfo.inputType = TPRT_FREE_CQ_TYPE;
     error = TprtSqCqDestroy(devId, &sqInfo, &cqInfo);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE,
-        GetDrvErrCode(error),
-        "TprtSqCqDestroy failed, device_id=%u, sq_id=%u, cq_id=%u, retCode=%u.",
-        devId,
-        sqId,
-        cqId,
-        error);
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, GetDrvErrCode(error),
+        "TprtSqCqDestroy failed, device_id=%u, sq_id=%u, cq_id=%u, retCode=%u.", devId, sqId, cqId, error);
     return RT_ERROR_NONE;
 }
 
-rtError_t XpuDriver::GetSqHead(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t &head, bool needLog)
+rtError_t XpuDriver::GetSqHead(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t& head, bool needLog)
 {
     (void)tsId;
     (void)needLog;
@@ -131,15 +124,15 @@ rtError_t XpuDriver::GetSqHead(const uint32_t deviceId, const uint32_t tsId, con
     opInfo.reqId = sqId;
     opInfo.prop = TPRT_SQCQ_PROP_SQ_HEAD;
     const uint32_t ret = TprtOpSqCqInfo(deviceId, &opInfo);
-    COND_RETURN_ERROR_MSG_INNER(ret != TPRT_SUCCESS, GetDrvErrCode(ret),
-        "[tprt api] tprtOpSqCqInfo device_id=%u, sq_id=%u, retCode=%d.", deviceId, sqId,
-        static_cast<int32_t>(ret));
+    COND_RETURN_ERROR_MSG_INNER(
+        ret != TPRT_SUCCESS, GetDrvErrCode(ret), "[tprt api] tprtOpSqCqInfo device_id=%u, sq_id=%u, retCode=%d.",
+        deviceId, sqId, static_cast<int32_t>(ret));
 
     head = static_cast<uint16_t>(opInfo.value[0] & 0xFFFFU);
     return RT_ERROR_NONE;
 }
 
-rtError_t XpuDriver::GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool &status)
+rtError_t XpuDriver::GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool& status)
 {
     (void)tsId;
     TprtSqCqOpInfo_t opInfo = {};
@@ -147,15 +140,15 @@ rtError_t XpuDriver::GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, 
     opInfo.reqId = sqId;
     opInfo.prop = TPRT_SQCQ_PROP_SQ_CQE_STATUS;
     const uint32_t ret = TprtOpSqCqInfo(deviceId, &opInfo);
-    COND_RETURN_ERROR_MSG_INNER(ret != TPRT_SUCCESS, GetDrvErrCode(ret),
-        "[tprt api] tprtOpSqCqInfo device_id=%u, sq_id=%u, retCode=%u.", deviceId, sqId,
-        static_cast<int32_t>(ret));
+    COND_RETURN_ERROR_MSG_INNER(
+        ret != TPRT_SUCCESS, GetDrvErrCode(ret), "[tprt api] tprtOpSqCqInfo device_id=%u, sq_id=%u, retCode=%u.",
+        deviceId, sqId, static_cast<int32_t>(ret));
     status = (opInfo.value[0] != 0U) ? true : false;
     return RT_ERROR_NONE;
 }
 
-rtError_t XpuDriver::LogicCqReportV2(const LogicCqWaitInfo &waitInfo, uint8_t *report, uint32_t reportCnt,
-    uint32_t &realCnt)
+rtError_t XpuDriver::LogicCqReportV2(
+    const LogicCqWaitInfo& waitInfo, uint8_t* report, uint32_t reportCnt, uint32_t& realCnt)
 {
     TprtReportCqeInfo_t repRecvInfo = {};
     repRecvInfo.type = TPRT_QUERY_CQ_INFO;
@@ -163,38 +156,38 @@ rtError_t XpuDriver::LogicCqReportV2(const LogicCqWaitInfo &waitInfo, uint8_t *r
     repRecvInfo.cqeAddr = report;
     repRecvInfo.cqeNum = reportCnt;
     repRecvInfo.reportCqeNum = reportCnt;
-    RT_LOG(RT_LOG_DEBUG, "device_id=%u, ts_id=%u, type=%u, logicCq=%u, stream_id=%u, reportCqeNum=%u.",
-        waitInfo.devId, waitInfo.tsId, static_cast<uint32_t>(repRecvInfo.type), waitInfo.cqId,
-        waitInfo.streamId, reportCnt);
+    RT_LOG(
+        RT_LOG_DEBUG, "device_id=%u, ts_id=%u, type=%u, logicCq=%u, stream_id=%u, reportCqeNum=%u.", waitInfo.devId,
+        waitInfo.tsId, static_cast<uint32_t>(repRecvInfo.type), waitInfo.cqId, waitInfo.streamId, reportCnt);
     uint32_t reportGetRet = TprtCqReportRecv(waitInfo.devId, &repRecvInfo);
     RT_LOG(RT_LOG_DEBUG, "reportCqeNum=%u, drvReportGetRet=%d.", repRecvInfo.reportCqeNum, reportGetRet);
     if (reportGetRet != TPRT_SUCCESS) {
-        RT_LOG(RT_LOG_ERROR, "device_id=%u, cq_id=%u, reportGetRet=%u.",
-               waitInfo.devId, waitInfo.cqId, reportGetRet);
+        RT_LOG(RT_LOG_ERROR, "device_id=%u, cq_id=%u, reportGetRet=%u.", waitInfo.devId, waitInfo.cqId, reportGetRet);
         return GetDrvErrCode(reportGetRet);
     }
     realCnt = repRecvInfo.reportCqeNum;
     for (uint32_t i = 0U; i < realCnt; i++) {
-        const TprtLogicCqReport_t &cqe = (RtPtrToPtr<TprtLogicCqReport_t *>(report))[i];
-        RT_LOG(RT_LOG_DEBUG, "device_id=%u, sq_id=%hu, sq_head=%hu, task_sn=%u, cq_id=%u, sqe_type=%hhu",
-               waitInfo.devId, cqe.sqId, cqe.sqHead, cqe.taskSn, waitInfo.cqId, cqe.sqeType);
+        const TprtLogicCqReport_t& cqe = (RtPtrToPtr<TprtLogicCqReport_t*>(report))[i];
+        RT_LOG(
+            RT_LOG_DEBUG, "device_id=%u, sq_id=%hu, sq_head=%hu, task_sn=%u, cq_id=%u, sqe_type=%hhu", waitInfo.devId,
+            cqe.sqId, cqe.sqHead, cqe.taskSn, waitInfo.cqId, cqe.sqeType);
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t XpuDriver::GetSqState(const uint32_t deviceId, const uint32_t sqId, uint32_t &status)
+rtError_t XpuDriver::GetSqState(const uint32_t deviceId, const uint32_t sqId, uint32_t& status)
 {
     TprtSqCqOpInfo_t opInfo = {};
     opInfo.type = TPRT_QUERY_SQ_INFO;
     opInfo.reqId = sqId;
     opInfo.prop = TPRT_SQCQ_PROP_SQ_STATUS;
     const uint32_t ret = TprtOpSqCqInfo(deviceId, &opInfo);
-    COND_RETURN_ERROR_MSG_INNER(ret != TPRT_SUCCESS, GetDrvErrCode(ret),
-        "[tprt api] tprtOpSqCqInfo device_id=%u, sq_id=%u, retCode=%u.", deviceId, sqId,
-        static_cast<int32_t>(ret));
+    COND_RETURN_ERROR_MSG_INNER(
+        ret != TPRT_SUCCESS, GetDrvErrCode(ret), "[tprt api] tprtOpSqCqInfo device_id=%u, sq_id=%u, retCode=%u.",
+        deviceId, sqId, static_cast<int32_t>(ret));
     status = opInfo.value[0];
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

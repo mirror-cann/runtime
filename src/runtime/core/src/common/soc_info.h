@@ -19,6 +19,6 @@ namespace cce {
 namespace runtime {
 rtError_t GetChipTypeFromPlatform(const char_t* const socName, rtChipType_t& chipType);
 rtError_t GetNpuArchByName(const char_t* const socName, int32_t* hardwareNpuArch);
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

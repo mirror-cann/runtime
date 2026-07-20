@@ -22,38 +22,36 @@ VISIBILITY_DEFAULT cce::runtime::Runtime* ConstructRuntimeImpl()
     cce::runtime::Runtime::runtime_ = rt;
 #ifndef CFG_DEV_PLATFORM_PC
     cce::tprt::TprtManage::tprt_ = new (std::nothrow) cce::tprt::TprtManage();
-    COND_PROC_RETURN_AND_MSG_ALLOC_FAILED(cce::tprt::TprtManage::tprt_ == nullptr, nullptr,
-        delete rt; cce::runtime::Runtime::runtime_ = nullptr, sizeof(cce::tprt::TprtManage), "new");
+    COND_PROC_RETURN_AND_MSG_ALLOC_FAILED(cce::tprt::TprtManage::tprt_ == nullptr, nullptr, delete rt;
+                                          cce::runtime::Runtime::runtime_ = nullptr, sizeof(cce::tprt::TprtManage),
+                                          "new");
 #endif
     return rt;
 }
 
-VISIBILITY_DEFAULT void DestructorRuntimeImpl(cce::runtime::Runtime *rt)
+VISIBILITY_DEFAULT void DestructorRuntimeImpl(cce::runtime::Runtime* rt)
 {
     delete rt;
     cce::runtime::Runtime::runtime_ = nullptr;
-    #ifndef CFG_DEV_PLATFORM_PC
+#ifndef CFG_DEV_PLATFORM_PC
     delete cce::tprt::TprtManage::tprt_;
     cce::tprt::TprtManage::tprt_ = nullptr;
-    #endif
+#endif
     RT_LOG(RT_LOG_INFO, "RuntimeImpl destructor success");
     return;
 }
 
-VISIBILITY_DEFAULT void PrepareRuntimeProcessExitImpl(cce::runtime::Runtime *rt)
+VISIBILITY_DEFAULT void PrepareRuntimeProcessExitImpl(cce::runtime::Runtime* rt)
 {
     if (rt != nullptr) {
         rt->PrepareProcessExitNoThrow();
     }
     cce::runtime::Runtime::runtime_ = nullptr;
-    #ifndef CFG_DEV_PLATFORM_PC
+#ifndef CFG_DEV_PLATFORM_PC
     cce::tprt::TprtManage::tprt_ = nullptr;
-    #endif
+#endif
     return;
 }
 
-VISIBILITY_DEFAULT void DestroyPoolRegistryImpl()
-{
-    PoolRegistry::DestroyPoolRegistry();
-}
+VISIBILITY_DEFAULT void DestroyPoolRegistryImpl() { PoolRegistry::DestroyPoolRegistry(); }
 }

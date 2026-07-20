@@ -21,10 +21,10 @@
 namespace cce {
 namespace runtime {
 
-TaskInfo* GetStreamTaskInfo(const Device * const dev, uint16_t streamId, uint16_t pos)
+TaskInfo* GetStreamTaskInfo(const Device* const dev, uint16_t streamId, uint16_t pos)
 {
     if (dev != nullptr) {
-        Stream *stream = nullptr;
+        Stream* stream = nullptr;
         (void)dev->GetStreamSqCqManage()->GetStreamById(static_cast<uint32_t>(streamId), &stream);
         if (stream == nullptr) {
             return nullptr;

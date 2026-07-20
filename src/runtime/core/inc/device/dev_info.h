@@ -32,6 +32,6 @@ struct DevDynInfoProcFunc {
     DEV_PROPS_UPDATE_FUNC devPropsUpdateFunc = nullptr;
     DEV_RAS_PRE_CHECK_FUNC devHitBlackListErrors = nullptr;
 };
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 #endif

@@ -37,25 +37,27 @@ TIMESTAMP_EXTERN(rtKernelLaunch_SubmitTask);
 TIMESTAMP_EXTERN(rtKernelLaunch_PutProgram);
 TIMESTAMP_EXTERN(rtKernelLaunch_ALLKernelLookup);
 
-rtError_t StreamLaunchKernelPrepare(const Stream * const stm, Kernel *&registeredKernel, Program *&prog, rtKernelAttrType &kernelAttrType,
-    Module *&mdl, const void * const stubFunc, uint64_t &addr1, uint64_t &addr2, void * const progHandle,
-    const uint64_t tilingKey)
+rtError_t StreamLaunchKernelPrepare(
+    const Stream* const stm, Kernel*& registeredKernel, Program*& prog, rtKernelAttrType& kernelAttrType, Module*& mdl,
+    const void* const stubFunc, uint64_t& addr1, uint64_t& addr2, void* const progHandle, const uint64_t tilingKey)
 {
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     const rtError_t error = RT_ERROR_NONE;
 
     if (progHandle == nullptr) {
         TIMESTAMP_BEGIN(rtKernelLaunch_KernelLookup);
         registeredKernel = rt->kernelTable_.Lookup(stubFunc);
-        RT_LOG(RT_LOG_DEBUG, "launch kernel, registeredKernel=%s",
-               (registeredKernel != nullptr) ? registeredKernel->Name_().c_str() : "(none)");
+        RT_LOG(
+            RT_LOG_DEBUG, "launch kernel, registeredKernel=%s",
+            (registeredKernel != nullptr) ? registeredKernel->Name_().c_str() : "(none)");
         TIMESTAMP_END(rtKernelLaunch_KernelLookup);
     } else {
         TIMESTAMP_BEGIN(rtKernelLaunch_ALLKernelLookup);
-        Program * const programHdl = (static_cast<Program *>(progHandle));
+        Program* const programHdl = (static_cast<Program*>(progHandle));
         registeredKernel = (tilingKey == DEFAULT_TILING_KEY) ? nullptr : programHdl->AllKernelLookup(tilingKey);
-        RT_LOG(RT_LOG_DEBUG, "launch kernel handle, tilingKey=%" PRIu64 ", registeredKernel=%" PRIu64,
-            tilingKey, (registeredKernel != nullptr) ? registeredKernel->TilingKey() : 0UL);
+        RT_LOG(
+            RT_LOG_DEBUG, "launch kernel handle, tilingKey=%" PRIu64 ", registeredKernel=%" PRIu64, tilingKey,
+            (registeredKernel != nullptr) ? registeredKernel->TilingKey() : 0UL);
         TIMESTAMP_END(rtKernelLaunch_ALLKernelLookup);
     }
 
@@ -67,26 +69,27 @@ rtError_t StreamLaunchKernelPrepare(const Stream * const stm, Kernel *&registere
         return RT_ERROR_NONE;
     }
 
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_TBE, (registeredKernel == nullptr), RT_ERROR_KERNEL_NULL,
-        "Can not find kernel by function[0x%" PRIx64"], tilingKey=%" PRIu64 ".",
-        RtPtrToValue(stubFunc), tilingKey);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_TBE, (registeredKernel == nullptr), RT_ERROR_KERNEL_NULL,
+        "Can not find kernel by function[0x%" PRIx64 "], tilingKey=%" PRIu64 ".", RtPtrToValue(stubFunc), tilingKey);
 
     TIMESTAMP_BEGIN(rtKernelLaunch_GetModule);
     prog = registeredKernel->Program_();
     NULL_PTR_RETURN_MSG(prog, RT_ERROR_PROGRAM_NULL);
-    COND_RETURN_ERROR_MSG_INNER((progHandle != nullptr) && (prog != RtPtrToPtr<Program *, void *>(progHandle)),
-        RT_ERROR_PROGRAM_BASE, "Kernel prog is not belong to the launch prog.");
+    COND_RETURN_ERROR_MSG_INNER(
+        (progHandle != nullptr) && (prog != RtPtrToPtr<Program*, void*>(progHandle)), RT_ERROR_PROGRAM_BASE,
+        "Kernel prog is not belong to the launch prog.");
 
     kernelAttrType = registeredKernel->GetKernelAttrType();
-    COND_RETURN_ERROR_MSG_INNER(kernelAttrType == RT_KERNEL_ATTR_TYPE_AICPU,
-        RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_ERROR_MSG_INNER(
+        kernelAttrType == RT_KERNEL_ATTR_TYPE_AICPU, RT_ERROR_FEATURE_NOT_SUPPORT,
         "Launch kernel failed, not support CCE Aicpu kernel task, kernelAttrType=%d.", kernelAttrType);
 
     mdl = stm->Context_()->GetModule(prog);
     TIMESTAMP_END(rtKernelLaunch_GetModule);
     NULL_PTR_RETURN_MSG(mdl, RT_ERROR_MODULE_NEW);
 
-    const Kernel *kernel = registeredKernel;
+    const Kernel* kernel = registeredKernel;
     (void)mdl->GetFunction(kernel, &addr1, &addr2);
     return error;
 }
@@ -94,7 +97,7 @@ rtError_t StreamLaunchKernelPrepare(const Stream * const stm, Kernel *&registere
 void StreamLaunchKernelRecycle(
     StarsArgLoaderResult& result, TaskInfo*& recycleTask, const Program* const prog, Stream* stm)
 {
-    DavidStream *davidStm = static_cast<DavidStream *>(stm);
+    DavidStream* davidStm = static_cast<DavidStream*>(stm);
     if (result.handle != nullptr) {
         if (davidStm->ArgManagePtr() != nullptr) {
             davidStm->ArgManagePtr()->RecycleDevLoader(result.handle);
@@ -119,13 +122,14 @@ void StreamLaunchKernelRecycleAicpu(
     StreamLaunchKernelRecycle(result, recycleTask, prog, stm);
 }
 
-static void InitStarsCmoSqeForDavid(RtDavidStarsMemcpySqe *sdmaSqe, const Stream * const stm, const rtCmoOpCode_t cmoOpCode)
+static void InitStarsCmoSqeForDavid(
+    RtDavidStarsMemcpySqe* sdmaSqe, const Stream* const stm, const rtCmoOpCode_t cmoOpCode)
 {
     sdmaSqe->opcode = static_cast<uint8_t>(cmoOpCode);
     sdmaSqe->sssv = 1U;
     sdmaSqe->dssv = 1U;
-    sdmaSqe->sns  = 1U;
-    sdmaSqe->dns  = 1U;
+    sdmaSqe->sns = 1U;
+    sdmaSqe->dns = 1U;
     sdmaSqe->sro = 0U;
     sdmaSqe->dro = 0U;
     sdmaSqe->stride = 0U;
@@ -140,21 +144,24 @@ static void InitStarsCmoSqeForDavid(RtDavidStarsMemcpySqe *sdmaSqe, const Stream
     sdmaSqe->srcSubStreamId = static_cast<uint16_t>(stm->Device_()->GetSSID_());
 }
 
-rtError_t CmoAddrTaskLaunchForDavid(rtDavidCmoAddrInfo * const cmoAddrInfo, const rtCmoOpCode_t cmoOpCode,
-                                 Stream * const stm)
+rtError_t CmoAddrTaskLaunchForDavid(
+    rtDavidCmoAddrInfo* const cmoAddrInfo, const rtCmoOpCode_t cmoOpCode, Stream* const stm)
 {
     rtError_t error = RT_ERROR_NONE;
     const int32_t streamId = stm->Id_();
-    Device *dev = stm->Device_();
+    Device* dev = stm->Device_();
 
-    COND_RETURN_ERROR((stm->Model_() == nullptr), RT_ERROR_MODEL_NULL,
-        "CMO Addr task stream is not in model. device_id=%d, stream_id=%d.", static_cast<int32_t>(stm->Device_()->Id_()), stm->Id_());
-    
-    TaskInfo *cmoAddrTask = nullptr;
+    COND_RETURN_ERROR(
+        (stm->Model_() == nullptr), RT_ERROR_MODEL_NULL,
+        "CMO Addr task stream is not in model. device_id=%d, stream_id=%d.",
+        static_cast<int32_t>(stm->Device_()->Id_()), stm->Id_());
+
+    TaskInfo* cmoAddrTask = nullptr;
     error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
     std::function<void()> const errRecycle = [&cmoAddrTask, &stm, &pos, &dstStm]() {
         TaskUnInitProc(cmoAddrTask);
         TaskRollBack(dstStm, pos);
@@ -162,223 +169,225 @@ rtError_t CmoAddrTaskLaunchForDavid(rtDavidCmoAddrInfo * const cmoAddrInfo, cons
     };
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&cmoAddrTask, stm, pos, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();,
-        "Failed to allocate task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
+                                                           stm->Id_(), static_cast<uint32_t>(error));
     RtDavidStarsMemcpySqe sdmaCmoSqe = {};
     // fill in head args
     InitStarsCmoSqeForDavid(&sdmaCmoSqe, dstStm, cmoOpCode);
-    RT_LOG(RT_LOG_DEBUG, "cmoAddrInfo=0x%llx, cmoOpCode=%d, device_id=%u, stream_id=%d.",
-        RtPtrToValue(cmoAddrInfo), cmoOpCode, dev->Id_(), streamId);
-    Driver * const devDrv = dev->Driver_();
+    RT_LOG(
+        RT_LOG_DEBUG, "cmoAddrInfo=0x%llx, cmoOpCode=%d, device_id=%u, stream_id=%d.", RtPtrToValue(cmoAddrInfo),
+        cmoOpCode, dev->Id_(), streamId);
+    Driver* const devDrv = dev->Driver_();
     if (devDrv != nullptr) {
         constexpr uint64_t dstMax = 28ULL;
         error = devDrv->MemCopySync(cmoAddrInfo, dstMax, &sdmaCmoSqe, dstMax, RT_MEMCPY_HOST_TO_DEVICE);
-        ERROR_RETURN_MSG_INNER(error, "Failed to memory copy stream info, device_id=%u, size=%" PRIu64 ", retCode=%#x.",
-            dev->Id_(), dstMax, static_cast<uint32_t>(error));
+        ERROR_RETURN_MSG_INNER(
+            error, "Failed to memory copy stream info, device_id=%u, size=%" PRIu64 ", retCode=%#x.", dev->Id_(),
+            dstMax, static_cast<uint32_t>(error));
 
         if (devDrv->GetRunMode() == RT_RUN_MODE_ONLINE) {
             error = dev->Driver_()->DevMemFlushCache(RtPtrToValue(cmoAddrInfo), dstMax);
-            ERROR_RETURN_MSG_INNER(error, "Failed to flush stream info, device_id=%u, retCode=%#x.", dev->Id_(),
+            ERROR_RETURN_MSG_INNER(
+                error, "Failed to flush stream info, device_id=%u, retCode=%#x.", dev->Id_(),
                 static_cast<uint32_t>(error));
         }
     }
     SaveTaskCommonInfo(cmoAddrTask, dstStm, pos);
     ScopeGuard tskErrRecycle(errRecycle);
     (void)CmoAddrTaskInit(cmoAddrTask, cmoAddrInfo, cmoOpCode);
-    cmoAddrTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    cmoAddrTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(cmoAddrTask, dstStm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit CMO addr task, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit CMO addr task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(streamId, cmoAddrTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t StreamDatadumpInfoLoad(const void * const dumpInfo, const uint32_t length, Stream * const dftStm)
+rtError_t StreamDatadumpInfoLoad(const void* const dumpInfo, const uint32_t length, Stream* const dftStm)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dftStm, RT_ERROR_STREAM_NULL, "Dump information loading");
-    Device *device = dftStm->Device_();
+    Device* device = dftStm->Device_();
     if (device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
         RtDataDumpLoadInfoParam param = {dumpInfo, length, 0U};
-        return device->GetCtrlSQ().SendDataDumpLoadInfoMsg(RtCtrlMsgType::RT_CTRL_MSG_DATADUMP_INFOLOAD, param, nullptr);
+        return device->GetCtrlSQ().SendDataDumpLoadInfoMsg(
+            RtCtrlMsgType::RT_CTRL_MSG_DATADUMP_INFOLOAD, param, nullptr);
     }
 
     rtError_t error = RT_ERROR_NONE;
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dftStm, RT_ERROR_STREAM_NULL, "Dump information loading");
     const int32_t streamId = dftStm->Id_();
 
-    TaskInfo *rtDumpLoadInfoTask = nullptr;
+    TaskInfo* rtDumpLoadInfoTask = nullptr;
     error = CheckTaskCanSend(dftStm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
     dftStm->StreamLock();
     error = AllocTaskInfo(&rtDumpLoadInfoTask, dftStm, pos);
-    ERROR_PROC_RETURN_MSG_INNER(error, dftStm->StreamUnLock();,
-        "Failed to allocate task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, dftStm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
+                                                              streamId, static_cast<uint32_t>(error));
     SaveTaskCommonInfo(rtDumpLoadInfoTask, dftStm, pos);
     (void)DataDumpLoadInfoTaskInit(rtDumpLoadInfoTask, dumpInfo, length, 0U);
     error = DavidSendTask(rtDumpLoadInfoTask, dftStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, 
-                                TaskUnInitProc(rtDumpLoadInfoTask);
-                                TaskRollBack(dftStm, pos);
-                                dftStm->StreamUnLock();,
-                                "Failed to submit DataDumpLoadInfo task, stream_id=%d, retCode=%#x.",
-                                streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(
+        error, TaskUnInitProc(rtDumpLoadInfoTask); TaskRollBack(dftStm, pos); dftStm->StreamUnLock();
+        , "Failed to submit DataDumpLoadInfo task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     dftStm->StreamUnLock();
     error = dftStm->Synchronize();
-    COND_RETURN_AND_MSG_OUTER(error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002,
-        "DataDumpLoadInfoTask synchronize");
-    ERROR_RETURN_MSG_INNER(error, "Failed to synchronize DataDumpLoadInfoTask, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_AND_MSG_OUTER(
+        error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002, "DataDumpLoadInfoTask synchronize");
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to synchronize DataDumpLoadInfoTask, retCode=%#x.", static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t StreamDebugRegister(Stream * const debugStream, const uint32_t flag, const void * const addr,
-    uint32_t * const streamId, uint32_t * const taskId)
+rtError_t StreamDebugRegister(
+    Stream* const debugStream, const uint32_t flag, const void* const addr, uint32_t* const streamId,
+    uint32_t* const taskId)
 {
     rtError_t error = RT_ERROR_NONE;
     const int32_t stmId = debugStream->Id_();
     *streamId = static_cast<uint32_t>(stmId);
 
-    COND_RETURN_WARN(debugStream->IsDebugRegister(),
-        RT_ERROR_DEBUG_REGISTER_FAILED, "Failed to debug register stream repeatedly.");
-    RT_LOG(RT_LOG_INFO, "Debug register send task stream_id=%d, debug stream_id=%d.",
-        debugStream->Id_(), debugStream->Id_());
+    COND_RETURN_WARN(
+        debugStream->IsDebugRegister(), RT_ERROR_DEBUG_REGISTER_FAILED, "Failed to debug register stream repeatedly.");
+    RT_LOG(
+        RT_LOG_INFO, "Debug register send task stream_id=%d, debug stream_id=%d.", debugStream->Id_(),
+        debugStream->Id_());
 
-    TaskInfo *rtDbgRegStreamTask = nullptr;
+    TaskInfo* rtDbgRegStreamTask = nullptr;
     error = CheckTaskCanSend(debugStream);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        stmId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", stmId, static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
     debugStream->StreamLock();
     error = AllocTaskInfo(&rtDbgRegStreamTask, debugStream, pos);
-    ERROR_PROC_RETURN_MSG_INNER(error, debugStream->StreamUnLock();,
-        "Failed to allocate task, stream_id=%d, retCode=%#x.", stmId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, debugStream->StreamUnLock();
+                                , "Failed to allocate task, stream_id=%d, retCode=%#x.", stmId,
+                                static_cast<uint32_t>(error));
     SaveTaskCommonInfo(rtDbgRegStreamTask, debugStream, pos);
 
     error = DebugRegisterForStreamTaskInit(rtDbgRegStreamTask, static_cast<uint32_t>(stmId), addr, flag);
-    COND_PROC_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_DEBUG_REGISTER_FAILED, 
-        TaskUnInitProc(rtDbgRegStreamTask); TaskRollBack(debugStream, pos); debugStream->StreamUnLock();,
-        "Failed to initialize task, stream_id=%d, retCode=%#x.", stmId, static_cast<uint32_t>(error));
-    rtDbgRegStreamTask->stmArgPos = static_cast<DavidStream *>(debugStream)->GetArgPos();
+    COND_PROC_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, RT_ERROR_DEBUG_REGISTER_FAILED, TaskUnInitProc(rtDbgRegStreamTask);
+        TaskRollBack(debugStream, pos); debugStream->StreamUnLock();
+        , "Failed to initialize task, stream_id=%d, retCode=%#x.", stmId, static_cast<uint32_t>(error));
+    rtDbgRegStreamTask->stmArgPos = static_cast<DavidStream*>(debugStream)->GetArgPos();
     error = DavidSendTask(rtDbgRegStreamTask, debugStream);
-    COND_PROC_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_DEBUG_REGISTER_FAILED, 
-                                     TaskUnInitProc(rtDbgRegStreamTask);
-                                     TaskRollBack(debugStream, pos);
-                                     debugStream->StreamUnLock();,
-                                     "Failed to submit StreamDebugRegister task, stream_id=%d, retCode=%#x.",
-                                     stmId, static_cast<uint32_t>(error));
+    COND_PROC_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, RT_ERROR_DEBUG_REGISTER_FAILED, TaskUnInitProc(rtDbgRegStreamTask);
+        TaskRollBack(debugStream, pos); debugStream->StreamUnLock();
+        , "Failed to submit StreamDebugRegister task, stream_id=%d, retCode=%#x.", stmId, static_cast<uint32_t>(error));
     debugStream->StreamUnLock();
     debugStream->SetDebugRegister(true);
     *taskId = rtDbgRegStreamTask->taskSn;
     return error;
 }
 
-rtError_t StreamDebugUnRegister(Stream * const debugStream)
+rtError_t StreamDebugUnRegister(Stream* const debugStream)
 {
     rtError_t error = RT_ERROR_NONE;
-    COND_RETURN_WARN(!debugStream->IsDebugRegister(),
-        RT_ERROR_DEBUG_UNREGISTER_FAILED, "Failed to debug unregister stream. The stream is not debug registered.");
+    COND_RETURN_WARN(
+        !debugStream->IsDebugRegister(), RT_ERROR_DEBUG_UNREGISTER_FAILED,
+        "Failed to debug unregister stream. The stream is not debug registered.");
 
-    TaskInfo *rtDbgUnregStreamTask = nullptr;
+    TaskInfo* rtDbgUnregStreamTask = nullptr;
     const int32_t streamId = debugStream->Id_();
     error = CheckTaskCanSend(debugStream);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
     debugStream->StreamLock();
     error = AllocTaskInfo(&rtDbgUnregStreamTask, debugStream, pos);
-    ERROR_PROC_RETURN_MSG_INNER(error, debugStream->StreamUnLock();,
-        "Failed to allocate task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, debugStream->StreamUnLock();
+                                , "Failed to allocate task, stream_id=%d, retCode=%#x.", streamId,
+                                static_cast<uint32_t>(error));
     SaveTaskCommonInfo(rtDbgUnregStreamTask, debugStream, pos);
     (void)DebugUnRegisterForStreamTaskInit(rtDbgUnregStreamTask, streamId);
-    rtDbgUnregStreamTask->stmArgPos = static_cast<DavidStream *>(debugStream)->GetArgPos();
+    rtDbgUnregStreamTask->stmArgPos = static_cast<DavidStream*>(debugStream)->GetArgPos();
     error = DavidSendTask(rtDbgUnregStreamTask, debugStream);
-    COND_PROC_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_DEBUG_REGISTER_FAILED, 
-                                     TaskUnInitProc(rtDbgUnregStreamTask);
-                                     TaskRollBack(debugStream, pos);
-                                     debugStream->StreamUnLock();,
-                                     "Failed to submit StreamDebugUnRegister task, stream_id=%d, retCode=%#x.",
-                                     streamId, static_cast<uint32_t>(error));
+    COND_PROC_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, RT_ERROR_DEBUG_REGISTER_FAILED, TaskUnInitProc(rtDbgUnregStreamTask);
+        TaskRollBack(debugStream, pos); debugStream->StreamUnLock();
+        , "Failed to submit StreamDebugUnRegister task, stream_id=%d, retCode=%#x.", streamId,
+        static_cast<uint32_t>(error));
     debugStream->StreamUnLock();
     debugStream->SetDebugRegister(false);
     return error;
 }
 
-rtError_t StreamNpuGetFloatStatus(void * const outputAddrPtr, const uint64_t outputSize,
-    const uint32_t checkMode, Stream * const stm, bool isDebug)
+rtError_t StreamNpuGetFloatStatus(
+    void* const outputAddrPtr, const uint64_t outputSize, const uint32_t checkMode, Stream* const stm, bool isDebug)
 {
     const int32_t streamId = stm->Id_();
-    TaskInfo *rtNpuGetFloatStatusTask = nullptr;
+    TaskInfo* rtNpuGetFloatStatusTask = nullptr;
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&rtNpuGetFloatStatusTask, stm, pos, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();,
-        "Failed to allocate task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
+                                                           streamId, static_cast<uint32_t>(error));
     SaveTaskCommonInfo(rtNpuGetFloatStatusTask, dstStm, pos);
     (void)NpuGetFloatStaTaskInit(rtNpuGetFloatStatusTask, outputAddrPtr, outputSize, checkMode, isDebug);
-    rtNpuGetFloatStatusTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    rtNpuGetFloatStatusTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(rtNpuGetFloatStatusTask, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, 
-                                TaskUnInitProc(rtNpuGetFloatStatusTask);
-                                TaskRollBack(dstStm, pos);
-                                stm->StreamUnLock();,
-                                "Failed to submit NpuGetFloatStatus task, stream_id=%d, retCode=%#x.",
-                                streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(rtNpuGetFloatStatusTask); TaskRollBack(dstStm, pos);
+                                stm->StreamUnLock();
+                                , "Failed to submit NpuGetFloatStatus task, stream_id=%d, retCode=%#x.", streamId,
+                                static_cast<uint32_t>(error));
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), rtNpuGetFloatStatusTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamNpuClearFloatStatus(const uint32_t checkMode, Stream * const stm, bool isDebug)
+rtError_t StreamNpuClearFloatStatus(const uint32_t checkMode, Stream* const stm, bool isDebug)
 {
     const int32_t streamId = stm->Id_();
     RT_LOG(RT_LOG_INFO, "Begin to create NpuClearFloatStatus task.");
 
-    TaskInfo *rtNpuClearFloatStatusTask = nullptr;
+    TaskInfo* rtNpuClearFloatStatusTask = nullptr;
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&rtNpuClearFloatStatusTask, stm, pos, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();,
-        "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
+                                                           streamId, static_cast<uint32_t>(error));
     SaveTaskCommonInfo(rtNpuClearFloatStatusTask, dstStm, pos);
     (void)NpuClrFloatStaTaskInit(rtNpuClearFloatStatusTask, checkMode, isDebug);
-    rtNpuClearFloatStatusTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    rtNpuClearFloatStatusTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(rtNpuClearFloatStatusTask, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, 
-                                TaskUnInitProc(rtNpuClearFloatStatusTask);
-                                TaskRollBack(dstStm, pos);
-                                stm->StreamUnLock();,
-                                "Failed to submit NpuClearFloatStatus task, stream_id=%d, retCode=%#x.",
-                                streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(rtNpuClearFloatStatusTask); TaskRollBack(dstStm, pos);
+                                stm->StreamUnLock();
+                                , "Failed to submit NpuClearFloatStatus task, stream_id=%d, retCode=%#x.", streamId,
+                                static_cast<uint32_t>(error));
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), rtNpuClearFloatStatusTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t StreamGetSatStatus(const uint64_t outputSize, Stream * const curStm)
+rtError_t StreamGetSatStatus(const uint64_t outputSize, Stream* const curStm)
 {
     rtError_t error = RT_ERROR_NONE;
-    Device *dev = curStm->Device_();
+    Device* dev = curStm->Device_();
     uint64_t realSize = 0U;
-    void *hostPtr = nullptr;
+    void* hostPtr = nullptr;
     std::shared_ptr<void> hostPtrGuard;
     // H2D copy
     hostPtr = AlignedMalloc(Context::MEM_ALIGN_SIZE, sizeof(uint64_t));
@@ -388,44 +397,45 @@ rtError_t StreamGetSatStatus(const uint64_t outputSize, Stream * const curStm)
     }
     hostPtrGuard.reset(hostPtr, &AlignedFree);
     const errno_t ret = memset_s(hostPtr, sizeof(uint64_t), 0, sizeof(uint64_t));
-    COND_PROC_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE, hostPtr = nullptr;,
-        "Failed to call memset_s to set hostPtr, dest=%p, dest_max=%zu, c=0, count=%zu, retCode=%d.",
-        hostPtr, sizeof(uint64_t), sizeof(uint64_t), ret);
-    *(static_cast<uint64_t *>(hostPtr)) = RtPtrToValue(curStm->Context_()->CtxGetOverflowAddr());
+    COND_PROC_RETURN_ERROR_MSG_INNER(
+        ret != EOK, RT_ERROR_SEC_HANDLE, hostPtr = nullptr;
+        , "Failed to call memset_s to set hostPtr, dest=%p, dest_max=%zu, c=0, count=%zu, retCode=%d.", hostPtr,
+        sizeof(uint64_t), sizeof(uint64_t), ret);
+    *(static_cast<uint64_t*>(hostPtr)) = RtPtrToValue(curStm->Context_()->CtxGetOverflowAddr());
 
     if (curStm->GetMemContainOverflowAddr() == nullptr) {
-        void *memAddr = nullptr;
+        void* memAddr = nullptr;
         error = dev->Driver_()->DevMemAlloc(&memAddr, sizeof(uint64_t), RT_MEMORY_DEFAULT, dev->Id_());
-        COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "memAddr DevMemAlloc failed, retCode=%#x.",
-            static_cast<uint32_t>(error));
+        COND_RETURN_ERROR(
+            error != RT_ERROR_NONE, error, "memAddr DevMemAlloc failed, retCode=%#x.", static_cast<uint32_t>(error));
         curStm->SetMemContainOverflowAddr(memAddr);
     }
 
-    error = MemcopyAsync(curStm->GetMemContainOverflowAddr(), sizeof(uint64_t), hostPtr, sizeof(uint64_t),
-        RT_MEMCPY_HOST_TO_DEVICE_EX, curStm, &realSize, hostPtrGuard);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "MemcpyAsync failed, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    error = MemcopyAsync(
+        curStm->GetMemContainOverflowAddr(), sizeof(uint64_t), hostPtr, sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE_EX,
+        curStm, &realSize, hostPtrGuard);
+    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "MemcpyAsync failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     error = StreamNpuGetFloatStatus(curStm->GetMemContainOverflowAddr(), outputSize, 0U, curStm);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "NpuGetFloatStatus failed, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, "NpuGetFloatStatus failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     return error;
 }
 
-rtError_t SyncGetDeviceMsg(Device * const dev, const void * const devMemAddr, const uint32_t devMemSize,
-    const rtGetDevMsgType_t getDevMsgType)
+rtError_t SyncGetDeviceMsg(
+    Device* const dev, const void* const devMemAddr, const uint32_t devMemSize, const rtGetDevMsgType_t getDevMsgType)
 {
     // new a stream for get exception info
-    std::unique_ptr<Stream, void(*)(Stream*)> stm(StreamFactory::CreateStream(dev, 0U),
-        [](Stream *ptr) {ptr->Destructor();});
+    std::unique_ptr<Stream, void (*)(Stream*)> stm(
+        StreamFactory::CreateStream(dev, 0U), [](Stream* ptr) { ptr->Destructor(); });
     if (stm == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(Stream), "new");
         return RT_ERROR_STREAM_NEW;
     }
     rtError_t error = stm->Setup();
     ERROR_RETURN_MSG_INNER(error, "Failed to set up stream, retCode=%#x.", static_cast<uint32_t>(error));
-    TaskInfo *tsk = nullptr;
+    TaskInfo* tsk = nullptr;
     uint32_t pos = 0xFFFFU;
     const std::function<void()> streamTearDownFunc = [&stm, &tsk, &pos]() {
         TaskUnInitProc(tsk);
@@ -433,262 +443,249 @@ rtError_t SyncGetDeviceMsg(Device * const dev, const void * const devMemAddr, co
         stm->StreamUnLock();
     };
     error = CheckTaskCanSend(stm.get());
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.", stm->Id_(),
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     stm->StreamLock();
     error = AllocTaskInfo(&tsk, stm.get(), pos);
-    ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();,
-        "Failed to allocate task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
+                                                           stm->Id_(), static_cast<uint32_t>(error));
     SaveTaskCommonInfo(tsk, stm.get(), pos);
     ScopeGuard devErrMsgStreamRelease(streamTearDownFunc);
     // init RT_GET_DEV_ERROR_MSG task
     error = GetDevMsgTaskInit(tsk, devMemAddr, devMemSize, getDevMsgType);
-    ERROR_RETURN_MSG_INNER(error, "Failed to init task, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to init task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     error = DavidSendTask(tsk, stm.get());
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit task, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     devErrMsgStreamRelease.ReleaseGuard();
     stm->StreamUnLock();
     // stream synchronize
     error = stm->Synchronize();
-    COND_RETURN_AND_MSG_OUTER(error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002,
-        "SyncGetDeviceMsg");
+    COND_RETURN_AND_MSG_OUTER(error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002, "SyncGetDeviceMsg");
     ERROR_RETURN_MSG_INNER(error, "Failed to synchronize stream, retCode=%#x.", static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t SetOverflowSwitchOnStream(Stream * const stm, const uint32_t flags)
+rtError_t SetOverflowSwitchOnStream(Stream* const stm, const uint32_t flags)
 {
-    TaskInfo *tsk = nullptr;
+    TaskInfo* tsk = nullptr;
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&tsk, stm, pos, dstStm);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+                                                           stm->Id_(), static_cast<uint32_t>(error));
     SaveTaskCommonInfo(tsk, dstStm, pos);
     (void)OverflowSwitchSetTaskInit(tsk, dstStm, flags);
-    tsk->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    tsk->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(tsk, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(tsk);
-                                       TaskRollBack(dstStm, pos);
-                                       stm->StreamUnLock();,
-                                       "Failed to submit OverflowSwitchSet task, stream_id=%d, retCode=%#x.",
-                                       stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(tsk); TaskRollBack(dstStm, pos); stm->StreamUnLock();
+                                , "Failed to submit OverflowSwitchSet task, stream_id=%d, retCode=%#x.", stm->Id_(),
+                                static_cast<uint32_t>(error));
     stm->StreamUnLock();
     stm->SetOverflowSwitch(flags != 0U);
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), tsk->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t SetTagOnStream(Stream * const stm, const uint32_t geOpTag)
+rtError_t SetTagOnStream(Stream* const stm, const uint32_t geOpTag)
 {
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
-    Device *device = stm->Device_();
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
+    Device* device = stm->Device_();
     if (device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
         uint32_t taskSn = 0;
         RtSetStreamTagParam param = {stm, geOpTag};
         // SubmitTaskPostProc 改成stm Synchronize
-        error = device->GetCtrlSQ().SendSetStreamTagMsg(RtCtrlMsgType::RT_CTRL_MSG_SET_STREAM_TAG, param, nullptr, &taskSn);
+        error =
+            device->GetCtrlSQ().SendSetStreamTagMsg(RtCtrlMsgType::RT_CTRL_MSG_SET_STREAM_TAG, param, nullptr, &taskSn);
         ERROR_RETURN_MSG_INNER(error, "Failed to SendSetStreamTagMsg, retCode=%#x.", error);
         stm->SetStreamTag(geOpTag);
         SET_THREAD_TASKID_AND_STREAMID(stm->Context_()->GetCtrlSQStream()->Id_(), taskSn);
         return error;
     }
-    TaskInfo *tsk = nullptr;
+    TaskInfo* tsk = nullptr;
     uint32_t pos = 0xFFFFU;
-    Stream *defaultStm = stm->Context_()->DefaultStream_();
+    Stream* defaultStm = stm->Context_()->DefaultStream_();
     defaultStm->StreamLock();
     error = AllocTaskInfo(&tsk, defaultStm, pos);
-    ERROR_PROC_RETURN_MSG_INNER(error, defaultStm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        defaultStm->Id_(), static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, defaultStm->StreamUnLock();,
+                                                                  "Failed to allocate task, stream_id=%d, retCode=%#x.",
+                                                                  defaultStm->Id_(), static_cast<uint32_t>(error));
     SaveTaskCommonInfo(tsk, defaultStm, pos);
     (void)StreamTagSetTaskInit(tsk, stm, geOpTag);
-    tsk->stmArgPos = static_cast<DavidStream *>(defaultStm)->GetArgPos();
+    tsk->stmArgPos = static_cast<DavidStream*>(defaultStm)->GetArgPos();
     error = DavidSendTask(tsk, defaultStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(tsk);
-                                       TaskRollBack(defaultStm, pos);
-                                       defaultStm->StreamUnLock();,
-                                       "Failed to submit StreamTagSet task, stream_id=%d, retCode=%#x.",
-                                       defaultStm->Id_(), static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(tsk); TaskRollBack(defaultStm, pos); defaultStm->StreamUnLock();
+                                , "Failed to submit StreamTagSet task, stream_id=%d, retCode=%#x.", defaultStm->Id_(),
+                                static_cast<uint32_t>(error));
     defaultStm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(defaultStm->Id_(), tsk->taskSn);
     stm->SetStreamTag(geOpTag);
     error = SubmitTaskPostProc(defaultStm, pos, tsk->isNeedStreamSync);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.",
-        defaultStm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", defaultStm->Id_(), static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t StreamUbDbSend(const rtUbDbInfo_t * const dbInfo, Stream * const stm, const uint16_t source)
+rtError_t StreamUbDbSend(const rtUbDbInfo_t* const dbInfo, Stream* const stm, const uint16_t source)
 {
     rtError_t error = RT_ERROR_NONE;
     const int32_t streamId = stm->Id_();
-    TaskInfo *rtUbSendTask = nullptr;
+    TaskInfo* rtUbSendTask = nullptr;
     error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     const uint32_t dieNum = stm->Device_()->GetDevProperties().ioDieNum;
     if (dieNum != 0U) {
         for (uint8_t i = 0; i < dbInfo->dbNum; i++) {
             uint32_t dieId = static_cast<uint32_t>(dbInfo->info[i].dieId);
-            COND_RETURN_AND_MSG_OUTER_WITH_PARAM((dieId >= dieNum), RT_ERROR_INVALID_VALUE,
-                dieId, "[0, " + std::to_string(dieNum) + ")");
+            COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+                (dieId >= dieNum), RT_ERROR_INVALID_VALUE, dieId, "[0, " + std::to_string(dieNum) + ")");
         }
     }
 
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&rtUbSendTask, stm, pos, dstStm);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+                                                           streamId, static_cast<uint32_t>(error));
     SaveTaskCommonInfo(rtUbSendTask, dstStm, pos);
     (void)UbDbSendTaskInit(rtUbSendTask, dbInfo, source);
-    rtUbSendTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    rtUbSendTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(rtUbSendTask, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(rtUbSendTask);
-                                       TaskRollBack(dstStm, pos);
-                                       stm->StreamUnLock();,
-                                       "Failed to submit UB doorbell task, stream_id=%d, retCode=%#x.",
-                                       streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(rtUbSendTask); TaskRollBack(dstStm, pos); stm->StreamUnLock();
+                                , "Failed to submit UB doorbell task, stream_id=%d, retCode=%#x.", streamId,
+                                static_cast<uint32_t>(error));
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), rtUbSendTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t StreamUbDirectSend(rtUbWqeInfo_t * const wqeInfo, Stream * const stm)
+rtError_t StreamUbDirectSend(rtUbWqeInfo_t* const wqeInfo, Stream* const stm)
 {
     rtError_t error = RT_ERROR_NONE;
     const int32_t streamId = stm->Id_();
-    TaskInfo *rtDirectSendTask = nullptr;
+    TaskInfo* rtDirectSendTask = nullptr;
     const uint32_t sqeNum = (wqeInfo->wqeSize == 1U) ? 3U : 2U;
     uint32_t pos = 0xFFFFU;
     error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     const uint32_t dieNum = stm->Device_()->GetDevProperties().ioDieNum;
     if (dieNum != 0U) {
         uint32_t dieId = static_cast<uint32_t>(wqeInfo->dieId);
-        COND_RETURN_AND_MSG_OUTER_WITH_PARAM((dieId >= dieNum), RT_ERROR_INVALID_VALUE,
-            dieId, "[0, " + std::to_string(dieNum) + ")");
+        COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+            (dieId >= dieNum), RT_ERROR_INVALID_VALUE, dieId, "[0, " + std::to_string(dieNum) + ")");
     }
 
     stm->StreamLock();
     error = AllocTaskInfo(&rtDirectSendTask, stm, pos, sqeNum);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+                                                           streamId, static_cast<uint32_t>(error));
     SaveTaskCommonInfo(rtDirectSendTask, stm, pos, sqeNum);
     UbDirectSendTaskInit(rtDirectSendTask, wqeInfo);
-    rtDirectSendTask->stmArgPos = static_cast<DavidStream *>(stm)->GetArgPos();
+    rtDirectSendTask->stmArgPos = static_cast<DavidStream*>(stm)->GetArgPos();
     error = DavidSendTask(rtDirectSendTask, stm);
-    ERROR_PROC_RETURN_MSG_INNER(error,
-                                TaskUnInitProc(rtDirectSendTask);
-                                TaskRollBack(stm, pos);
-                                stm->StreamUnLock();,
-                                "Failed to submit UB direct send task, stream_id=%d, retCode=%#x.",
-                                streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(rtDirectSendTask); TaskRollBack(stm, pos); stm->StreamUnLock();
+                                , "Failed to submit UB direct send task, stream_id=%d, retCode=%#x.", streamId,
+                                static_cast<uint32_t>(error));
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(stm->Id_(), rtDirectSendTask->taskSn);
     error = SubmitTaskPostProc(stm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t StreamNopTask(Stream * const stm)
+rtError_t StreamNopTask(Stream* const stm)
 {
-    TaskInfo *rtNopTask = nullptr;
+    TaskInfo* rtNopTask = nullptr;
     uint32_t pos = 0xFFFFU;
     const int32_t streamId = stm->Id_();
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
-    Stream *dstStm = stm;
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    Stream* dstStm = stm;
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&rtNopTask, stm, pos, dstStm);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+                                                           streamId, static_cast<uint32_t>(error));
     SaveTaskCommonInfo(rtNopTask, dstStm, pos);
     (void)NopTaskInit(rtNopTask);
-    rtNopTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    rtNopTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(rtNopTask, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error,
-                                TaskUnInitProc(rtNopTask);
-                                TaskRollBack(dstStm, pos);
-                                stm->StreamUnLock();,
-                                "Failed to submit NOP task, stream_id=%d, retCode=%#x.",
-                                streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(rtNopTask); TaskRollBack(dstStm, pos); stm->StreamUnLock();
+                                , "Failed to submit NOP task, stream_id=%d, retCode=%#x.", streamId,
+                                static_cast<uint32_t>(error));
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), rtNopTask->taskSn);
     error = SubmitTaskPostProc(stm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamAicpuInfoLoad(Stream * const dftStm, const void * const aicpuInfo,
-    const uint32_t length)
+rtError_t StreamAicpuInfoLoad(Stream* const dftStm, const void* const aicpuInfo, const uint32_t length)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dftStm, RT_ERROR_STREAM_NULL, "Loading AI CPU information to the device");
-    Device *device = dftStm->Device_();
+    Device* device = dftStm->Device_();
     if (device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
         RtAicpuInfoLoadParam param = {aicpuInfo, length};
         return device->GetCtrlSQ().SendAicpuInfoLoadMsg(RtCtrlMsgType::RT_CTRL_MSG_AICPU_INFOLOAD, param, nullptr);
     }
 
-    TaskInfo *rtAicpuLoadInfoTask = nullptr;
+    TaskInfo* rtAicpuLoadInfoTask = nullptr;
     const int32_t streamId = dftStm->Id_();
     rtError_t error = CheckTaskCanSend(dftStm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
     dftStm->StreamLock();
     error = AllocTaskInfo(&rtAicpuLoadInfoTask, dftStm, pos);
     ERROR_PROC_RETURN_MSG_INNER(error, dftStm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+                                                              streamId, static_cast<uint32_t>(error));
     SaveTaskCommonInfo(rtAicpuLoadInfoTask, dftStm, pos);
     (void)AicpuInfoLoadTaskInit(rtAicpuLoadInfoTask, aicpuInfo, length);
     error = DavidSendTask(rtAicpuLoadInfoTask, dftStm);
-    ERROR_PROC_RETURN_MSG_INNER(error,
-                                TaskUnInitProc(rtAicpuLoadInfoTask);
-                                TaskRollBack(dftStm, pos);
-                                dftStm->StreamUnLock();,
-                                "Failed to submit AicpuInfoLoad task, stream_id=%d, retCode=%#x.",
-                                streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(
+        error, TaskUnInitProc(rtAicpuLoadInfoTask); TaskRollBack(dftStm, pos); dftStm->StreamUnLock();
+        , "Failed to submit AicpuInfoLoad task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     dftStm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dftStm->Id_(), rtAicpuLoadInfoTask->taskSn);
     error = dftStm->Synchronize();
-    COND_RETURN_AND_MSG_OUTER(error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002,
-        "AicpuInfoLoadTask synchronize");
-    ERROR_RETURN_MSG_INNER(error, "Failed to synchronize AicpuInfoLoadTask, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_AND_MSG_OUTER(
+        error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002, "AicpuInfoLoadTask synchronize");
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to synchronize AicpuInfoLoadTask, retCode=%#x.", static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t UpdateTimeoutConfigTaskSubmitDavid(Stream * const stm, const RtTimeoutConfig &timeoutConfig)
+rtError_t UpdateTimeoutConfigTaskSubmitDavid(Stream* const stm, const RtTimeoutConfig& timeoutConfig)
 {
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(stm, RT_ERROR_STREAM_NULL, "Delivering a task for updating the timeout interval");
-    TaskInfo *timeoutSetTask = nullptr;
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        stm, RT_ERROR_STREAM_NULL, "Delivering a task for updating the timeout interval");
+    TaskInfo* timeoutSetTask = nullptr;
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
     stm->StreamLock();
     error = AllocTaskInfo(&timeoutSetTask, stm, pos);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+                                                           stm->Id_(), static_cast<uint32_t>(error));
     SaveTaskCommonInfo(timeoutSetTask, stm, pos);
     TimeoutSetTaskInitV1(timeoutSetTask);
     if (timeoutConfig.isCfgOpWaitTaskTimeout) {
@@ -696,83 +693,75 @@ rtError_t UpdateTimeoutConfigTaskSubmitDavid(Stream * const stm, const RtTimeout
     }
 
     if (timeoutConfig.isCfgOpExcTaskTimeout) {
-        TimeoutSetTaskUpdate(timeoutSetTask, RT_TIMEOUT_TYPE_OP_EXECUTE,
-            timeoutConfig.opExcTaskTimeout / RT_TIMEOUT_S_TO_US);
+        TimeoutSetTaskUpdate(
+            timeoutSetTask, RT_TIMEOUT_TYPE_OP_EXECUTE, timeoutConfig.opExcTaskTimeout / RT_TIMEOUT_S_TO_US);
     }
     error = DavidSendTask(timeoutSetTask, stm);
-    ERROR_PROC_RETURN_MSG_INNER(error,
-                                TaskUnInitProc(timeoutSetTask);
-                                TaskRollBack(stm, pos);
-                                stm->StreamUnLock();,
-                                "Failed to submit task, stream_id=%d, retCode=%#x.",
-                                stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(timeoutSetTask); TaskRollBack(stm, pos); stm->StreamUnLock();
+                                , "Failed to submit task, stream_id=%d, retCode=%#x.", stm->Id_(),
+                                static_cast<uint32_t>(error));
     stm->StreamUnLock();
     error = stm->Synchronize();
-    COND_RETURN_AND_MSG_OUTER(error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002,
-        "UpdateTimeoutConfig");
-    ERROR_RETURN_MSG_INNER(error, "Failed to synchronize, stream_id=%d, retCode=%#x.",
-                           stm->Id_(), static_cast<uint32_t>(error));
+    COND_RETURN_AND_MSG_OUTER(error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002, "UpdateTimeoutConfig");
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to synchronize, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t SetTimeoutConfigTaskSubmitDavid(Stream * const stm, const rtTaskTimeoutType_t type,
-    const uint32_t timeout)
+rtError_t SetTimeoutConfigTaskSubmitDavid(Stream* const stm, const rtTaskTimeoutType_t type, const uint32_t timeout)
 {
-    TaskInfo *timeoutSetTask = nullptr;
+    TaskInfo* timeoutSetTask = nullptr;
 
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
     stm->StreamLock();
     error = AllocTaskInfo(&timeoutSetTask, stm, pos);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+                                                           stm->Id_(), static_cast<uint32_t>(error));
     SaveTaskCommonInfo(timeoutSetTask, stm, pos);
     (void)TimeoutSetTaskInit(timeoutSetTask, type, timeout);
     error = DavidSendTask(timeoutSetTask, stm);
-    ERROR_PROC_RETURN_MSG_INNER(error,
-                                TaskUnInitProc(timeoutSetTask);
-                                TaskRollBack(stm, pos);
-                                stm->StreamUnLock();,
-                                "Failed to submit task, stream_id=%d, retCode=%#x.",
-                                stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(timeoutSetTask); TaskRollBack(stm, pos); stm->StreamUnLock();
+                                , "Failed to submit task, stream_id=%d, retCode=%#x.", stm->Id_(),
+                                static_cast<uint32_t>(error));
     stm->StreamUnLock();
     error = stm->Synchronize();
-    COND_RETURN_AND_MSG_OUTER(error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002,
-        "SetTimeoutConfig");
-    ERROR_RETURN_MSG_INNER(error, "Failed to synchronize, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    COND_RETURN_AND_MSG_OUTER(error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002, "SetTimeoutConfig");
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to synchronize, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     return error;
 }
 
-static rtError_t GetNotifyInfoForCallbackLaunchWithBlock(const Stream * const stm, int32_t &notifyId, Notify *&notify)
+static rtError_t GetNotifyInfoForCallbackLaunchWithBlock(const Stream* const stm, int32_t& notifyId, Notify*& notify)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Notify *curNotify = nullptr;
+    Notify* curNotify = nullptr;
     ret = Runtime::Instance()->GetNotifyByStreamId(stm->Device_()->Id_(), stm->AllocTaskStreamId(), &curNotify);
-    COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "Call GetNotifyByStreamId failed for block callback, ret=%#x.",
-        ret);
+    COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "Call GetNotifyByStreamId failed for block callback, ret=%#x.", ret);
     notifyId = static_cast<int32_t>(curNotify->GetNotifyId());
     notify = curNotify;
     return RT_ERROR_NONE;
 }
 
-static rtError_t ProcCaptureStmSubscribeInfo(const Stream * const stm, const bool isBlock, const uint64_t threadId)
+static rtError_t ProcCaptureStmSubscribeInfo(const Stream* const stm, const bool isBlock, const uint64_t threadId)
 {
-    Stream *captureStm = stm->GetCaptureStream();
-    Runtime * const rtInstance = Runtime::Instance();
-    Api * const apiObj = rtInstance->ApiImpl_();
-    Device * const dev = stm->Device_();
+    Stream* captureStm = stm->GetCaptureStream();
+    Runtime* const rtInstance = Runtime::Instance();
+    Api* const apiObj = rtInstance->ApiImpl_();
+    Device* const dev = stm->Device_();
     rtError_t ret = RT_ERROR_NONE;
     // prepare capture stream SubscribeReport
     if (stm->IsCapturing() && (captureStm != nullptr)) {
         if (captureStm->GetSubscribeFlag() == StreamSubscribeFlag::SUBSCRIBE_NONE) {
-            Notify *curNotify = nullptr;
+            Notify* curNotify = nullptr;
             if (isBlock) {
                 ret = apiObj->NotifyCreate(static_cast<int32_t>(dev->Id_()), &curNotify);
-                COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret,
-                    "Create callback notify failed, drv devId=%u, original stream_id=%d, capture stream_id=%d, retCode=%#x.",
+                COND_RETURN_ERROR(
+                    ret != RT_ERROR_NONE, ret,
+                    "Create callback notify failed, drv devId=%u, original stream_id=%d, capture stream_id=%d, "
+                    "retCode=%#x.",
                     dev->Id_(), stm->Id_(), captureStm->Id_(), ret);
             }
             if (threadId != MAX_UINT64_NUM) {
@@ -780,10 +769,12 @@ static rtError_t ProcCaptureStmSubscribeInfo(const Stream * const stm, const boo
             } else {
                 uint64_t threadIdValue = 0UL;
                 ret = rtInstance->GetThreadIdByStreamId(dev->Id_(), stm->Id_(), &threadIdValue);
-                COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret,
+                COND_RETURN_ERROR(
+                    ret != RT_ERROR_NONE, ret,
                     "Get threadId by streamId failed, drv devId=%u, original stream_id=%d, "
-                    "capture stream_id=%d, retCode=%#x.", dev->Id_(), stm->Id_(), captureStm->Id_(), ret);
-                ret = rtInstance->SubscribeReport(threadIdValue, captureStm, static_cast<void *>(curNotify));
+                    "capture stream_id=%d, retCode=%#x.",
+                    dev->Id_(), stm->Id_(), captureStm->Id_(), ret);
+                ret = rtInstance->SubscribeReport(threadIdValue, captureStm, static_cast<void*>(curNotify));
             }
             if (ret != RT_ERROR_NONE) {
                 if (curNotify != nullptr) {
@@ -796,16 +787,17 @@ static rtError_t ProcCaptureStmSubscribeInfo(const Stream * const stm, const boo
     return RT_ERROR_NONE;
 }
 
-static rtError_t CallbackLaunchForDavid(const rtCallback_t callBackFunc, void * const fnData, Stream * const stm,
-    const bool isBlock, Notify *&notify, const uint64_t threadId)
+static rtError_t CallbackLaunchForDavid(
+    const rtCallback_t callBackFunc, void* const fnData, Stream* const stm, const bool isBlock, Notify*& notify,
+    const uint64_t threadId)
 {
     const int32_t streamId = stm->Id_();
     TaskInfo* rtCbLaunchTask = nullptr;
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
     std::function<void()> const errRecycle = [&rtCbLaunchTask, &stm, &pos, &dstStm]() {
         TaskUnInitProc(rtCbLaunchTask);
         TaskRollBack(dstStm, pos);
@@ -815,41 +807,46 @@ static rtError_t CallbackLaunchForDavid(const rtCallback_t callBackFunc, void * 
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&rtCbLaunchTask, stm, pos, dstStm);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+                                                           streamId, static_cast<uint32_t>(error));
     ScopeGuard tskErrRecycle(errRecycle);
     error = ProcCaptureStmSubscribeInfo(stm, isBlock, threadId);
-    ERROR_RETURN_MSG_INNER(error, "Failed to proc capture stream subscribe info, stream_id=%d, capture stream_id=%d, error=%#x.",
-                           streamId, dstStm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to proc capture stream subscribe info, stream_id=%d, capture stream_id=%d, error=%#x.", streamId,
+        dstStm->Id_(), static_cast<uint32_t>(error));
     if (isBlock) {
         error = GetNotifyInfoForCallbackLaunchWithBlock(stm, notifyId, notify);
-        ERROR_RETURN_MSG_INNER(error, "Failed to get notify info, stream_id=%d maybe have capture stream_id=%d, error=%#x.",
-                        streamId, dstStm->Id_(), static_cast<uint32_t>(error));
+        ERROR_RETURN_MSG_INNER(
+            error, "Failed to get notify info, stream_id=%d maybe have capture stream_id=%d, error=%#x.", streamId,
+            dstStm->Id_(), static_cast<uint32_t>(error));
     }
-    
+
     SaveTaskCommonInfo(rtCbLaunchTask, dstStm, pos);
     (void)CallbackLaunchTaskInit(rtCbLaunchTask, callBackFunc, fnData, isBlock, notifyId);
-    rtCbLaunchTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    rtCbLaunchTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(rtCbLaunchTask, dstStm);
-    ERROR_RETURN_MSG_INNER(error,"Failed to submit callback task, stream_id=%d, retCode=%#x.", streamId,
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit callback task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), rtCbLaunchTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t CallbackLaunchForDavidNoBlock(const rtCallback_t callBackFunc, void * const fnData, Stream * const stm, const uint64_t threadId)
+rtError_t CallbackLaunchForDavidNoBlock(
+    const rtCallback_t callBackFunc, void* const fnData, Stream* const stm, const uint64_t threadId)
 {
-    Notify *curNotify = nullptr;
+    Notify* curNotify = nullptr;
     return CallbackLaunchForDavid(callBackFunc, fnData, stm, false, curNotify, threadId);
 }
 
-rtError_t CallbackLaunchForDavidWithBlock(const rtCallback_t callBackFunc, void * const fnData, Stream * const stm, const uint64_t threadId)
+rtError_t CallbackLaunchForDavidWithBlock(
+    const rtCallback_t callBackFunc, void* const fnData, Stream* const stm, const uint64_t threadId)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Notify *curNotify = nullptr;
+    Notify* curNotify = nullptr;
     ret = CallbackLaunchForDavid(callBackFunc, fnData, stm, true, curNotify, threadId);
     COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "Call CallbackLaunch failed for block callback, ret=%#x.", ret);
     ret = NtyWait(curNotify, stm, 0U);
@@ -857,121 +854,118 @@ rtError_t CallbackLaunchForDavidWithBlock(const rtCallback_t callBackFunc, void 
     return ret;
 }
 
-rtError_t StreamWriteValue(rtWriteValueInfo_t * const info, Stream * const stm)
+rtError_t StreamWriteValue(rtWriteValueInfo_t* const info, Stream* const stm)
 {
-    const int32_t streamId = stm->Id_(); 
-    TaskInfo *writeValTask = nullptr;
+    const int32_t streamId = stm->Id_();
+    TaskInfo* writeValTask = nullptr;
     uint32_t pos = 0xFFFFU;
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
-    Stream *dstStm = stm;
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    Stream* dstStm = stm;
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&writeValTask, stm, pos, dstStm);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+                                                           streamId, static_cast<uint32_t>(error));
     const WriteValueSize awsize = WriteValueSize(static_cast<uint8_t>(info->size) - 1U);
     SaveTaskCommonInfo(writeValTask, dstStm, pos);
     (void)WriteValueTaskInit(writeValTask, info->addr, awsize, info->value, TASK_WR_CQE_DEFAULT);
-    writeValTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    writeValTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(writeValTask, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(writeValTask);
-                                       TaskRollBack(dstStm, pos);
-                                       stm->StreamUnLock();,
-                                       "Failed to submit WriteValue task, retCode=%#x.",
-                                       static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(writeValTask); TaskRollBack(dstStm, pos); stm->StreamUnLock();
+                                , "Failed to submit WriteValue task, retCode=%#x.", static_cast<uint32_t>(error));
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), writeValTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamWriteValuePtr(const rtWriteValueInfo_t * const writeValueInfo, Stream * const stm,
-                              void * const pointedAddr)
+rtError_t StreamWriteValuePtr(
+    const rtWriteValueInfo_t* const writeValueInfo, Stream* const stm, void* const pointedAddr)
 {
     if ((static_cast<uint32_t>(writeValueInfo->size) >= WRITE_VALUE_SIZE_TYPE_BUFF) ||
         (writeValueInfo->size == WRITE_VALUE_SIZE_TYPE_INVALID)) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Writing data to the specified memory",
-            writeValueInfo->size,
+        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(
+            "Writing data to the specified memory", writeValueInfo->size,
             "[1, " + std::to_string(WRITE_VALUE_SIZE_TYPE_BUFF) + ")");
         return RT_ERROR_INVALID_VALUE;
     }
     constexpr uint64_t temp = 0ULL;
     const uint64_t size = static_cast<uint64_t>(writeValueInfo->size);
     if (((~((~temp) << (size - 1U))) & writeValueInfo->addr) == 1U) {
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Writing data to the specified memory", "addr",
-            "address is not aligned by awsize");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1017, "Writing data to the specified memory", "addr", "address is not aligned by awsize");
         return RT_ERROR_INVALID_VALUE;
     }
-    
+
     rtError_t error = RT_ERROR_NONE;
     const int32_t streamId = stm->Id_();
-    const uint32_t cpySize = 64U;  // sqe's size
-    TaskInfo *writeValPtrTask = nullptr;
+    const uint32_t cpySize = 64U; // sqe's size
+    TaskInfo* writeValPtrTask = nullptr;
     uint32_t pos = 0xFFFFU;
     RtDavidStarsWriteValueSqe writeValueSqe = {};
     InitWriteValueSqe(&writeValueSqe, writeValueInfo);
-    RT_LOG(RT_LOG_INFO, "pointed write value sqe's addr=0x%lx, addr=0x%lx.",
-        RtPtrToValue(pointedAddr), writeValueInfo->addr);
+    RT_LOG(
+        RT_LOG_INFO, "pointed write value sqe's addr=0x%lx, addr=0x%lx.", RtPtrToValue(pointedAddr),
+        writeValueInfo->addr);
 
-    Device *dev = stm->Device_();
+    Device* dev = stm->Device_();
     error = dev->Driver_()->MemCopySync(pointedAddr, cpySize, &writeValueSqe, cpySize, RT_MEMCPY_HOST_TO_DEVICE);
-    ERROR_RETURN_MSG_INNER(error, "Failed to memory copy info, device_id=%u, size=%u, "
-        "retCode=%#x.", dev->Id_(), cpySize, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error,
+        "Failed to memory copy info, device_id=%u, size=%u, "
+        "retCode=%#x.",
+        dev->Id_(), cpySize, static_cast<uint32_t>(error));
     error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
-    Stream *dstStm = stm;
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    Stream* dstStm = stm;
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&writeValPtrTask, stm, pos, dstStm);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+                                                           streamId, static_cast<uint32_t>(error));
     SaveTaskCommonInfo(writeValPtrTask, dstStm, pos);
     (void)WriteValuePtrTaskInit(writeValPtrTask, pointedAddr, TASK_WR_CQE_DEFAULT);
-    writeValPtrTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    writeValPtrTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(writeValPtrTask, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(writeValPtrTask);
-                                       TaskRollBack(dstStm, pos);
-                                       stm->StreamUnLock();,
-                                       "Failed to submit WriteValuePtr task, retCode=%#x.",
-                                       static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(writeValPtrTask); TaskRollBack(dstStm, pos); stm->StreamUnLock();
+                                , "Failed to submit WriteValuePtr task, retCode=%#x.", static_cast<uint32_t>(error));
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), writeValPtrTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t SendTopicMsgVersionToAicpuDavid(Stream * const stm)
+rtError_t SendTopicMsgVersionToAicpuDavid(Stream* const stm)
 {
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(stm, RT_ERROR_STREAM_NULL, "Sending the topic message version number to the AI CPU");
-    TaskInfo *topicMsgVersiontask = nullptr;
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        stm, RT_ERROR_STREAM_NULL, "Sending the topic message version number to the AI CPU");
+    TaskInfo* topicMsgVersiontask = nullptr;
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
     stm->StreamLock();
     error = AllocTaskInfo(&topicMsgVersiontask, stm, pos);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to allocate task, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+                                                           stm->Id_(), static_cast<uint32_t>(error));
     SaveTaskCommonInfo(topicMsgVersiontask, stm, pos);
     AicpuMsgVersionTaskInit(topicMsgVersiontask);
     error = DavidSendTask(topicMsgVersiontask, stm);
-    ERROR_PROC_RETURN_MSG_INNER(error,
-                                TaskUnInitProc(topicMsgVersiontask);
-                                TaskRollBack(stm, pos);
-                                stm->StreamUnLock();,
-                                "Failed to submit task, stream_id=%d, retCode=%#x.",
-                                stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(topicMsgVersiontask); TaskRollBack(stm, pos); stm->StreamUnLock();
+                                , "Failed to submit task, stream_id=%d, retCode=%#x.", stm->Id_(),
+                                static_cast<uint32_t>(error));
     stm->StreamUnLock();
     error = stm->Synchronize();
-    COND_RETURN_AND_MSG_OUTER(error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002,
-        "TopicMsgVersion");
-    ERROR_RETURN_MSG_INNER(error, "Failed to synchronize, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    COND_RETURN_AND_MSG_OUTER(error == RT_ERROR_STREAM_SYNC_TIMEOUT, error, ErrorCode::EE1002, "TopicMsgVersion");
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to synchronize, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     return error;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

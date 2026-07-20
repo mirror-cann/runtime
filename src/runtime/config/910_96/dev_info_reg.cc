@@ -92,8 +92,7 @@ const std::unordered_set<RtOptionalFeatureType> CHIP_CLOUD_V5_FEATURE{
     RtOptionalFeatureType::RT_FEATURE_KERNEL_UMA_SUPER_ARGS_ALLOC,
     RtOptionalFeatureType::RT_FEATURE_MEM_H2D_MANAGER_POLICY_SYNC_FORCE,
     RtOptionalFeatureType::RT_FEATURE_MEM_WAIT_PROF,
-    RtOptionalFeatureType::RT_FEATURE_KERNEL_ARGS_FROM_STREAM_POOL
-};
+    RtOptionalFeatureType::RT_FEATURE_KERNEL_ARGS_FROM_STREAM_POOL};
 
 REGISTER_CHIP_FEATURE_SET(CHIP_CLOUD_V5, CHIP_CLOUD_V5_FEATURE);
 
@@ -145,10 +144,9 @@ static const DevProperties CHIP_CLOUD_V5_PROPERTIES = {
     .starsDefaultKernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT,
     .KernelCreditScale = 0.0F,
     .isSupportInitFuncCallPara = true,
-    .rtsqVirtualAddr = {DAVID_SIMPLE_RTSQ_FSM_SEL_REG,
-        STARS_SIMPLE_SQ_ENABLE_OFFSET,
-        DAVID_SIMPLE_SQ_TAIL_OFFSET,
-        STARS_SIMPLE_SQ_HEAD_OFFSET},
+    .rtsqVirtualAddr =
+        {DAVID_SIMPLE_RTSQ_FSM_SEL_REG, STARS_SIMPLE_SQ_ENABLE_OFFSET, DAVID_SIMPLE_SQ_TAIL_OFFSET,
+         STARS_SIMPLE_SQ_HEAD_OFFSET},
     .rtsqFsmStateAddrCalMethod = RtsqFsmStateAddrCalMethod::FSM_ADDR_CALCULATE_STATIC,
     .starsBaseAddrMethod = StarsBaseAddrMethod::STARS_BASE_CALCULATE_BY_DRIVER,
     .rtSqEnableAddrCalMethod = RtSqEnableAddrCalMethod::RT_SQ_ENABLE_ADDR_CAL_STATIC,
@@ -181,7 +179,7 @@ static const DevProperties CHIP_CLOUD_V5_PROPERTIES = {
     .taskPoolSize = 0U,
     .getTsMemTypeMethod = GetTsMemTypeMethod::GET_TS_MEM_TYPE_STATIC,
     .enabledTSNum = ENABLED_TS_NUM_1,
-    .deviceSatStatus = DeviceSatStatus::DEVICE_SAT_STATUS_SUPPORT,  // David 默认支持
+    .deviceSatStatus = DeviceSatStatus::DEVICE_SAT_STATUS_SUPPORT, // David 默认支持
     .ringBufferMemCopyCycleTimes = 1U,
     .tsOverflowHandling = TsOverflowHandling::TS_OVER_FLOW_HANDING_DEFAULT,
     .getCapabilityMethod = GetCapabilityMethod::GET_CAPABILITY_BY_BOTH_FEATURE_AND_DRIVER_CHECK,
@@ -241,5 +239,5 @@ static const DevProperties CHIP_CLOUD_V5_PROPERTIES = {
 };
 
 REGISTER_DEV_PROPERTIES(CHIP_CLOUD_V5, CHIP_CLOUD_V5_PROPERTIES);
-}
-}
+} // namespace runtime
+} // namespace cce

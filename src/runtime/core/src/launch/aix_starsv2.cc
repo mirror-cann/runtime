@@ -28,12 +28,14 @@ TIMESTAMP_EXTERN(rtKernelLaunch_ArgLoad);
 TIMESTAMP_EXTERN(rtKernelLaunchWithHandle_SubMit);
 TIMESTAMP_EXTERN(rtLaunchKernel_SubMit);
 
-rtError_t CheckAndGetTotalShareMemorySize(const Kernel * const kernel, uint32_t dynamicShareMemSize, uint32_t &simtDcuSmSize)
+rtError_t CheckAndGetTotalShareMemorySize(
+    const Kernel* const kernel, uint32_t dynamicShareMemSize, uint32_t& simtDcuSmSize)
 {
     /*
         aic only - 1982:      校验dynamicSmSize必须是0, sqe中dcuSmSize=256K
         simd     - 1982&1952: 校验compilerAllocUbSize+dynamicSmSize<=256K, sqe中dcuSmSize=256K
-        simt     - 1982&1952: 校验compilerAllocUbSize+dynamicSmSize+dcache(32K)<=256K, sqe中dcuSmSize=compilerAllocUbSize+dynamicSmSize
+        simt     - 1982&1952: 校验compilerAllocUbSize+dynamicSmSize+dcache(32K)<=256K,
+       sqe中dcuSmSize=compilerAllocUbSize+dynamicSmSize
     */
     const uint32_t kernelVfType = kernel->KernelVfType_();
     bool canUseSimt = (kernelVfType != 0);
@@ -43,27 +45,31 @@ rtError_t CheckAndGetTotalShareMemorySize(const Kernel * const kernel, uint32_t 
     uint32_t maxSmSize = simtFlag ? RT_SIMT_REMAIN_UB_SIZE : RT_SIMT_UB_SIZE;
     maxSmSize = canUseSimt ? maxSmSize : 0U;
     /* simt dcu_size should 128 Byte align */
-    totalSmSize = simtFlag ? ((totalSmSize + RT_SIMT_SHARE_MEM_ALIGN_LEN - 1)/ RT_SIMT_SHARE_MEM_ALIGN_LEN * RT_SIMT_SHARE_MEM_ALIGN_LEN)
-                  : totalSmSize;
+    totalSmSize = simtFlag ? ((totalSmSize + RT_SIMT_SHARE_MEM_ALIGN_LEN - 1) / RT_SIMT_SHARE_MEM_ALIGN_LEN *
+                              RT_SIMT_SHARE_MEM_ALIGN_LEN) :
+                             totalSmSize;
     if (totalSmSize > maxSmSize) {
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Checking whether the size of the dynamic shared memory exceeds the limit", "dynamicShareMemSize",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1017, "Checking whether the size of the dynamic shared memory exceeds the limit",
+            "dynamicShareMemSize",
             "the sum of dynamic shared memory and kernel shared memory exceeds the maximum limit");
-        RT_LOG(RT_LOG_ERROR, "kernelName=%s, kernelVfType=%u, dynamicShareMemSize=%u, shareMemSize=%u, maxSmSize=%u",
+        RT_LOG(
+            RT_LOG_ERROR, "kernelName=%s, kernelVfType=%u, dynamicShareMemSize=%u, shareMemSize=%u, maxSmSize=%u",
             kernel->Name_().c_str(), kernelVfType, dynamicShareMemSize, kernel->ShareMemSize_(), maxSmSize);
         return RT_ERROR_INVALID_VALUE;
     }
 
-    simtDcuSmSize = simtFlag ? totalSmSize: RT_SIMT_UB_SIZE;
+    simtDcuSmSize = simtFlag ? totalSmSize : RT_SIMT_UB_SIZE;
     return RT_ERROR_NONE;
 }
 
-rtError_t CheckDynSizeValid(TaskInfo* const taskInfo, const Kernel * const kernel)
+rtError_t CheckDynSizeValid(TaskInfo* const taskInfo, const Kernel* const kernel)
 {
     if ((taskInfo == nullptr) || (kernel == nullptr)) {
         return RT_ERROR_NONE;
     }
 
-    AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
+    AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
     return CheckAndGetTotalShareMemorySize(kernel, aicTaskInfo->dynamicShareMemSize, aicTaskInfo->simtDcuSmSize);
 }
 
@@ -72,7 +78,7 @@ static void SetArgsAix(
     StarsArgLoaderResult* const result)
 {
     SetKernelLaunchParams(stm, argsInfo, *taskInfo);
-    AicTaskInfo *aicTask = &(taskInfo->u.aicTaskInfo);
+    AicTaskInfo* aicTask = &(taskInfo->u.aicTaskInfo);
     aicTask->comm.argsSize = argsInfo->argsSize;
     aicTask->comm.args = result->kerArgs;
     // only for aclgraph
@@ -81,12 +87,12 @@ static void SetArgsAix(
         aicTask->comm.argHandle = result->handle;
         taskInfo->needPostProc = true;
     }
-    taskInfo->stmArgPos = static_cast<DavidStream *>(taskInfo->stream)->GetArgPos();
+    taskInfo->stmArgPos = static_cast<DavidStream*>(taskInfo->stream)->GetArgPos();
     result->stmArgPos = UINT32_MAX;
     result->handle = nullptr;
 }
 
-static void SetSimtTaskParams(AicTaskInfo *aicTask, const rtStreamLaunchKernelV2ExtendArgs_t *extendArgs)
+static void SetSimtTaskParams(AicTaskInfo* aicTask, const rtStreamLaunchKernelV2ExtendArgs_t* extendArgs)
 {
     if ((extendArgs->simtArgsArray != nullptr) || (extendArgs->simtArgsHost != nullptr)) {
         aicTask->simtParamOffset = SIMT_IMPLICIT_PARAM_SIZE;
@@ -100,8 +106,8 @@ static void SetSimtTaskParams(AicTaskInfo *aicTask, const rtStreamLaunchKernelV2
     }
 }
 
-rtError_t StreamLaunchArgsArray(Kernel *kernel, const uint32_t coreDim, Stream *stm,
-    void **argsArrayInfo, TaskCfg &taskCfg)
+rtError_t StreamLaunchArgsArray(
+    Kernel* kernel, const uint32_t coreDim, Stream* stm, void** argsArrayInfo, TaskCfg& taskCfg)
 {
     rtArgsEx_t nonCpuArgsInfo = {};
     nonCpuArgsInfo.argsSize = static_cast<uint32_t>(kernel->GetParamTotalSize());
@@ -113,8 +119,8 @@ rtError_t StreamLaunchArgsArray(Kernel *kernel, const uint32_t coreDim, Stream *
     return StreamLaunchKernelV2(kernel, coreDim, stm, &launchKernelExtendArgs);
 }
 
-rtError_t StreamLaunchSimtArgsArray(Kernel *kernel, const uint32_t coreDim, Stream *stm,
-    SimtArgsArray *simtArgsArray, TaskCfg &taskCfg)
+rtError_t StreamLaunchSimtArgsArray(
+    Kernel* kernel, const uint32_t coreDim, Stream* stm, SimtArgsArray* simtArgsArray, TaskCfg& taskCfg)
 {
     taskCfg.base.localMemorySize = static_cast<uint32_t>(simtArgsArray->dynUbufSize);
     rtArgsEx_t nonCpuArgsInfo = {};
@@ -128,11 +134,12 @@ rtError_t StreamLaunchSimtArgsArray(Kernel *kernel, const uint32_t coreDim, Stre
     return StreamLaunchKernelV2(kernel, coreDim, stm, &launchKernelExtendArgs);
 }
 
-rtError_t StreamLaunchSimtArgsHost(Kernel *kernel, const uint32_t coreDim, Stream *stm,
-    SimtArgsHost *simtArgsHost, TaskCfg &taskCfg)
+rtError_t StreamLaunchSimtArgsHost(
+    Kernel* kernel, const uint32_t coreDim, Stream* stm, SimtArgsHost* simtArgsHost, TaskCfg& taskCfg)
 {
     taskCfg.base.localMemorySize = static_cast<uint32_t>(simtArgsHost->dynUbufSize);
-    const uint32_t combinedSize = simtArgsHost->argsSize + SIMT_IMPLICIT_PARAM_SIZE; // argsSize都共用 nonCpuArgsInfo.argsSize,
+    const uint32_t combinedSize =
+        simtArgsHost->argsSize + SIMT_IMPLICIT_PARAM_SIZE; // argsSize都共用 nonCpuArgsInfo.argsSize,
     rtArgsEx_t nonCpuArgsInfo = {};
     nonCpuArgsInfo.argsSize = combinedSize;
     rtStreamLaunchKernelV2ExtendArgs_t launchKernelExtendArgs = {};
@@ -143,12 +150,11 @@ rtError_t StreamLaunchSimtArgsHost(Kernel *kernel, const uint32_t coreDim, Strea
     return StreamLaunchKernelV2(kernel, coreDim, stm, &launchKernelExtendArgs);
 }
 
-
-static rtError_t UpdateDavidKernelPrepare(TaskInfo * const updateTask, void ** const hostAddr, const uint64_t allocSize)
+static rtError_t UpdateDavidKernelPrepare(TaskInfo* const updateTask, void** const hostAddr, const uint64_t allocSize)
 {
-    Stream * const dstStream = updateTask->stream;
+    Stream* const dstStream = updateTask->stream;
     const uint32_t devId = static_cast<uint32_t>(dstStream->Device_()->Id_());
-    Driver * const driver = dstStream->Device_()->Driver_();
+    Driver* const driver = dstStream->Device_()->Driver_();
     uint8_t sqeBuffer[SQE_SIZE_MAX] = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     /* alloc host memory */
@@ -156,33 +162,34 @@ static rtError_t UpdateDavidKernelPrepare(TaskInfo * const updateTask, void ** c
     ERROR_RETURN_MSG_INNER(error, "Failed to allocate host memory, retCode=%#x.", static_cast<uint32_t>(error));
 
     /* construct new sqe */
-    RT_LOG(RT_LOG_INFO, "update normal kernel, device_id=%u, stream_id=%d, task_id=%hu",
-        devId, dstStream->Id_(), updateTask->id);
+    RT_LOG(
+        RT_LOG_INFO, "update normal kernel, device_id=%u, stream_id=%d, task_id=%hu", devId, dstStream->Id_(),
+        updateTask->id);
 
     /* 同时适用于AIC、AIV、MIX(AIC + AIV) kernel */
     sqeInfo.sqBaseAddr = 0ULL;
-    ToConstructDavidSqe(updateTask, static_cast<void *>(sqeBuffer), sqeInfo);
-    error = driver->MemCopySync(*hostAddr, allocSize, static_cast<const void *>(sqeBuffer),
-                                allocSize, RT_MEMCPY_HOST_TO_HOST);
-    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error,
-        (void)driver->HostMemFree(*hostAddr); *hostAddr = nullptr;,
-        "Failed to copy memory synchronously, retCode=%#x.", static_cast<uint32_t>(error));
+    ToConstructDavidSqe(updateTask, static_cast<void*>(sqeBuffer), sqeInfo);
+    error = driver->MemCopySync(
+        *hostAddr, allocSize, static_cast<const void*>(sqeBuffer), allocSize, RT_MEMCPY_HOST_TO_HOST);
+    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)driver->HostMemFree(*hostAddr); *hostAddr = nullptr;
+                           , "Failed to copy memory synchronously, retCode=%#x.", static_cast<uint32_t>(error));
 
     if (dstStream->IsSoftwareSqEnable()) {
-        CaptureModel *captureModel = dynamic_cast<CaptureModel *>(dstStream->Model_());
+        CaptureModel* captureModel = dynamic_cast<CaptureModel*>(dstStream->Model_());
         if ((captureModel != nullptr) && (!captureModel->IsSendSqe())) {
-            error = memcpy_s(RtPtrToPtr<void *>(RtPtrToValue(dstStream->GetSqeBuffer()) + SQE_SIZE_UNIT * updateTask->pos),
-                       allocSize, *hostAddr, allocSize);
-            COND_PROC_RETURN_ERROR_MSG_INNER(error != EOK, RT_ERROR_SEC_HANDLE,
-                (void)driver->HostMemFree(*hostAddr); *hostAddr = nullptr;,
-                "Failed to call memcpy_s, size=%" PRIu64 ", retCode=%#x.", allocSize, static_cast<uint32_t>(error));
+            error = memcpy_s(
+                RtPtrToPtr<void*>(RtPtrToValue(dstStream->GetSqeBuffer()) + SQE_SIZE_UNIT * updateTask->pos), allocSize,
+                *hostAddr, allocSize);
+            COND_PROC_RETURN_ERROR_MSG_INNER(
+                error != EOK, RT_ERROR_SEC_HANDLE, (void)driver->HostMemFree(*hostAddr); *hostAddr = nullptr;
+                , "Failed to call memcpy_s, size=%" PRIu64 ", retCode=%#x.", allocSize, static_cast<uint32_t>(error));
         }
     }
 
     return RT_ERROR_NONE;
 }
 
-void FreeTempHostAddr(const Stream * const stm, void * const hostAddr)
+void FreeTempHostAddr(const Stream* const stm, void* const hostAddr)
 {
     if ((unlikely(stm == nullptr)) || (unlikely(hostAddr == nullptr))) {
         return;
@@ -191,17 +198,18 @@ void FreeTempHostAddr(const Stream * const stm, void * const hostAddr)
     stm->Device_()->Driver_()->HostMemFree(hostAddr);
 }
 
-rtError_t UpdateDavidKernelTaskSubmit(TaskInfo * const updateTask, Stream * const stm, uint32_t sqeLen)
+rtError_t UpdateDavidKernelTaskSubmit(TaskInfo* const updateTask, Stream* const stm, uint32_t sqeLen)
 {
-    void *srcHostAddr = nullptr;
+    void* srcHostAddr = nullptr;
     const uint64_t allocSize = SQE_SIZE_UNIT * sqeLen;
 
     // 将updateTask转成sqe，并拷贝放到host svm内存中
     rtError_t error = UpdateDavidKernelPrepare(updateTask, &srcHostAddr, allocSize);
-    ERROR_RETURN(error, "Failed to prepare kernel update, device_id=%u, stream_id=%d, allocSize=%llu, retCode=%#x.",
+    ERROR_RETURN(
+        error, "Failed to prepare kernel update, device_id=%u, stream_id=%d, allocSize=%llu, retCode=%#x.",
         stm->Device_()->Id_(), stm->Id_(), static_cast<uint64_t>(allocSize), static_cast<uint32_t>(error));
 
-    TaskInfo *rtMemcpyAsyncTask = nullptr;
+    TaskInfo* rtMemcpyAsyncTask = nullptr;
     uint32_t pos = 0xFFFFU;
     std::function<void()> const errRecycle = [&rtMemcpyAsyncTask, &stm, &pos, &srcHostAddr]() {
         TaskUnInitProc(rtMemcpyAsyncTask);
@@ -212,16 +220,16 @@ rtError_t UpdateDavidKernelTaskSubmit(TaskInfo * const updateTask, Stream * cons
     // 申请memcpyAsync task
     const uint32_t sqeNum = GetSqeNumForMemcopyAsync(RT_MEMCPY_HOST_TO_DEVICE);
     error = AllocTaskInfo(&rtMemcpyAsyncTask, stm, pos, sqeNum);
-    ERROR_PROC_RETURN_MSG_INNER(error, (void)stm->Device_()->Driver_()->HostMemFree(srcHostAddr);,
-                                "Failed to allocate task, stream_id=%d, retCode=%#x.",
-                                stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, (void)stm->Device_()->Driver_()->HostMemFree(srcHostAddr);
+                                , "Failed to allocate task, stream_id=%d, retCode=%#x.", stm->Id_(),
+                                static_cast<uint32_t>(error));
 
     ScopeGuard tskErrRecycle(errRecycle);
     // 赋值memcpyAsync task
     SaveTaskCommonInfo(rtMemcpyAsyncTask, stm, pos, sqeNum);
     // 初始化memcpyAsyncTask
     (void)MemcpyAsyncTaskCommonInit(rtMemcpyAsyncTask);
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(rtMemcpyAsyncTask->u.memcpyAsyncTaskInfo);
+    MemcpyAsyncTaskInfo* memcpyAsyncTaskInfo = &(rtMemcpyAsyncTask->u.memcpyAsyncTaskInfo);
     memcpyAsyncTaskInfo->copyType = static_cast<uint32_t>(RT_MEMCPY_DIR_H2D);
     memcpyAsyncTaskInfo->copyKind = static_cast<uint32_t>(RT_MEMCPY_HOST_TO_DEVICE);
     memcpyAsyncTaskInfo->size = allocSize;
@@ -240,24 +248,28 @@ rtError_t UpdateDavidKernelTaskSubmit(TaskInfo * const updateTask, Stream * cons
         updateTask->u.aicTaskInfo.oldArgHandle = nullptr;
     }
     error = DavidSendTask(rtMemcpyAsyncTask, stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit task, stream_id=%d, pos=%u, retCode=%#x.",
-        stm->Id_(), pos, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit task, stream_id=%d, pos=%u, retCode=%#x.", stm->Id_(), pos,
+        static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
 
     return RT_ERROR_NONE;
 }
 
-static rtError_t CheckUpdateDavidTaskInfo(const TaskInfo * const updateTask, const Kernel * const kernel,
-                                          const Stream * const stm)
+static rtError_t CheckUpdateDavidTaskInfo(
+    const TaskInfo* const updateTask, const Kernel* const kernel, const Stream* const stm)
 {
     if (updateTask->stream->Model_() == nullptr) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "The update task must be a sinked task, stream_id=%d, task_id=%hu.",
-               updateTask->stream->Id_(), updateTask->id);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "The update task must be a sinked task, stream_id=%d, task_id=%hu.",
+            updateTask->stream->Id_(), updateTask->id);
         return RT_ERROR_MODEL_NULL;
     }
 
     if (stm->Model_() != nullptr) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "The update stream must be a single operator stream, "
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR,
+            "The update stream must be a single operator stream, "
             "stream_id=%d, task_id=%hu.",
             updateTask->stream->Id_(), updateTask->id);
         return RT_ERROR_STREAM_MODEL;
@@ -266,7 +278,9 @@ static rtError_t CheckUpdateDavidTaskInfo(const TaskInfo * const updateTask, con
     if ((updateTask->u.aicTaskInfo.kernel->GetMixType() != kernel->GetMixType()) ||
         (updateTask->u.aicTaskInfo.kernel->GetFuncType() != kernel->GetFuncType()) ||
         (updateTask->u.aicTaskInfo.kernel->GetKernelAttrType() != kernel->GetKernelAttrType())) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "check kernel type failed, stream_id=%d, task_id=%hu, "
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR,
+            "check kernel type failed, stream_id=%d, task_id=%hu, "
             "old mixType=%u, funcType=%u, kernelAttrType=%d, "
             "new mixType=%u, funcType=%u, kernelAttrType=%d.",
             updateTask->stream->Id_(), updateTask->id, updateTask->u.aicTaskInfo.kernel->GetMixType(),
@@ -278,8 +292,9 @@ static rtError_t CheckUpdateDavidTaskInfo(const TaskInfo * const updateTask, con
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamLaunchKernelV1(const void * const stubFunc, const uint32_t coreDim,
-    const rtArgsEx_t *argsInfo, Stream *stm, const TaskCfg * const taskCfg, const bool isLaunchVec)
+rtError_t StreamLaunchKernelV1(
+    const void* const stubFunc, const uint32_t coreDim, const rtArgsEx_t* argsInfo, Stream* stm,
+    const TaskCfg* const taskCfg, const bool isLaunchVec)
 {
     UNUSED(isLaunchVec);
 
@@ -288,26 +303,30 @@ rtError_t StreamLaunchKernelV1(const void * const stubFunc, const uint32_t coreD
     uint64_t addr1 = 0ULL;
     uint64_t addr2 = 0ULL;
     uint8_t mixType = NO_MIX;
-    Program *prog = nullptr;
-    Module *launchMdl = nullptr;
-    Kernel *registeredKernel = nullptr;
-    Runtime * const rt = Runtime::Instance();
-    TaskInfo *kernelTask = nullptr;
+    Program* prog = nullptr;
+    Module* launchMdl = nullptr;
+    Kernel* registeredKernel = nullptr;
+    Runtime* const rt = Runtime::Instance();
+    TaskInfo* kernelTask = nullptr;
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check task send status, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
-    error = StreamLaunchKernelPrepare(stm, registeredKernel, prog, kernelAttrType, launchMdl, stubFunc,
-                                      addr1, addr2, nullptr, 0);
-    COND_RETURN_ERROR_MSG_INNER((error == RT_ERROR_KERNEL_NULL) || (error == RT_ERROR_PROGRAM_NULL), error, "Failed to prepare kernel launch.");
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check task send status, stream_id=%d, retCode=%#x.", stm->Id_(),
+        static_cast<uint32_t>(error));
+    error = StreamLaunchKernelPrepare(
+        stm, registeredKernel, prog, kernelAttrType, launchMdl, stubFunc, addr1, addr2, nullptr, 0);
+    COND_RETURN_ERROR_MSG_INNER(
+        (error == RT_ERROR_KERNEL_NULL) || (error == RT_ERROR_PROGRAM_NULL), error, "Failed to prepare kernel launch.");
     ERROR_PROC_RETURN_MSG_INNER(error, rt->PutProgram(prog);, "Failed to prepare kernel launch.");
     mixType = registeredKernel->GetMixType();
     error = CheckMixKernelValid(mixType, addr2);
-    ERROR_PROC_RETURN_MSG_INNER(error, rt->PutProgram(prog);,
-        "Failed to check mix kernel, stream_id=%d, kernelAttrType=%d, retCode=%#x.", stm->Id_(), kernelAttrType, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, rt->PutProgram(prog);
+                                , "Failed to check mix kernel, stream_id=%d, kernelAttrType=%d, retCode=%#x.",
+                                stm->Id_(), kernelAttrType, static_cast<uint32_t>(error));
 
-    DavidStream *davidStm = static_cast<DavidStream *>(stm);
+    DavidStream* davidStm = static_cast<DavidStream*>(stm);
     bool useArgPool = UseArgsPool(davidStm, argsInfo, stm->IsTaskGroupUpdate());
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
     std::function<void()> const errRecycle = [&result, &kernelTask, &prog, &stm, &pos, &dstStm]() {
         StreamLaunchKernelRecycle(result, kernelTask, prog, stm);
         TaskRollBack(dstStm, pos);
@@ -317,12 +336,13 @@ rtError_t StreamLaunchKernelV1(const void * const stubFunc, const uint32_t coreD
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&kernelTask, stm, pos, dstStm, 1U, true);
     ScopeGuard tskErrRecycle(errRecycle);
-    ERROR_RETURN_MSG_INNER(error, "Failed to allocate task, stream_id=%d, retCode=%#x.", stm->Id_(),
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to allocate task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
 
     if (kernelTask->isUpdateSinkSqe == 1U) { // 此处失败，仅本次任务不更新，但继续保留老任务
         error = CheckUpdateDavidTaskInfo(kernelTask, registeredKernel, stm);
-        ERROR_RETURN_MSG_INNER(error, "stream_id=%d, kernelAttrType=%d, retCode=%#x.", stm->Id_(), kernelAttrType,
+        ERROR_RETURN_MSG_INNER(
+            error, "stream_id=%d, kernelAttrType=%d, retCode=%#x.", stm->Id_(), kernelAttrType,
             static_cast<uint32_t>(error));
     } else {
         SaveTaskCommonInfo(kernelTask, dstStm, pos);
@@ -331,25 +351,28 @@ rtError_t StreamLaunchKernelV1(const void * const stubFunc, const uint32_t coreD
     AicTaskInit(kernelTask, registeredKernel, kernelAttrType, static_cast<uint16_t>(coreDim), taskCfg, false);
     // for simt
     error = CheckDynSizeValid(kernelTask, registeredKernel);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, retCode=%#x.",
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, retCode=%#x.",
         stm->Id_(), static_cast<uint32_t>(error));
-    error = static_cast<DavidStream *>(dstStm)->LoadArgsInfo(argsInfo, useArgPool, &result);
-    ERROR_RETURN_MSG_INNER(error, "Failed to load args, stream_id=%d, useArgPool=%u, retCode=%#x.",
-        stm->Id_(), useArgPool, static_cast<uint32_t>(error));
+    error = static_cast<DavidStream*>(dstStm)->LoadArgsInfo(argsInfo, useArgPool, &result);
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to load args, stream_id=%d, useArgPool=%u, retCode=%#x.", stm->Id_(), useArgPool,
+        static_cast<uint32_t>(error));
     SetArgsAix(stm, argsInfo, kernelTask, &result);
-    AicTaskInfo *aicTask = &(kernelTask->u.aicTaskInfo);
-    aicTask->kernel = const_cast<Kernel *>(registeredKernel);
+    AicTaskInfo* aicTask = &(kernelTask->u.aicTaskInfo);
+    aicTask->kernel = const_cast<Kernel*>(registeredKernel);
     aicTask->funcAddr = addr1;
     aicTask->funcAddr1 = addr2;
     aicTask->progHandle = prog;
-    RT_LOG(RT_LOG_INFO, "stream_id=%d, kernel_name=%s, kernelAttrType=%d, funcType=%u, arg_size=%u, taskRation=%u, "
+    RT_LOG(
+        RT_LOG_INFO,
+        "stream_id=%d, kernel_name=%s, kernelAttrType=%d, funcType=%u, arg_size=%u, taskRation=%u, "
         "mixType=%hhu, kernelVfType=%u, dynamicSmSize=%u, addr1=0x%llx, addr2=0x%llx, "
         "kernelFlag=0x%x, qos=%u, partId=%u, schemMode=%u, infoAddr=%p, atomicIndex=%u.",
         stm->Id_(), registeredKernel->Name_().c_str(), kernelAttrType, registeredKernel->GetFuncType(),
-        argsInfo->argsSize, registeredKernel->GetTaskRation(), mixType,
-        registeredKernel->KernelVfType_(), aicTask->dynamicShareMemSize, addr1, addr2,
-        aicTask->comm.kernelFlag, aicTask->qos, aicTask->partId, aicTask->schemMode,
-        aicTask->inputArgsSize.infoAddr, aicTask->inputArgsSize.atomicIndex);
+        argsInfo->argsSize, registeredKernel->GetTaskRation(), mixType, registeredKernel->KernelVfType_(),
+        aicTask->dynamicShareMemSize, addr1, addr2, aicTask->comm.kernelFlag, aicTask->qos, aicTask->partId,
+        aicTask->schemMode, aicTask->inputArgsSize.infoAddr, aicTask->inputArgsSize.atomicIndex);
 
     if (kernelTask->isUpdateSinkSqe == 1U) {
         error = UpdateDavidKernelTaskSubmit(kernelTask, stm);
@@ -363,43 +386,49 @@ rtError_t StreamLaunchKernelV1(const void * const stubFunc, const uint32_t coreD
     } else {
         error = DavidSendTask(kernelTask, dstStm);
     }
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), kernelTask->taskSn);
     rt->PutProgram(prog);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit kernel launch task, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit kernel launch task, stream_id=%d, retCode=%#x.", stm->Id_(),
+        static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamLaunchKernelWithHandle(void * const progHandle, const uint64_t tilingKey, const uint32_t coreDim,
-        const rtArgsEx_t *argsInfo, Stream *stm, const TaskCfg * const taskCfg, const bool isLaunchVec)
+rtError_t StreamLaunchKernelWithHandle(
+    void* const progHandle, const uint64_t tilingKey, const uint32_t coreDim, const rtArgsEx_t* argsInfo, Stream* stm,
+    const TaskCfg* const taskCfg, const bool isLaunchVec)
 {
     UNUSED(isLaunchVec);
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(progHandle, RT_ERROR_PROGRAM_NULL, "Delivering a kernel task based on BinHandle");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        progHandle, RT_ERROR_PROGRAM_NULL, "Delivering a kernel task based on BinHandle");
 
     rtKernelAttrType kernelAttrType = RT_KERNEL_ATTR_TYPE_AICORE;
     StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
     uint8_t mixType = static_cast<uint8_t>(NO_MIX);
     uint64_t addr1 = 0ULL;
     uint64_t addr2 = 0ULL;
-    Program *prog = nullptr;
-    Module *launchMdl = nullptr;
+    Program* prog = nullptr;
+    Module* launchMdl = nullptr;
     uint32_t taskRation = 0U;
     uint32_t funcType = 0U;
     std::string name = "";
     uint32_t kernelVfType = 0U;
-    Kernel *registeredKernel = nullptr;
-    Runtime * const rt = Runtime::Instance();
-    TaskInfo *kernelTask = nullptr;
+    Kernel* registeredKernel = nullptr;
+    Runtime* const rt = Runtime::Instance();
+    TaskInfo* kernelTask = nullptr;
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check task send status, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
-    error = StreamLaunchKernelPrepare(stm, registeredKernel, prog, kernelAttrType, launchMdl, nullptr,
-                                    addr1, addr2, progHandle, tilingKey);
-    COND_RETURN_ERROR_MSG_INNER((error == RT_ERROR_KERNEL_NULL) || (error == RT_ERROR_PROGRAM_NULL), error,
-        "Failed to prepare kernel launch.");
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check task send status, stream_id=%d, retCode=%#x.", stm->Id_(),
+        static_cast<uint32_t>(error));
+    error = StreamLaunchKernelPrepare(
+        stm, registeredKernel, prog, kernelAttrType, launchMdl, nullptr, addr1, addr2, progHandle, tilingKey);
+    COND_RETURN_ERROR_MSG_INNER(
+        (error == RT_ERROR_KERNEL_NULL) || (error == RT_ERROR_PROGRAM_NULL), error, "Failed to prepare kernel launch.");
     ERROR_PROC_RETURN_MSG_INNER(error, rt->PutProgram(prog);, "Failed to prepare kernel launch.");
     if (tilingKey != DEFAULT_TILING_KEY) {
         mixType = registeredKernel->GetMixType();
@@ -409,13 +438,13 @@ rtError_t StreamLaunchKernelWithHandle(void * const progHandle, const uint64_t t
         kernelVfType = registeredKernel->KernelVfType_();
     }
     error = CheckMixKernelValid(mixType, addr2);
-    ERROR_PROC_RETURN_MSG_INNER(error, rt->PutProgram(prog);,
-        "Failed to check mix kernel, stream_id=%d, kernelAttrType=%d, retCode=%#x.", stm->Id_(),
-        kernelAttrType, static_cast<uint32_t>(error));
-    DavidStream *davidStm = static_cast<DavidStream *>(stm);
+    ERROR_PROC_RETURN_MSG_INNER(error, rt->PutProgram(prog);
+                                , "Failed to check mix kernel, stream_id=%d, kernelAttrType=%d, retCode=%#x.",
+                                stm->Id_(), kernelAttrType, static_cast<uint32_t>(error));
+    DavidStream* davidStm = static_cast<DavidStream*>(stm);
     const bool useArgPool = UseArgsPool(davidStm, argsInfo, stm->IsTaskGroupUpdate());
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
     std::function<void()> const errRecycle = [&result, &kernelTask, &prog, &stm, &pos, &dstStm]() {
         StreamLaunchKernelRecycle(result, kernelTask, prog, stm);
         TaskRollBack(dstStm, pos);
@@ -424,37 +453,42 @@ rtError_t StreamLaunchKernelWithHandle(void * const progHandle, const uint64_t t
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&kernelTask, stm, pos, dstStm, 1U, true);
     ScopeGuard tskErrRecycle(errRecycle);
-    ERROR_RETURN_MSG_INNER(error, "Failed to allocate task, stream_id=%d, retCode=%#x.", stm->Id_(),
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to allocate task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
 
     if (kernelTask->isUpdateSinkSqe == 1U) {
         error = CheckUpdateDavidTaskInfo(kernelTask, registeredKernel, stm);
-        ERROR_RETURN_MSG_INNER(error, "Failed to check update task info, stream_id=%d, retCode=%#x.", stm->Id_(),
-                               static_cast<uint32_t>(error));
+        ERROR_RETURN_MSG_INNER(
+            error, "Failed to check update task info, stream_id=%d, retCode=%#x.", stm->Id_(),
+            static_cast<uint32_t>(error));
     } else {
         SaveTaskCommonInfo(kernelTask, dstStm, pos);
     }
 
     AicTaskInit(kernelTask, registeredKernel, kernelAttrType, static_cast<uint16_t>(coreDim), taskCfg, false);
     error = CheckDynSizeValid(kernelTask, registeredKernel);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, retCode=%#x.",
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, retCode=%#x.",
         stm->Id_(), static_cast<uint32_t>(error));
-    error = static_cast<DavidStream *>(dstStm)->LoadArgsInfo(argsInfo, useArgPool, &result);
-    ERROR_RETURN_MSG_INNER(error, "Failed to load args, stream_id=%d, useArgPool=%u, retCode=%#x.",
-        stm->Id_(), useArgPool, static_cast<uint32_t>(error));
-    AicTaskInfo *aicTask = &(kernelTask->u.aicTaskInfo);
-    aicTask->kernel = const_cast<Kernel *>(registeredKernel);
-    aicTask->progHandle = (prog != nullptr) ? prog : RtPtrToPtr<Program *>(progHandle);
+    error = static_cast<DavidStream*>(dstStm)->LoadArgsInfo(argsInfo, useArgPool, &result);
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to load args, stream_id=%d, useArgPool=%u, retCode=%#x.", stm->Id_(), useArgPool,
+        static_cast<uint32_t>(error));
+    AicTaskInfo* aicTask = &(kernelTask->u.aicTaskInfo);
+    aicTask->kernel = const_cast<Kernel*>(registeredKernel);
+    aicTask->progHandle = (prog != nullptr) ? prog : RtPtrToPtr<Program*>(progHandle);
     aicTask->tilingKey = tilingKey;
     SetArgsAix(stm, argsInfo, kernelTask, &result);
     aicTask->funcAddr = addr1;
     aicTask->funcAddr1 = addr2;
-    RT_LOG(RT_LOG_INFO, "stream_id=%d, kernel_name=%s, kernelAttrType=%d, funcType=%u, "
-           "arg_size=%u, mixType=%hhu, taskRation=%u, kernelVfType=%u, dynamicSmSize=%u, addr1=0x%llx, addr2=0x%llx, "
-           "kernelFlag=0x%x, qos=%u, partId=%u, schemMode=%u, infoAddr=%p, atomicIndex=%u.",
-           stm->Id_(), name.c_str(), kernelAttrType, funcType, argsInfo->argsSize, mixType, taskRation,
-           kernelVfType, aicTask->dynamicShareMemSize, addr1, addr2, aicTask->comm.kernelFlag, aicTask->qos,
-           aicTask->partId, aicTask->schemMode, aicTask->inputArgsSize.infoAddr, aicTask->inputArgsSize.atomicIndex);
+    RT_LOG(
+        RT_LOG_INFO,
+        "stream_id=%d, kernel_name=%s, kernelAttrType=%d, funcType=%u, "
+        "arg_size=%u, mixType=%hhu, taskRation=%u, kernelVfType=%u, dynamicSmSize=%u, addr1=0x%llx, addr2=0x%llx, "
+        "kernelFlag=0x%x, qos=%u, partId=%u, schemMode=%u, infoAddr=%p, atomicIndex=%u.",
+        stm->Id_(), name.c_str(), kernelAttrType, funcType, argsInfo->argsSize, mixType, taskRation, kernelVfType,
+        aicTask->dynamicShareMemSize, addr1, addr2, aicTask->comm.kernelFlag, aicTask->qos, aicTask->partId,
+        aicTask->schemMode, aicTask->inputArgsSize.infoAddr, aicTask->inputArgsSize.atomicIndex);
     if (kernelTask->isUpdateSinkSqe == 1U) {
         error = UpdateDavidKernelTaskSubmit(kernelTask, stm);
         if ((error != RT_ERROR_NONE) && (kernelTask->u.aicTaskInfo.oldArgHandle != nullptr)) {
@@ -466,46 +500,45 @@ rtError_t StreamLaunchKernelWithHandle(void * const progHandle, const uint64_t t
     } else {
         error = DavidSendTask(kernelTask, dstStm);
     }
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit task, stream_id=%d, retCode=%#x.", stm->Id_(),
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), kernelTask->taskSn);
     rt->PutProgram(prog);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit kernel launch task, stream_id=%d, retCode=%#x.", stm->Id_(),
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit kernel launch task, stream_id=%d, retCode=%#x.", stm->Id_(),
         static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-
-
 static rtError_t LoadArgsForStreamLaunchV2(
-    const rtStreamLaunchKernelV2ExtendArgs_t *extendAgrs, const Kernel *kernel,
-    Stream *dstStm, const rtArgsEx_t *argsInfo, bool useArgPool, StarsArgLoaderResult &result)
+    const rtStreamLaunchKernelV2ExtendArgs_t* extendAgrs, const Kernel* kernel, Stream* dstStm,
+    const rtArgsEx_t* argsInfo, bool useArgPool, StarsArgLoaderResult& result)
 {
     rtError_t error = RT_ERROR_NONE;
     if (extendAgrs->simtArgsArray != nullptr) {
-        error = static_cast<DavidStream *>(dstStm)->LoadSimtArgsFromArray(
+        error = static_cast<DavidStream*>(dstStm)->LoadSimtArgsFromArray(
             useArgPool, kernel, extendAgrs->simtArgsArray, &result);
     } else if (extendAgrs->simtArgsHost != nullptr) {
-        error = static_cast<DavidStream *>(dstStm)->LoadSimtHostArgs(
-            useArgPool, extendAgrs->simtArgsHost, &result);
+        error = static_cast<DavidStream*>(dstStm)->LoadSimtHostArgs(useArgPool, extendAgrs->simtArgsHost, &result);
     } else if (extendAgrs->argsType == RT_ARGS_ARRAY) {
-        error = static_cast<DavidStream *>(dstStm)->LoadArgsFromArray(
-            useArgPool, kernel, extendAgrs->argsArray, &result);
+        error =
+            static_cast<DavidStream*>(dstStm)->LoadArgsFromArray(useArgPool, kernel, extendAgrs->argsArray, &result);
     } else {
-        error = static_cast<DavidStream *>(dstStm)->LoadArgsInfo(argsInfo, useArgPool, &result);
+        error = static_cast<DavidStream*>(dstStm)->LoadArgsInfo(argsInfo, useArgPool, &result);
     }
     return error;
 }
 
-rtError_t StreamLaunchKernelV2(Kernel *kernel, const uint32_t coreDim, Stream *stm,
-    const rtStreamLaunchKernelV2ExtendArgs_t *extendAgrs, const bool isLaunchVec)
+rtError_t StreamLaunchKernelV2(
+    Kernel* kernel, const uint32_t coreDim, Stream* stm, const rtStreamLaunchKernelV2ExtendArgs_t* extendAgrs,
+    const bool isLaunchVec)
 {
     UNUSED(isLaunchVec);
 
-    Program * const prog = kernel->Program_();
+    Program* const prog = kernel->Program_();
     NULL_PTR_RETURN_MSG(prog, RT_ERROR_PROGRAM_NULL);
 
     uint64_t kernelPc1 = 0ULL;
@@ -513,26 +546,31 @@ rtError_t StreamLaunchKernelV2(Kernel *kernel, const uint32_t coreDim, Stream *s
     const uint8_t mixType = kernel->GetMixType();
     const rtKernelAttrType kernelAttrType = kernel->GetKernelAttrType();
     StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
-    TaskInfo *kernelTask = nullptr;
+    TaskInfo* kernelTask = nullptr;
 
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(extendAgrs, RT_ERROR_INVALID_VALUE, "Starting the compute task of the corresponding operator");
-    const rtArgsEx_t *argsInfo = extendAgrs->argsInfo;
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(argsInfo, RT_ERROR_INVALID_VALUE, "Starting the compute task of the corresponding operator");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        extendAgrs, RT_ERROR_INVALID_VALUE, "Starting the compute task of the corresponding operator");
+    const rtArgsEx_t* argsInfo = extendAgrs->argsInfo;
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        argsInfo, RT_ERROR_INVALID_VALUE, "Starting the compute task of the corresponding operator");
 
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check task send status, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check task send status, stream_id=%d, retCode=%#x.", stm->Id_(),
+        static_cast<uint32_t>(error));
 
     error = kernel->GetFunctionDevAddr(kernelPc1, kernelPc2);
     ERROR_RETURN_MSG_INNER(error, "Failed to get kernel function address.");
 
     error = CheckMixKernelValid(mixType, kernelPc2);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check mix kernel, stream_id=%d, kernelAttrType=%d, retCode=%#x.",
-        stm->Id_(), kernelAttrType, static_cast<uint32_t>(error));
-    DavidStream *davidStm = static_cast<DavidStream *>(stm);
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check mix kernel, stream_id=%d, kernelAttrType=%d, retCode=%#x.", stm->Id_(), kernelAttrType,
+        static_cast<uint32_t>(error));
+    DavidStream* davidStm = static_cast<DavidStream*>(stm);
     bool useArgPool = UseArgsPool(davidStm, argsInfo, stm->IsTaskGroupUpdate());
 
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
     std::function<void()> const errRecycle = [&result, &kernelTask, &stm, &pos, &dstStm]() {
         StreamLaunchKernelRecycle(result, kernelTask, nullptr, stm);
         TaskRollBack(dstStm, pos);
@@ -541,41 +579,45 @@ rtError_t StreamLaunchKernelV2(Kernel *kernel, const uint32_t coreDim, Stream *s
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&kernelTask, stm, pos, dstStm, 1U, true);
     ScopeGuard tskErrRecycle(errRecycle);
-    ERROR_RETURN_MSG_INNER(error, "Failed to allocate task, stream_id=%d, retCode=%#x.", stm->Id_(),
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to allocate task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     if (kernelTask->isUpdateSinkSqe == 1U) {
         error = CheckUpdateDavidTaskInfo(kernelTask, kernel, stm);
-        ERROR_RETURN_MSG_INNER(error, "Failed to check update task info, stream_id=%d, kernelAttrType=%d, retCode=%#x.", stm->Id_(), kernelAttrType,
-                               static_cast<uint32_t>(error));
+        ERROR_RETURN_MSG_INNER(
+            error, "Failed to check update task info, stream_id=%d, kernelAttrType=%d, retCode=%#x.", stm->Id_(),
+            kernelAttrType, static_cast<uint32_t>(error));
     } else {
         SaveTaskCommonInfo(kernelTask, dstStm, pos);
     }
     AicTaskInit(kernelTask, kernel, kernelAttrType, static_cast<uint16_t>(coreDim), extendAgrs->taskCfg, false);
 
     error = CheckDynSizeValid(kernelTask, kernel);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check SIMT shared memory size, stream_id=%d, kernel_name=%s, retCode=%#x.",
-        stm->Id_(), kernel->Name_().c_str(), static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error,
+        "Failed to check SIMT shared memory size, stream_id=%d, kernel_name=%s, retCode=%#x.", stm->Id_(),
+        kernel->Name_().c_str(), static_cast<uint32_t>(error));
     error = LoadArgsForStreamLaunchV2(extendAgrs, kernel, dstStm, argsInfo, useArgPool, result);
-    ERROR_RETURN_MSG_INNER(error, "Failed to load args, stream_id=%d, useArgPool=%u, retCode=%#x.",
-        stm->Id_(), useArgPool, static_cast<uint32_t>(error));
-    AicTaskInfo *aicTask = &(kernelTask->u.aicTaskInfo);
-    aicTask->kernel = const_cast<Kernel *>(kernel);
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to load args, stream_id=%d, useArgPool=%u, retCode=%#x.", stm->Id_(), useArgPool,
+        static_cast<uint32_t>(error));
+    AicTaskInfo* aicTask = &(kernelTask->u.aicTaskInfo);
+    aicTask->kernel = const_cast<Kernel*>(kernel);
     aicTask->progHandle = prog;
     aicTask->funcAddr = kernelPc1;
     aicTask->funcAddr1 = kernelPc2;
     SetArgsAix(stm, argsInfo, kernelTask, &result);
     aicTask->comm.argsSize = argsInfo->argsSize;
     SetSimtTaskParams(aicTask, extendAgrs);
-    RT_LOG(RT_LOG_INFO, "stream_id=%d, kernel_name=%s, kernelAttrType=%d, funcType=%u, arg_size=%u, mixType=%hhu, "
+    RT_LOG(
+        RT_LOG_INFO,
+        "stream_id=%d, kernel_name=%s, kernelAttrType=%d, funcType=%u, arg_size=%u, mixType=%hhu, "
         "coreDim=%u, taskRation=%u, kernelVfType=%u, dynamicSmSize=%u, addr1=0x%llx, addr2=0x%llx, "
         "kernelFlag=0x%x, qos=%u, partId=%u, schemMode=%u, infoAddr=%p, atomicIndex=%u, "
         "groupDim=%u, groupBlockDim=%u.",
-        stm->Id_(), kernel->Name_().c_str(), kernelAttrType, kernel->GetFuncType(),
-        argsInfo->argsSize, mixType,
-        coreDim, kernel->GetTaskRation(), kernel->KernelVfType_(),
-        aicTask->dynamicShareMemSize, kernelPc1, kernelPc2, aicTask->comm.kernelFlag, aicTask->qos,
-        aicTask->partId, aicTask->schemMode, aicTask->inputArgsSize.infoAddr, aicTask->inputArgsSize.atomicIndex,
-        aicTask->groupDim, aicTask->groupBlockDim);
+        stm->Id_(), kernel->Name_().c_str(), kernelAttrType, kernel->GetFuncType(), argsInfo->argsSize, mixType,
+        coreDim, kernel->GetTaskRation(), kernel->KernelVfType_(), aicTask->dynamicShareMemSize, kernelPc1, kernelPc2,
+        aicTask->comm.kernelFlag, aicTask->qos, aicTask->partId, aicTask->schemMode, aicTask->inputArgsSize.infoAddr,
+        aicTask->inputArgsSize.atomicIndex, aicTask->groupDim, aicTask->groupBlockDim);
 
     if (kernelTask->isUpdateSinkSqe == 1U) {
         error = UpdateDavidKernelTaskSubmit(kernelTask, stm);
@@ -588,16 +630,17 @@ rtError_t StreamLaunchKernelV2(Kernel *kernel, const uint32_t coreDim, Stream *s
     } else {
         error = DavidSendTask(kernelTask, dstStm);
     }
-    ERROR_RETURN_MSG_INNER(error, "Submit task failed, stream_id=%d, retCode=%#x.", stm->Id_(),
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Submit task failed, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), kernelTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit kernel launch task, stream_id=%d, retCode=%#x.", stm->Id_(),
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit kernel launch task, stream_id=%d, retCode=%#x.", stm->Id_(),
         static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -69,15 +69,16 @@ static const std::unordered_set<RtOptionalFeatureType> CHIP_CLOUD_FEATURE{
     RtOptionalFeatureType::RT_FEATURE_NOTIFY_WAIT,
     RtOptionalFeatureType::RT_FEATURE_KERNEL_UMA_SUPER_ARGS_ALLOC,
     RtOptionalFeatureType::RT_FEATURE_TASK_DAVINCI_WITH_ARGS_SIZE,
-    RtOptionalFeatureType::RT_FEATURE_MEM_DESTROY_ADDR_BATCH
-};
+    RtOptionalFeatureType::RT_FEATURE_MEM_DESTROY_ADDR_BATCH};
 
 REGISTER_CHIP_FEATURE_SET(CHIP_CLOUD, CHIP_CLOUD_FEATURE);
 
 static constexpr uint32_t CQE_DEPTH = 1024U;
 static constexpr uint32_t DEFAULT_CQE_SIZE = 12U;
 static constexpr uint32_t RT_HWTS_910A_MAX_BLOCK_DIM_UINT32 = 32U; // 910A BLOCK_DIM = 32.
-static constexpr uint32_t RT_HWTS_910A_DEFAULT_BLOCK_DIM_UINT32 = 1U; // The default timeout duration for the 1980's AIC operator is related to the blocdim. This returns the ​​tick​​ of the timeout.
+static constexpr uint32_t RT_HWTS_910A_DEFAULT_BLOCK_DIM_UINT32 =
+    1U; // The default timeout duration for the 1980's AIC operator is related to the blocdim. This returns the
+        // ​​tick​​ of the timeout.
 static constexpr double RT_HWTS_910A_TASK_KERNEL_CREDIT_SCALE_US = 68719476.736; // 2^36 / 1000M *1000*1000(us)
 
 static const DevProperties CHIP_CLOUD_PROPERTIES = {
@@ -106,7 +107,7 @@ static const DevProperties CHIP_CLOUD_PROPERTIES = {
     .aicNum = RT_AICORE_NUM_25,
     .aivNum = RT_AIVECTOR_NUM_50,
     .ringbufSize = DEVICE_RINGBUFFER_SIZE,
-    .hugeManagedFlag = TS_PAGE_HUGE_ALIGNED | TS_WITH_HBM ,
+    .hugeManagedFlag = TS_PAGE_HUGE_ALIGNED | TS_WITH_HBM,
     .memAllocPctraceFlag = MEM_SVM_HUGE,
     .memInfoType = RT_MEM_INFO_TYPE_HBM_SIZE,
     .taskPrefetchCount = static_cast<uint8_t>(PREFETCH_CNT_8),
@@ -217,5 +218,5 @@ static const DevProperties CHIP_CLOUD_PROPERTIES = {
     .swapBufferProfCfgOffset = 0U,
 };
 REGISTER_DEV_PROPERTIES(CHIP_CLOUD, CHIP_CLOUD_PROPERTIES);
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -209,7 +209,7 @@ enum class RtOptionalFeatureType : std::uint32_t {
 };
 
 constexpr uint32_t FEATURE_MAX_VALUE = static_cast<uint32_t>(RtOptionalFeatureType::RT_FEATURE_TYPE_MAX);
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif

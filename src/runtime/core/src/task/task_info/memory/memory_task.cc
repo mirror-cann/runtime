@@ -32,32 +32,32 @@ TIMESTAMP_EXTERN(rtMemcpyAsync_drvMemConvertAddr);
 
 #if F_DESC("MemcpyAsyncTask")
 
-static rtError_t ConvertAsyncDma2DForSoftWareSq(TaskInfo * const taskInfo2D, void *const dst,
-    const void *const src, const uint64_t dstPitch, const uint64_t srcPitch,
-    const uint64_t width, const uint64_t height, const uint64_t fixedSize)
+static rtError_t ConvertAsyncDma2DForSoftWareSq(
+    TaskInfo* const taskInfo2D, void* const dst, const void* const src, const uint64_t dstPitch,
+    const uint64_t srcPitch, const uint64_t width, const uint64_t height, const uint64_t fixedSize)
 {
-    Stream * const stream = taskInfo2D->stream;
+    Stream* const stream = taskInfo2D->stream;
     const uint32_t devId = stream->Device_()->Id_();
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo2D->u.memcpyAsyncTaskInfo);
-    
+    MemcpyAsyncTaskInfo* memcpyAsyncTaskInfo = &(taskInfo2D->u.memcpyAsyncTaskInfo);
+
     rtError_t error = RT_ERROR_NONE;
     const JettyType jettyType = StreamJettyHandler::GetJettyTypeFromTask(taskInfo2D);
     AsyncWqeInputPara input = {};
     AsyncWqeOutputPara output = {};
     input.wqeType = static_cast<uint32_t>(DRV_ASYNC_DMA_TYPE_2D);
-    input.matrix2d.src = RtPtrToPtr<uint64_t *>(RtPtrToPtr<uintptr_t>(src));
-    input.matrix2d.dst = RtPtrToPtr<uint64_t *>(RtPtrToPtr<uintptr_t>(dst));
+    input.matrix2d.src = RtPtrToPtr<uint64_t*>(RtPtrToPtr<uintptr_t>(src));
+    input.matrix2d.dst = RtPtrToPtr<uint64_t*>(RtPtrToPtr<uintptr_t>(dst));
 
     input.matrix2d.dpitch = dstPitch;
     input.matrix2d.spitch = srcPitch;
     input.matrix2d.width = width;
     input.matrix2d.height = height;
     input.matrix2d.fixedSize = fixedSize;
-    error = StreamJettyHandler::HandleUbDmaTask(
-        taskInfo2D, jettyType, &input, &output);
+    error = StreamJettyHandler::HandleUbDmaTask(taskInfo2D, jettyType, &input, &output);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "HandleUbDmaTask failed, device_id=%u, stream_id=%d, retCode=%#x.",
-            devId, stream->Id_(), error);
+        RT_LOG(
+            RT_LOG_ERROR, "HandleUbDmaTask failed, device_id=%u, stream_id=%d, retCode=%#x.", devId, stream->Id_(),
+            error);
         return error;
     }
     uint64_t size = (output.fixedCnt == 1U) ? width * height : output.fixedSize;
@@ -66,24 +66,24 @@ static rtError_t ConvertAsyncDma2DForSoftWareSq(TaskInfo * const taskInfo2D, voi
     return RT_ERROR_NONE;
 }
 
-rtError_t ConvertAsyncDma2D(TaskInfo * const taskInfo2D, void *const dst, const uint64_t dstPitch,
-                                const void *const src, const uint64_t srcPitch, const uint64_t width,
-                                const uint64_t height, const uint64_t fixedSize)
+rtError_t ConvertAsyncDma2D(
+    TaskInfo* const taskInfo2D, void* const dst, const uint64_t dstPitch, const void* const src,
+    const uint64_t srcPitch, const uint64_t width, const uint64_t height, const uint64_t fixedSize)
 {
     const bool isUbMode = Runtime::Instance()->GetConnectUbFlag() ? true : false;
     if (!isUbMode) {
         RT_LOG(RT_LOG_ERROR, "pcie does not support");
         return RT_ERROR_INVALID_VALUE;
     }
-    Stream * const stream = taskInfo2D->stream;
+    Stream* const stream = taskInfo2D->stream;
     const uint32_t devId = stream->Device_()->Id_();
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo2D->u.memcpyAsyncTaskInfo);
-    
+    MemcpyAsyncTaskInfo* memcpyAsyncTaskInfo = &(taskInfo2D->u.memcpyAsyncTaskInfo);
+
     if (stream->IsSoftwareSqEnable()) {
         return ConvertAsyncDma2DForSoftWareSq(taskInfo2D, dst, src, dstPitch, srcPitch, width, height, fixedSize);
     }
 
-    Driver * const driver = stream->Device_()->Driver_();
+    Driver* const driver = stream->Device_()->Driver_();
     AsyncDmaWqeInputInfo2D input;
     (void)memset_s(&input, sizeof(AsyncDmaWqeInputInfo2D), 0, sizeof(AsyncDmaWqeInputInfo2D));
 
@@ -91,7 +91,7 @@ rtError_t ConvertAsyncDma2D(TaskInfo * const taskInfo2D, void *const dst, const 
     input.sqId = stream->GetSqId();
     input.dst = dst;
     input.dpitch = dstPitch;
-    input.src = const_cast<void *>(src);
+    input.src = const_cast<void*>(src);
     input.spitch = srcPitch;
     input.width = width;
     input.height = height;
@@ -111,10 +111,9 @@ rtError_t ConvertAsyncDma2D(TaskInfo * const taskInfo2D, void *const dst, const 
     return RT_ERROR_NONE;
 }
 
-
-uint8_t ReduceOpcodeHigh(TaskInfo * const taskInfo)
+uint8_t ReduceOpcodeHigh(TaskInfo* const taskInfo)
 {
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    MemcpyAsyncTaskInfo* memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
     uint8_t opcode;
     const int32_t switchFlag = static_cast<int32_t>(memcpyAsyncTaskInfo->copyDataType);
     switch (switchFlag) {
@@ -142,7 +141,8 @@ uint8_t ReduceOpcodeHigh(TaskInfo * const taskInfo)
             if (Runtime::Instance()->ChipIsHaveStars()) {
                 opcode = static_cast<uint8_t>(RT_STARS_MEMCPY_ASYNC_DATA_TYPE_BFP16);
             } else {
-                RT_LOG(RT_LOG_WARNING, "DataType=%u is out of range or is not supported.",
+                RT_LOG(
+                    RT_LOG_WARNING, "DataType=%u is out of range or is not supported.",
                     static_cast<uint32_t>(memcpyAsyncTaskInfo->copyDataType));
                 opcode = static_cast<uint8_t>(RT_STARS_MEMCPY_ASYNC_OP_RESERVED);
             }
@@ -156,8 +156,9 @@ uint8_t ReduceOpcodeHigh(TaskInfo * const taskInfo)
             // Should not run here.
             // if not support, it will return RT_ERROR_FEATURE_NOT_SUPPORT at context.cc's reduce ability check.
             // Only for code style, 0x80 is reserved value of STRAS opcode.
-            RT_LOG(RT_LOG_WARNING, "DataType=%u is out of range or is not supported.",
-                   static_cast<uint32_t>(memcpyAsyncTaskInfo->copyDataType));
+            RT_LOG(
+                RT_LOG_WARNING, "DataType=%u is out of range or is not supported.",
+                static_cast<uint32_t>(memcpyAsyncTaskInfo->copyDataType));
             opcode = static_cast<uint8_t>(RT_STARS_MEMCPY_ASYNC_OP_RESERVED);
             break;
         }
@@ -165,9 +166,9 @@ uint8_t ReduceOpcodeHigh(TaskInfo * const taskInfo)
     return opcode;
 }
 
-uint8_t ReduceOpcodeLow(TaskInfo * const taskInfo)
+uint8_t ReduceOpcodeLow(TaskInfo* const taskInfo)
 {
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    MemcpyAsyncTaskInfo* memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
     uint8_t opcode;
     switch (memcpyAsyncTaskInfo->copyKind) {
         case RT_MEMCPY_SDMA_AUTOMATIC_ADD: {
@@ -195,7 +196,7 @@ uint8_t ReduceOpcodeLow(TaskInfo * const taskInfo)
     return opcode;
 }
 
-uint8_t GetOpcodeForReduce(TaskInfo * const taskInfo)
+uint8_t GetOpcodeForReduce(TaskInfo* const taskInfo)
 {
     const uint8_t opcodeHigh = ReduceOpcodeHigh(taskInfo);
     const uint8_t opcodeLow = ReduceOpcodeLow(taskInfo);
@@ -211,16 +212,17 @@ uint8_t GetOpcodeForReduce(TaskInfo * const taskInfo)
 #endif
 
 #if F_DESC("SqeUpdateH2DTask")
-rtError_t SqeUpdateH2DTaskInit(TaskInfo * const taskInfo, void *srcAddr,
-                               void *dstAddr, const uint64_t cpySize, void *releaseArgHandle, void * const updateArgHandle)
+rtError_t SqeUpdateH2DTaskInit(
+    TaskInfo* const taskInfo, void* srcAddr, void* dstAddr, const uint64_t cpySize, void* releaseArgHandle,
+    void* const updateArgHandle)
 {
     NULL_PTR_RETURN(srcAddr, RT_ERROR_MEMORY_ALLOCATION);
     NULL_PTR_RETURN(dstAddr, RT_ERROR_MEMORY_ALLOCATION);
     const rtError_t error = MemcpyAsyncTaskCommonInit(taskInfo);
     ERROR_RETURN_MSG_INNER(error, "SqeUpdateH2DTaskInit failed, retCode=%#x.", static_cast<uint32_t>(error));
 
-    MemcpyAsyncTaskInfo *memcpyAsyncTask  = &(taskInfo->u.memcpyAsyncTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    MemcpyAsyncTaskInfo* memcpyAsyncTask = &(taskInfo->u.memcpyAsyncTaskInfo);
+    Stream* const stream = taskInfo->stream;
     taskInfo->typeName = "MEMCPY_ASYNC_SQE_UPDATE_H2D";
 
     const int32_t devId = static_cast<int32_t>(stream->Device_()->Id_());
@@ -242,15 +244,16 @@ rtError_t SqeUpdateH2DTaskInit(TaskInfo * const taskInfo, void *srcAddr,
 #endif
 
 /* D2H copy, src = sqeBaseAddr + sqeOffset, dst info = sqId + pos + sqeOffset, convert dst addr by ts-agent */
-rtError_t UpdateD2HTaskInit(TaskInfo * const taskInfo, const void *sqeBaseAddr, const uint64_t cpySize,
-                                        const uint32_t sqId, const uint32_t pos, const uint8_t sqeOffset)
+rtError_t UpdateD2HTaskInit(
+    TaskInfo* const taskInfo, const void* sqeBaseAddr, const uint64_t cpySize, const uint32_t sqId, const uint32_t pos,
+    const uint8_t sqeOffset)
 {
     NULL_PTR_RETURN(sqeBaseAddr, RT_ERROR_MEMORY_ALLOCATION);
     const rtError_t error = MemcpyAsyncTaskCommonInit(taskInfo);
     ERROR_RETURN_MSG_INNER(error, "UpdateD2HTaskInit failed, retCode=%#x.", static_cast<uint32_t>(error));
 
-    MemcpyAsyncTaskInfo *memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    MemcpyAsyncTaskInfo* memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    Stream* const stream = taskInfo->stream;
     taskInfo->typeName = "MEMCPY_ASYNC_SQE_UPDATE";
 
     const int32_t devId = static_cast<int32_t>(stream->Device_()->Id_());
@@ -260,24 +263,24 @@ rtError_t UpdateD2HTaskInit(TaskInfo * const taskInfo, const void *sqeBaseAddr, 
     memcpyAsyncTaskInfo->size = cpySize;
     memcpyAsyncTaskInfo->qos = 0U;
     memcpyAsyncTaskInfo->partId = 0U;
-    memcpyAsyncTaskInfo->src = RtValueToPtr<void *>(RtPtrToValue(sqeBaseAddr) + sqeOffset);
+    memcpyAsyncTaskInfo->src = RtValueToPtr<void*>(RtPtrToValue(sqeBaseAddr) + sqeOffset);
     memcpyAsyncTaskInfo->sqId = sqId;
     memcpyAsyncTaskInfo->taskPos = pos;
     memcpyAsyncTaskInfo->sqeOffset = sqeOffset;
     memcpyAsyncTaskInfo->isSqeUpdateD2H = true;
 
-    RT_LOG(RT_LOG_INFO, "device_id=%d, stream_id=%d, sqId=%u, pos=%u, sqeOffset=%u",
-        devId, stream->Id_(), memcpyAsyncTaskInfo->sqId,
-        memcpyAsyncTaskInfo->taskPos, sqeOffset);
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%d, stream_id=%d, sqId=%u, pos=%u, sqeOffset=%u", devId, stream->Id_(),
+        memcpyAsyncTaskInfo->sqId, memcpyAsyncTaskInfo->taskPos, sqeOffset);
 
     return RT_ERROR_NONE;
 }
 
 #if F_DESC("MemWriteValueTask")
-rtError_t MemWriteValueTaskInit(TaskInfo *taskInfo, const void * const devAddr, const uint64_t value)
+rtError_t MemWriteValueTaskInit(TaskInfo* taskInfo, const void* const devAddr, const uint64_t value)
 {
     TaskCommonInfoInit(taskInfo);
-    MemWriteValueTaskInfo *memWriteValueTask = &taskInfo->u.memWriteValueTask;
+    MemWriteValueTaskInfo* memWriteValueTask = &taskInfo->u.memWriteValueTask;
     memWriteValueTask->devAddr = RtPtrToValue(devAddr);
     memWriteValueTask->value = value;
 
@@ -287,9 +290,9 @@ rtError_t MemWriteValueTaskInit(TaskInfo *taskInfo, const void * const devAddr, 
 #endif
 
 #if F_DESC("MemWaitValueTask")
-void MemWaitTaskUnInit(TaskInfo *taskInfo)
+void MemWaitTaskUnInit(TaskInfo* taskInfo)
 {
-    MemWaitValueTaskInfo *memWaitValueTask = &taskInfo->u.memWaitValueTask;
+    MemWaitValueTaskInfo* memWaitValueTask = &taskInfo->u.memWaitValueTask;
     if (memWaitValueTask->baseFuncCallSvmMem != nullptr) {
         const auto dev = taskInfo->stream->Device_();
         if ((taskInfo->type != TS_TASK_TYPE_CAPTURE_WAIT) && (taskInfo->type != TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL)) {
@@ -303,7 +306,8 @@ void MemWaitTaskUnInit(TaskInfo *taskInfo)
     memWaitValueTask->profDisableStatusAddr = 0UL;
 
     if (memWaitValueTask->retainedEventId != INVALID_EVENT_ID) {
-        COND_PROC(memWaitValueTask->event != nullptr,
+        COND_PROC(
+            memWaitValueTask->event != nullptr,
             memWaitValueTask->event->EventIdCountSub(memWaitValueTask->retainedEventId));
         memWaitValueTask->retainedEventId = INVALID_EVENT_ID;
     }
@@ -313,7 +317,7 @@ void MemWaitTaskUnInit(TaskInfo *taskInfo)
 
 static rtError_t AllocFuncCallMemForMemWaitTask(TaskInfo* taskInfo)
 {
-    MemWaitValueTaskInfo *memWaitValueTask = &taskInfo->u.memWaitValueTask;
+    MemWaitValueTaskInfo* memWaitValueTask = &taskInfo->u.memWaitValueTask;
     if (taskInfo->type == TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL) {
         if (taskInfo->stream->Device_()->IsDavidPlatform()) {
             memWaitValueTask->funCallMemSize2 = static_cast<uint64_t>(sizeof(RtStarsv2ExternalWaitFuncCall));
@@ -336,59 +340,60 @@ static rtError_t AllocFuncCallMemForMemWaitTask(TaskInfo* taskInfo)
         }
     }
 
-    void *devMem = nullptr;
+    void* devMem = nullptr;
     const auto dev = taskInfo->stream->Device_();
-    const uint64_t allocSize = memWaitValueTask->funCallMemSize2 +
-        MEM_WAIT_WRITE_VALUE_ADDRESS_LEN + FUNC_CALL_INSTR_ALIGN_SIZE + sizeof(uint64_t);
+    const uint64_t allocSize = memWaitValueTask->funCallMemSize2 + MEM_WAIT_WRITE_VALUE_ADDRESS_LEN +
+                               FUNC_CALL_INSTR_ALIGN_SIZE + sizeof(uint64_t);
     rtError_t ret = RT_ERROR_NONE;
     if ((taskInfo->type == TS_TASK_TYPE_CAPTURE_WAIT) || (taskInfo->type == TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL)) {
         if (taskInfo->stream->Model_() == nullptr || allocSize > MEM_WAIT_SPLIT_SIZE) {
-            RT_LOG(RT_LOG_ERROR, "Model is null or capture wait alloc size=%llu max than %u.", allocSize, MEM_WAIT_SPLIT_SIZE);
+            RT_LOG(
+                RT_LOG_ERROR, "Model is null or capture wait alloc size=%llu max than %u.", allocSize,
+                MEM_WAIT_SPLIT_SIZE);
             return RT_ERROR_MODEL_NULL;
         }
         ret = taskInfo->stream->Model_()->MemWaitDevAlloc(&devMem, taskInfo->stream->Device_());
     } else {
         ret = dev->Driver_()->DevMemAlloc(&devMem, allocSize, RT_MEMORY_DDR, dev->Id_());
     }
-    COND_RETURN_ERROR((ret != RT_ERROR_NONE) || (devMem == nullptr), ret,
-                      "alloc func call memory failed, retCode=%#x, size=%" PRIu64 "(bytes), dev_id=%u",
-                      ret, allocSize, dev->Id_());
+    COND_RETURN_ERROR(
+        (ret != RT_ERROR_NONE) || (devMem == nullptr), ret,
+        "alloc func call memory failed, retCode=%#x, size=%" PRIu64 "(bytes), dev_id=%u", ret, allocSize, dev->Id_());
 
     memWaitValueTask->baseFuncCallSvmMem = devMem;
     // instr addr should align to 256b
     if ((RtPtrToValue(devMem) & 0xFFULL) != 0ULL) {
         // 2 ^ 8 is 256 align
         const uint64_t devMemAlign2 = (((RtPtrToValue(devMem)) >> 8U) + 1UL) << 8U;
-        memWaitValueTask->funcCallSvmMem2 = RtValueToPtr<void *>(devMemAlign2);
+        memWaitValueTask->funcCallSvmMem2 = RtValueToPtr<void*>(devMemAlign2);
     } else {
         memWaitValueTask->funcCallSvmMem2 = devMem;
     }
 
-    void *devMem3 = RtValueToPtr<void *>(RtPtrToValue(memWaitValueTask->funcCallSvmMem2) +
-        memWaitValueTask->funCallMemSize2);
+    void* devMem3 =
+        RtValueToPtr<void*>(RtPtrToValue(memWaitValueTask->funcCallSvmMem2) + memWaitValueTask->funCallMemSize2);
     if ((RtPtrToValue(devMem3) & 0x1FULL) != 0ULL) {
         // 2 ^ 5 is 32 align
         const uint64_t devMemAlign3 = (((RtPtrToValue(devMem3)) >> 5U) + 1UL) << 5U;
-        memWaitValueTask->writeValueAddr = RtValueToPtr<void *>(devMemAlign3);
+        memWaitValueTask->writeValueAddr = RtValueToPtr<void*>(devMemAlign3);
     } else {
         memWaitValueTask->writeValueAddr = devMem3;
     }
 
-    void *addr = RtValueToPtr<void *>(RtPtrToValue(memWaitValueTask->writeValueAddr) + MEM_WAIT_WRITE_VALUE_ADDRESS_LEN);
+    void* addr = RtValueToPtr<void*>(RtPtrToValue(memWaitValueTask->writeValueAddr) + MEM_WAIT_WRITE_VALUE_ADDRESS_LEN);
     uint64_t initValue = 0UL;
-    (void)taskInfo->stream->Device_()->Driver_()->MemCopySync(addr, sizeof(uint64_t), static_cast<const void *>(&initValue),
-                                                    sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);    
+    (void)taskInfo->stream->Device_()->Driver_()->MemCopySync(
+        addr, sizeof(uint64_t), static_cast<const void*>(&initValue), sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
     memWaitValueTask->profDisableStatusAddr = RtPtrToValue(addr);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t MemWaitValueTaskInit(TaskInfo *taskInfo, const void * const devAddr,
-                               const uint64_t value, const uint32_t flag)
+rtError_t MemWaitValueTaskInit(TaskInfo* taskInfo, const void* const devAddr, const uint64_t value, const uint32_t flag)
 {
     TaskCommonInfoInit(taskInfo);
 
-    MemWaitValueTaskInfo *memWaitValueTask = &taskInfo->u.memWaitValueTask;
+    MemWaitValueTaskInfo* memWaitValueTask = &taskInfo->u.memWaitValueTask;
 
     memWaitValueTask->devAddr = RtPtrToValue(devAddr);
     memWaitValueTask->value = value;
@@ -420,53 +425,52 @@ rtError_t CaptureWaitExternalTaskInit(TaskInfo* taskInfo, const void* const wait
 
 rtError_t MemcpyAsyncTaskPrepare(TaskInfo* const updateTask, void** const hostAddr)
 {
-    Stream * const stream = updateTask->stream;
+    Stream* const stream = updateTask->stream;
     const uint32_t devId = static_cast<uint32_t>(stream->Device_()->Id_());
-    Driver * const driver = updateTask->stream->Device_()->Driver_();
+    Driver* const driver = updateTask->stream->Device_()->Driver_();
     constexpr uint64_t allocSize = sizeof(rtStarsSqe_t);
     rtStarsSqe_t sqe = {};
- 
+
     rtError_t error = driver->HostMemAlloc(hostAddr, allocSize, devId);
-    COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-        "Failed to alloc host memory, retCode=%#x.", error);
- 
+    COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "Failed to alloc host memory, retCode=%#x.", error);
+
     /* construct new sqe */
-    RT_LOG(RT_LOG_INFO, "update task, device_id=%u, stream_id=%d, task_id=%hu",
-        devId, stream->Id_(), updateTask->id);
- 
+    RT_LOG(RT_LOG_INFO, "update task, device_id=%u, stream_id=%d, task_id=%hu", devId, stream->Id_(), updateTask->id);
+
     ToConstructSqe(updateTask, &sqe);
-    error = driver->MemCopySync(*hostAddr, allocSize, static_cast<const void *>(&sqe),
-                                allocSize, RT_MEMCPY_HOST_TO_HOST);
-    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error,
-        (void)driver->HostMemFree(*hostAddr),
-        "MemCopySync failed, retCode=%#x.", static_cast<uint32_t>(error));
+    error =
+        driver->MemCopySync(*hostAddr, allocSize, static_cast<const void*>(&sqe), allocSize, RT_MEMCPY_HOST_TO_HOST);
+    COND_PROC_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, (void)driver->HostMemFree(*hostAddr), "MemCopySync failed, retCode=%#x.",
+        static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t UpdateLabelSwitchTask(TaskInfo * const updateTask)
+rtError_t UpdateLabelSwitchTask(TaskInfo* const updateTask)
 {
     uint64_t physicPtr = 0UL;
     StreamSwitchTaskInfo* streamSwitchTask = &(updateTask->u.streamswitchTask);
     const int32_t devId = static_cast<int32_t>(updateTask->stream->Device_()->Id_());
-    rtError_t error = updateTask->stream->Device_()->Driver_()->MemAddressTranslate(
-        devId, streamSwitchTask->ptr, &physicPtr);
-    COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-        "Convert memory address to dma physic failed,retCode=%#x,ptr=%#" PRIx64 ".",
+    rtError_t error =
+        updateTask->stream->Device_()->Driver_()->MemAddressTranslate(devId, streamSwitchTask->ptr, &physicPtr);
+    COND_RETURN_ERROR(
+        (error != RT_ERROR_NONE), error, "Convert memory address to dma physic failed,retCode=%#x,ptr=%#" PRIx64 ".",
         error, streamSwitchTask->ptr);
- 
+
     uint64_t physicValuePtr = 0UL;
     error = updateTask->stream->Device_()->Driver_()->MemAddressTranslate(
         devId, streamSwitchTask->valuePtr, &physicValuePtr);
-    COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-        "Convert memory address to dma physic failed,retCode=%#x,valuePtr=%#" PRIx64 ".",
-        error, streamSwitchTask->valuePtr);
- 
+    COND_RETURN_ERROR(
+        (error != RT_ERROR_NONE), error,
+        "Convert memory address to dma physic failed,retCode=%#x,valuePtr=%#" PRIx64 ".", error,
+        streamSwitchTask->valuePtr);
+
     streamSwitchTask->phyPtr = physicPtr;
     streamSwitchTask->phyValuePtr = physicValuePtr;
     return error;
 }
- 
-rtError_t UpdateTaskD2HSubmit(const TaskInfo * const updateTask, void *sqeAddr, Stream * const stm)
+
+rtError_t UpdateTaskD2HSubmit(const TaskInfo* const updateTask, void* sqeAddr, Stream* const stm)
 {
     TaskInfo submitTask = {};
     rtError_t errorReason;
@@ -474,9 +478,9 @@ rtError_t UpdateTaskD2HSubmit(const TaskInfo * const updateTask, void *sqeAddr, 
     const uint32_t sqId = updateTask->stream->GetSqId();
     const uint32_t pos = updateTask->pos;
 
-    TaskInfo *rtMemcpyAsyncTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_MEMCPY, errorReason);
+    TaskInfo* rtMemcpyAsyncTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_MEMCPY, errorReason);
     NULL_PTR_RETURN_MSG(rtMemcpyAsyncTask, errorReason);
-    
+
     std::function<void()> const rtMemcpyAsyncTaskRecycle = [&stm, &rtMemcpyAsyncTask]() {
         (void)stm->Device_()->GetTaskFactory()->Recycle(rtMemcpyAsyncTask);
     };
@@ -484,40 +488,42 @@ rtError_t UpdateTaskD2HSubmit(const TaskInfo * const updateTask, void *sqeAddr, 
 
     rtError_t error = UpdateD2HTaskInit(rtMemcpyAsyncTask, sqeAddr, allocSize, sqId, pos, 0U);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "device_id=%u, stream_id=%d, allocSize=%u, retCode=%#x.",
-            stm->Device_()->Id_(), stm->Id_(), allocSize, error);
+        RT_LOG(
+            RT_LOG_ERROR, "device_id=%u, stream_id=%d, allocSize=%u, retCode=%#x.", stm->Device_()->Id_(), stm->Id_(),
+            allocSize, error);
         return error;
     }
- 
+
     error = stm->Device_()->SubmitTask(rtMemcpyAsyncTask);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "device_id=%u, stream_id=%d, allocSize=%u, retCode=%#x.",
+        RT_LOG(
+            RT_LOG_ERROR, "device_id=%u, stream_id=%d, allocSize=%u, retCode=%#x.",
             updateTask->stream->Device_()->Id_(), stm->Id_(), allocSize, error);
         return error;
     }
 
     GET_THREAD_TASKID_AND_STREAMID(rtMemcpyAsyncTask, stm->AllocTaskStreamId());
-    RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, retCode=%#x.",
-            stm->Device_()->Id_(), stm->Id_(), updateTask->id, error);
-    
+    RT_LOG(
+        RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, retCode=%#x.", stm->Device_()->Id_(), stm->Id_(),
+        updateTask->id, error);
+
     taskGuard.ReleaseGuard();
     return RT_ERROR_NONE;
 }
 
-static rtError_t UpdateModelUpdateTask(TaskInfo * const taskInfo)
+static rtError_t UpdateModelUpdateTask(TaskInfo* const taskInfo)
 {
-    MdlUpdateTaskInfo *mdlUpdateTaskInfo = &(taskInfo->u.mdlUpdateTask);
+    MdlUpdateTaskInfo* mdlUpdateTaskInfo = &(taskInfo->u.mdlUpdateTask);
     uint64_t tilingTaboffset = 0ULL;
     uint64_t tilingKeyOffset = 0ULL;
     uint64_t blockDimOffset = 0ULL;
     uint64_t descBufOffset = MAX_UINT64_NUM;
-    void *devCopyMem = mdlUpdateTaskInfo->tilingTabAddr;
+    void* devCopyMem = mdlUpdateTaskInfo->tilingTabAddr;
 
     rtError_t error = taskInfo->stream->Device_()->Driver_()->MemAddressTranslate(
         static_cast<int32_t>(taskInfo->stream->Device_()->Id_()),
         RtPtrToPtr<uintptr_t>(mdlUpdateTaskInfo->tilingKeyAddr), &tilingKeyOffset);
-    COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-        "tilingKeyAddr MemAddressTranslate retCode=%#x.", error);
+    COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "tilingKeyAddr MemAddressTranslate retCode=%#x.", error);
 
     error = taskInfo->stream->Device_()->Driver_()->MemAddressTranslate(
         static_cast<int32_t>(taskInfo->stream->Device_()->Id_()),
@@ -525,8 +531,7 @@ static rtError_t UpdateModelUpdateTask(TaskInfo * const taskInfo)
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "blockDimAddr MemAddressTranslate retCode=%#x", error);
 
     error = taskInfo->stream->Device_()->Driver_()->MemAddressTranslate(
-        static_cast<int32_t>(taskInfo->stream->Device_()->Id_()),
-        RtPtrToPtr<uintptr_t>(devCopyMem), &tilingTaboffset);
+        static_cast<int32_t>(taskInfo->stream->Device_()->Id_()), RtPtrToPtr<uintptr_t>(devCopyMem), &tilingTaboffset);
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "devCopyMem MemAddressTranslate retCode=%#x.", error);
 
     if (mdlUpdateTaskInfo->fftsPlusTaskDescBuf != nullptr) {
@@ -534,7 +539,8 @@ static rtError_t UpdateModelUpdateTask(TaskInfo * const taskInfo)
             static_cast<int32_t>(taskInfo->stream->Device_()->Id_()),
             RtPtrToPtr<uintptr_t>(mdlUpdateTaskInfo->fftsPlusTaskDescBuf), &descBufOffset);
     } else {
-        error = SetMixDescBufOffset(taskInfo, mdlUpdateTaskInfo->desStreamId, mdlUpdateTaskInfo->destaskId, &descBufOffset);
+        error =
+            SetMixDescBufOffset(taskInfo, mdlUpdateTaskInfo->desStreamId, mdlUpdateTaskInfo->destaskId, &descBufOffset);
     }
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "descBuf MemAddressTranslate retCode=%#x.", error);
 
@@ -542,19 +548,20 @@ static rtError_t UpdateModelUpdateTask(TaskInfo * const taskInfo)
     mdlUpdateTaskInfo->tilingKeyOffset = tilingKeyOffset;
     mdlUpdateTaskInfo->blockDimOffset = blockDimOffset;
     mdlUpdateTaskInfo->tilingTabOffset = tilingTaboffset;
-    RT_LOG(RT_LOG_DEBUG, "descBufOffset=%lu, tilingKeyOffset=%lu, blockDimOffset=%u, tilingTabOffset=%u, prgHandle=%p.",
+    RT_LOG(
+        RT_LOG_DEBUG, "descBufOffset=%lu, tilingKeyOffset=%lu, blockDimOffset=%u, tilingTabOffset=%u, prgHandle=%p.",
         descBufOffset, tilingKeyOffset, blockDimOffset, tilingTaboffset, mdlUpdateTaskInfo->prgHandle);
     return RT_ERROR_NONE;
 }
- 
-rtError_t UpdateTaskH2DSubmit(TaskInfo * const updateTask, Stream * const stm, void* sqeDeviceAddr)
+
+rtError_t UpdateTaskH2DSubmit(TaskInfo* const updateTask, Stream* const stm, void* sqeDeviceAddr)
 {
     TaskInfo submitTask = {};
     rtError_t errorReason;
     rtError_t error = RT_ERROR_NONE;
     constexpr uint64_t copySize = sizeof(rtStarsSqe_t);
-    Driver *const curDrv = stm->Device_()->Driver_();
- 
+    Driver* const curDrv = stm->Device_()->Driver_();
+
     if (updateTask->type == TS_TASK_TYPE_MODEL_TASK_UPDATE) {
         error = UpdateModelUpdateTask(updateTask);
     } else if (updateTask->type == TS_TASK_TYPE_STREAM_SWITCH) {
@@ -563,7 +570,7 @@ rtError_t UpdateTaskH2DSubmit(TaskInfo * const updateTask, Stream * const stm, v
         // do nothing
     }
     COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "update dma or offset failed, retCode=%#x", error);
-    TaskInfo *rtMemcpyAsyncTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_MEMCPY, errorReason);
+    TaskInfo* rtMemcpyAsyncTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_MEMCPY, errorReason);
     NULL_PTR_RETURN_MSG(rtMemcpyAsyncTask, errorReason);
     std::function<void()> const rtMemcpyAsyncTaskRecycle = [&stm, &rtMemcpyAsyncTask]() {
         (void)stm->Device_()->GetTaskFactory()->Recycle(rtMemcpyAsyncTask);
@@ -571,36 +578,36 @@ rtError_t UpdateTaskH2DSubmit(TaskInfo * const updateTask, Stream * const stm, v
     ScopeGuard taskGuard(rtMemcpyAsyncTaskRecycle);
 
     /* hostAddr is new sqe info */
-    void *hostAddr = nullptr;
+    void* hostAddr = nullptr;
     error = MemcpyAsyncTaskPrepare(updateTask, &hostAddr);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "device_id=%u, stream_id=%d, retCode=%#x.",
-            stm->Device_()->Id_(), stm->Id_(), error);
+        RT_LOG(RT_LOG_ERROR, "device_id=%u, stream_id=%d, retCode=%#x.", stm->Device_()->Id_(), stm->Id_(), error);
         return error;
     }
- 
+
     error = SqeUpdateH2DTaskInit(rtMemcpyAsyncTask, hostAddr, sqeDeviceAddr, copySize, nullptr, nullptr);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "device_id=%u, stream_id=%d, allocSize=%llu, retCode=%#x.",
-            stm->Device_()->Id_(), stm->Id_(), copySize, error);
+        RT_LOG(
+            RT_LOG_ERROR, "device_id=%u, stream_id=%d, allocSize=%llu, retCode=%#x.", stm->Device_()->Id_(), stm->Id_(),
+            copySize, error);
         (void)curDrv->HostMemFree(hostAddr);
         return error;
     }
 
     error = stm->Device_()->SubmitTask(rtMemcpyAsyncTask);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "device_id=%u, stream_id=%d, retCode=%#x.",
-            stm->Device_()->Id_(), stm->Id_(), error);
+        RT_LOG(RT_LOG_ERROR, "device_id=%u, stream_id=%d, retCode=%#x.", stm->Device_()->Id_(), stm->Id_(), error);
         return error;
     }
     GET_THREAD_TASKID_AND_STREAMID(rtMemcpyAsyncTask, stm->AllocTaskStreamId());
-    RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, retCode=%#x.",
-            stm->Device_()->Id_(), stm->Id_(), rtMemcpyAsyncTask->id, error);
+    RT_LOG(
+        RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, retCode=%#x.", stm->Device_()->Id_(), stm->Id_(),
+        rtMemcpyAsyncTask->id, error);
     taskGuard.ReleaseGuard();
     return RT_ERROR_NONE;
 }
 
-void IpcEventDestroy(IpcEvent **eventPtr, int32_t freeId, bool isNeedDestroy)
+void IpcEventDestroy(IpcEvent** eventPtr, int32_t freeId, bool isNeedDestroy)
 {
     COND_RETURN_VOID(*eventPtr == nullptr, "event is nullptr");
     bool canEventbeDelete = (*eventPtr)->TryFreeEventIdAndCheckCanBeDelete(freeId, isNeedDestroy);
@@ -623,8 +630,9 @@ rtError_t GetCaptureRecordTaskParams(const TaskInfo* const taskInfo, rtTaskParam
     params->type = RT_TASK_EVENT_RECORD;
     SetCommonTaskParams(params);
 
-    Event *event = taskInfo->u.memWriteValueTask.event;
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(event, RT_ERROR_INVALID_VALUE, "Obtaining the Event Record task parameters in capture mode");
+    Event* event = taskInfo->u.memWriteValueTask.event;
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        event, RT_ERROR_INVALID_VALUE, "Obtaining the Event Record task parameters in capture mode");
     params->eventRecordTaskParams.event = event;
     params->eventRecordTaskParams.eventFlag = static_cast<uint32_t>(event->GetEventFlag());
     params->eventRecordTaskParams.recordFlag = RT_EVENT_RECORD_DEFAULT;
@@ -637,8 +645,9 @@ rtError_t GetCaptureWaitTaskParams(const TaskInfo* const taskInfo, rtTaskParams*
     params->type = RT_TASK_EVENT_WAIT;
     SetCommonTaskParams(params);
 
-    Event *event = taskInfo->u.memWaitValueTask.event;
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(event, RT_ERROR_INVALID_VALUE, "Obtaining the Event Wait task parameters in capture mode");
+    Event* event = taskInfo->u.memWaitValueTask.event;
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        event, RT_ERROR_INVALID_VALUE, "Obtaining the Event Wait task parameters in capture mode");
     params->eventWaitTaskParams.event = event;
     params->eventWaitTaskParams.eventFlag = static_cast<uint32_t>(event->GetEventFlag());
     params->eventWaitTaskParams.waitFlag = RT_EVENT_WAIT_DEFAULT;
@@ -651,8 +660,9 @@ rtError_t GetCaptureResetTaskParams(const TaskInfo* const taskInfo, rtTaskParams
     params->type = RT_TASK_EVENT_RESET;
     SetCommonTaskParams(params);
 
-    Event *event = taskInfo->u.memWriteValueTask.event;
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(event, RT_ERROR_INVALID_VALUE, "Obtaining the Event Reset task parameters in capture mode");
+    Event* event = taskInfo->u.memWriteValueTask.event;
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        event, RT_ERROR_INVALID_VALUE, "Obtaining the Event Reset task parameters in capture mode");
     params->eventResetTaskParams.event = event;
     params->eventResetTaskParams.eventFlag = static_cast<uint32_t>(event->GetEventFlag());
     params->eventResetTaskParams.resetFlag = RT_EVENT_WAIT_DEFAULT;
@@ -689,15 +699,16 @@ static rtError_t CheckUpdatingTaskParams(TaskInfo* const taskInfo, rtTaskParams*
     rtError_t error = ConvertTaskType(taskInfo, &taskType);
     ERROR_RETURN(error, "get task type failed, retCode=%#x.", error);
     // RT_TASK_DEFAULT表示外部不识别的类型，报错并打印RTS内部具体的Task类型
-    COND_RETURN_ERROR(taskType == RT_TASK_DEFAULT, RT_ERROR_INVALID_VALUE,
-        "current taskType(%d) is invalid", taskInfo->type);
+    COND_RETURN_ERROR(
+        taskType == RT_TASK_DEFAULT, RT_ERROR_INVALID_VALUE, "current taskType(%d) is invalid", taskInfo->type);
 
     COND_RETURN_ERROR(params->taskGrp != nullptr, RT_ERROR_INVALID_VALUE, "taskGrp must be nullptr");
     COND_RETURN_ERROR(params->opInfoPtr != nullptr, RT_ERROR_INVALID_VALUE, "opInfoPtr must be nullptr");
     COND_RETURN_ERROR(params->opInfoSize != 0U, RT_ERROR_INVALID_VALUE, "opInfoSize must be 0");
 
-    COND_RETURN_WARN(IsTaskBelongToSubCaptureMdl(taskInfo),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "task belongs to sub ACL Graph, does not support updating task parameters");
+    COND_RETURN_WARN(
+        IsTaskBelongToSubCaptureMdl(taskInfo), RT_ERROR_FEATURE_NOT_SUPPORT,
+        "task belongs to sub ACL Graph, does not support updating task parameters");
 
     return RT_ERROR_NONE;
 }
@@ -715,10 +726,12 @@ rtError_t UpdateWriteValueTaskParams(TaskInfo* const taskInfo, rtTaskParams* con
 
     Stream* stm = taskInfo->stream;
     Device* dev = stm->Device_();
-    RT_LOG(RT_LOG_INFO, "update or convert to ValueWriteTask succ: device_id=%u, stream_id=%d, task_id=%hu, "
+    RT_LOG(
+        RT_LOG_INFO,
+        "update or convert to ValueWriteTask succ: device_id=%u, stream_id=%d, task_id=%hu, "
         "typeName=%s, taskType=%d, devAddr=%#llx, value=%llu",
-        dev->Id_(), stm->Id_(), taskInfo->id,
-        taskInfo->typeName, taskInfo->type, taskInfo->u.memWriteValueTask.devAddr, taskInfo->u.memWriteValueTask.value);
+        dev->Id_(), stm->Id_(), taskInfo->id, taskInfo->typeName, taskInfo->type, taskInfo->u.memWriteValueTask.devAddr,
+        taskInfo->u.memWriteValueTask.value);
     return RT_ERROR_NONE;
 }
 
@@ -730,27 +743,29 @@ rtError_t UpdateWaitValueTaskParams(TaskInfo* const taskInfo, rtTaskParams* cons
     // 需要先赋值类型，此类型会影响Init中的内存申请方式
     taskInfo->type = TS_TASK_TYPE_MEM_WAIT_VALUE;
     taskInfo->typeName = "MEM_WAIT_VALUE";
-    const rtError_t error = MemWaitValueTaskInit(taskInfo, params->valueWaitTaskParams.devAddr,
-        params->valueWaitTaskParams.value, params->valueWaitTaskParams.flag);
+    const rtError_t error = MemWaitValueTaskInit(
+        taskInfo, params->valueWaitTaskParams.devAddr, params->valueWaitTaskParams.value,
+        params->valueWaitTaskParams.flag);
     ERROR_RETURN_MSG_INNER(error, "mem wait value init failed, retCode=%#x.", error);
     taskInfo->u.memWaitValueTask.awSize = RT_STARS_WRITE_VALUE_SIZE_TYPE_64BIT;
     taskInfo->sqeNum = GetSendSqeNum(taskInfo);
 
     Stream* stm = taskInfo->stream;
     Device* dev = stm->Device_();
-    RT_LOG(RT_LOG_INFO, "update or convert to ValueWaitTask succ: device_id=%u, stream_id=%d, task_id=%hu, "
+    RT_LOG(
+        RT_LOG_INFO,
+        "update or convert to ValueWaitTask succ: device_id=%u, stream_id=%d, task_id=%hu, "
         "typeName=%s, taskType=%d, devAddr=%#llx, value=%llu, flag=%u",
-        dev->Id_(), stm->Id_(), taskInfo->id,
-        taskInfo->typeName, taskInfo->type, taskInfo->u.memWaitValueTask.devAddr,
+        dev->Id_(), stm->Id_(), taskInfo->id, taskInfo->typeName, taskInfo->type, taskInfo->u.memWaitValueTask.devAddr,
         taskInfo->u.memWaitValueTask.value, taskInfo->u.memWaitValueTask.flag);
     return RT_ERROR_NONE;
 }
 #endif
 
 #if F_DESC("CreateL2AddrTask")
-rtError_t CreateL2AddrTaskInit(TaskInfo * const taskInfo, const uint64_t ptePtrAddr)
+rtError_t CreateL2AddrTaskInit(TaskInfo* const taskInfo, const uint64_t ptePtrAddr)
 {
-    CreateL2AddrTaskInfo *createL2AddrTaskInfo = &(taskInfo->u.createL2AddrTaskInfo);
+    CreateL2AddrTaskInfo* createL2AddrTaskInfo = &(taskInfo->u.createL2AddrTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_CREATE_L2_ADDR;
@@ -759,13 +774,12 @@ rtError_t CreateL2AddrTaskInit(TaskInfo * const taskInfo, const uint64_t ptePtrA
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForCreateL2AddrTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+void ToCommandBodyForCreateL2AddrTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
-    CreateL2AddrTaskInfo *createL2AddrTaskInfo = &(taskInfo->u.createL2AddrTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    CreateL2AddrTaskInfo* createL2AddrTaskInfo = &(taskInfo->u.createL2AddrTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
-    command->u.createL2Addr.l2BaseVaddrForsdma =
-        RtPtrToValue<void *>(stream->Device_()->GetL2Buffer_());
+    command->u.createL2Addr.l2BaseVaddrForsdma = RtPtrToValue<void*>(stream->Device_()->GetL2Buffer_());
     RT_LOG(RT_LOG_DEBUG, "l2BaseVaddrForsdma=%#" PRIx64, command->u.createL2Addr.l2BaseVaddrForsdma);
     command->u.createL2Addr.ptePA = createL2AddrTaskInfo->ptePA;
     RT_LOG(RT_LOG_DEBUG, "ptePA=%#" PRIx64, command->u.createL2Addr.ptePA);
@@ -786,5 +800,5 @@ rtError_t UpdateAddressTaskInit(TaskInfo* taskInfo, uint64_t devAddr, uint64_t l
 }
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

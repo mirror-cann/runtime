@@ -19,28 +19,29 @@ class Device;
 
 class EventPool : public NoCopy {
 public:
-    explicit EventPool(Device *device, uint32_t tsId);
+    explicit EventPool(Device* device, uint32_t tsId);
     ~EventPool() noexcept override;
     void TryAllocEventIdForPool();
     rtError_t FreeEventId(const int32_t eventId);
-    bool AllocEventIdFromPool(int32_t *eventId);
-    rtError_t AllocEventIdFromDrv(int32_t * const eventId);
-    rtError_t AllocEventId(int32_t *eventId);
+    bool AllocEventIdFromPool(int32_t* eventId);
+    rtError_t AllocEventIdFromDrv(int32_t* const eventId);
+    rtError_t AllocEventId(int32_t* eventId);
     rtError_t EventIdReAlloc();
     rtError_t FreeAllEvent() noexcept;
+
 private:
     bool IsNeedAllocIdForPool() const;
     uint32_t GetQueueAvilableNum() const;
     std::mutex lk_;
     uint32_t eventQueueHead_{0U};
     uint32_t eventQueueTail_{0U};
-    int32_t *eventQueue_{nullptr};
-    Device *device_;
+    int32_t* eventQueue_{nullptr};
+    Device* device_;
     uint8_t poolSize_;
     uint32_t tsId_;
     bool isAging_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_EVENT_POOL_HPP
+#endif // CCE_RUNTIME_EVENT_POOL_HPP

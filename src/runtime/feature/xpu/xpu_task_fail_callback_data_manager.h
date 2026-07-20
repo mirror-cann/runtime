@@ -17,24 +17,24 @@ namespace cce {
 namespace runtime {
 class XpuTaskFailCallBackManager {
 public:
-    static XpuTaskFailCallBackManager &Instance();
-    rtError_t RegXpuTaskFailCallback(const char_t *regName, void *callback);
-    void XpuNotify(rtExceptionInfo_t * const exceptionInfo);
+    static XpuTaskFailCallBackManager& Instance();
+    rtError_t RegXpuTaskFailCallback(const char_t* regName, void* callback);
+    void XpuNotify(rtExceptionInfo_t* const exceptionInfo);
     XpuTaskFailCallBackManager();
     ~XpuTaskFailCallBackManager() noexcept;
 
 private:
-    XpuTaskFailCallBackManager(const XpuTaskFailCallBackManager &other) = delete;
-    XpuTaskFailCallBackManager &operator=(const XpuTaskFailCallBackManager &other) = delete;
-    XpuTaskFailCallBackManager(XpuTaskFailCallBackManager &&other) = delete;
-    XpuTaskFailCallBackManager &operator=(XpuTaskFailCallBackManager &&other) = delete;
+    XpuTaskFailCallBackManager(const XpuTaskFailCallBackManager& other) = delete;
+    XpuTaskFailCallBackManager& operator=(const XpuTaskFailCallBackManager& other) = delete;
+    XpuTaskFailCallBackManager(XpuTaskFailCallBackManager&& other) = delete;
+    XpuTaskFailCallBackManager& operator=(XpuTaskFailCallBackManager&& other) = delete;
 
 private:
     std::unordered_map<std::string, rtTaskFailCallback> callbackMap_;
     std::mutex mapMutex_;
 };
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_XPU_TASK_FAIL_CALLBACK_DATA_MANAGER_HPP

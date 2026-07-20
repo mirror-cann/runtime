@@ -26,18 +26,11 @@
 namespace cce {
 namespace runtime {
 constexpr uint32_t DEV_ERR_MSG_BUF_TOTAL_LEN = 4096U; /* err msg buf total len, 4K */
-constexpr const char_t *AICPU_ERR_MSG_CONFIG_OP_NAME = "CfgLogAddr";
+constexpr const char_t* AICPU_ERR_MSG_CONFIG_OP_NAME = "CfgLogAddr";
 
-AicpuErrMsg::AicpuErrMsg(Device * const dev)
-    : NoCopy(),
-      device_(dev)
-{
-}
+AicpuErrMsg::AicpuErrMsg(Device* const dev) : NoCopy(), device_(dev) {}
 
-AicpuErrMsg::~AicpuErrMsg() noexcept
-{
-    TearDown();
-}
+AicpuErrMsg::~AicpuErrMsg() noexcept { TearDown(); }
 
 void AicpuErrMsg::TearDown(void) noexcept
 {
@@ -46,22 +39,16 @@ void AicpuErrMsg::TearDown(void) noexcept
     device_ = nullptr;
 }
 
-void AicpuErrMsg::ErrMsgBufLock(void)
-{
-    errMsgBufMutex_.lock();
-}
+void AicpuErrMsg::ErrMsgBufLock(void) { errMsgBufMutex_.lock(); }
 
-void AicpuErrMsg::ErrMsgBufUnLock(void)
-{
-    errMsgBufMutex_.unlock();
-}
+void AicpuErrMsg::ErrMsgBufUnLock(void) { errMsgBufMutex_.unlock(); }
 
 rtError_t AicpuErrMsg::AllocResource(void)
 {
     rtError_t retErr = RT_ERROR_NONE;
 
     if (errMsgBuf_ == nullptr) {
-        Driver * const devDrv = device_->Driver_();
+        Driver* const devDrv = device_->Driver_();
         retErr = devDrv->DevMemAlloc(&errMsgBuf_, DEV_ERR_MSG_BUF_TOTAL_LEN, RT_MEMORY_DEFAULT, device_->Id_());
         if (retErr != RT_ERROR_NONE) {
             RT_LOG(RT_LOG_ERROR, "malloc dev msg buf failed, retCode=%d.", retErr);
@@ -76,7 +63,7 @@ rtError_t AicpuErrMsg::AllocResource(void)
 void AicpuErrMsg::FreeResource(void) noexcept
 {
     if (errMsgBuf_ != nullptr) {
-        Driver * const devDrv = device_->Driver_();
+        Driver* const devDrv = device_->Driver_();
         const rtError_t retErr = devDrv->DevMemFree(errMsgBuf_, device_->Id_());
         if (retErr != RT_ERROR_NONE) {
             RT_LOG(RT_LOG_ERROR, "free dev msg buf failed, retCode=%d.", retErr);
@@ -88,27 +75,26 @@ void AicpuErrMsg::FreeResource(void) noexcept
     return;
 }
 
-rtError_t AicpuErrMsg::FillKernelLaunchPara(const rtKernelLaunchNames_t &launchNames,
-                                            TaskInfo * const kernTask) const
+rtError_t AicpuErrMsg::FillKernelLaunchPara(const rtKernelLaunchNames_t& launchNames, TaskInfo* const kernTask) const
 {
-    const char_t * const launchSoName = launchNames.soName;
-    const char_t * const kernelName = launchNames.kernelName;
-    void *soNameAddr = nullptr;
-    void *kernelNameAddr = nullptr;
-    ArgLoader * const devArgLdr = device_->ArgLoader_();
+    const char_t* const launchSoName = launchNames.soName;
+    const char_t* const kernelName = launchNames.kernelName;
+    void* soNameAddr = nullptr;
+    void* kernelNameAddr = nullptr;
+    ArgLoader* const devArgLdr = device_->ArgLoader_();
 
     // Set soName and kernelName for task
     if (launchSoName != nullptr) {
-        const rtError_t retErr = devArgLdr->GetKernelInfoDevAddr(static_cast<const char_t *>(launchSoName),
-                                                                 KernelInfoType::SO_NAME, &soNameAddr);
+        const rtError_t retErr = devArgLdr->GetKernelInfoDevAddr(
+            static_cast<const char_t*>(launchSoName), KernelInfoType::SO_NAME, &soNameAddr);
         if (retErr != RT_ERROR_NONE) {
             RT_LOG(RT_LOG_ERROR, "Failed to get so address by name, retCode=%d", retErr);
             return retErr;
         }
     }
     if (kernelName != nullptr) {
-        const rtError_t retErr = devArgLdr->GetKernelInfoDevAddr(static_cast<const char_t *>(kernelName),
-                                                                 KernelInfoType::KERNEL_NAME, &kernelNameAddr);
+        const rtError_t retErr = devArgLdr->GetKernelInfoDevAddr(
+            static_cast<const char_t*>(kernelName), KernelInfoType::KERNEL_NAME, &kernelNameAddr);
         if (retErr != RT_ERROR_NONE) {
             RT_LOG(RT_LOG_ERROR, "Failed to get kernel address by name, retCode=%d", retErr);
             return retErr;
@@ -120,11 +106,12 @@ rtError_t AicpuErrMsg::FillKernelLaunchPara(const rtKernelLaunchNames_t &launchN
 }
 
 /* method only for AicpuErrMsg */
-rtError_t AicpuErrMsg::SendTaskToAicpu(const rtKernelLaunchNames_t &launchNames, const uint32_t coreDim,
-    const void * const args, const uint32_t argsSize, const uint32_t flag) const
+rtError_t AicpuErrMsg::SendTaskToAicpu(
+    const rtKernelLaunchNames_t& launchNames, const uint32_t coreDim, const void* const args, const uint32_t argsSize,
+    const uint32_t flag) const
 {
     rtError_t retErr = RT_ERROR_NONE;
-    Stream * const stm = device_->PrimaryStream_();
+    Stream* const stm = device_->PrimaryStream_();
     NULL_PTR_RETURN(stm, RT_ERROR_STREAM_NULL);
 
     TaskInfo submitTask = {};
@@ -138,13 +125,14 @@ rtError_t AicpuErrMsg::SendTaskToAicpu(const rtKernelLaunchNames_t &launchNames,
     // Init task
     AicpuTaskInit(kernTask, static_cast<uint16_t>(coreDim), flag);
 
-    AicpuTaskInfo *aicpuTaskInfo = &(kernTask->u.aicpuTaskInfo);
-    RT_LOG(RT_LOG_INFO, "flag=%u, kernelFlag=0x%x, blkdim=%u.",
-        flag, aicpuTaskInfo->comm.kernelFlag, aicpuTaskInfo->comm.dim);
+    AicpuTaskInfo* aicpuTaskInfo = &(kernTask->u.aicpuTaskInfo);
+    RT_LOG(
+        RT_LOG_INFO, "flag=%u, kernelFlag=0x%x, blkdim=%u.", flag, aicpuTaskInfo->comm.kernelFlag,
+        aicpuTaskInfo->comm.dim);
 
     // Set args for task
     rtArgsEx_t argsInfo = {};
-    argsInfo.args = const_cast<void *>(args);
+    argsInfo.args = const_cast<void*>(args);
     argsInfo.argsSize = argsSize;
     retErr = stm->LoadArgsInfo(&argsInfo, false, &result, LoadPolicy::LP_CPU_KRN);
     if (retErr != RT_ERROR_NONE) {
@@ -178,15 +166,15 @@ rtError_t AicpuErrMsg::SendTaskToAicpu(const rtKernelLaunchNames_t &launchNames,
     return stm->Synchronize();
 }
 
-rtError_t AicpuErrMsg::SendConfigMsgToAicpu(const aicpu::AicpuConfigMsg * const configMsg) const
+rtError_t AicpuErrMsg::SendConfigMsgToAicpu(const aicpu::AicpuConfigMsg* const configMsg) const
 {
     rtKernelLaunchNames_t launchNames;
     launchNames.soName = nullptr;
     launchNames.kernelName = AICPU_ERR_MSG_CONFIG_OP_NAME;
     launchNames.opName = AICPU_ERR_MSG_CONFIG_OP_NAME;
 
-    const rtError_t retErr = SendTaskToAicpu(launchNames, 1U, static_cast<const void *>(configMsg),
-        static_cast<uint32_t>(sizeof(aicpu::AicpuConfigMsg)), 0U);
+    const rtError_t retErr = SendTaskToAicpu(
+        launchNames, 1U, static_cast<const void*>(configMsg), static_cast<uint32_t>(sizeof(aicpu::AicpuConfigMsg)), 0U);
     if (retErr != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "aicpu kernel launch failed, retCode=%#x.", retErr);
     }
@@ -220,11 +208,12 @@ void AicpuErrMsg::SetErrMsgBufAddr(void)
 
     retErr = SendConfigMsgToAicpu(&configMsg);
     if (retErr != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "set err msg buf addr to aicpu failed, retCode=%#x, [%s].",
-            retErr, GetTsErrDescByRtErr(retErr));
+        RT_LOG(
+            RT_LOG_ERROR, "set err msg buf addr to aicpu failed, retCode=%#x, [%s].", retErr,
+            GetTsErrDescByRtErr(retErr));
         FreeResource();
     }
     ErrMsgBufUnLock();
 }
-}
-}
+} // namespace runtime
+} // namespace cce

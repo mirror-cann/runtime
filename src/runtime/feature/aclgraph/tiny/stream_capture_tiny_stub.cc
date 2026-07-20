@@ -13,25 +13,22 @@
 namespace cce {
 namespace runtime {
 
-void Stream::SingleStreamTerminateCapture()
-{
-    SetCaptureStatus(RT_STREAM_CAPTURE_STATUS_INVALIDATED);
-}
+void Stream::SingleStreamTerminateCapture() { SetCaptureStatus(RT_STREAM_CAPTURE_STATUS_INVALIDATED); }
 
-rtError_t Stream::AllocCascadeCaptureStream(Stream *&newCaptureStream, const Stream * const curCaptureStream)
+rtError_t Stream::AllocCascadeCaptureStream(Stream*& newCaptureStream, const Stream* const curCaptureStream)
 {
     UNUSED(newCaptureStream);
     UNUSED(curCaptureStream);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-void Stream::UpdateCascadeCaptureStreamInfo(Stream *newCaptureStream, Stream *curCaptureStream)
+void Stream::UpdateCascadeCaptureStreamInfo(Stream* newCaptureStream, Stream* curCaptureStream)
 {
     UNUSED(newCaptureStream);
     UNUSED(curCaptureStream);
 }
 
-rtError_t Stream::AllocCaptureTaskWithLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo **task)
+rtError_t Stream::AllocCaptureTaskWithLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo** task)
 {
     UNUSED(taskType);
     UNUSED(sqeNum);
@@ -39,7 +36,7 @@ rtError_t Stream::AllocCaptureTaskWithLock(tsTaskType_t taskType, uint32_t sqeNu
     return RT_ERROR_STREAM_CAPTURE_EXIT;
 }
 
-rtError_t Stream::AllocCaptureTaskWithoutLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo **task)
+rtError_t Stream::AllocCaptureTaskWithoutLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo** task)
 {
     UNUSED(taskType);
     UNUSED(sqeNum);
@@ -47,7 +44,7 @@ rtError_t Stream::AllocCaptureTaskWithoutLock(tsTaskType_t taskType, uint32_t sq
     return RT_ERROR_STREAM_CAPTURE_EXIT;
 }
 
-rtError_t Stream::AllocCaptureTask(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo **task, bool isNeedLock)
+rtError_t Stream::AllocCaptureTask(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo** task, bool isNeedLock)
 {
     UNUSED(taskType);
     UNUSED(sqeNum);
@@ -56,7 +53,7 @@ rtError_t Stream::AllocCaptureTask(tsTaskType_t taskType, uint32_t sqeNum, TaskI
     return RT_ERROR_STREAM_CAPTURE_EXIT;
 }
 
-void Stream::EnterCapture(const Stream * const captureStream)
+void Stream::EnterCapture(const Stream* const captureStream)
 {
     UNUSED(captureStream);
     std::unique_lock<std::mutex> lk(captureLock_);
@@ -71,10 +68,7 @@ void Stream::ResetCaptureInfo()
     SetCaptureStatus(RT_STREAM_CAPTURE_STATUS_NONE);
 }
 
-void Stream::ExitCapture()
-{
-    ResetCaptureInfo();
-}
+void Stream::ExitCapture() { ResetCaptureInfo(); }
 
-}
-}
+} // namespace runtime
+} // namespace cce

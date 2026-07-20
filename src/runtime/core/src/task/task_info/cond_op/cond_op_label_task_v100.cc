@@ -20,9 +20,9 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("LabelSetTask")
-void ConstructSqeForLabelSetTask(TaskInfo* taskInfo, rtStarsSqe_t * const command)
+void ConstructSqeForLabelSetTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    Stream * const stm = taskInfo->stream;
+    Stream* const stm = taskInfo->stream;
     command->phSqe.type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     command->phSqe.l2_lock = 0U;
     command->phSqe.ie = 0U;
@@ -35,7 +35,7 @@ void ConstructSqeForLabelSetTask(TaskInfo* taskInfo, rtStarsSqe_t * const comman
     command->phSqe.task_id = taskInfo->id;
     command->phSqe.rt_streamID = static_cast<uint16_t>(stm->Id_());
     command->phSqe.kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
-    Model *mdl = stm->Model_();
+    Model* mdl = stm->Model_();
     if (mdl != nullptr) {
         mdl->LabelCountInc();
     }
@@ -89,5 +89,5 @@ static bool CondOpLabelTaskRegister()
 
 static bool g_condOpLabelTaskRegister = CondOpLabelTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -18,9 +18,9 @@ namespace runtime {
 
 constexpr uint32_t RT_DEFAULT_POS = 0xFFFFU;
 
-rtError_t DqsLaunchTask(Stream *const stm, const rtDqsTaskCfg_t *const taskCfg);
+rtError_t DqsLaunchTask(Stream* const stm, const rtDqsTaskCfg_t* const taskCfg);
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_DQS_C_HPP__

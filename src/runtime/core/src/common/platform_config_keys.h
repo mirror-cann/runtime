@@ -14,12 +14,12 @@
 namespace cce {
 namespace runtime {
 namespace platform_config {
-constexpr const char *kVersionSection = "version";
-constexpr const char *kSocInfoSection = "SoCInfo";
-constexpr const char *kNpuArchField = "NpuArch";
-constexpr const char *kChipTypeField = "Chip_type";
-}  // namespace platform_config
-}  // namespace runtime
-}  // namespace cce
+constexpr const char* kVersionSection = "version";
+constexpr const char* kSocInfoSection = "SoCInfo";
+constexpr const char* kNpuArchField = "NpuArch";
+constexpr const char* kChipTypeField = "Chip_type";
+} // namespace platform_config
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_PLATFORM_CONFIG_KEYS_H
+#endif // CCE_RUNTIME_PLATFORM_CONFIG_KEYS_H

@@ -19,10 +19,10 @@ public:
     explicit StreamFactory() = default;
     ~StreamFactory() = default;
 
-    static Stream *CreateStream(Device * const dev, const uint32_t prio, const uint32_t stmFlags = 0U,
-        DvppGrp * const dvppGrp = nullptr);
+    static Stream* CreateStream(
+        Device* const dev, const uint32_t prio, const uint32_t stmFlags = 0U, DvppGrp* const dvppGrp = nullptr);
 }; // class StreamFactory
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_STREAM_FACTORY_HPP__
+#endif // __CCE_RUNTIME_STREAM_FACTORY_HPP__

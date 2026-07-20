@@ -66,7 +66,9 @@ rtError_t CondStreamSwitchN(
     }
     NULL_PTR_RETURN_MSG(curCtx, RT_ERROR_STREAM_CONTEXT);
 
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(trueStreamPtr, RT_ERROR_STREAM_NULL, "Switching between multi-dimensional streams based on conditional operators");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        trueStreamPtr, RT_ERROR_STREAM_NULL,
+        "Switching between multi-dimensional streams based on conditional operators");
 
     rtError_t error;
     StreamSwitchNLoadResult result;
@@ -101,7 +103,8 @@ ERROR_RECYCLE:
     return error;
 }
 
-rtError_t CondStreamActive(const Stream* const activeStream, Stream* const stm, Context* const ctx, const bool alreadyCascaded)
+rtError_t CondStreamActive(
+    const Stream* const activeStream, Stream* const stm, Context* const ctx, const bool alreadyCascaded)
 {
     UNUSED(alreadyCascaded);
     Context* curCtx = ctx;
@@ -146,8 +149,8 @@ rtError_t CondStreamActive(const Stream* const activeStream, Stream* const stm, 
 
         error = StreamActiveTaskInit(tsk, activeStream);
         ERROR_GOTO_MSG_INNER(
-            error, ERROR_RECYCLE, "Stream activation task init failed, stream_id=%d, task_id=%hu, retCode=%#x.", streamId, tsk->id,
-            error);
+            error, ERROR_RECYCLE, "Stream activation task init failed, stream_id=%d, task_id=%hu, retCode=%#x.",
+            streamId, tsk->id, error);
     }
 
     error = curCtx->Device_()->SubmitTask(tsk, curCtx->TaskGenCallback_());

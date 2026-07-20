@@ -27,8 +27,7 @@ static const std::unordered_set<RtOptionalFeatureType> CHIP_MINI_FEATURE{
     RtOptionalFeatureType::RT_FEATURE_PROFILING_AICPU,
     RtOptionalFeatureType::RT_FEATURE_STREAM_HUGE_DEPTH,
     RtOptionalFeatureType::RT_FEATURE_STREAM_ABORT,
-    RtOptionalFeatureType::RT_FEATURE_DEVICE_SPM_POOL
-};
+    RtOptionalFeatureType::RT_FEATURE_DEVICE_SPM_POOL};
 
 REGISTER_CHIP_FEATURE_SET(CHIP_MINI, CHIP_MINI_FEATURE);
 
@@ -174,5 +173,5 @@ static const DevProperties CHIP_MINI_PROPERTIES = {
 };
 
 REGISTER_DEV_PROPERTIES(CHIP_MINI, CHIP_MINI_PROPERTIES);
-}
-}
+} // namespace runtime
+} // namespace cce

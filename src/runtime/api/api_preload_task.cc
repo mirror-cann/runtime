@@ -27,94 +27,94 @@
 #include "global_state_manager.hpp"
 
 using namespace cce::runtime;
- 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
- 
+
 VISIBILITY_DEFAULT
-rtError_t rtGetTaskBufferLen(const rtTaskBuffType_t type, uint32_t * const bufferLen)
+rtError_t rtGetTaskBufferLen(const rtTaskBuffType_t type, uint32_t* const bufferLen)
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_TASK_PRE_BUILD_SQE)) {
         RT_LOG(RT_LOG_WARNING, "Chip type(%d) does not support.", static_cast<int32_t>(rtInstance->GetChipType()));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
- 
-    Api *api = Api::Instance();
+
+    Api* api = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(api);
     const rtError_t error = api->GetTaskBufferLen(type, bufferLen);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
- 
+
 VISIBILITY_DEFAULT
-rtError_t rtTaskBuild(const rtTaskInput_t * const taskInput, uint32_t* taskLen)
+rtError_t rtTaskBuild(const rtTaskInput_t* const taskInput, uint32_t* taskLen)
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_TASK_PRE_BUILD_SQE)) {
         RT_LOG(RT_LOG_WARNING, "Chip type(%d) does not support.", static_cast<int32_t>(rtInstance->GetChipType()));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
- 
-    Api *api = Api::Instance();
+
+    Api* api = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(api);
     const rtError_t error = api->TaskSqeBuild(taskInput, taskLen);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
- 
+
 VISIBILITY_DEFAULT
-rtError_t rtGetElfOffset(void * const elfData, const uint32_t elfLen, uint32_t* offset)
+rtError_t rtGetElfOffset(void* const elfData, const uint32_t elfLen, uint32_t* offset)
 {
-    Runtime *rtInstance = Runtime::Instance();
+    Runtime* rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_TASK_PRE_BUILD_SQE)) {
         RT_LOG(RT_LOG_WARNING, "Chip type(%d) does not support.", static_cast<int32_t>(rtInstance->GetChipType()));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
- 
+
     const rtError_t ret = rtInstance->GetElfOffset(elfData, elfLen, offset);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
     return ACL_RT_SUCCESS;
 }
- 
+
 VISIBILITY_DEFAULT
-rtError_t rtGetKernelBin(const char_t *const binFileName, char_t **const buffer, uint32_t *length)
+rtError_t rtGetKernelBin(const char_t* const binFileName, char_t** const buffer, uint32_t* length)
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_TASK_PRE_BUILD_SQE)) {
         RT_LOG(RT_LOG_WARNING, "Chip type(%d) does not support.", static_cast<int32_t>(rtInstance->GetChipType()));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
- 
-    Api *apiInstance = Api::Instance();
+
+    Api* apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->GetKernelBin(binFileName, buffer, length);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
- 
+
 VISIBILITY_DEFAULT
-rtError_t rtFreeKernelBin(char_t * const buffer)
+rtError_t rtFreeKernelBin(char_t* const buffer)
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_TASK_PRE_BUILD_SQE)) {
         RT_LOG(RT_LOG_WARNING, "Chip type(%d) does not support.", static_cast<int32_t>(rtInstance->GetChipType()));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
- 
-    Api *apiInstance = Api::Instance();
+
+    Api* apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->FreeKernelBin(buffer);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
- 
+
 #ifdef __cplusplus
 }
 #endif

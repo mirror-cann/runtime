@@ -46,20 +46,23 @@ rtError_t RawDevice::AllocSimtStackPhyBase(const rtChipType_t chipType)
     const uint32_t simtDvgWarpStkSize = Runtime::Instance()->GetSimtDvgWarpStkSize();
 
     const uint64_t aivCoreNum = GetDavidDieNum() * GetDevProperties().aivNumPerDie;
-    uint64_t stackPhySize = aivCoreNum * RT_MAX_WARP_NUM_PER_VECTOR_CORE * (simtWarpStkSize + static_cast<uint64_t>(simtDvgWarpStkSize));
-    stackPhySize += static_cast<uint64_t>(STACK_PHY_BASE_ALIGN_LEN);   // 128B align
+    uint64_t stackPhySize =
+        aivCoreNum * RT_MAX_WARP_NUM_PER_VECTOR_CORE * (simtWarpStkSize + static_cast<uint64_t>(simtDvgWarpStkSize));
+    stackPhySize += static_cast<uint64_t>(STACK_PHY_BASE_ALIGN_LEN); // 128B align
 
-    const rtError_t error =  driver_->DevMemAlloc(&simtStackPhyBase_,
-        stackPhySize, RT_MEMORY_DDR, deviceId_);
-    RT_LOG(RT_LOG_DEBUG, "AllocStackPhyBase device_id=%u, simtStackPhyBase_=0x%llx, stackPhySize=%u.",
-        deviceId_, RtPtrToValue(simtStackPhyBase_), stackPhySize);
-    COND_RETURN_ERROR((error != RT_ERROR_NONE) || (simtStackPhyBase_ == nullptr), error,
+    const rtError_t error = driver_->DevMemAlloc(&simtStackPhyBase_, stackPhySize, RT_MEMORY_DDR, deviceId_);
+    RT_LOG(
+        RT_LOG_DEBUG, "AllocStackPhyBase device_id=%u, simtStackPhyBase_=0x%llx, stackPhySize=%u.", deviceId_,
+        RtPtrToValue(simtStackPhyBase_), stackPhySize);
+    COND_RETURN_ERROR(
+        (error != RT_ERROR_NONE) || (simtStackPhyBase_ == nullptr), error,
         "Alloc simt stack phy base failed, mem alloc failed, retCode=%#x.", static_cast<uint32_t>(error));
 
-    const uint64_t devAlignAddr = ((RtPtrToValue(simtStackPhyBase_) & (STACK_PHY_BASE_ALIGN_LEN - 1U)) == 0U) ?
-        RtPtrToValue(simtStackPhyBase_) :
-        (((RtPtrToValue(simtStackPhyBase_) >> STACK_PHY_BASE_ALIGN_BIT) + 1U) << STACK_PHY_BASE_ALIGN_BIT);
-    simtStackPhyBaseAlign_ = RtValueToPtr<void *>(devAlignAddr);
+    const uint64_t devAlignAddr =
+        ((RtPtrToValue(simtStackPhyBase_) & (STACK_PHY_BASE_ALIGN_LEN - 1U)) == 0U) ?
+            RtPtrToValue(simtStackPhyBase_) :
+            (((RtPtrToValue(simtStackPhyBase_) >> STACK_PHY_BASE_ALIGN_BIT) + 1U) << STACK_PHY_BASE_ALIGN_BIT);
+    simtStackPhyBaseAlign_ = RtValueToPtr<void*>(devAlignAddr);
     simtWarpStkSize_ = static_cast<uint32_t>((simtWarpStkSize >= MAX_UINT32_NUM) ? MAX_UINT32_NUM : simtWarpStkSize);
     simtDvgWarpStkSize_ = simtDvgWarpStkSize;
     return RT_ERROR_NONE;
@@ -71,9 +74,10 @@ rtError_t RawDevice::FreeSimtStackPhyBase()
         return RT_ERROR_NONE;
     }
 
-    RT_LOG(RT_LOG_DEBUG, "FreeStackPhyBase device_id=%u, simtStackPhyBase_=0x%llx.",
-        deviceId_, RtPtrToValue(simtStackPhyBase_));
-    const rtError_t error =  driver_->DevMemFree(simtStackPhyBase_, deviceId_);
+    RT_LOG(
+        RT_LOG_DEBUG, "FreeStackPhyBase device_id=%u, simtStackPhyBase_=0x%llx.", deviceId_,
+        RtPtrToValue(simtStackPhyBase_));
+    const rtError_t error = driver_->DevMemFree(simtStackPhyBase_, deviceId_);
     ERROR_RETURN(error, "Free stack phy base failed, mem free failed, retCode=%#x.", static_cast<uint32_t>(error));
     simtStackPhyBase_ = nullptr;
     simtStackPhyBaseAlign_ = nullptr;
@@ -95,17 +99,20 @@ rtError_t RawDevice::AllocStackPhyBaseDavid()
         return RT_ERROR_INVALID_VALUE;
     }
     const uint64_t stackPhySize = scalerBufSize + STACK_PHY_BASE_ALIGN_LEN;
-    error = driver_->DevMemAlloc(&stackPhyBase32k_,
-        stackPhySize, RT_MEMORY_DDR, deviceId_);
-    COND_RETURN_ERROR((error != RT_ERROR_NONE) || (stackPhyBase32k_ == nullptr), error,
+    error = driver_->DevMemAlloc(&stackPhyBase32k_, stackPhySize, RT_MEMORY_DDR, deviceId_);
+    COND_RETURN_ERROR(
+        (error != RT_ERROR_NONE) || (stackPhyBase32k_ == nullptr), error,
         "Alloc stack phy base failed, mem alloc failed, retCode=%#x.", static_cast<uint32_t>(error));
-    const uint64_t devAlignAddr = (RtPtrToValue(stackPhyBase32k_) & (STACK_PHY_BASE_ALIGN_LEN - 1U)) == 0U ?
-        RtPtrToValue(stackPhyBase32k_) :
-        (((RtPtrToValue(stackPhyBase32k_) >> STACK_PHY_BASE_ALIGN_BIT) + 1U) << STACK_PHY_BASE_ALIGN_BIT);
-    stackPhyBase32kAlign_ = RtValueToPtr<void *>(devAlignAddr);
-    RT_LOG(RT_LOG_INFO, "device_id=%u, stackPhyBase32k_=0x%llx, stackPhyBase32kAlign_=0x%llx, "
-        "stackPhySize=%u.", deviceId_, RtPtrToValue(stackPhyBase32k_),
-        RtPtrToValue(stackPhyBase32kAlign_), stackPhySize);
+    const uint64_t devAlignAddr =
+        (RtPtrToValue(stackPhyBase32k_) & (STACK_PHY_BASE_ALIGN_LEN - 1U)) == 0U ?
+            RtPtrToValue(stackPhyBase32k_) :
+            (((RtPtrToValue(stackPhyBase32k_) >> STACK_PHY_BASE_ALIGN_BIT) + 1U) << STACK_PHY_BASE_ALIGN_BIT);
+    stackPhyBase32kAlign_ = RtValueToPtr<void*>(devAlignAddr);
+    RT_LOG(
+        RT_LOG_INFO,
+        "device_id=%u, stackPhyBase32k_=0x%llx, stackPhyBase32kAlign_=0x%llx, "
+        "stackPhySize=%u.",
+        deviceId_, RtPtrToValue(stackPhyBase32k_), RtPtrToValue(stackPhyBase32kAlign_), stackPhySize);
     return RT_ERROR_NONE;
 }
 
@@ -113,8 +120,8 @@ rtError_t RawDevice::UbArgLoaderInit(void)
 {
     if (Runtime::Instance()->GetConnectUbFlag()) {
         ubArgLoader_ = new (std::nothrow) UbArgLoader(this);
-        COND_RETURN_AND_MSG_OUTER(ubArgLoader_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-            sizeof(UbArgLoader), "new");
+        COND_RETURN_AND_MSG_OUTER(
+            ubArgLoader_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(UbArgLoader), "new");
         RT_LOG(RT_LOG_INFO, "new UbArgLoader ok, Runtime_alloc_size %zu(bytes)", sizeof(UbArgLoader));
 
         const auto error = ubArgLoader_->Init();
@@ -124,32 +131,29 @@ rtError_t RawDevice::UbArgLoaderInit(void)
     return RT_ERROR_NONE;
 }
 
-rtError_t RawDevice::SendTopicMsgVersionToAicpu(void)
-{
-    return SendTopicMsgVersionToAicpuDavid(primaryStream_);
-}
+rtError_t RawDevice::SendTopicMsgVersionToAicpu(void) { return SendTopicMsgVersionToAicpuDavid(primaryStream_); }
 
 rtError_t RawDevice::CntNotifiesReAllocId(void)
 {
     std::unique_lock<std::mutex> l(cntNotifyLock_);
-    for (CountNotify *nty : cntNotifies_) {
+    for (CountNotify* nty : cntNotifies_) {
         const rtError_t error = nty->ReAllocId();
         ERROR_RETURN(error, "Realloc count notify id %u failed, retCode=%#x.", nty->GetCntNotifyId(), error);
     }
     return RT_ERROR_NONE;
 }
 
-void RawDevice::PushCntNotify(CountNotify * const nty)
+void RawDevice::PushCntNotify(CountNotify* const nty)
 {
     std::unique_lock<std::mutex> l(cntNotifyLock_);
     (void)cntNotifies_.insert(nty);
 }
 
-void RawDevice::RemoveCntNotify(CountNotify * const nty)
+void RawDevice::RemoveCntNotify(CountNotify* const nty)
 {
     std::unique_lock<std::mutex> l(cntNotifyLock_);
     (void)cntNotifies_.erase(nty);
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

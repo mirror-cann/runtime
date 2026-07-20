@@ -18,11 +18,7 @@ namespace runtime {
 bool StreamFlagIsSupportCapture(uint32_t flag)
 {
     static constexpr uint32_t flags[]{
-        RT_STREAM_AICPU,
-        RT_STREAM_FORBIDDEN_DEFAULT,
-        RT_STREAM_CP_PROCESS_USE,
-        RT_STREAM_VECTOR_CORE_USE
-    };
+        RT_STREAM_AICPU, RT_STREAM_FORBIDDEN_DEFAULT, RT_STREAM_CP_PROCESS_USE, RT_STREAM_VECTOR_CORE_USE};
 
     for (const uint32_t elem : flags) {
         if ((flag & elem) == elem) {
@@ -33,20 +29,19 @@ bool StreamFlagIsSupportCapture(uint32_t flag)
     return true;
 }
 
-uint32_t GetCaptureStreamFlag()
-{
-    return RT_STREAM_DEFAULT;
-}
+uint32_t GetCaptureStreamFlag() { return RT_STREAM_DEFAULT; }
 
-rtError_t GetCaptureEventFromTask(const Device * const dev, uint32_t streamId, uint32_t pos, Event *&eventPtr, CaptureCntNotify &cntInfo)
+rtError_t GetCaptureEventFromTask(
+    const Device* const dev, uint32_t streamId, uint32_t pos, Event*& eventPtr, CaptureCntNotify& cntInfo)
 {
     UNUSED(cntInfo);
     if (dev != nullptr) {
-        const TaskInfo * const task = dev->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), static_cast<uint16_t>(pos));
-        COND_RETURN_ERROR((task == nullptr),
-            RT_ERROR_TASK_NULL,
-            "Get task failed, stream_id=%u, task_id=%u.", streamId, pos);
-        COND_RETURN_ERROR_MSG_INNER(!((task->type == TS_TASK_TYPE_EVENT_RECORD) || (task->type == TS_TASK_TYPE_CAPTURE_RECORD)),
+        const TaskInfo* const task =
+            dev->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), static_cast<uint16_t>(pos));
+        COND_RETURN_ERROR(
+            (task == nullptr), RT_ERROR_TASK_NULL, "Get task failed, stream_id=%u, task_id=%u.", streamId, pos);
+        COND_RETURN_ERROR_MSG_INNER(
+            !((task->type == TS_TASK_TYPE_EVENT_RECORD) || (task->type == TS_TASK_TYPE_CAPTURE_RECORD)),
             RT_ERROR_STREAM_UNJOINED,
             "The type of the task is not event record nor capture record, stream_id=%u, task_id=%u, task_type=%d (%s).",
             streamId, pos, static_cast<int32_t>(task->type), task->typeName);
@@ -60,27 +55,23 @@ rtError_t GetCaptureEventFromTask(const Device * const dev, uint32_t streamId, u
     return RT_ERROR_DEVICE_NULL;
 }
 
-rtError_t ResetCaptureEventsProc(const CaptureModel * const captureModel, Stream * const stm)
+rtError_t ResetCaptureEventsProc(const CaptureModel* const captureModel, Stream* const stm)
 {
-    for (Event * const evt : captureModel->GetCaptureEvent()) {
-        COND_RETURN_ERROR_MSG_INNER((!(evt->HasRecord())),
-            RT_ERROR_CAPTURE_DEPENDENCY,
-            "The capture event has not been recorded, stream_id=%d, event_id=%d.",
-            stm->Id_(), evt->EventId_());
+    for (Event* const evt : captureModel->GetCaptureEvent()) {
+        COND_RETURN_ERROR_MSG_INNER(
+            (!(evt->HasRecord())), RT_ERROR_CAPTURE_DEPENDENCY,
+            "The capture event has not been recorded, stream_id=%d, event_id=%d.", stm->Id_(), evt->EventId_());
         const rtError_t error = evt->Reset(stm);
-        COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-            "Capture stream reset event failed, stream_id=%d, error=%d.",
-            stm->Id_(), error);
+        COND_RETURN_ERROR(
+            (error != RT_ERROR_NONE), error, "Capture stream reset event failed, stream_id=%d, error=%d.", stm->Id_(),
+            error);
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t SendNopTask(const Context * const curCtx, Stream * const stm)
-{
-    return curCtx->NopTask(stm);
-}
+rtError_t SendNopTask(const Context* const curCtx, Stream* const stm) { return curCtx->NopTask(stm); }
 
-bool TaskTypeIsSupportTaskGroup(const TaskInfo * const task)
+bool TaskTypeIsSupportTaskGroup(const TaskInfo* const task)
 {
     return ((task->type == TS_TASK_TYPE_KERNEL_AICORE) || (task->type == TS_TASK_TYPE_KERNEL_AIVEC));
 }

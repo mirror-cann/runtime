@@ -13,14 +13,14 @@
 #include "stars.hpp"
 namespace cce {
 namespace runtime {
-    uint16_t TransKernelCreditCreditByChip(const uint16_t kernelCredit);
-    void TransExeTimeoutCfgToKernelCredit(const uint64_t opExcTaskTimeout, uint16_t &kernelCredit);
-    uint16_t GetAicoreKernelCredit(const uint64_t customTimeoutUs);
-    uint16_t GetSdmaKernelCredit();
-    uint16_t GetAicpuKernelCredit(uint64_t timeout);
-    uint16_t GetAicpuKernelCreditV200(uint64_t timeout);
-    uint16_t GetCCUCredit(uint16_t customTimeout);
-}
-}
+uint16_t TransKernelCreditCreditByChip(const uint16_t kernelCredit);
+void TransExeTimeoutCfgToKernelCredit(const uint64_t opExcTaskTimeout, uint16_t& kernelCredit);
+uint16_t GetAicoreKernelCredit(const uint64_t customTimeoutUs);
+uint16_t GetSdmaKernelCredit();
+uint16_t GetAicpuKernelCredit(uint64_t timeout);
+uint16_t GetAicpuKernelCreditV200(uint64_t timeout);
+uint16_t GetCCUCredit(uint16_t customTimeout);
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_INNER_HPP__
+#endif // __CCE_RUNTIME_INNER_HPP__

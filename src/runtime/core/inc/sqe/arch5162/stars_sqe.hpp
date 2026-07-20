@@ -17,27 +17,27 @@ namespace cce {
 namespace runtime {
 
 enum rtStarsSqeType {
-    RT_STARS_SQE_TYPE_KS_AIC            = 0, // AIC
-    RT_STARS_SQE_TYPE_AICPU             = 1, // AICPU
-    RT_STARS_SQE_TYPE_KS_AIV            = 2, // AIV
-    RT_STARS_SQE_TYPE_PLACE_HOLDER      = 3, // PLACE_HOLDER
-    RT_STARS_SQE_TYPE_EVENT_RECORD      = 4, // EVENT_RECORD
-    RT_STARS_SQE_TYPE_EVENT_WAIT        = 5, // EVENT_WAIT
-    RT_STARS_SQE_TYPE_NOTIFY_RECORD     = 6, // NOTIFY_RECORD
-    RT_STARS_SQE_TYPE_NOTIFY_WAIT       = 7, // NOTIFY_WAIT
-    RT_STARS_SQE_TYPE_NOTIFY_SEND       = 8, // NOTIFY_SEND
-    RT_STARS_SQE_TYPE_WRITE_VALUE       = 9, // WRITE_VALUE
-    RT_STARS_SQE_TYPE_LP_AIC            = 10, // LP_AIC
-    RT_STARS_SQE_TYPE_INVALID           = 63, // invalid type
+    RT_STARS_SQE_TYPE_KS_AIC = 0,        // AIC
+    RT_STARS_SQE_TYPE_AICPU = 1,         // AICPU
+    RT_STARS_SQE_TYPE_KS_AIV = 2,        // AIV
+    RT_STARS_SQE_TYPE_PLACE_HOLDER = 3,  // PLACE_HOLDER
+    RT_STARS_SQE_TYPE_EVENT_RECORD = 4,  // EVENT_RECORD
+    RT_STARS_SQE_TYPE_EVENT_WAIT = 5,    // EVENT_WAIT
+    RT_STARS_SQE_TYPE_NOTIFY_RECORD = 6, // NOTIFY_RECORD
+    RT_STARS_SQE_TYPE_NOTIFY_WAIT = 7,   // NOTIFY_WAIT
+    RT_STARS_SQE_TYPE_NOTIFY_SEND = 8,   // NOTIFY_SEND
+    RT_STARS_SQE_TYPE_WRITE_VALUE = 9,   // WRITE_VALUE
+    RT_STARS_SQE_TYPE_LP_AIC = 10,       // LP_AIC
+    RT_STARS_SQE_TYPE_INVALID = 63,      // invalid type
 
-    RT_STARS_SQE_TYPE_FFTS              = 0, // FFTS
-    RT_STARS_SQE_TYPE_SDMA              = 11, // SDMA
-    RT_STARS_SQE_TYPE_VPC               = 12, // VPC
-    RT_STARS_SQE_TYPE_JPEGE             = 13, // JPEGE
-    RT_STARS_SQE_TYPE_JPEGD             = 14, // JPEGD
-    RT_STARS_SQE_TYPE_DSA               = 15, // DSA
-    RT_STARS_SQE_TYPE_CDQM              = 19, // CDQM
-    RT_STARS_SQE_TYPE_VIR_TYPE          = 0xFF, // DVPP virtual SQE TYPE
+    RT_STARS_SQE_TYPE_FFTS = 0,          // FFTS
+    RT_STARS_SQE_TYPE_SDMA = 11,         // SDMA
+    RT_STARS_SQE_TYPE_VPC = 12,          // VPC
+    RT_STARS_SQE_TYPE_JPEGE = 13,        // JPEGE
+    RT_STARS_SQE_TYPE_JPEGD = 14,        // JPEGD
+    RT_STARS_SQE_TYPE_DSA = 15,          // DSA
+    RT_STARS_SQE_TYPE_CDQM = 19,         // CDQM
+    RT_STARS_SQE_TYPE_VIR_TYPE = 0xFF,   // DVPP virtual SQE TYPE
 };
 
 enum rtStarsSqeSubType {
@@ -78,7 +78,7 @@ enum rtStarsSqeSubType {
 };
 
 #pragma pack(push)
-#pragma pack (1)
+#pragma pack(1)
 
 struct rtStarsSqeHeader {
     /* word0 */
@@ -196,7 +196,7 @@ struct RtStarsWriteValueSqe {
     uint32_t res5;
 
     /* word8-15 */
-    uint32_t writeValuePart[8];  // write value field
+    uint32_t writeValuePart[8]; // write value field
 };
 
 struct RtMemCpyAsyncSqe {
@@ -272,9 +272,9 @@ struct RtStreamActiveSqe {
 
 struct RtStreamSwitchExSqe {
     /* word4-15 */
-    uint64_t varPtr;  // leftPtr
-    uint64_t valPtr;  // rightPtr
-    int32_t condition;  // rtCondition_t
+    uint64_t varPtr;   // leftPtr
+    uint64_t valPtr;   // rightPtr
+    int32_t condition; // rtCondition_t
     uint32_t trueStreamId;
     int32_t dataType;  // rtSwitchDataType_t
     uint16_t reserved[10];
@@ -385,6 +385,6 @@ struct RtFftsPlusKernelSqe {
 
 #pragma pack(pop)
 
-}  // namespace runtime
-}  // namespace cce
-#endif  // CCE_RUNTIME_STARS_SQE_HPP
+} // namespace runtime
+} // namespace cce
+#endif // CCE_RUNTIME_STARS_SQE_HPP

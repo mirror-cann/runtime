@@ -21,23 +21,24 @@
 namespace cce {
 namespace runtime {
 
-rtError_t ApiImplDavid::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim, const RtArgsWithType * const argsWithType,
-                                  Stream * const stm, const rtKernelLaunchCfg_t * const cfg)
+rtError_t ApiImplDavid::LaunchKernelV2(
+    Kernel* const kernel, uint32_t blockDim, const RtArgsWithType* const argsWithType, Stream* const stm,
+    const rtKernelLaunchCfg_t* const cfg)
 {
     TaskCfg taskCfg = {};
     rtError_t error = ConvertLaunchCfgToTaskCfg(taskCfg, cfg);
     ERROR_RETURN(error, "convert task cfg failed, retCode=%#x.", error);
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
 
-    Stream *curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(curStm);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
-    
+
     if (IS_SUPPORT_CHIP_FEATURE(dev->GetChipType(), RtOptionalFeatureType::RT_FEATURE_XPU)) {
         return XpuLaunchKernel(kernel, blockDim, &argsWithType->args.cpuArgsInfo->baseArgs, curStm, &taskCfg);
     }
@@ -47,7 +48,8 @@ rtError_t ApiImplDavid::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim,
         return RT_ERROR_KERNEL_INVALID;
     }
     // For the new launch logic, the nop task delivery is hidden in the launchKernel. only for aic/aiv kernel
-    if ((kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_NON_CPU) && (taskCfg.isExtendValid == 1U) && (taskCfg.extend.blockTaskPrefetch)) {
+    if ((kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_NON_CPU) && (taskCfg.isExtendValid == 1U) &&
+        (taskCfg.extend.blockTaskPrefetch)) {
         const uint8_t prefetchCnt = PREFETCH_CNT_CLOUD_V2;
         for (uint8_t cntIdx = 0U; cntIdx < prefetchCnt; cntIdx++) {
             error = NopTask(curStm);
@@ -58,11 +60,11 @@ rtError_t ApiImplDavid::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim,
     return LaunchKernelByArgsWithType(kernel, blockDim, curStm, argsWithType, taskCfg);
 }
 
-rtError_t ApiImplDavid::XpuSetTaskFailCallback(const rtXpuDevType devType, const char_t *moduleName, void *callback)
+rtError_t ApiImplDavid::XpuSetTaskFailCallback(const rtXpuDevType devType, const char_t* moduleName, void* callback)
 {
     UNUSED(devType);
     return XpuTaskFailCallbackReg(moduleName, callback);
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

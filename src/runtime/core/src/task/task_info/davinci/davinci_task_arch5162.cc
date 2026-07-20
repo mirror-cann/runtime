@@ -25,13 +25,13 @@
 namespace cce {
 namespace runtime {
 #if F_DESC("DavinciKernelTask")
-void ConstructAICoreSqeForDavinciTask(TaskInfo* const taskInfo, rtStarsSqe_t *const command)
+void ConstructAICoreSqeForDavinciTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
+    AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
     (void)memset_s(command, sizeof(rtStarsSqe_t), 0, sizeof(rtStarsSqe_t));
-    RtStarsAicAivKernelSqe *sqe = &(command->aicAivKernelSqe);
-    Stream * const stm = taskInfo->stream;
-    Device *dev = stm->Device_();
+    RtStarsAicAivKernelSqe* sqe = &(command->aicAivKernelSqe);
+    Stream* const stm = taskInfo->stream;
+    Device* dev = stm->Device_();
     uint64_t stackSize = KERNEL_STACK_SIZE_32K;
     const uint64_t funcAddr = aicTaskInfo->funcAddr;
     uint32_t minStackSize = 0U;
@@ -54,8 +54,9 @@ void ConstructAICoreSqeForDavinciTask(TaskInfo* const taskInfo, rtStarsSqe_t *co
             stackPhyBase = RtPtrToValue(dev->GetCustomerStackPhyBase());
             stackSize = Runtime::Instance()->GetDeviceCustomerStackSize();
         }
-        RT_LOG(RT_LOG_INFO, "minStackSize=%u(bytes), stackSize=%u(bytes), stackPhyBase=%#llx",
-            minStackSize, stackSize, stackPhyBase);
+        RT_LOG(
+            RT_LOG_INFO, "minStackSize=%u(bytes), stackSize=%u(bytes), stackPhyBase=%#llx", minStackSize, stackSize,
+            stackPhyBase);
     }
 
     sqe->header.type = RT_STARS_SQE_TYPE_KS_AIC;
@@ -103,17 +104,17 @@ void ConstructAICoreSqeForDavinciTask(TaskInfo* const taskInfo, rtStarsSqe_t *co
     PrintSqe(command, "AIC or AIV Task");
 }
 
-void ConstructAICpuSqeForDavinciTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+void ConstructAICpuSqeForDavinciTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     UNUSED(taskInfo);
     UNUSED(command);
     return;
 }
 
-void SetResultForDavinciTask(TaskInfo* taskInfo, const void *const data, const uint32_t dataSize)
+void SetResultForDavinciTask(TaskInfo* taskInfo, const void* const data, const uint32_t dataSize)
 {
     UNUSED(dataSize);
-    const auto *const tsData = static_cast<const uint32_t *>(data);
+    const auto* const tsData = static_cast<const uint32_t*>(data);
     const uint32_t payLoad = *tsData;
     const uint32_t highTaskId = *(tsData + 1);
     const uint32_t streamIdEx = *(tsData + 2);
@@ -121,26 +122,28 @@ void SetResultForDavinciTask(TaskInfo* taskInfo, const void *const data, const u
     const uint32_t deviceId = taskInfo->stream->Device_()->Id_();
     const uint32_t retCode = static_cast<uint32_t>(payLoad & 0xFFFU);
     taskInfo->errorCode = retCode;
-    const uint32_t taskId = (static_cast<uint32_t>(payLoad >> 22U) & 0x3FFU) |
-        static_cast<uint32_t>(highTaskId << 10U); // get taskid
-    const uint32_t streamId = (static_cast<uint32_t>(payLoad >> 12U) & 0x3FFU) |
-        (streamIdEx << RT_STREAM_ID_OFFSET); // get streamid
-    RT_LOG(RT_LOG_INFO, "Kernel payLoad=%u, highTaskId=%u, device_id=%u, rtCode=0x%x, "
-           "errorTaskId=%u, errorStreamId=%u.",
-           payLoad, highTaskId, deviceId, retCode, taskId, streamId);
+    const uint32_t taskId =
+        (static_cast<uint32_t>(payLoad >> 22U) & 0x3FFU) | static_cast<uint32_t>(highTaskId << 10U); // get taskid
+    const uint32_t streamId =
+        (static_cast<uint32_t>(payLoad >> 12U) & 0x3FFU) | (streamIdEx << RT_STREAM_ID_OFFSET);      // get streamid
+    RT_LOG(
+        RT_LOG_INFO,
+        "Kernel payLoad=%u, highTaskId=%u, device_id=%u, rtCode=0x%x, "
+        "errorTaskId=%u, errorStreamId=%u.",
+        payLoad, highTaskId, deviceId, retCode, taskId, streamId);
 }
 
 TIMESTAMP_EXTERN(rtKernelLaunch_WaitAsyncCopyComplete);
 rtError_t WaitAsyncCopyCompleteForDavinciTask(TaskInfo* taskInfo)
 {
-    DavinciTaskInfoCommon *comm = (taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) ?
-        &(taskInfo->u.aicpuTaskInfo.comm) : &(taskInfo->u.aicTaskInfo.comm);
+    DavinciTaskInfoCommon* comm = (taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) ? &(taskInfo->u.aicpuTaskInfo.comm) :
+                                                                                  &(taskInfo->u.aicTaskInfo.comm);
 
     if (comm->argHandle == nullptr) {
         return RT_ERROR_NONE;
     }
 
-    Handle *argHdl = static_cast<Handle *>(comm->argHandle);
+    Handle* argHdl = static_cast<Handle*>(comm->argHandle);
     if (!(argHdl->freeArgs)) {
         return RT_ERROR_NONE;
     }
@@ -148,7 +151,9 @@ rtError_t WaitAsyncCopyCompleteForDavinciTask(TaskInfo* taskInfo)
     const rtError_t error = argHdl->argsAlloc->H2DMemCopyWaitFinish(argHdl->kerArgs);
     TIMESTAMP_END(rtKernelLaunch_WaitAsyncCopyComplete);
     if (error != RT_ERROR_NONE) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "H2DMemCopyWaitFinish for args cpy result failed, retCode=%#x.", static_cast<uint32_t>(error));
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "H2DMemCopyWaitFinish for args cpy result failed, retCode=%#x.",
+            static_cast<uint32_t>(error));
         return error;
     }
 
@@ -160,21 +165,22 @@ TIMESTAMP_EXTERN(KernelTaskCompleteOther);
 void DoCompleteSuccessForDavinciTask(TaskInfo* taskInfo, const uint32_t devId)
 {
     const uint32_t errorCode = taskInfo->errorCode;
-    Stream * const stream = taskInfo->stream;
-    AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
+    Stream* const stream = taskInfo->stream;
+    AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
 
     PreCheckTaskErr(taskInfo, devId);
 
     if ((errorCode != TS_ERROR_AICORE_OVERFLOW) && (errorCode != TS_ERROR_AIVEC_OVERFLOW) &&
         (errorCode != TS_ERROR_AICPU_OVERFLOW) && (errorCode != TS_ERROR_SDMA_OVERFLOW)) {
-        TaskFailCallBack(static_cast<uint32_t>(stream->Id_()), static_cast<uint32_t>(taskInfo->id),
-            taskInfo->tid, errorCode, stream->Device_());
+        TaskFailCallBack(
+            static_cast<uint32_t>(stream->Id_()), static_cast<uint32_t>(taskInfo->id), taskInfo->tid, errorCode,
+            stream->Device_());
     }
 
     TIMESTAMP_BEGIN(ArgRelease);
 
-    Handle *argHdl = static_cast<Handle *>(aicTaskInfo->comm.argHandle);
-     if (stream->Model_() != nullptr) {
+    Handle* argHdl = static_cast<Handle*>(aicTaskInfo->comm.argHandle);
+    if (stream->Model_() != nullptr) {
         RT_LOG(RT_LOG_INFO, "Model Task no relase args, stream_id=%d ,task_id=%hu", stream->Id_(), taskInfo->id);
         (stream->Model_())->PushbackArgHandle(static_cast<uint16_t>(stream->Id_()), taskInfo->id, argHdl);
     } else if (stream->IsSeparateSendAndRecycle() && taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) {
@@ -197,9 +203,9 @@ void DoCompleteSuccessForDavinciTask(TaskInfo* taskInfo, const uint32_t devId)
     TIMESTAMP_END(KernelTaskCompleteOther);
 }
 
-static void ArgReleaseForAicTaskUnInit(TaskInfo *taskInfo)
+static void ArgReleaseForAicTaskUnInit(TaskInfo* taskInfo)
 {
-    AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
+    AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
     const auto dev = taskInfo->stream->Device_();
 
     if (aicTaskInfo->comm.argHandle != nullptr) {
@@ -211,7 +217,7 @@ static void ArgReleaseForAicTaskUnInit(TaskInfo *taskInfo)
     }
 
     if (aicTaskInfo->descBuf != nullptr) {
-        (void) (dev->Driver_())->DevMemFree(aicTaskInfo->descBuf, dev->Id_());
+        (void)(dev->Driver_())->DevMemFree(aicTaskInfo->descBuf, dev->Id_());
         aicTaskInfo->descBuf = nullptr;
     }
     aicTaskInfo->descAlignBuf = nullptr;
@@ -223,15 +229,15 @@ static void ArgReleaseForAicTaskUnInit(TaskInfo *taskInfo)
     }
 
     if (aicTaskInfo->launchParam.placeHoderPtr != nullptr) {
-        delete [](aicTaskInfo->launchParam.placeHoderPtr);
+        delete[] (aicTaskInfo->launchParam.placeHoderPtr);
         aicTaskInfo->launchParam.placeHoderPtr = nullptr;
         aicTaskInfo->launchParam.placeHoderNum = 0U;
     }
 }
 
-static void ArgReleaseForAicpuTaskUnInit(TaskInfo *taskInfo)
+static void ArgReleaseForAicpuTaskUnInit(TaskInfo* taskInfo)
 {
-    AicpuTaskInfo *aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
+    AicpuTaskInfo* aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
     const auto dev = taskInfo->stream->Device_();
 
     if (aicpuTaskInfo->comm.argHandle != nullptr) {
@@ -247,7 +253,7 @@ static void ArgReleaseForAicpuTaskUnInit(TaskInfo *taskInfo)
     aicpuTaskInfo->soName = nullptr;
 }
 
-void DavinciTaskUnInit(TaskInfo *taskInfo)
+void DavinciTaskUnInit(TaskInfo* taskInfo)
 {
     if (taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) {
         ArgReleaseForAicpuTaskUnInit(taskInfo);
@@ -257,7 +263,7 @@ void DavinciTaskUnInit(TaskInfo *taskInfo)
     taskInfo->pcTrace.reset();
 }
 
-void SetStarsResultForDavinciTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq)
+void SetStarsResultForDavinciTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq)
 {
     if ((taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) && (logicCq.errorCode == AE_STATUS_TASK_ABORT)) {
         return;
@@ -265,13 +271,12 @@ void SetStarsResultForDavinciTask(TaskInfo* taskInfo, const rtLogicCqReport_t &l
 
     // hccl aicpu返回的errorType为0x1
     if (taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) {
-        if ((logicCq.errorCode == AICPU_HCCL_OP_RETRY_FAILED) || (logicCq.errorCode == AICPU_HCCL_OP_SDMA_LINK_FAILED)) {
-            RT_LOG(RT_LOG_ERROR,
+        if ((logicCq.errorCode == AICPU_HCCL_OP_RETRY_FAILED) ||
+            (logicCq.errorCode == AICPU_HCCL_OP_SDMA_LINK_FAILED)) {
+            RT_LOG(
+                RT_LOG_ERROR,
                 "hccl aicpu task error, stream_id=%d, task_id=%hu, logicCq.errorCode=%u, logicCq.errorType=%hhu",
-                taskInfo->stream->Id_(),
-                taskInfo->id,
-                logicCq.errorCode,
-                logicCq.errorType);
+                taskInfo->stream->Id_(), taskInfo->id, logicCq.errorCode, logicCq.errorType);
             if (logicCq.errorCode == AICPU_HCCL_OP_RETRY_FAILED) {
                 taskInfo->errorCode = TS_ERROR_AICPU_HCCL_OP_RETRY_FAILED;
             } else {
@@ -282,42 +287,39 @@ void SetStarsResultForDavinciTask(TaskInfo* taskInfo, const rtLogicCqReport_t &l
     }
 
     if ((logicCq.errorType & RT_STARS_EXIST_ERROR) != 0U) {
-        Stream *const reportStream = GetReportStream(taskInfo->stream);
+        Stream* const reportStream = GetReportStream(taskInfo->stream);
         uint32_t vectorErrMap[TS_STARS_ERROR_MAX_INDEX] = {
-            TS_ERROR_VECTOR_CORE_EXCEPTION,
-            TS_ERROR_VECTOR_CORE_TRAP_EXCEPTION,
-            TS_ERROR_VECTOR_CORE_TIMEOUT,
-            TS_ERROR_TASK_SQE_ERROR,
-            TS_ERROR_VECTOR_CORE_EXCEPTION,
-            logicCq.errorCode};
-        uint32_t aicpuErrMap[TS_STARS_ERROR_MAX_INDEX] = {
-            TS_ERROR_AICPU_EXCEPTION,
-            TS_ERROR_TASK_TRAP,
-            TS_ERROR_AICPU_TIMEOUT,
-            TS_ERROR_TASK_SQE_ERROR,
-            TS_ERROR_AICPU_EXCEPTION,
-            logicCq.errorCode};
-        uint32_t aicorerErrMap[TS_STARS_ERROR_MAX_INDEX] = {
-            TS_ERROR_AICORE_EXCEPTION,
-            TS_ERROR_AICORE_TRAP_EXCEPTION,
-            TS_ERROR_AICORE_TIMEOUT,
-            TS_ERROR_TASK_SQE_ERROR,
-            TS_ERROR_AICORE_EXCEPTION,
-            logicCq.errorCode};
+            TS_ERROR_VECTOR_CORE_EXCEPTION, TS_ERROR_VECTOR_CORE_TRAP_EXCEPTION, TS_ERROR_VECTOR_CORE_TIMEOUT,
+            TS_ERROR_TASK_SQE_ERROR,        TS_ERROR_VECTOR_CORE_EXCEPTION,      logicCq.errorCode};
+        uint32_t aicpuErrMap[TS_STARS_ERROR_MAX_INDEX] = {TS_ERROR_AICPU_EXCEPTION, TS_ERROR_TASK_TRAP,
+                                                          TS_ERROR_AICPU_TIMEOUT,   TS_ERROR_TASK_SQE_ERROR,
+                                                          TS_ERROR_AICPU_EXCEPTION, logicCq.errorCode};
+        uint32_t aicorerErrMap[TS_STARS_ERROR_MAX_INDEX] = {TS_ERROR_AICORE_EXCEPTION, TS_ERROR_AICORE_TRAP_EXCEPTION,
+                                                            TS_ERROR_AICORE_TIMEOUT,   TS_ERROR_TASK_SQE_ERROR,
+                                                            TS_ERROR_AICORE_EXCEPTION, logicCq.errorCode};
 
         const uint32_t errorIndex = static_cast<uint32_t>(BitScan(static_cast<uint64_t>(logicCq.errorType)));
         if (taskInfo->type == TS_TASK_TYPE_KERNEL_AIVEC) {
             taskInfo->errorCode = vectorErrMap[errorIndex];
-            COND_PROC(CheckErrPrint(taskInfo->errorCode), STREAM_REPORT_ERR_MSG(reportStream, ERR_MODULE_TBE,
-                "Vector Core kernel execution failed, retCode=%#x.", taskInfo->errorCode));
+            COND_PROC(
+                CheckErrPrint(taskInfo->errorCode),
+                STREAM_REPORT_ERR_MSG(
+                    reportStream, ERR_MODULE_TBE, "Vector Core kernel execution failed, retCode=%#x.",
+                    taskInfo->errorCode));
         } else if (taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) {
             taskInfo->errorCode = aicpuErrMap[errorIndex];
-            COND_PROC(CheckErrPrint(taskInfo->errorCode), STREAM_REPORT_ERR_MSG(reportStream, ERR_MODULE_AICPU,
-                "AI CPU kernel task execution failed, retCode=%#x.", taskInfo->errorCode));
+            COND_PROC(
+                CheckErrPrint(taskInfo->errorCode),
+                STREAM_REPORT_ERR_MSG(
+                    reportStream, ERR_MODULE_AICPU, "AI CPU kernel task execution failed, retCode=%#x.",
+                    taskInfo->errorCode));
         } else {
             taskInfo->errorCode = aicorerErrMap[errorIndex];
-            COND_PROC(CheckErrPrint(taskInfo->errorCode), STREAM_REPORT_ERR_MSG(reportStream, ERR_MODULE_TBE,
-                "AI Core kernel execution failed, retCode=%#x.", taskInfo->errorCode));
+            COND_PROC(
+                CheckErrPrint(taskInfo->errorCode),
+                STREAM_REPORT_ERR_MSG(
+                    reportStream, ERR_MODULE_TBE, "AI Core kernel execution failed, retCode=%#x.",
+                    taskInfo->errorCode));
         }
     }
 }
@@ -357,5 +359,5 @@ static bool DavinciKernelTaskRegister()
 
 static bool g_davinciKernelTaskRegister = DavinciKernelTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

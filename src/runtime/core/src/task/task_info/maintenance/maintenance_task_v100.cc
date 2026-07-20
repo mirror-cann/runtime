@@ -19,12 +19,12 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("MaintenanceTask")
-static void ConstructSqeForMaintenanceTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForMaintenanceTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    MaintenanceTaskInfo *maintenanceTaskInfo = &(taskInfo->u.maintenanceTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    MaintenanceTaskInfo* maintenanceTaskInfo = &(taskInfo->u.maintenanceTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     if (maintenanceTaskInfo->flag && (maintenanceTaskInfo->mtType == MT_STREAM_RECYCLE_TASK)) {
@@ -36,7 +36,7 @@ static void ConstructSqeForMaintenanceTask(TaskInfo * const taskInfo, rtStarsSqe
     }
 
     sqe->post_p = 0U;
-    sqe->wr_cqe = 1U;       // need write cqe for recycle task
+    sqe->wr_cqe = 1U; // need write cqe for recycle task
     sqe->res0 = 0U;
     sqe->task_type = TS_TASK_TYPE_MAINTENANCE;
 
@@ -52,30 +52,31 @@ static void ConstructSqeForMaintenanceTask(TaskInfo * const taskInfo, rtStarsSqe
     RT_LOG(RT_LOG_INFO, "MaintenanceTask stream_id:%d task_id:%u.", stream->Id_(), static_cast<uint32_t>(taskInfo->id));
 }
 
-static void DoCompleteSuccessForMaintenanceTask(TaskInfo * const taskInfo, const uint32_t devId)
+static void DoCompleteSuccessForMaintenanceTask(TaskInfo* const taskInfo, const uint32_t devId)
 {
     UNUSED(devId);
-    MaintenanceTaskInfo *maintenanceTaskInfo = &(taskInfo->u.maintenanceTaskInfo);
-    Stream * const stream = taskInfo->stream;
-    Driver * const driver = taskInfo->stream->Device_()->Driver_();
+    MaintenanceTaskInfo* maintenanceTaskInfo = &(taskInfo->u.maintenanceTaskInfo);
+    Stream* const stream = taskInfo->stream;
+    Driver* const driver = taskInfo->stream->Device_()->Driver_();
 
-    const Device *const devicePtr = stream->Device_();
+    const Device* const devicePtr = stream->Device_();
 
     if ((!Runtime::Instance()->GetDisableThread()) && (maintenanceTaskInfo->mtType == MT_EVENT_DESTROY)) {
-        const rtError_t errorCode = driver->EventIdFree(static_cast<int32_t>(maintenanceTaskInfo->mtId),
-            devicePtr->Id_(), devicePtr->DevGetTsId());
-        COND_RETURN_VOID(errorCode != RT_ERROR_NONE, "event id free errorCode, id=%u, deviceId=%u, retCode=%#x",
+        const rtError_t errorCode = driver->EventIdFree(
+            static_cast<int32_t>(maintenanceTaskInfo->mtId), devicePtr->Id_(), devicePtr->DevGetTsId());
+        COND_RETURN_VOID(
+            errorCode != RT_ERROR_NONE, "event id free errorCode, id=%u, deviceId=%u, retCode=%#x",
             maintenanceTaskInfo->mtId, devicePtr->Id_(), errorCode);
     }
 }
 #endif
 
 #if F_DESC("GetDevMsgTask")
-static void ConstructSqeForGetDevMsgTask(TaskInfo* taskInfo, rtStarsSqe_t * const command)
+static void ConstructSqeForGetDevMsgTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    GetDevMsgTaskInfo *getDevMsgTask = &(taskInfo->u.getDevMsgTask);
-    Stream * const stm = taskInfo->stream;
-    RtStarsPhSqe * const sqe = &(command->phSqe);
+    GetDevMsgTaskInfo* getDevMsgTask = &(taskInfo->u.getDevMsgTask);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
 
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
@@ -88,8 +89,7 @@ static void ConstructSqeForGetDevMsgTask(TaskInfo* taskInfo, rtStarsSqe_t * cons
     sqe->task_type = TS_TASK_TYPE_GET_DEVICE_MSG;
     sqe->kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
     sqe->u.get_dev_msg_info.len = getDevMsgTask->msgBufferLen;
-    sqe->u.get_dev_msg_info.devAddr =
-        RtPtrToValue<void *>(getDevMsgTask->devMem);
+    sqe->u.get_dev_msg_info.devAddr = RtPtrToValue<void*>(getDevMsgTask->devMem);
     sqe->u.get_dev_msg_info.offset = getDevMsgTask->offset;
     sqe->u.get_dev_msg_info.type = static_cast<uint16_t>(getDevMsgTask->msgType);
 
@@ -99,10 +99,10 @@ static void ConstructSqeForGetDevMsgTask(TaskInfo* taskInfo, rtStarsSqe_t * cons
 #endif
 
 #if F_DESC("StarsVersionTask")
-static void ConstructSqeForStarsVersionTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForStarsVersionTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    Stream *const stm = taskInfo->stream;
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 1U;
@@ -120,26 +120,31 @@ static void ConstructSqeForStarsVersionTask(TaskInfo * const taskInfo, rtStarsSq
     sqe->kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
     sqe->u.starsVersionInfo.buildVersion = RUNTIME_BUILD_VERSION;
     PrintSqe(command, "GetStarsVersionTask");
-    RT_LOG(RT_LOG_INFO, "Send GetStarsVersionTask success, sqe_type=%u,pre_p=%u,sqe->rt_streamID=%u, stream_id=%d,"
-        "task_id=%u,task_type=%u.", sqe->type, sqe->pre_p, sqe->rt_streamID, stm->Id_(), sqe->task_id, sqe->task_type);
+    RT_LOG(
+        RT_LOG_INFO,
+        "Send GetStarsVersionTask success, sqe_type=%u,pre_p=%u,sqe->rt_streamID=%u, stream_id=%d,"
+        "task_id=%u,task_type=%u.",
+        sqe->type, sqe->pre_p, sqe->rt_streamID, stm->Id_(), sqe->task_id, sqe->task_type);
 }
 
-void SetStarsResultForStarsVersionTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq)
+void SetStarsResultForStarsVersionTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq)
 {
     taskInfo->errorCode = logicCq.errorCode;
-    RT_LOG(RT_LOG_DEBUG, "StarsVersionTask errorCode=%u,logicCq:err=%u,errCode=%u, stream_id=%hu, task_id=%hu",
-           taskInfo->errorCode, logicCq.errorType, logicCq.errorCode, logicCq.streamId, logicCq.taskId);
+    RT_LOG(
+        RT_LOG_DEBUG, "StarsVersionTask errorCode=%u,logicCq:err=%u,errCode=%u, stream_id=%hu, task_id=%hu",
+        taskInfo->errorCode, logicCq.errorType, logicCq.errorCode, logicCq.streamId, logicCq.taskId);
 }
 
 void DoCompleteSuccessForStarsVersionTask(TaskInfo* taskInfo, const uint32_t devId)
 {
     UNUSED(devId);
-    Device *const dev = taskInfo->stream->Device_();
+    Device* const dev = taskInfo->stream->Device_();
     COND_RETURN_VOID(dev == nullptr, "dev is NULL.");
-    uint32_t tschVersion = taskInfo->errorCode == 0
-        ? static_cast<uint32_t>(TS_VERSION_STARS_COMPATIBILITY) : taskInfo->errorCode;
-    RT_LOG(RT_LOG_INFO, "Complete StarsVersionTask success, retCode=%u, tschVersion=%u.",
-           taskInfo->errorCode, tschVersion);
+    uint32_t tschVersion =
+        taskInfo->errorCode == 0 ? static_cast<uint32_t>(TS_VERSION_STARS_COMPATIBILITY) : taskInfo->errorCode;
+    RT_LOG(
+        RT_LOG_INFO, "Complete StarsVersionTask success, retCode=%u, tschVersion=%u.", taskInfo->errorCode,
+        tschVersion);
     dev->SetTschVersion(tschVersion);
 }
 #endif
@@ -189,5 +194,5 @@ static bool MaintenanceTaskRegister()
 
 static bool g_maintenanceTaskRegister = MaintenanceTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -30,25 +30,27 @@
 
 namespace cce {
 namespace runtime {
-void HwtsEngine::ProcessOverFlowReport(const rtTaskReport_t * const errorReport, const uint32_t tsRetCode) const
+void HwtsEngine::ProcessOverFlowReport(const rtTaskReport_t* const errorReport, const uint32_t tsRetCode) const
 {
     if (errorReport == nullptr) {
         RT_LOG(RT_LOG_WARNING, "errorReport is null, tsRetCode=%u.", tsRetCode);
         return;
     }
-    const uint16_t streamId = static_cast<uint16_t>((static_cast<uint32_t>(errorReport->streamID) |
-        (static_cast<uint32_t>(errorReport->streamIDEx) << static_cast<uint32_t>(RT_STREAM_ID_OFFSET))));
-    RT_LOG(RT_LOG_INFO, "sq_id=%hu, stream_id=%hu, task_id=%hu, sq_head=%hu.",
-           errorReport->SQ_id, streamId, errorReport->taskID, errorReport->SQ_head);
+    const uint16_t streamId = static_cast<uint16_t>(
+        (static_cast<uint32_t>(errorReport->streamID) |
+         (static_cast<uint32_t>(errorReport->streamIDEx) << static_cast<uint32_t>(RT_STREAM_ID_OFFSET))));
+    RT_LOG(
+        RT_LOG_INFO, "sq_id=%hu, stream_id=%hu, task_id=%hu, sq_head=%hu.", errorReport->SQ_id, streamId,
+        errorReport->taskID, errorReport->SQ_head);
 
-    TaskFactory * const taskGenerator = device_->GetTaskFactory();
+    TaskFactory* const taskGenerator = device_->GetTaskFactory();
     COND_RETURN_VOID(taskGenerator == nullptr, "Failed to get task factory.");
 
-    TaskInfo * const reportTask = taskGenerator->GetTask(static_cast<int32_t>(streamId), errorReport->taskID);
+    TaskInfo* const reportTask = taskGenerator->GetTask(static_cast<int32_t>(streamId), errorReport->taskID);
     if (reportTask == nullptr) {
         RT_LOG(RT_LOG_WARNING, "Failed to find task from task factory.");
-        ProcessNullTaskOverFlowReport(static_cast<uint32_t>(streamId),
-                                      static_cast<uint32_t>(errorReport->taskID), tsRetCode);
+        ProcessNullTaskOverFlowReport(
+            static_cast<uint32_t>(streamId), static_cast<uint32_t>(errorReport->taskID), tsRetCode);
         return;
     }
 
@@ -56,21 +58,21 @@ void HwtsEngine::ProcessOverFlowReport(const rtTaskReport_t * const errorReport,
     if ((type == TS_TASK_TYPE_KERNEL_AICORE) || (type == TS_TASK_TYPE_KERNEL_AICPU) ||
         (type == TS_TASK_TYPE_KERNEL_AIVEC) || (type == TS_TASK_TYPE_MEMCPY)) {
         reportTask->errorCode = tsRetCode;
-        TaskFailCallBack(static_cast<uint32_t>(reportTask->stream->Id_()),
-                         static_cast<uint32_t>(reportTask->id), reportTask->tid,
-                         tsRetCode, reportTask->stream->Device_());
+        TaskFailCallBack(
+            static_cast<uint32_t>(reportTask->stream->Id_()), static_cast<uint32_t>(reportTask->id), reportTask->tid,
+            tsRetCode, reportTask->stream->Device_());
     }
 }
 
-void HwtsEngine::ProcessNullTaskOverFlowReport(const uint32_t streamId,
-    const uint32_t taskId, const uint32_t retCode) const
+void HwtsEngine::ProcessNullTaskOverFlowReport(
+    const uint32_t streamId, const uint32_t taskId, const uint32_t retCode) const
 {
     rtError_t rtErrCode = RT_ERROR_NONE;
     rtExceptionInfo_t exceptionInfo;
-    const char_t *const retDes = GetTsErrCodeMap(retCode, &rtErrCode);
+    const char_t* const retDes = GetTsErrCodeMap(retCode, &rtErrCode);
 
-    TaskInfo *workTask = device_->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId),
-                                                            static_cast<uint16_t>(taskId));
+    TaskInfo* workTask =
+        device_->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), static_cast<uint16_t>(taskId));
     GetExceptionArgs(workTask, &(exceptionInfo.expandInfo.u.aicoreInfo.exceptionArgs));
     exceptionInfo.retcode = static_cast<uint32_t>(RT_TRANS_EXT_ERRCODE(rtErrCode));
     exceptionInfo.taskid = CovertToFlipTaskId(workTask, taskId);
@@ -78,8 +80,9 @@ void HwtsEngine::ProcessNullTaskOverFlowReport(const uint32_t streamId,
     exceptionInfo.streamid = streamId;
     exceptionInfo.deviceid = device_->Id_();
 
-    RT_LOG(RT_LOG_WARNING, "retCode=0x%x,[%s], errorTaskId=%u, errorStreamId=%u.",
-        rtErrCode, retDes, exceptionInfo.taskid, exceptionInfo.streamid);
+    RT_LOG(
+        RT_LOG_WARNING, "retCode=0x%x,[%s], errorTaskId=%u, errorStreamId=%u.", rtErrCode, retDes, exceptionInfo.taskid,
+        exceptionInfo.streamid);
 
     TaskFailCallBackNotify(&exceptionInfo);
     if (exceptionInfo.expandInfo.u.aicoreInfo.exceptionArgs.exceptionKernelInfo.kernelName != nullptr) {
@@ -87,25 +90,26 @@ void HwtsEngine::ProcessNullTaskOverFlowReport(const uint32_t streamId,
     }
 }
 
-void HwtsEngine::ReportReceive(const rtTaskReport_t * const report, TaskInfo * const reportTask)
+void HwtsEngine::ReportReceive(const rtTaskReport_t* const report, TaskInfo* const reportTask)
 {
     uint8_t package[M_PROF_PACKAGE_LEN] = {0U};
-    constexpr size_t pktLen  = static_cast<size_t>(M_PROF_PACKAGE_LEN);
+    constexpr size_t pktLen = static_cast<size_t>(M_PROF_PACKAGE_LEN);
     if (likely(rebuilder_.PackageReportReceive(report, package, pktLen, reportTask))) {
         reportTask->pkgStat[report->packageType].receivePackage++;
         if (likely(report->packageType == static_cast<uint16_t>(RT_PACKAGE_TYPE_TASK_REPORT))) {
-            SetResult(reportTask, RtPtrToPtr<const uint8_t *>(package),
-                      reportTask->pkgStat[report->packageType].packageReportNum);
+            SetResult(
+                reportTask, RtPtrToPtr<const uint8_t*>(package),
+                reportTask->pkgStat[report->packageType].packageReportNum);
             DoTaskComplete(reportTask, device_->Id_());
-            const uint32_t errInfo = (*(RtPtrToPtr<uint32_t *>(package))) & RT_GET_ERR_CODE;
-            ReportExceptProc(reportTask, errInfo, *(RtPtrToPtr<uint32_t *>(package)));
+            const uint32_t errInfo = (*(RtPtrToPtr<uint32_t*>(package))) & RT_GET_ERR_CODE;
+            ReportExceptProc(reportTask, errInfo, *(RtPtrToPtr<uint32_t*>(package)));
         }
     }
 }
 
 Kernel* HwtsEngine::SearchErrorKernel(const uint16_t devId, const Program* const prog) const
 {
-    uint64_t *pc_arr = nullptr;
+    uint64_t* pc_arr = nullptr;
     uint32_t cnt = 0U;
     device_->GetErrorPcArr(devId, &pc_arr, &cnt);
     for (uint32_t i = 0U; i < cnt; i++) {
@@ -121,7 +125,7 @@ Kernel* HwtsEngine::SearchErrorKernel(const uint16_t devId, const Program* const
     return nullptr;
 }
 
-void HwtsEngine::ReportExceptProc(const TaskInfo * const reportTask, const uint32_t errCode, const uint32_t errorDesc)
+void HwtsEngine::ReportExceptProc(const TaskInfo* const reportTask, const uint32_t errCode, const uint32_t errorDesc)
 {
     if (static_cast<int32_t>(errCode) == RT_ERROR_NONE) {
         return;
@@ -135,34 +139,39 @@ void HwtsEngine::ReportExceptProc(const TaskInfo * const reportTask, const uint3
             (errCode != static_cast<uint32_t>(TS_MODEL_ABORT_NORMAL)) &&
             (errCode != static_cast<uint32_t>(TS_ERROR_AICORE_OVERFLOW)) &&
             (errCode != static_cast<uint32_t>(TS_ERROR_AIVEC_OVERFLOW))) {
-            const uint32_t faultStreamId = (errorDesc & 0x0000FFFFU);     // stream Id for model execute failed
+            const uint32_t faultStreamId = (errorDesc & 0x0000FFFFU);      // stream Id for model execute failed
             const uint32_t faultTaskId = (errorDesc & 0xFFFF0000U) >> 16U; // task id for model execute failed
-            TaskInfo *exceptionTask = nullptr;
+            TaskInfo* exceptionTask = nullptr;
             if (Runtime::Instance()->GetDisableThread()) {
-                exceptionTask = device_->GetTaskFactory()->GetTask(static_cast<int32_t>(faultStreamId),
-                static_cast<uint16_t>(faultTaskId));
+                exceptionTask = device_->GetTaskFactory()->GetTask(
+                    static_cast<int32_t>(faultStreamId), static_cast<uint16_t>(faultTaskId));
             }
             if ((taskType == TS_TASK_TYPE_MODEL_EXECUTE) && unlikely(exceptionTask != nullptr)) {
-                RT_LOG(RT_LOG_ERROR, "Real task exception! device_id=%u, stream_id=%u, task_id=%u, task_type=%u (%s)",
+                RT_LOG(
+                    RT_LOG_ERROR, "Real task exception! device_id=%u, stream_id=%u, task_id=%u, task_type=%u (%s)",
                     static_cast<uint32_t>(device_->Id_()), faultStreamId, faultTaskId, exceptionTask->type,
                     exceptionTask->typeName);
             }
             if ((taskType == TS_TASK_TYPE_KERNEL_AICORE) || (taskType == TS_TASK_TYPE_KERNEL_AIVEC)) {
                 std::string kernelNameStr = "";
-                AicTaskInfo *aicTaskInfo = &(const_cast<TaskInfo *>(reportTask)->u.aicTaskInfo);
+                AicTaskInfo* aicTaskInfo = &(const_cast<TaskInfo*>(reportTask)->u.aicTaskInfo);
                 if ((aicTaskInfo != nullptr) && (aicTaskInfo->kernel != nullptr)) {
                     kernelNameStr = aicTaskInfo->kernel->Name_();
                 }
                 kernelNameStr = kernelNameStr.empty() ? ("none") : kernelNameStr;
-                RT_LOG(RT_LOG_ERROR, "Task exception! device_id=%u, stream_id=%d, task_id=%hu, type=%d(%s), "
+                RT_LOG(
+                    RT_LOG_ERROR,
+                    "Task exception! device_id=%u, stream_id=%d, task_id=%hu, type=%d(%s), "
                     "kernel_name=%s , failure_mode=%llu, retCode=%#x, [%s]",
-                    device_->Id_(), streamId, reportTask->id, taskType, reportTask->typeName,
-                    kernelNameStr.c_str(), failureMode, (errCode & 0xFFFU), GetTsErrCodeDesc(errCode));
-            } else {
-                RT_LOG(RT_LOG_ERROR, "Task exception! device_id=%u, stream_id=%d, task_id=%hu, type=%d(%s), "
-                    "failure_mode =%llu, retCode=%#x, [%s]",
-                    device_->Id_(), streamId, reportTask->id, taskType, reportTask->typeName,
+                    device_->Id_(), streamId, reportTask->id, taskType, reportTask->typeName, kernelNameStr.c_str(),
                     failureMode, (errCode & 0xFFFU), GetTsErrCodeDesc(errCode));
+            } else {
+                RT_LOG(
+                    RT_LOG_ERROR,
+                    "Task exception! device_id=%u, stream_id=%d, task_id=%hu, type=%d(%s), "
+                    "failure_mode =%llu, retCode=%#x, [%s]",
+                    device_->Id_(), streamId, reportTask->id, taskType, reportTask->typeName, failureMode,
+                    (errCode & 0xFFFU), GetTsErrCodeDesc(errCode));
             }
             (void)device_->PrintStreamTimeoutSnapshotInfo();
             if (Runtime::Instance()->isSetVisibleDev) {
@@ -183,11 +192,11 @@ void HwtsEngine::ReportExceptProc(const TaskInfo * const reportTask, const uint3
             }
             if (exceptionTask != nullptr &&
                 (exceptionTask->type == TS_TASK_TYPE_KERNEL_AICORE ||
-                    exceptionTask->type == TS_TASK_TYPE_KERNEL_AIVEC) &&
+                 exceptionTask->type == TS_TASK_TYPE_KERNEL_AIVEC) &&
                 exceptionTask->u.aicTaskInfo.kernel == nullptr) {
-                AicTaskInfo *aicTask = &exceptionTask->u.aicTaskInfo;
-                aicTask->kernel = aicTask->progHandle == nullptr ? nullptr :
-                    SearchErrorKernel(device_->Id_(), aicTask->progHandle);
+                AicTaskInfo* aicTask = &exceptionTask->u.aicTaskInfo;
+                aicTask->kernel =
+                    aicTask->progHandle == nullptr ? nullptr : SearchErrorKernel(device_->Id_(), aicTask->progHandle);
             }
         }
         if (Runtime::Instance()->excptCallBack_ != nullptr) {
@@ -197,5 +206,5 @@ void HwtsEngine::ReportExceptProc(const TaskInfo * const reportTask, const uint3
         }
     }
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -19,7 +19,7 @@
 namespace cce {
 namespace runtime {
 
-rtError_t GetPrefetchCnt(Kernel * const kernel)
+rtError_t GetPrefetchCnt(Kernel* const kernel)
 {
     if (kernel->GetKernelAttrType() == RT_KERNEL_ATTR_TYPE_AICPU) {
         return RT_ERROR_NONE;
@@ -69,8 +69,9 @@ rtError_t GetPrefetchCnt(Kernel * const kernel)
 
     kernel->SetPrefetchCnt1_(icachePrefetchCnt1);
     kernel->SetPrefetchCnt2_(icachePrefetchCnt2);
-    RT_LOG(RT_LOG_DEBUG, "get prefetch cnt success, kernel_name=%s, prefetchCnt1=%u, prefetchCnt2=%u, mixtype=%hu.",
-           kernel->Name_().c_str(), kernel->PrefetchCnt1_(), kernel->PrefetchCnt2_(), mixtype);
+    RT_LOG(
+        RT_LOG_DEBUG, "get prefetch cnt success, kernel_name=%s, prefetchCnt1=%u, prefetchCnt2=%u, mixtype=%hu.",
+        kernel->Name_().c_str(), kernel->PrefetchCnt1_(), kernel->PrefetchCnt2_(), mixtype);
     return RT_ERROR_NONE;
 }
 
@@ -87,7 +88,7 @@ rtError_t PostUpdateKernelParams(TaskInfo* taskInfo)
 
 void SetAicoreArgsSuperKernel(TaskInfo* taskInfo, const rtArgsEx_t* argsInfo, StarsArgLoaderResult& result)
 {
-    AicTaskInfo *aicTask = &(taskInfo->u.aicTaskInfo);
+    AicTaskInfo* aicTask = &(taskInfo->u.aicTaskInfo);
     aicTask->comm.argsSize = argsInfo->argsSize;
     aicTask->comm.args = result.kerArgs;
     if (result.handle != nullptr) {
@@ -111,5 +112,5 @@ void BackupTaskArgHandle(TaskInfo* taskInfo)
     }
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

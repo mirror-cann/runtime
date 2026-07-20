@@ -17,18 +17,20 @@
 
 namespace cce {
 namespace runtime {
-void ConstructMbufFreeInstrFc(RtStarsDqsMbufFreeFc &fc, const RtDqsMbufFreeFcPara &funcCallPara);
-void ConstructDqsEnqueueFc(RtStarsDqsEnqueueFc &fc, const RtStarsDqsFcPara &funcCallPara);
-void ConstructDqsDequeueFc(RtStarsDqsDequeueFc &fc, const RtStarsDqsFcPara &funcCallPara);
-void ConstructDqsBatchDequeueFc(RtStarsDqsBatchDequeueFc &fc, const RtStarsDqsBatchDeqFcPara &funcCallPara);
-void ConstructDqsFrameAlignFc(RtStarsDqsFrameAlignFc &fc, const RtStarsDqsFrameAlignFcPara &fcPara);
-void ConstructDqsFrameAlignForDssFc(RtStarsDqsFrameAlignForDssFc &fc, const RtStarsDqsFrameAlignFcPara &fcPara);
-void ConstructDqsPrepareFc(RtStarsDqsPrepareOutFc &fc, const RtStarsDqsPrepareFcPara &fcPara);
-void ConstructDqsZeroCopyFc(RtStarsDqsZeroCopyFc &fc, const RtStarsDqsZeroCopyPara &funcCallPara);
-void ConstructConditionCopyFc(RtStarsDqsConditionCopyFc &fc, const RtStarsDqsConditionCopyPara &funcCallPara);
-void ConstructDqsInterChipPreProcFc(RtStarsDqsInterChipPreProcFc &fc, const RtStarsDqsInterChipPreProcPara &funcCallPara);
-void ConstructDqsInterChipPostProcFc(RtStarsDqsInterChipPostProcFc &fc, const RtStarsDqsInterChipPostProcPara &funcCallPara);
-void ConstructDqsAdspcFc(RtStarsDqsAdspcFc &fc, const RtStarsDqsAdspcFcPara &fcPara);
+void ConstructMbufFreeInstrFc(RtStarsDqsMbufFreeFc& fc, const RtDqsMbufFreeFcPara& funcCallPara);
+void ConstructDqsEnqueueFc(RtStarsDqsEnqueueFc& fc, const RtStarsDqsFcPara& funcCallPara);
+void ConstructDqsDequeueFc(RtStarsDqsDequeueFc& fc, const RtStarsDqsFcPara& funcCallPara);
+void ConstructDqsBatchDequeueFc(RtStarsDqsBatchDequeueFc& fc, const RtStarsDqsBatchDeqFcPara& funcCallPara);
+void ConstructDqsFrameAlignFc(RtStarsDqsFrameAlignFc& fc, const RtStarsDqsFrameAlignFcPara& fcPara);
+void ConstructDqsFrameAlignForDssFc(RtStarsDqsFrameAlignForDssFc& fc, const RtStarsDqsFrameAlignFcPara& fcPara);
+void ConstructDqsPrepareFc(RtStarsDqsPrepareOutFc& fc, const RtStarsDqsPrepareFcPara& fcPara);
+void ConstructDqsZeroCopyFc(RtStarsDqsZeroCopyFc& fc, const RtStarsDqsZeroCopyPara& funcCallPara);
+void ConstructConditionCopyFc(RtStarsDqsConditionCopyFc& fc, const RtStarsDqsConditionCopyPara& funcCallPara);
+void ConstructDqsInterChipPreProcFc(
+    RtStarsDqsInterChipPreProcFc& fc, const RtStarsDqsInterChipPreProcPara& funcCallPara);
+void ConstructDqsInterChipPostProcFc(
+    RtStarsDqsInterChipPostProcFc& fc, const RtStarsDqsInterChipPostProcPara& funcCallPara);
+void ConstructDqsAdspcFc(RtStarsDqsAdspcFc& fc, const RtStarsDqsAdspcFcPara& fcPara);
 
 } // namespace runtime
 } // namespace cce

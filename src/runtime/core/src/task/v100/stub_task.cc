@@ -19,13 +19,13 @@
 namespace cce {
 namespace runtime {
 
-TaskInfo* GetTaskInfo(const Device * const dev, uint32_t streamId, uint32_t pos, bool posIsSqHead)
+TaskInfo* GetTaskInfo(const Device* const dev, uint32_t streamId, uint32_t pos, bool posIsSqHead)
 {
     UNUSED(posIsSqHead);
     return dev->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), static_cast<uint16_t>(pos));
 }
 
-rtError_t TaskReclaimByStream(const Stream *const stm, const bool limited, const bool needLog)
+rtError_t TaskReclaimByStream(const Stream* const stm, const bool limited, const bool needLog)
 {
     UNUSED(stm);
     UNUSED(limited);
@@ -33,19 +33,19 @@ rtError_t TaskReclaimByStream(const Stream *const stm, const bool limited, const
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-void ProfStart(Profiler * const profiler, const uint64_t profConfig, const uint32_t devId, const Device * const dev)
+void ProfStart(Profiler* const profiler, const uint64_t profConfig, const uint32_t devId, const Device* const dev)
 {
     profiler->TsProfilerStart(profConfig, devId, const_cast<Device*>(dev));
     return;
 }
 
-void ProfStop(Profiler * const profiler, const uint64_t profConfig, const uint32_t devId, const Device * const dev)
+void ProfStop(Profiler* const profiler, const uint64_t profConfig, const uint32_t devId, const Device* const dev)
 {
     profiler->TsProfilerStop(profConfig, devId, const_cast<Device*>(dev));
     return;
 }
 
-rtError_t SetTimeoutConfigTaskSubmitDavid(Stream * const stm, const rtTaskTimeoutType_t type, const uint32_t timeout)
+rtError_t SetTimeoutConfigTaskSubmitDavid(Stream* const stm, const rtTaskTimeoutType_t type, const uint32_t timeout)
 {
     UNUSED(stm);
     UNUSED(type);
@@ -53,27 +53,26 @@ rtError_t SetTimeoutConfigTaskSubmitDavid(Stream * const stm, const rtTaskTimeou
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t AicpuMdlDestroy(Model * const mdl)
+rtError_t AicpuMdlDestroy(Model* const mdl)
 {
     UNUSED(mdl);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ModelSubmitExecuteTask(Model * const mdl, Stream * const streamIn)
+rtError_t ModelSubmitExecuteTask(Model* const mdl, Stream* const streamIn)
 {
     UNUSED(streamIn);
     UNUSED(mdl);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ModelLoadCompleteByStream(Model * const mdl)
+rtError_t ModelLoadCompleteByStream(Model* const mdl)
 {
     UNUSED(mdl);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t MdlBindTaskSubmit(Model * const mdl, Stream * const streamIn,
-    const uint32_t flag)
+rtError_t MdlBindTaskSubmit(Model* const mdl, Stream* const streamIn, const uint32_t flag)
 {
     UNUSED(flag);
     UNUSED(streamIn);
@@ -81,8 +80,7 @@ rtError_t MdlBindTaskSubmit(Model * const mdl, Stream * const streamIn,
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t MdlUnBindTaskSubmit(Model * const mdl, Stream * const streamIn,
-    const bool force)
+rtError_t MdlUnBindTaskSubmit(Model* const mdl, Stream* const streamIn, const bool force)
 {
     UNUSED(force);
     UNUSED(streamIn);
@@ -97,12 +95,12 @@ rtError_t NtyWait(
     return inNotify->Wait(streamIn, timeOut, isEndGraphNotify, captureModel, externalWaitRetainedResources);
 }
 
-rtError_t SyncGetDevMsg(Device * const dev, const void * const devMemAddr, const uint32_t devMemSize,
-                                 const rtGetDevMsgType_t getDevMsgType)
+rtError_t SyncGetDevMsg(
+    Device* const dev, const void* const devMemAddr, const uint32_t devMemSize, const rtGetDevMsgType_t getDevMsgType)
 {
     // new a stream for get exception info
-    std::unique_ptr<Stream, void(*)(Stream*)> stm(StreamFactory::CreateStream(dev, 0U),
-                                                  [](Stream* ptr) {ptr->Destructor();});
+    std::unique_ptr<Stream, void (*)(Stream*)> stm(
+        StreamFactory::CreateStream(dev, 0U), [](Stream* ptr) { ptr->Destructor(); });
     COND_RETURN_AND_MSG_OUTER(stm == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream), "new");
     rtError_t error = stm->Setup();
     ERROR_RETURN_MSG_INNER(error, "The stream setup failed, retCode=%#x.", static_cast<uint32_t>(error));
@@ -110,7 +108,7 @@ rtError_t SyncGetDevMsg(Device * const dev, const void * const devMemAddr, const
         const auto ret = (stm->TearDown());
         // Disable thread stream destroy task will delete stream
         // other condition, we should delete stream here
-        Runtime * const rtIntsance = Runtime::Instance();
+        Runtime* const rtIntsance = Runtime::Instance();
         // Disable thread free in stream destroy task recycle, stream destroy task send in TearDown process.
         if ((ret == RT_ERROR_NONE) && (!rtIntsance->GetDisableThread())) {
             (void)stm.release();
@@ -119,36 +117,35 @@ rtError_t SyncGetDevMsg(Device * const dev, const void * const devMemAddr, const
     const ScopeGuard devErrMsgStreamRelease(streamTearDownFunc);
     TaskInfo submitTask = {};
     rtError_t errorReason;
-    TaskInfo *tsk = stm.get()->AllocTask(&submitTask, TS_TASK_TYPE_GET_DEVICE_MSG, errorReason);
+    TaskInfo* tsk = stm.get()->AllocTask(&submitTask, TS_TASK_TYPE_GET_DEVICE_MSG, errorReason);
     NULL_PTR_RETURN_MSG(tsk, errorReason);
 
     // init RT_GET_DEV_ERROR_MSG task
     error = GetDevMsgTaskInit(tsk, devMemAddr, devMemSize, getDevMsgType);
-    ERROR_PROC_RETURN_MSG_INNER(error,
-                                ((void)dev->GetTaskFactory()->Recycle(tsk));,
-                                "Failed to init task, device_id=%u, stream_id=%d, task_id=%hu, retCode=%#x.",
+    ERROR_PROC_RETURN_MSG_INNER(error, ((void)dev->GetTaskFactory()->Recycle(tsk));
+                                , "Failed to init task, device_id=%u, stream_id=%d, task_id=%hu, retCode=%#x.",
                                 dev->Id_(), stm->Id_(), tsk->id, static_cast<uint32_t>(error));
     // submit task
     error = dev->SubmitTask(tsk);
-    ERROR_PROC_RETURN_MSG_INNER(error,
-                                ((void)dev->GetTaskFactory()->Recycle(tsk));,
-                                "Failed to submit task, retCode=%#x, device_id=%u.",
-                                static_cast<uint32_t>(error), dev->Id_());
+    ERROR_PROC_RETURN_MSG_INNER(error, ((void)dev->GetTaskFactory()->Recycle(tsk));
+                                , "Failed to submit task, retCode=%#x, device_id=%u.", static_cast<uint32_t>(error),
+                                dev->Id_());
     // stream synchronize
     error = stm->Synchronize();
-    ERROR_RETURN_MSG_INNER(error, "Failed to synchronize stream, device_id=%u, stream_id=%d, retCode=%#x.",
-        dev->Id_(), stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to synchronize stream, device_id=%u, stream_id=%d, retCode=%#x.", dev->Id_(), stm->Id_(),
+        static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t SyncGetDeviceMsg(Device * const dev, const void * const devMemAddr, const uint32_t devMemSize,
-    const rtGetDevMsgType_t getDevMsgType)
+rtError_t SyncGetDeviceMsg(
+    Device* const dev, const void* const devMemAddr, const uint32_t devMemSize, const rtGetDevMsgType_t getDevMsgType)
 {
     return SyncGetDevMsg(dev, devMemAddr, devMemSize, getDevMsgType);
 }
 
-rtError_t ProcRingBufferTaskDavid(const Device *const dev, const void * const devMem, const bool delFlag,
-    const uint32_t len)
+rtError_t ProcRingBufferTaskDavid(
+    const Device* const dev, const void* const devMem, const bool delFlag, const uint32_t len)
 {
     UNUSED(dev);
     UNUSED(devMem);
@@ -157,13 +154,13 @@ rtError_t ProcRingBufferTaskDavid(const Device *const dev, const void * const de
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t TaskReclaimAllStream(const Device * const dev)
+rtError_t TaskReclaimAllStream(const Device* const dev)
 {
     UNUSED(dev);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t UpdateTimeoutConfigTaskSubmitDavid(Stream * const stm, const RtTimeoutConfig &timeoutConfig)
+rtError_t UpdateTimeoutConfigTaskSubmitDavid(Stream* const stm, const RtTimeoutConfig& timeoutConfig)
 {
     UNUSED(stm);
     UNUSED(timeoutConfig);
@@ -176,53 +173,48 @@ int32_t GetTaskIdBitWidth()
     return taskIdBitWidthForObp;
 }
 
-const char_t* TaskIdDesc()
-{
-    return "task_id";
-}
+const char_t* TaskIdDesc() { return "task_id"; }
 
-const char_t* TaskIdCamelbackNaming()
-{
-    return "taskId";
-}
+const char_t* TaskIdCamelbackNaming() { return "taskId"; }
 
-void PrintStarsCqeInfo(const rtLogicCqReport_t &cqe, const uint32_t devId, const uint32_t cqId)
+void PrintStarsCqeInfo(const rtLogicCqReport_t& cqe, const uint32_t devId, const uint32_t cqId)
 {
-    RT_LOG(RT_LOG_DEBUG, "device_id=%u,stream_id=%hu,task_id=%hu,cq_id=%u,sqe_type=%hhu",
-        devId, cqe.streamId, cqe.taskId, cqId, cqe.sqeType);
+    RT_LOG(
+        RT_LOG_DEBUG, "device_id=%u,stream_id=%hu,task_id=%hu,cq_id=%u,sqe_type=%hhu", devId, cqe.streamId, cqe.taskId,
+        cqId, cqe.sqeType);
     return;
 }
 
-uint32_t GetProfTaskId(const TaskInfo * const taskInfo)
+uint32_t GetProfTaskId(const TaskInfo* const taskInfo)
 {
     return GetFlipTaskId(static_cast<uint32_t>(taskInfo->id), taskInfo->flipNum);
 }
 
 uint32_t GetTaskId(const TaskInfo* const taskInfo) { return taskInfo->id; }
 
-void RecycleThreadDoForStarsV2(Device *deviceInfo)
+void RecycleThreadDoForStarsV2(Device* deviceInfo)
 {
     UNUSED(deviceInfo);
     return;
 }
 
-void ConstructStarsSqeForNotifyRecordTask(TaskInfo *taskInfo, uint8_t *const command)
+void ConstructStarsSqeForNotifyRecordTask(TaskInfo* taskInfo, uint8_t* const command)
 {
-    ConstructSqeForNotifyRecordTask(taskInfo, RtPtrToPtr<rtStarsSqe_t *>(command));
+    ConstructSqeForNotifyRecordTask(taskInfo, RtPtrToPtr<rtStarsSqe_t*>(command));
 }
 
-void ConstructStarsSqeForConditionNotifyWait(TaskInfo *taskInfo, uint8_t *const command)
+void ConstructStarsSqeForConditionNotifyWait(TaskInfo* taskInfo, uint8_t* const command)
 {
-    Construct2ndSqeForCaptureConditionTask(taskInfo, RtPtrToPtr<rtStarsSqe_t *>(command));
+    Construct2ndSqeForCaptureConditionTask(taskInfo, RtPtrToPtr<rtStarsSqe_t*>(command));
 }
 
-rtError_t CheckTaskCanSend(Stream * const stm)
+rtError_t CheckTaskCanSend(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_NONE;
 }
 
-rtError_t AllocTaskInfo(TaskInfo **taskInfo, Stream * const stm, uint32_t &pos, uint32_t sqeNum)
+rtError_t AllocTaskInfo(TaskInfo** taskInfo, Stream* const stm, uint32_t& pos, uint32_t sqeNum)
 {
     UNUSED(taskInfo);
     UNUSED(stm);
@@ -231,14 +223,14 @@ rtError_t AllocTaskInfo(TaskInfo **taskInfo, Stream * const stm, uint32_t &pos, 
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidSendTask(TaskInfo *taskInfo, Stream * const stm)
+rtError_t DavidSendTask(TaskInfo* taskInfo, Stream* const stm)
 {
     UNUSED(stm);
     UNUSED(taskInfo);
     return RT_ERROR_NONE;
 }
 
-void SaveTaskCommonInfo(TaskInfo *taskInfo, Stream * const stm, uint32_t pos, uint32_t sqeNum)
+void SaveTaskCommonInfo(TaskInfo* taskInfo, Stream* const stm, uint32_t pos, uint32_t sqeNum)
 {
     UNUSED(taskInfo);
     UNUSED(stm);
@@ -247,12 +239,12 @@ void SaveTaskCommonInfo(TaskInfo *taskInfo, Stream * const stm, uint32_t pos, ui
     return;
 }
 
-void TaskRollBack(Stream * const stm, uint32_t pos)
+void TaskRollBack(Stream* const stm, uint32_t pos)
 {
     UNUSED(stm);
     UNUSED(pos);
     return;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

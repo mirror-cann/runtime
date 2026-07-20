@@ -36,5 +36,5 @@ static DevDynInfoProcFunc CHIP_910B_PROC_FUNC = {
 };
 
 REGISTER_DEV_INFO_PROC_FUNC(CHIP_910_B_93, CHIP_910B_PROC_FUNC);
-}  // namespace runtime
+} // namespace runtime
 } // namespace cce

@@ -14,20 +14,18 @@
 
 namespace cce {
 namespace runtime {
-    rtError_t ModelDebugRegister(Model * const mdl, const uint32_t flag, const void * const addr,
-        uint32_t * const streamId, uint32_t * const taskId, Stream * const dftStm);
-    rtError_t ModelDebugUnRegister(Model * const mdl, Stream * const dftStm);
-    rtError_t MdlTaskUpdate(const Stream * const desStm, uint32_t desTaskId, Stream *sinkStm,
-        rtMdlTaskUpdateInfo_t *para);
-    rtError_t ModelLoadCompleteByStream(Model * const mdl);
-    rtError_t AicpuMdlDestroy(Model * const mdl);
-    rtError_t ModelSubmitExecuteTask(Model * const mdl, Stream * const streamIn);
-    rtError_t MdlAbort(Model * const mdl);
-    rtError_t MdlAddEndGraph(Model * const mdl, Stream * const stm, const uint32_t flags);
-    rtError_t MdlBindTaskSubmit(Model * const mdl, Stream * const streamIn,
-        const uint32_t flag);
-    rtError_t MdlUnBindTaskSubmit(Model * const mdl, Stream * const streamIn,
-        const bool force);
-}  // namespace runtime
-}  // namespace cce
+rtError_t ModelDebugRegister(
+    Model* const mdl, const uint32_t flag, const void* const addr, uint32_t* const streamId, uint32_t* const taskId,
+    Stream* const dftStm);
+rtError_t ModelDebugUnRegister(Model* const mdl, Stream* const dftStm);
+rtError_t MdlTaskUpdate(const Stream* const desStm, uint32_t desTaskId, Stream* sinkStm, rtMdlTaskUpdateInfo_t* para);
+rtError_t ModelLoadCompleteByStream(Model* const mdl);
+rtError_t AicpuMdlDestroy(Model* const mdl);
+rtError_t ModelSubmitExecuteTask(Model* const mdl, Stream* const streamIn);
+rtError_t MdlAbort(Model* const mdl);
+rtError_t MdlAddEndGraph(Model* const mdl, Stream* const stm, const uint32_t flags);
+rtError_t MdlBindTaskSubmit(Model* const mdl, Stream* const streamIn, const uint32_t flag);
+rtError_t MdlUnBindTaskSubmit(Model* const mdl, Stream* const streamIn, const bool force);
+} // namespace runtime
+} // namespace cce
 #endif

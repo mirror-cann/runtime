@@ -20,28 +20,30 @@ rtError_t GetRtExtErrCodeAndSetGlobalErr(const rtError_t errCode)
         return ret;
     }
 
-    // For API, Cannot call Specific object methods, need to use Runtime* 
-    Runtime *rt = Runtime::Instance();
+    // For API, Cannot call Specific object methods, need to use Runtime*
+    Runtime* rt = Runtime::Instance();
     if (rt != nullptr) {
         rt->SetGlobalErr(ret);
     }
-    
+
     return ret;
 }
 
-rtError_t RtCheckDeviceIdListValid(const uint32_t * const devIdList, const uint32_t devCnt)
+rtError_t RtCheckDeviceIdListValid(const uint32_t* const devIdList, const uint32_t devCnt)
 {
     int32_t npuDrvDevCnt = 1;
     const auto rt = Runtime::Instance();
     NULL_PTR_RETURN_MSG(rt, RT_ERROR_API_NULL);
     const rtError_t ret = rt->GetNpuDeviceCnt(npuDrvDevCnt);
     RT_LOG(RT_LOG_DEBUG, "npuDrvDevCnt:%u.", npuDrvDevCnt);
-    COND_RETURN_ERROR(ret != RT_ERROR_NONE, ACL_ERROR_RT_INTERNAL_ERROR,
-        "Failed to get device info count, retCode=%#x.", static_cast<uint32_t>(ret));
+    COND_RETURN_ERROR(
+        ret != RT_ERROR_NONE, ACL_ERROR_RT_INTERNAL_ERROR, "Failed to get device info count, retCode=%#x.",
+        static_cast<uint32_t>(ret));
     for (uint32_t i = 0U; i < devCnt; i++) {
         const uint32_t devId = *(devIdList + i);
-        COND_RETURN_AND_MSG_OUTER_WITH_PARAM(devId >= static_cast<uint32_t>(npuDrvDevCnt),
-            RT_ERROR_INVALID_VALUE, devId, "[0, " + std::to_string(npuDrvDevCnt) + ")");
+        COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+            devId >= static_cast<uint32_t>(npuDrvDevCnt), RT_ERROR_INVALID_VALUE, devId,
+            "[0, " + std::to_string(npuDrvDevCnt) + ")");
     }
     return RT_ERROR_NONE;
 }
@@ -53,11 +55,13 @@ rtError_t RtCheckDeviceIdValid(const uint32_t deviceId)
     NULL_PTR_RETURN_MSG(rt, RT_ERROR_API_NULL);
     const rtError_t error = rt->GetNpuDeviceCnt(npuDevCnt);
     RT_LOG(RT_LOG_DEBUG, "npuDevCnt:%u.", npuDevCnt);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, ACL_ERROR_RT_INTERNAL_ERROR,
-        "Failed to get device info count, retCode=%#x.", static_cast<uint32_t>(error));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(deviceId >= static_cast<uint32_t>(npuDevCnt), RT_ERROR_INVALID_VALUE,
-        deviceId, "[0, " + std::to_string(npuDevCnt) + ")");
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, ACL_ERROR_RT_INTERNAL_ERROR, "Failed to get device info count, retCode=%#x.",
+        static_cast<uint32_t>(error));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+        deviceId >= static_cast<uint32_t>(npuDevCnt), RT_ERROR_INVALID_VALUE, deviceId,
+        "[0, " + std::to_string(npuDevCnt) + ")");
     return RT_ERROR_NONE;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -17,7 +17,7 @@
 namespace cce {
 namespace runtime {
 
-uint32_t GetSendSqeNum(TaskInfo * const taskInfo)
+uint32_t GetSendSqeNum(TaskInfo* const taskInfo)
 {
     const tsTaskType_t type = taskInfo->type;
     if (type == TS_TASK_TYPE_MULTIPLE_TASK) {
@@ -26,7 +26,8 @@ uint32_t GetSendSqeNum(TaskInfo * const taskInfo)
         return GetSendSqeNumForRdmaDbSendTask(taskInfo);
     } else if (type == TS_TASK_TYPE_FFTS_PLUS) {
         return GetSendSqeNumForFftsPlusTask(taskInfo);
-    } else if ((type == TS_TASK_TYPE_MEM_WAIT_VALUE) || (type == TS_TASK_TYPE_CAPTURE_WAIT) ||
+    } else if (
+        (type == TS_TASK_TYPE_MEM_WAIT_VALUE) || (type == TS_TASK_TYPE_CAPTURE_WAIT) ||
         (type == TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL) || (type == TS_TASK_TYPE_IPC_WAIT)) {
         return GetSendSqeNumForMemWaitTask(taskInfo);
     } else if (type == TS_TASK_TYPE_CAPTURE_CONDITION) {
@@ -36,7 +37,7 @@ uint32_t GetSendSqeNum(TaskInfo * const taskInfo)
     }
 }
 
-void ConstructSqeBase(TaskInfo *const taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeBase(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
     command->phSqe.type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     command->phSqe.l2_lock = 0;
@@ -50,8 +51,9 @@ void ConstructSqeBase(TaskInfo *const taskInfo, rtStarsSqe_t *const command)
     command->phSqe.rt_streamID = static_cast<uint16_t>(taskInfo->stream->Id_());
     command->phSqe.kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
 
-    RT_LOG(RT_LOG_WARNING, "No need to construct sqe. type:%u, task_id:%u, stream_id:%u",
-        taskInfo->type, static_cast<uint32_t>(taskInfo->id), taskInfo->stream->Id_());
+    RT_LOG(
+        RT_LOG_WARNING, "No need to construct sqe. type:%u, task_id:%u, stream_id:%u", taskInfo->type,
+        static_cast<uint32_t>(taskInfo->id), taskInfo->stream->Id_());
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -20,11 +20,11 @@
 namespace cce {
 namespace runtime {
 
-static void ConstructSqeForModelMaintainceTask(TaskInfo * const taskInfo, rtStarsSqe_t * const command)
+static void ConstructSqeForModelMaintainceTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    ModelMaintainceTaskInfo *modelMaintainceTaskInfo = &(taskInfo->u.modelMaintainceTaskInfo);
-    RtStarsPhSqe * const sqe = &(command->phSqe);
-    Stream * const stream = taskInfo->stream;
+    ModelMaintainceTaskInfo* modelMaintainceTaskInfo = &(taskInfo->u.modelMaintainceTaskInfo);
+    RtStarsPhSqe* const sqe = &(command->phSqe);
+    Stream* const stream = taskInfo->stream;
     const uint8_t type = modelMaintainceTaskInfo->type;
 
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
@@ -45,14 +45,16 @@ static void ConstructSqeForModelMaintainceTask(TaskInfo * const taskInfo, rtStar
             sqe->pre_p = RT_STARS_SQE_INT_DIR_TO_TSCPU;
             sqe->u.model_maintaince_info.streamExecTimesAddr = modelMaintainceTaskInfo->execTimesSvmOffset;
             PrintSqe(command, "ModelBindTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%u, bind stream_id=%hu to model_id=%hu",
-                type, sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id);
+            RT_LOG(
+                RT_LOG_INFO, "model maintaince type=%u, bind stream_id=%hu to model_id=%hu", type,
+                sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id);
             break;
         case MMT_STREAM_DEL:
             sqe->pre_p = RT_STARS_SQE_INT_DIR_TO_TSCPU;
             PrintSqe(command, "ModelUnbindTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%u, unbind stream_id=%hu from model_id=%hu",
-                type, sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id);
+            RT_LOG(
+                RT_LOG_INFO, "model maintaince type=%u, unbind stream_id=%hu from model_id=%hu", type,
+                sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id);
             break;
         case MMT_MODEL_PRE_PROC:
             sqe->pre_p = RT_STARS_SQE_INT_DIR_TO_TSCPU;
@@ -65,25 +67,31 @@ static void ConstructSqeForModelMaintainceTask(TaskInfo * const taskInfo, rtStar
                     static_cast<uint16_t>(GetEndGraphNotifyId(modelMaintainceTaskInfo->model));
             }
             PrintSqe(command, "ModelPreProcTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%u, pre proc stream_id=%hu of model_id=%hu, endgraph_notify_id"
-                "=%hu", type, sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id,
+            RT_LOG(
+                RT_LOG_INFO,
+                "model maintaince type=%u, pre proc stream_id=%hu of model_id=%hu, endgraph_notify_id"
+                "=%hu",
+                type, sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id,
                 sqe->u.model_maintaince_info.endgraph_notify_id);
             break;
         case MMT_MODEL_LOAD_COMPLETE:
             PrintSqe(command, "ModelLoadCompleteTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%u, load complete stream_id=%hu of model_id=%hu",
-                type, sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id);
+            RT_LOG(
+                RT_LOG_INFO, "model maintaince type=%u, load complete stream_id=%hu of model_id=%hu", type,
+                sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id);
             break;
         case MMT_MODEL_ABORT:
             sqe->pre_p = RT_STARS_SQE_INT_DIR_TO_TSCPU;
             PrintSqe(command, "ModelAbortTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%u, abort stream_id=%hu of model_id=%hu",
-                type, sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id);
+            RT_LOG(
+                RT_LOG_INFO, "model maintaince type=%u, abort stream_id=%hu of model_id=%hu", type,
+                sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id);
             break;
         default:
             PrintSqe(command, "ModelMaintainceTask");
-            RT_LOG(RT_LOG_INFO, "model maintaince type=%u, stream_id=%hu, model_id=%hu",
-                type, sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id);
+            RT_LOG(
+                RT_LOG_INFO, "model maintaince type=%u, stream_id=%hu, model_id=%hu", type,
+                sqe->u.model_maintaince_info.stream_id, sqe->u.model_maintaince_info.model_id);
             break;
     }
     return;
@@ -102,7 +110,7 @@ static bool ModelMaintainceTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommon,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_MAINTAINCE, funcs);
     }
@@ -112,5 +120,5 @@ static bool ModelMaintainceTaskRegister()
 
 static bool g_modelMaintainceTaskRegister = ModelMaintainceTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

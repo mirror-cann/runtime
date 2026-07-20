@@ -26,17 +26,20 @@
 namespace cce {
 namespace runtime {
 
-CondHandle::CondHandle(Model *mdl, uint32_t defaultValue, rtCondHandleFlag_t flag)
-    : NoCopy(), model_(mdl), defaultValue_(defaultValue), flag_(flag), condType_(static_cast<rtCondTaskType_t>(RT_COND_TASK_TYPE_MAX))
-{
-}
+CondHandle::CondHandle(Model* mdl, uint32_t defaultValue, rtCondHandleFlag_t flag)
+    : NoCopy(),
+      model_(mdl),
+      defaultValue_(defaultValue),
+      flag_(flag),
+      condType_(static_cast<rtCondTaskType_t>(RT_COND_TASK_TYPE_MAX))
+{}
 
 CondHandle::~CondHandle() noexcept
 {
     DELETE_O(subModelNotify_);
 
-    for (Model *mdl : subCaptureModels_) {
-        CaptureModel *subModel = dynamic_cast<CaptureModel *>(mdl);
+    for (Model* mdl : subCaptureModels_) {
+        CaptureModel* subModel = dynamic_cast<CaptureModel*>(mdl);
         if (subModel == nullptr) {
             continue;
         }
@@ -48,7 +51,7 @@ CondHandle::~CondHandle() noexcept
     subCaptureModels_.clear();
 
     if (devAddr_ != nullptr && context_ != nullptr) {
-        Device *dev = context_->Device_();
+        Device* dev = context_->Device_();
         if (dev != nullptr) {
             (void)dev->Driver_()->DevMemFree(devAddr_, dev->Id_());
         }
@@ -59,7 +62,7 @@ CondHandle::~CondHandle() noexcept
     model_ = nullptr;
 }
 
-rtError_t CondHandle::Setup(Context *ctx)
+rtError_t CondHandle::Setup(Context* ctx)
 {
     if (ctx == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Context is null, failed to setup cond handle.");
@@ -67,33 +70,35 @@ rtError_t CondHandle::Setup(Context *ctx)
     }
 
     context_ = ctx;
-    Device *dev = ctx->Device_();
+    Device* dev = ctx->Device_();
     if (dev == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Device is null, failed to setup cond handle.");
         return RT_ERROR_DEVICE_NULL;
     }
 
-    Driver *driver = dev->Driver_();
+    Driver* driver = dev->Driver_();
     if (driver == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Driver is null, failed to setup cond handle.");
         return RT_ERROR_DRV_NULL;
     }
 
-    rtError_t error = driver->DevMemAlloc((void **)(&devAddr_), sizeof(uint64_t), RT_MEMORY_DEFAULT, dev->Id_());
+    rtError_t error = driver->DevMemAlloc((void**)(&devAddr_), sizeof(uint64_t), RT_MEMORY_DEFAULT, dev->Id_());
     if (error != RT_ERROR_NONE) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "DevMemAlloc failed for cond handle, device_id=%u, size=%zu, retCode=%#x.",
-            dev->Id_(), sizeof(uint64_t), static_cast<uint32_t>(error));
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "DevMemAlloc failed for cond handle, device_id=%u, size=%zu, retCode=%#x.", dev->Id_(),
+            sizeof(uint64_t), static_cast<uint32_t>(error));
         return error;
     }
 
     error = driver->MemSetSync(devAddr_, sizeof(uint64_t), 0U, sizeof(uint64_t));
     ERROR_RETURN(error, "Failed to memset devAddr, retCode=%#x.", static_cast<uint32_t>(error));
 
-    RT_LOG(RT_LOG_DEBUG, "CondHandle setup success, model_id=%u, default_value=%u, flag=%d, dev_addr=%p.",
-        model_->Id_(), defaultValue_, static_cast<int32_t>(flag_), devAddr_);
+    RT_LOG(
+        RT_LOG_DEBUG, "CondHandle setup success, model_id=%u, default_value=%u, flag=%d, dev_addr=%p.", model_->Id_(),
+        defaultValue_, static_cast<int32_t>(flag_), devAddr_);
 
     InitEmbeddedInnerHandle(this);
-    CaptureModel *captureModel = dynamic_cast<CaptureModel *>(model_);
+    CaptureModel* captureModel = dynamic_cast<CaptureModel*>(model_);
     captureModel->ModelPushBackCondHandle(this);
 
     return RT_ERROR_NONE;
@@ -109,10 +114,10 @@ void CondHandle::SubModelDestroy()
     return;
 }
 
-void CondHandle::SetSubModelExeStream(Stream *exeStream)
+void CondHandle::SetSubModelExeStream(Stream* exeStream)
 {
-    std::vector<Model*> &subModels = GetSubCaptureModels();
-    for (Model *subModel : subModels) {
+    std::vector<Model*>& subModels = GetSubCaptureModels();
+    for (Model* subModel : subModels) {
         subModel->SetExeStream(exeStream); // 子模型的执行流是固定的
     }
 
@@ -125,15 +130,17 @@ rtError_t CondHandle::InitCondTaskByDefValue()
         return RT_ERROR_NONE;
     }
 
-    Device *dev = context_->Device_();
+    Device* dev = context_->Device_();
     COND_RETURN_ERROR((dev == nullptr), RT_ERROR_DEVICE_NULL, "Device is null, failed to init cond value.");
 
-    Driver *driver = dev->Driver_();
+    Driver* driver = dev->Driver_();
     COND_RETURN_ERROR((driver == nullptr), RT_ERROR_DRV_NULL, "Driver is null, failed to init cond value.");
 
     uint64_t defValue = static_cast<uint64_t>(defaultValue_);
-    rtError_t error = driver->MemCopySync(devAddr_, sizeof(uint64_t), &defValue, sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
-    ERROR_RETURN(error, "Failed to init cond default value, condFlag=%u, condType=%d, condSize=%u, defValue=%u retCode=%#x.",
+    rtError_t error =
+        driver->MemCopySync(devAddr_, sizeof(uint64_t), &defValue, sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
+    ERROR_RETURN(
+        error, "Failed to init cond default value, condFlag=%u, condType=%d, condSize=%u, defValue=%u retCode=%#x.",
         flag_, condType_, condSize_, defaultValue_, static_cast<uint32_t>(error));
     RT_LOG(RT_LOG_DEBUG, "defValue=%u, condType=%d", defValue, condType_);
 
@@ -143,12 +150,12 @@ rtError_t CondHandle::InitCondTaskByDefValue()
 rtError_t CondHandle::Destroy()
 {
     if (devAddr_ != nullptr && context_ != nullptr) {
-        Device *dev = context_->Device_();
+        Device* dev = context_->Device_();
         if (dev != nullptr) {
             rtError_t error = dev->Driver_()->DevMemFree(devAddr_, dev->Id_());
             if (error != RT_ERROR_NONE) {
-                RT_LOG_INNER_MSG(RT_LOG_ERROR, "DevMemFree failed for cond handle, retCode=%#x.",
-                    static_cast<uint32_t>(error));
+                RT_LOG_INNER_MSG(
+                    RT_LOG_ERROR, "DevMemFree failed for cond handle, retCode=%#x.", static_cast<uint32_t>(error));
                 return error;
             }
         }
@@ -159,5 +166,5 @@ rtError_t CondHandle::Destroy()
     return RT_ERROR_NONE;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -16,9 +16,9 @@
 namespace cce {
 namespace runtime {
 
-rtError_t rtGeneralCtrlInner(uintptr_t *ctl, uint32_t num, uint32_t type);
+rtError_t rtGeneralCtrlInner(uintptr_t* ctl, uint32_t num, uint32_t type);
 
 }
-}
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_INNER_HPP__
+#endif // __CCE_RUNTIME_INNER_HPP__

@@ -24,13 +24,27 @@ static inline std::string CaptureModelStatusToString(const RtCaptureModelStatus 
 {
     std::string desc;
     switch (status) {
-        case RtCaptureModelStatus::NONE: desc = "NONE(0)"; break;
-        case RtCaptureModelStatus::CAPTURE_ACTIVE: desc = "CAPTURE_ACTIVE(1)"; break;
-        case RtCaptureModelStatus::CAPTURE_INVALIDATED: desc = "CAPTURE_INVALIDATED(2)"; break;
-        case RtCaptureModelStatus::UPDATING: desc = "UPDATING(3)"; break;
-        case RtCaptureModelStatus::FAULT: desc = "FAULT(4)"; break;
-        case RtCaptureModelStatus::READY: desc = "READY(5)"; break;
-        default: desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(status)); break;
+        case RtCaptureModelStatus::NONE:
+            desc = "NONE(0)";
+            break;
+        case RtCaptureModelStatus::CAPTURE_ACTIVE:
+            desc = "CAPTURE_ACTIVE(1)";
+            break;
+        case RtCaptureModelStatus::CAPTURE_INVALIDATED:
+            desc = "CAPTURE_INVALIDATED(2)";
+            break;
+        case RtCaptureModelStatus::UPDATING:
+            desc = "UPDATING(3)";
+            break;
+        case RtCaptureModelStatus::FAULT:
+            desc = "FAULT(4)";
+            break;
+        case RtCaptureModelStatus::READY:
+            desc = "READY(5)";
+            break;
+        default:
+            desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(status));
+            break;
     }
     return desc;
 }
@@ -39,11 +53,21 @@ static inline std::string StreamCaptureModeToString(const rtStreamCaptureMode mo
 {
     std::string desc;
     switch (mode) {
-        case RT_STREAM_CAPTURE_MODE_GLOBAL: desc = "GLOBAL(0)"; break;
-        case RT_STREAM_CAPTURE_MODE_THREAD_LOCAL: desc = "THREAD_LOCAL(1)"; break;
-        case RT_STREAM_CAPTURE_MODE_RELAXED: desc = "RELAXED(2)"; break;
-        case RT_STREAM_CAPTURE_MODE_MAX: desc = "MAX(3)"; break;
-        default: desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(mode)); break;
+        case RT_STREAM_CAPTURE_MODE_GLOBAL:
+            desc = "GLOBAL(0)";
+            break;
+        case RT_STREAM_CAPTURE_MODE_THREAD_LOCAL:
+            desc = "THREAD_LOCAL(1)";
+            break;
+        case RT_STREAM_CAPTURE_MODE_RELAXED:
+            desc = "RELAXED(2)";
+            break;
+        case RT_STREAM_CAPTURE_MODE_MAX:
+            desc = "MAX(3)";
+            break;
+        default:
+            desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(mode));
+            break;
     }
     return desc;
 }
@@ -52,9 +76,15 @@ static inline std::string CaptureEventModeToString(const uint8_t mode)
 {
     std::string desc;
     switch (mode) {
-        case static_cast<uint8_t>(CaptureEventModeType::SOFTWARE_MODE): desc = "SOFTWARE_MODE(0)"; break;
-        case static_cast<uint8_t>(CaptureEventModeType::HARDWARE_MODE): desc = "HARDWARE_MODE(1)"; break;
-        default: desc = RtFmtMsg("UNKNOWN(%u)", static_cast<uint64_t>(mode)); break;
+        case static_cast<uint8_t>(CaptureEventModeType::SOFTWARE_MODE):
+            desc = "SOFTWARE_MODE(0)";
+            break;
+        case static_cast<uint8_t>(CaptureEventModeType::HARDWARE_MODE):
+            desc = "HARDWARE_MODE(1)";
+            break;
+        default:
+            desc = RtFmtMsg("UNKNOWN(%u)", static_cast<uint64_t>(mode));
+            break;
     }
     return desc;
 }

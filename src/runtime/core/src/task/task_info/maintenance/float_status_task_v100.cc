@@ -15,16 +15,14 @@
 namespace cce {
 namespace runtime {
 
-static void ConstructSqeForNpuGetFloatStaTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForNpuGetFloatStaTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    RtStarsGetFloatStatusSqe &sqe = command->getFloatStatusSqe;
-    NpuGetFloatStatusTaskInfo *npuGetFltSta = &taskInfo->u.npuGetFloatStatusTask;
-    Stream *const stm = taskInfo->stream;
+    RtStarsGetFloatStatusSqe& sqe = command->getFloatStatusSqe;
+    NpuGetFloatStatusTaskInfo* npuGetFltSta = &taskInfo->u.npuGetFloatStatusTask;
+    Stream* const stm = taskInfo->stream;
     (void)memset_s(&sqe, sizeof(rtStarsSqe_t), 0, sizeof(rtStarsSqe_t));
     sqe.debugFlag = npuGetFltSta->debugFlag ? 1U : 0U;
-    ConstructGetFloatStatusInstr(
-        RtPtrToValue<void *>(npuGetFltSta->outputAddrPtr),
-        npuGetFltSta->outputSize, sqe);
+    ConstructGetFloatStatusInstr(RtPtrToValue<void*>(npuGetFltSta->outputAddrPtr), npuGetFltSta->outputSize, sqe);
 
     sqe.sqeHeader.type = RT_STARS_SQE_TYPE_COND;
     sqe.sqeHeader.ie = RT_STARS_SQE_INT_DIR_NO;
@@ -40,14 +38,15 @@ static void ConstructSqeForNpuGetFloatStaTask(TaskInfo* taskInfo, rtStarsSqe_t *
     sqe.csc = 1U;
 
     PrintSqe(command, "NpuGetFloatStatusTask");
-    RT_LOG(RT_LOG_INFO, "ConstructModelSqe finish, stream_id=%d, task_id=%u, debugFlag=%hhu",
-           stm->Id_(), static_cast<uint32_t>(taskInfo->id), sqe.debugFlag);
+    RT_LOG(
+        RT_LOG_INFO, "ConstructModelSqe finish, stream_id=%d, task_id=%u, debugFlag=%hhu", stm->Id_(),
+        static_cast<uint32_t>(taskInfo->id), sqe.debugFlag);
 }
 
-static void ConstructSqeForNpuClrFloatStaTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForNpuClrFloatStaTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    RtStarsPhSqe *const sqe = &(command->phSqe);
-    NpuClearFloatStatusTaskInfo *npuClrFltSta = &taskInfo->u.npuClrFloatStatusTask;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
+    NpuClearFloatStatusTaskInfo* npuClrFltSta = &taskInfo->u.npuClrFloatStatusTask;
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->post_p = 0U;
@@ -62,8 +61,9 @@ static void ConstructSqeForNpuClrFloatStaTask(TaskInfo* taskInfo, rtStarsSqe_t *
     sqe->u.debugStatusInfo.debugFlag = npuClrFltSta->debugFlag ? 1U : 0U;
 
     PrintSqe(command, "NpuClearFloatStatusTask");
-    RT_LOG(RT_LOG_INFO, "stream_id=%d, task_id=%u, debug_flag=%d",
-        taskInfo->stream->Id_(), static_cast<uint32_t>(taskInfo->id), npuClrFltSta->debugFlag);
+    RT_LOG(
+        RT_LOG_INFO, "stream_id=%d, task_id=%u, debug_flag=%d", taskInfo->stream->Id_(),
+        static_cast<uint32_t>(taskInfo->id), npuClrFltSta->debugFlag);
 }
 
 static bool FloatStatusTaskRegister()

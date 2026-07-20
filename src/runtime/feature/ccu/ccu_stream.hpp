@@ -14,8 +14,8 @@
 #include "stream_david.hpp"
 namespace cce {
 namespace runtime {
-    rtError_t StreamCCULaunch(Stream *stm, rtCcuTaskInfo_t *taskInfo);
-}  // namespace runtime
-}  // namespace cce
+rtError_t StreamCCULaunch(Stream* stm, rtCcuTaskInfo_t* taskInfo);
+} // namespace runtime
+} // namespace cce
 
 #endif

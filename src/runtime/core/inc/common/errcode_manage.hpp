@@ -16,23 +16,17 @@
 #include "base.hpp"
 #include "driver/ascend_hal.h"
 
-#define RT_GET_DRV_ERRCODE(drvErrCode) \
-    ErrorcodeManage::Instance().GetDrvErrCode(drvErrCode)
+#define RT_GET_DRV_ERRCODE(drvErrCode) ErrorcodeManage::Instance().GetDrvErrCode(drvErrCode)
 
-#define RT_GET_ERRDESC(rtErrCode) \
-    ErrorcodeManage::Instance().GetErrorDesc(rtErrCode)
+#define RT_GET_ERRDESC(rtErrCode) ErrorcodeManage::Instance().GetErrorDesc(rtErrCode)
 
-#define RT_GET_EXT_ERRCODE(rtErrCode) \
-    ErrorcodeManage::Instance().GetRtExtErrCode(rtErrCode)
+#define RT_GET_EXT_ERRCODE(rtErrCode) ErrorcodeManage::Instance().GetRtExtErrCode(rtErrCode)
 
-#define RT_TRANS_EXT_ERRCODE(rtErrCode) \
-    ErrorcodeManage::Instance().TransExtErrCode(rtErrCode)
+#define RT_TRANS_EXT_ERRCODE(rtErrCode) ErrorcodeManage::Instance().TransExtErrCode(rtErrCode)
 
-#define RT_GET_ERRREASON(rtErrCode) \
-    ErrorcodeManage::Instance().GetErrorReason(rtErrCode)
+#define RT_GET_ERRREASON(rtErrCode) ErrorcodeManage::Instance().GetErrorReason(rtErrCode)
 
-#define RT_GET_MODULE_NAME(moduleId) \
-    ErrorcodeManage::Instance().GetModuleName(moduleId)
+#define RT_GET_MODULE_NAME(moduleId) ErrorcodeManage::Instance().GetModuleName(moduleId)
 
 namespace cce {
 namespace runtime {
@@ -42,7 +36,7 @@ using RtExtErrcodeType = rtError_t;
 
 class ErrorcodeManage {
 public:
-    static ErrorcodeManage &Instance();
+    static ErrorcodeManage& Instance();
 
     std::string GetErrorDesc(const RtInnerErrcodeType errcode);
 
@@ -65,10 +59,10 @@ private:
     void InitDrvErrCodeMap();
 
     std::map<RtInnerErrcodeType, std::pair<RtExtErrcodeType, const char_t*>> rtErrMap_;
-    std::map<DrvErrcodeType, RtInnerErrcodeType>  drvErrMap_;
+    std::map<DrvErrcodeType, RtInnerErrcodeType> drvErrMap_;
 };
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_ERRCODE_MANAGE_HPP__

@@ -14,10 +14,10 @@
 namespace cce {
 namespace runtime {
 
-ContextDataManage &ContextDataManage::Instance()
+ContextDataManage& ContextDataManage::Instance()
 {
     static ContextDataManage instance;
     return instance;
 };
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

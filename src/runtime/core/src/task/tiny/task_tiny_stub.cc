@@ -20,5 +20,5 @@ rtError_t ConstructSqeByTaskInput(const rtTaskInput_t* const taskInput, uint32_t
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

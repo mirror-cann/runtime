@@ -19,22 +19,22 @@ class TTLVErrMsgDecoder;
 
 class TTLVDecoderUtils {
 public:
-    static rtError_t DefaultPhaseValue(const uint16_t msgLen, const void * const buffer, uint64_t &outData);
-    static rtError_t PhaseValueHex(const uint16_t msgLen, const void * const buffer, std::string &outputStr);
-    static rtError_t PhaseValueDecimal(const uint16_t msgLen, const void * const buffer, std::string &outputStr);
-    static rtError_t PhaseTaskType(const uint16_t msgLen, const void * const buffer, std::string &outputStr);
-    static rtError_t PhaseTaskPhase(const uint16_t msgLen, const void * const buffer, std::string &outputStr);
-    static rtError_t PhaseStreamPhase(const uint16_t msgLen, const void * const buffer, std::string &outputStr);
-    static rtError_t ParseErrCode(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag);
+    static rtError_t DefaultPhaseValue(const uint16_t msgLen, const void* const buffer, uint64_t& outData);
+    static rtError_t PhaseValueHex(const uint16_t msgLen, const void* const buffer, std::string& outputStr);
+    static rtError_t PhaseValueDecimal(const uint16_t msgLen, const void* const buffer, std::string& outputStr);
+    static rtError_t PhaseTaskType(const uint16_t msgLen, const void* const buffer, std::string& outputStr);
+    static rtError_t PhaseTaskPhase(const uint16_t msgLen, const void* const buffer, std::string& outputStr);
+    static rtError_t PhaseStreamPhase(const uint16_t msgLen, const void* const buffer, std::string& outputStr);
+    static rtError_t ParseErrCode(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag);
 
-    static rtError_t ParseTimestampSec(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag);
-    static rtError_t ParseCurrentTimeString(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag);
-    static rtError_t ParseErrMsgString(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag);
-    static rtError_t ParseFuncCode(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag);
-    static rtError_t ParseLineCode(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag);
-    static rtError_t ParseTsErrCode(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag);
-    static rtError_t ParseTimestampUsec(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag);
+    static rtError_t ParseTimestampSec(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag);
+    static rtError_t ParseCurrentTimeString(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag);
+    static rtError_t ParseErrMsgString(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag);
+    static rtError_t ParseFuncCode(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag);
+    static rtError_t ParseLineCode(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag);
+    static rtError_t ParseTsErrCode(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag);
+    static rtError_t ParseTimestampUsec(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag);
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // RT_RUNTIME_TTLV_DECODER_UTILS_HPP

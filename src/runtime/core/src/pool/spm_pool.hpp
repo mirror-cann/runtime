@@ -19,27 +19,27 @@ class Device;
 
 class SpmPool : public NoCopy {
 public:
-    explicit SpmPool(Device * const devPtr);
+    explicit SpmPool(Device* const devPtr);
     ~SpmPool() override;
     rtError_t Init();
-    rtError_t AllocSPM(void **dptr, const uint64_t size);
-    rtError_t FreeSPM(const void * const dptr);
-    bool IsSPM(const void * const dptr) const;
+    rtError_t AllocSPM(void** dptr, const uint64_t size);
+    rtError_t FreeSPM(const void* const dptr);
+    bool IsSPM(const void* const dptr) const;
 
 private:
-    static void *DrvAllocSPM(const size_t size, void * const para);
-    static void DrvFreeSPM(void * const addr, void * const para);
+    static void* DrvAllocSPM(const size_t size, void* const para);
+    static void DrvFreeSPM(void* const addr, void* const para);
 
     uint32_t spmItemSize_;
     uint32_t spmPageNum_;
     uint32_t spmPageSize_;
     uint32_t spmPagePad_;
     uint32_t spmInitCount_;
-    uint64_t *spmBases_;
-    Device *dev_;
-    BufferAllocator *spmAllocator_;
+    uint64_t* spmBases_;
+    Device* dev_;
+    BufferAllocator* spmAllocator_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_SPM_POOL_HPP
+#endif // CCE_RUNTIME_SPM_POOL_HPP

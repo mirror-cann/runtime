@@ -21,73 +21,45 @@ namespace runtime {
 class StreamJettyHandler {
 public:
     static rtError_t HandleUbDmaTask(
-        const TaskInfo *task,
-        JettyType jettyType,
-        AsyncWqeInputPara *input,
-        AsyncWqeOutputPara *output);
+        const TaskInfo* task, JettyType jettyType, AsyncWqeInputPara* input, AsyncWqeOutputPara* output);
 
-    static rtError_t FillNopWqeOnCaptureEnd(const Stream *stream, JettyType jettyType);
+    static rtError_t FillNopWqeOnCaptureEnd(const Stream* stream, JettyType jettyType);
 
     static rtError_t GetOrCreateStreamJettyContext(
-        const Stream *stream,
-        JettyType jettyType,
-        StreamJettyContext *&jettyCtx);
+        const Stream* stream, JettyType jettyType, StreamJettyContext*& jettyCtx);
 
     static bool IsUbDmaCopyType(uint32_t copyType);
 
     static bool IsUbDmaTaskType(tsTaskType_t taskType);
 
-    static JettyType GetJettyTypeFromTask(const TaskInfo *task);
+    static JettyType GetJettyTypeFromTask(const TaskInfo* task);
 
     static rtError_t FillWqeToDevice(
-        const Stream *stream,
-        const StreamJettyContext *jettyCtx,
-        const JettyInfo &jettyInfo);
+        const Stream* stream, const StreamJettyContext* jettyCtx, const JettyInfo& jettyInfo);
 
     static rtError_t UpdateUbdmaSqeWithJettyInfo(
-        const Stream *stream,
-        const StreamJettyContext *jettyCtx,
-        const JettyInfo &jettyInfo);
+        const Stream* stream, const StreamJettyContext* jettyCtx, const JettyInfo& jettyInfo);
 
-    static rtError_t BindJetty(
-        Stream *stream,
-        JettyType type,
-        const CaptureModel *excludeMdl);
+    static rtError_t BindJetty(Stream* stream, JettyType type, const CaptureModel* excludeMdl);
 
-    static rtError_t RecycleJetty(
-        Stream *stream,
-        JettyType type,
-        uint32_t &count);
+    static rtError_t RecycleJetty(Stream* stream, JettyType type, uint32_t& count);
 
-    static rtError_t ReleaseJetty(
-        Stream *stream,
-        JettyType type);
+    static rtError_t ReleaseJetty(Stream* stream, JettyType type);
 
 private:
     static rtError_t ResetJettyCi(
-        JettyManager *jettyMgr,
-        Stream *stream,
-        JettyType type,
-        const StreamJettyContext *ctx);
+        JettyManager* jettyMgr, Stream* stream, JettyType type, const StreamJettyContext* ctx);
     static rtError_t CreateAndAppendWqe(
-        const TaskInfo *task,
-        StreamJettyContext *jettyCtx,
-        AsyncWqeInputPara* input,
-        AsyncWqeOutputPara *output);
+        const TaskInfo* task, StreamJettyContext* jettyCtx, AsyncWqeInputPara* input, AsyncWqeOutputPara* output);
 
-    static rtError_t FillNopWqeForPartialBuffer(
-        const Stream *stream,
-        const StreamJettyContext *jettyCtx);
+    static rtError_t FillNopWqeForPartialBuffer(const Stream* stream, const StreamJettyContext* jettyCtx);
 
-    static rtError_t GetDriverAndDeviceId(
-        const Stream *stream,
-        Driver *&driver,
-        uint32_t &deviceId);
+    static rtError_t GetDriverAndDeviceId(const Stream* stream, Driver*& driver, uint32_t& deviceId);
 
     static JettyType ConvertCopyTypeToJettyType(uint32_t copyType);
 };
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif

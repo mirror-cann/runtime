@@ -28,10 +28,10 @@ public:
     ~Scheduler() override = default;
 
     // Called in user thread for submiting task.
-    virtual rtError_t PushTask(TaskInfo *tsk) = 0;
+    virtual rtError_t PushTask(TaskInfo* tsk) = 0;
 
     // Called in sending thread for retrieving submited task.
-    virtual TaskInfo *PopTask() = 0;
+    virtual TaskInfo* PopTask() = 0;
 
     // Called in receiving thread when task complete.
     virtual void TaskCompleted(TaskInfo* const tsk) const;
@@ -43,14 +43,15 @@ public:
     FifoScheduler() = default;
     ~FifoScheduler() override = default;
 
-    rtError_t PushTask(TaskInfo * const tsk) override;
-    TaskInfo *PopTask() override;
+    rtError_t PushTask(TaskInfo* const tsk) override;
+    TaskInfo* PopTask() override;
+
 private:
     std::mutex taskQueMutex_;
     std::condition_variable emptyCond_;
-    std::queue<TaskInfo *> taskQueue_;
+    std::queue<TaskInfo*> taskQueue_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_SCHEDULER_HPP__
+#endif // __CCE_RUNTIME_SCHEDULER_HPP__

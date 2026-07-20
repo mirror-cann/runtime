@@ -22,10 +22,10 @@ uint16_t TransKernelCreditCreditByChip(const uint16_t kernelCredit)
     static uint16_t creditStartValue = UINT16_MAX;
 
     if (!isGet) {
-        DevProperties devProperty {};
+        DevProperties devProperty{};
         const rtError_t error = GET_DEV_PROPERTIES(chipType, devProperty);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, kernelCredit,
-            "GetDevProperties failed, chip type=%d, error=%u.", chipType, error);
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, kernelCredit, "GetDevProperties failed, chip type=%d, error=%u.", chipType, error);
 
         creditStartValue = devProperty.creditStartValue;
         isGet = true;
@@ -33,34 +33,35 @@ uint16_t TransKernelCreditCreditByChip(const uint16_t kernelCredit)
 
     if (creditStartValue != UINT16_MAX) {
         /*
-        * To prevent errors caused by kernelCredit = 0 in sqe, hardware calculates timeout by kernelCredit + 1.
-        * If kernelCredit = 255, never timeout.
-        */
+         * To prevent errors caused by kernelCredit = 0 in sqe, hardware calculates timeout by kernelCredit + 1.
+         * If kernelCredit = 255, never timeout.
+         */
         COND_PROC((kernelCredit == RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT), return RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT);
         return (kernelCredit == 0U) ? creditStartValue : (kernelCredit - 1U);
     }
     return kernelCredit;
 }
 
-void TransExeTimeoutCfgToKernelCredit(const uint64_t opExcTaskTimeout, uint16_t &kernelCredit)
+void TransExeTimeoutCfgToKernelCredit(const uint64_t opExcTaskTimeout, uint16_t& kernelCredit)
 {
     const float64_t kernelCreditScale = Runtime::Instance()->GetKernelCreditScaleUS();
     if ((opExcTaskTimeout != 0ULL) && (kernelCreditScale >= RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN)) {
         const float64_t trans = ceil(static_cast<float64_t>(opExcTaskTimeout) / kernelCreditScale);
-        kernelCredit = (trans > static_cast<float64_t>(RT_STARS_MAX_KERNEL_CREDIT)) ?
-            RT_STARS_MAX_KERNEL_CREDIT : static_cast<uint16_t>(trans);
+        kernelCredit = (trans > static_cast<float64_t>(RT_STARS_MAX_KERNEL_CREDIT)) ? RT_STARS_MAX_KERNEL_CREDIT :
+                                                                                      static_cast<uint16_t>(trans);
     } else {
         kernelCredit = RT_STARS_MAX_KERNEL_CREDIT;
     }
 }
 
-static void TransExeTimeoutCfgToKernelCreditNeverTimeout(const uint64_t opExcTaskTimeout, uint16_t &kernelCredit)
+static void TransExeTimeoutCfgToKernelCreditNeverTimeout(const uint64_t opExcTaskTimeout, uint16_t& kernelCredit)
 {
     const float64_t kernelCreditScale = Runtime::Instance()->GetKernelCreditScaleUS();
     if ((opExcTaskTimeout != 0ULL) && (kernelCreditScale >= RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN)) {
         const float64_t trans = ceil(static_cast<float64_t>(opExcTaskTimeout) / kernelCreditScale);
         kernelCredit = (trans > static_cast<float64_t>(RT_STARS_MAX_KERNEL_CREDIT)) ?
-            RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT : static_cast<uint16_t>(trans);
+                           RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT :
+                           static_cast<uint16_t>(trans);
     } else {
         kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
     }
@@ -73,7 +74,7 @@ static void TransExeTimeoutCfgToKernelCreditNeverTimeout(const uint64_t opExcTas
 uint16_t GetAicoreKernelCredit(const uint64_t customTimeoutUs)
 {
     uint16_t kernelCredit = 0U;
-    const RtTimeoutConfig &timeoutCfg = Runtime::Instance()->GetTimeoutConfig();
+    const RtTimeoutConfig& timeoutCfg = Runtime::Instance()->GetTimeoutConfig();
     if (customTimeoutUs == std::numeric_limits<uint64_t>::max()) {
         kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT; // never timeout
     } else if (customTimeoutUs != 0ULL) {
@@ -94,10 +95,10 @@ uint16_t GetAicoreKernelCredit(const uint64_t customTimeoutUs)
 uint16_t GetSdmaKernelCredit()
 {
     uint16_t kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT;
-    const RtTimeoutConfig &timeoutCfg = Runtime::Instance()->GetTimeoutConfig();
+    const RtTimeoutConfig& timeoutCfg = Runtime::Instance()->GetTimeoutConfig();
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
-    const static bool timeoutFlag = IS_SUPPORT_CHIP_FEATURE(chipType,
-        RtOptionalFeatureType::RT_FEATURE_KERNEL_CREDIT_CALC_FROM_EXE_TIMEOUT);
+    const static bool timeoutFlag =
+        IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_KERNEL_CREDIT_CALC_FROM_EXE_TIMEOUT);
     if (timeoutFlag && timeoutCfg.isCfgOpExcTaskTimeout) {
         TransExeTimeoutCfgToKernelCredit(timeoutCfg.opExcTaskTimeout, kernelCredit);
     } else if (timeoutCfg.isCfgOpExcTaskTimeout && timeoutCfg.isOpTimeoutMs) {
@@ -112,7 +113,7 @@ static uint16_t GetAicpuKernelCreditInternal(uint64_t timeout, bool defaultNever
 {
     uint64_t tmpTimeout = 0UL;
     uint16_t kernelCredit = RT_STARS_DEFAULT_AICPU_KERNEL_CREDIT;
-    const RtTimeoutConfig &timeoutCfg = Runtime::Instance()->GetTimeoutConfig();
+    const RtTimeoutConfig& timeoutCfg = Runtime::Instance()->GetTimeoutConfig();
     if (timeout != 0U) {
         tmpTimeout = timeout;
     } else if (timeoutCfg.isCfgOpExcTaskTimeout) {
@@ -123,7 +124,7 @@ static uint16_t GetAicpuKernelCreditInternal(uint64_t timeout, bool defaultNever
 
     if (defaultNeverTimeout &&
         (std::abs(Runtime::Instance()->GetCurChipProperties().KernelCreditScale - RT_MC_KERNEL_CREDIT_SCALE) <
- 	    std::numeric_limits<float>::epsilon())) {
+         std::numeric_limits<float>::epsilon())) {
         TransExeTimeoutCfgToKernelCreditNeverTimeout(tmpTimeout, kernelCredit);
     } else {
         TransExeTimeoutCfgToKernelCredit(tmpTimeout, kernelCredit);
@@ -132,21 +133,16 @@ static uint16_t GetAicpuKernelCreditInternal(uint64_t timeout, bool defaultNever
         }
     }
 
-    RT_LOG(RT_LOG_DEBUG, "timeout=%" PRIu64 "us, isCfg=%u, cfgTime=%" PRIu64 "us, kernelCredit=%u.",
-        timeout, timeoutCfg.isCfgOpExcTaskTimeout, timeoutCfg.opExcTaskTimeout, kernelCredit);
+    RT_LOG(
+        RT_LOG_DEBUG, "timeout=%" PRIu64 "us, isCfg=%u, cfgTime=%" PRIu64 "us, kernelCredit=%u.", timeout,
+        timeoutCfg.isCfgOpExcTaskTimeout, timeoutCfg.opExcTaskTimeout, kernelCredit);
 
     return TransKernelCreditCreditByChip(kernelCredit);
 }
 
-uint16_t GetAicpuKernelCreditV200(uint64_t timeout)
-{
-    return GetAicpuKernelCreditInternal(timeout, true);
-}
+uint16_t GetAicpuKernelCreditV200(uint64_t timeout) { return GetAicpuKernelCreditInternal(timeout, true); }
 
-uint16_t GetAicpuKernelCredit(uint64_t timeout)
-{
-    return GetAicpuKernelCreditInternal(timeout, false);
-}
+uint16_t GetAicpuKernelCredit(uint64_t timeout) { return GetAicpuKernelCreditInternal(timeout, false); }
 
 uint16_t GetCCUCredit(uint16_t customTimeout)
 {
@@ -172,5 +168,5 @@ uint16_t GetCCUCredit(uint16_t customTimeout)
     return TransKernelCreditCreditByChip(kernelCredit);
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -16,8 +16,7 @@
 namespace cce {
 namespace runtime {
 
-rtError_t GetJsonObj(const std::string &path, std::string &jsonFileRealPath, 
-                            nlohmann::json &kernelJsonObj)
+rtError_t GetJsonObj(const std::string& path, std::string& jsonFileRealPath, nlohmann::json& kernelJsonObj)
 {
     // json file have the same name with binary file. binary file suffix is .o, json file suffix is .json
     std::string jsonFilePath;
@@ -35,7 +34,7 @@ rtError_t GetJsonObj(const std::string &path, std::string &jsonFileRealPath,
     std::ifstream f(jsonFileRealPath);
     try {
         kernelJsonObj = nlohmann::json::parse(f);
-    } catch (nlohmann::json::exception &e) {
+    } catch (nlohmann::json::exception& e) {
         RT_LOG(RT_LOG_ERROR, "Parse kernel json file=[%s] failed, because %s.", jsonFileRealPath.c_str(), e.what());
         return RT_ERROR_INVALID_VALUE;
     }
@@ -43,10 +42,10 @@ rtError_t GetJsonObj(const std::string &path, std::string &jsonFileRealPath,
     return RT_ERROR_NONE;
 }
 
-void GetCpuKernelFromJson(const nlohmann::json &jsonObj, std::vector<CpuKernelInfo> &kernelInfos)
+void GetCpuKernelFromJson(const nlohmann::json& jsonObj, std::vector<CpuKernelInfo>& kernelInfos)
 {
     CpuKernelInfo kernelInfo{};
-    for (auto &op : jsonObj.items()) {
+    for (auto& op : jsonObj.items()) {
         auto value = op.value();
         if (!value.contains("opInfo")) {
             RT_LOG(RT_LOG_WARNING, "opInfo does not exist, continue");
@@ -83,12 +82,12 @@ void GetCpuKernelFromJson(const nlohmann::json &jsonObj, std::vector<CpuKernelIn
             }
 
             kernelInfos.push_back(kernelInfo);
-        } catch (nlohmann::json::exception &e) {
+        } catch (nlohmann::json::exception& e) {
             RT_LOG(RT_LOG_ERROR, "Parse kenerl json file failed, because %s.", e.what());
         }
     }
     return;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

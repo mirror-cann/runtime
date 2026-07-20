@@ -18,15 +18,15 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("ProfilingEnableTask")
-void ConstructDavidSqeForProfilingEnableTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForProfilingEnableTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
-    ProfilingEnableTaskInfo * const profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    ProfilingEnableTaskInfo* const profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe *const phSqe = &(davidSqe->phSqe);
+    RtDavidPlaceHolderSqe* const phSqe = &(davidSqe->phSqe);
     phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
     phSqe->header.preP = 1U;
     phSqe->taskType = TS_TASK_TYPE_PROFILER_DYNAMIC_ENABLE;
@@ -35,7 +35,9 @@ void ConstructDavidSqeForProfilingEnableTask(TaskInfo * const taskInfo, void *co
     phSqe->u.dynamicProfilingInfo.isTaskBasedProfEn = profilingEnableTaskInfo->isTaskBasedProfEn;
     phSqe->u.dynamicProfilingInfo.isSocLogEn = profilingEnableTaskInfo->isHwtsLogEn;
     PrintDavidSqe(davidSqe, "DynamicProfilingEnableTask");
-    RT_LOG(RT_LOG_INFO, "ProfilingEnableTask, device_id=%u, stream_id=%d, task_id=%hu, pid=%llu."
+    RT_LOG(
+        RT_LOG_INFO,
+        "ProfilingEnableTask, device_id=%u, stream_id=%d, task_id=%hu, pid=%llu."
         "isSocLogEn=%hhu, isTaskBasedProfEn=%hhu.",
         taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id, profilingEnableTaskInfo->pid,
         phSqe->u.dynamicProfilingInfo.isSocLogEn, phSqe->u.dynamicProfilingInfo.isTaskBasedProfEn);
@@ -43,15 +45,15 @@ void ConstructDavidSqeForProfilingEnableTask(TaskInfo * const taskInfo, void *co
 #endif
 
 #if F_DESC("ProfilingDisableTask")
-void ConstructDavidSqeForProfilingDisableTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForProfilingDisableTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
-    ProfilingDisableTaskInfo * const profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    ProfilingDisableTaskInfo* const profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
+    RtDavidPlaceHolderSqe* const phSqe = &(davidSqe->phSqe);
     phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
     phSqe->header.preP = 1U;
     phSqe->taskType = TS_TASK_TYPE_PROFILER_DYNAMIC_DISABLE;
@@ -60,22 +62,23 @@ void ConstructDavidSqeForProfilingDisableTask(TaskInfo * const taskInfo, void *c
     phSqe->u.dynamicProfilingInfo.isTaskBasedProfEn = profilingDisableTaskInfo->isTaskBasedProfEn;
     phSqe->u.dynamicProfilingInfo.isSocLogEn = profilingDisableTaskInfo->isHwtsLogEn;
     PrintDavidSqe(davidSqe, "DynamicProfilingDisableTask");
-    RT_LOG(RT_LOG_INFO, "ProfilingDisableTask, device_id=%u, stream_id=%d, task_id=%hu, pid=%u, "
+    RT_LOG(
+        RT_LOG_INFO,
+        "ProfilingDisableTask, device_id=%u, stream_id=%d, task_id=%hu, pid=%u, "
         "isSocLogEn=%hhu, isTaskBasedProfEn=%hhu.",
-        taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id,
-        phSqe->u.dynamicProfilingInfo.pid, phSqe->u.dynamicProfilingInfo.isSocLogEn,
-        phSqe->u.dynamicProfilingInfo.isTaskBasedProfEn);
+        taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id, phSqe->u.dynamicProfilingInfo.pid,
+        phSqe->u.dynamicProfilingInfo.isSocLogEn, phSqe->u.dynamicProfilingInfo.isTaskBasedProfEn);
 }
 #endif
 
 #if F_DESC("ProfilerTraceExTask")
-void ConstructDavidSqeForProfilerTraceExTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForProfilerTraceExTask(TaskInfo* taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
-    Stream * const stm = taskInfo->stream;
+    Stream* const stm = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
+    RtDavidPlaceHolderSqe* const phSqe = &(davidSqe->phSqe);
     phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
     phSqe->header.preP = 1U;
     phSqe->taskType = TS_TASK_TYPE_PROFILER_TRACE_EX;
@@ -85,8 +88,9 @@ void ConstructDavidSqeForProfilerTraceExTask(TaskInfo *taskInfo, void *const sqe
     phSqe->u.profileTraceInfo.tagId = taskInfo->u.profilerTraceExTask.tagId;
 
     PrintDavidSqe(davidSqe, "ProfilerTraceExTask");
-    RT_LOG(RT_LOG_INFO, "ProfilerTraceExTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.",
-        stm->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn);
+    RT_LOG(
+        RT_LOG_INFO, "ProfilerTraceExTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.", stm->Device_()->Id_(),
+        stm->Id_(), taskInfo->id, taskInfo->taskSn);
 }
 #endif
 
@@ -104,7 +108,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = nullptr,
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
-    
+
     // TS_TASK_TYPE_PROFILER_DYNAMIC_DISABLE
     TaskFuncSingle profilerDynamicDisableFuncs = {
         .toCommandFunc = &ToCommandBodyForDynamicProfilingDisableTask,
@@ -116,7 +120,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = nullptr,
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
-    
+
     // TS_TASK_TYPE_PROFILING_ENABLE
     TaskFuncSingle profilingEnableFuncs = {
         .toCommandFunc = &ToCommandBodyForProfilingEnableTask,
@@ -128,7 +132,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = nullptr,
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
-    
+
     // TS_TASK_TYPE_PROFILING_DISABLE
     TaskFuncSingle profilingDisableFuncs = {
         .toCommandFunc = &ToCommandBodyForProfilingDisableTask,
@@ -140,7 +144,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = nullptr,
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
-    
+
     // TS_TASK_TYPE_ONLINEPROF_START
     TaskFuncSingle onlineProfStartFuncs = {
         .toCommandFunc = &ToCommandBodyForOnlineProfEnableTask,
@@ -152,7 +156,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = nullptr,
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
-    
+
     // TS_TASK_TYPE_ONLINEPROF_STOP
     TaskFuncSingle onlineProfStopFuncs = {
         .toCommandFunc = &ToCommandBodyForOnlineProfDisableTask,
@@ -164,7 +168,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = nullptr,
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
-    
+
     // TS_TASK_TYPE_ADCPROF
     TaskFuncSingle adcProfFuncs = {
         .toCommandFunc = &ToCommandBodyForAdcProfTask,
@@ -176,7 +180,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = nullptr,
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
-    
+
     // TS_TASK_TYPE_PROFILER_TRACE
     TaskFuncSingle profilerTraceFuncs = {
         .toCommandFunc = &ToCommandBodyForProfilerTraceTask,
@@ -188,7 +192,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = nullptr,
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
-    
+
     // TS_TASK_TYPE_PROFILER_TRACE_EX
     TaskFuncSingle profilerTraceExFuncs = {
         .toCommandFunc = &ToCommandBodyForProfilerTraceExTask,
@@ -200,7 +204,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = nullptr,
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
-    
+
     // TS_TASK_TYPE_PCTRACE_ENABLE
     TaskFuncSingle pcTraceFuncs = {
         .toCommandFunc = &ToCommandBodyForPCTraceTask,
@@ -212,7 +216,7 @@ static bool ProfilingTaskRegister()
         .setResultFunc = nullptr,
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
-    
+
     const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_PROFILER_DYNAMIC_ENABLE, profilerDynamicEnableFuncs);
@@ -226,7 +230,7 @@ static bool ProfilingTaskRegister()
         RegTaskFunc(chip, TS_TASK_TYPE_PROFILER_TRACE_EX, profilerTraceExFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_PCTRACE_ENABLE, pcTraceFuncs);
     }
-    
+
     // Register David SQE functions
     RegDavidSqeFunc(TS_TASK_TYPE_PROFILING_ENABLE, &ConstructDavidSqeForProfilingEnableTask);
     RegDavidSqeFunc(TS_TASK_TYPE_PROFILING_DISABLE, &ConstructDavidSqeForProfilingDisableTask);
@@ -236,11 +240,11 @@ static bool ProfilingTaskRegister()
     RegDavidSqeFunc(TS_TASK_TYPE_PCTRACE_ENABLE, &ConstructDavidSqeBase);
     RegDavidSqeFunc(TS_TASK_TYPE_PROFILER_TRACE, &ConstructDavidSqeBase);
     RegDavidSqeFunc(TS_TASK_TYPE_PROFILER_TRACE_EX, &ConstructDavidSqeForProfilerTraceExTask);
-    
+
     return true;
 }
 
 static bool g_profilingTaskRegister = ProfilingTaskRegister();
 #endif
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

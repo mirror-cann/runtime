@@ -17,17 +17,18 @@
 namespace cce {
 namespace runtime {
 
-void ConstructAicpuSubSqe(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint32_t &sqeIndex,
-                          uint32_t aicpuIndex, uint32_t taskIdx, uint64_t sqBaseAddr)
+void ConstructAicpuSubSqe(
+    TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe, uint32_t& sqeIndex, uint32_t aicpuIndex, uint32_t taskIdx,
+    uint64_t sqBaseAddr)
 {
     ConstructAicpuSubSqeBase(taskInfo, davidSqe, sqeIndex, aicpuIndex, taskIdx, sqBaseAddr);
-    rtDavidSqe_t *sqeAddr = &davidSqe[sqeIndex];
-    FusionTaskInfo * const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
-    rtFunsionTaskInfo_t * const fusionKernelInfo =
-        RtPtrToPtr<rtFunsionTaskInfo_t *>(RtPtrToUnConstPtr<void *>(fusionKernelTask->fusionKernelInfo));
+    rtDavidSqe_t* sqeAddr = &davidSqe[sqeIndex];
+    FusionTaskInfo* const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
+    rtFunsionTaskInfo_t* const fusionKernelInfo =
+        RtPtrToPtr<rtFunsionTaskInfo_t*>(RtPtrToUnConstPtr<void*>(fusionKernelTask->fusionKernelInfo));
 
-    const char *desc = (fusionKernelInfo->subTask[taskIdx].type == RT_FUSION_AICPU) ?
-        "FusionKernelTask-Aicpu" : "FusionKernelTask-Hcom_cpu";
+    const char* desc = (fusionKernelInfo->subTask[taskIdx].type == RT_FUSION_AICPU) ? "FusionKernelTask-Aicpu" :
+                                                                                      "FusionKernelTask-Hcom_cpu";
     PrintDavidSqe(sqeAddr, desc);
 
     sqeIndex++;
@@ -47,7 +48,7 @@ static bool FusionKernelTaskRegister()
         .setStarsResultFunc = &SetStarsResultForFusionKernelTask,
     };
 
-    const auto &chips = GetV200Chips();
+    const auto& chips = GetV200Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_FUSION_KERNEL, funcs);
     }
@@ -58,5 +59,5 @@ static bool FusionKernelTaskRegister()
 
 static bool g_fusionKernelTaskRegister = FusionKernelTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

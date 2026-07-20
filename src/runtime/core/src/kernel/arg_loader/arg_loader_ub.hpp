@@ -19,20 +19,20 @@ class Device;
 class Stream;
 
 struct StarsArgLoaderResult {
-    void *kerArgs;      // dev addr
-    void *hostAddr;     // used for ub
-    void *handle;       // used for dev arg pool & dynamic alloc
+    void* kerArgs;      // dev addr
+    void* hostAddr;     // used for ub
+    void* handle;       // used for dev arg pool & dynamic alloc
     uint32_t stmArgPos; // used for stm arg pool
-    void *devTsegInfo;
-    void *hostTsegInfo;
+    void* devTsegInfo;
+    void* hostTsegInfo;
     uint32_t allocatedEntrySize{0U}; // 实际分配的 entry 大小，0=按 argsSize 拷贝
 };
 
 struct UbHandle {
-    void *kerArgs;              // dev addr
-    void *hostAddr;             // host addr
-    H2DCopyMgr *argsAlloc;      // res allocator, used for dev arg pool
-    struct memTsegInfo *memTsegInfo;
+    void* kerArgs;         // dev addr
+    void* hostAddr;        // host addr
+    H2DCopyMgr* argsAlloc; // res allocator, used for dev arg pool
+    struct memTsegInfo* memTsegInfo;
 };
 
 constexpr uint32_t UB_ARG_MAX_ENTRY_SIZE = 4096U;
@@ -45,7 +45,7 @@ constexpr uint32_t STARS_ARG_ADDR_ALIGN_BIT = 3U;
 
 class UbArgLoader : public NoCopy {
 public:
-    explicit UbArgLoader(Device * const dev);
+    explicit UbArgLoader(Device* const dev);
     ~UbArgLoader() override;
     void TearDown(void) noexcept
     {
@@ -56,17 +56,12 @@ public:
     }
 
     rtError_t Init();
-    rtError_t Release(void * const argHandle);
+    rtError_t Release(void* const argHandle);
     rtError_t AllocCopyPtr(const uint32_t size, StarsArgLoaderResult* const result);
-    H2DCopyMgr *GetArgsAllocator(void) const
-    {
-        return argAllocator_;
-    }
+    H2DCopyMgr* GetArgsAllocator(void) const { return argAllocator_; }
 
-    H2DCopyMgr *GetSuperArgsAllocator(void) const
-    {
-        return superArgAllocator_;
-    }
+    H2DCopyMgr* GetSuperArgsAllocator(void) const { return superArgAllocator_; }
+
 protected:
     Device* device_;
 
@@ -76,14 +71,12 @@ private:
 
     BufferAllocator* handleAllocator_;
 
-    void ReleaseDevArgPool(UbHandle * const argHandle);
-    rtError_t AllocDevArgPool(const uint32_t size, UbHandle * const argHandle, void **devTsegInfo,
-        void **hostTsegInfo);
-    void ReleaseDynamic(UbHandle * const argHandle);
-    rtError_t AllocDynamic(const uint32_t size, UbHandle * const argHandle, void **devTsegInfo,
-        void **hostTsegInfo);
+    void ReleaseDevArgPool(UbHandle* const argHandle);
+    rtError_t AllocDevArgPool(const uint32_t size, UbHandle* const argHandle, void** devTsegInfo, void** hostTsegInfo);
+    void ReleaseDynamic(UbHandle* const argHandle);
+    rtError_t AllocDynamic(const uint32_t size, UbHandle* const argHandle, void** devTsegInfo, void** hostTsegInfo);
 };
 
-}
-}
-#endif  // __CCE_RUNTIME_ARG_LOADER_UB_HPP__
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_ARG_LOADER_UB_HPP__

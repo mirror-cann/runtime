@@ -12,8 +12,8 @@
 
 #include "base.hpp"
 
-#define INSTR_ALIGN_SIZE (512U * sizeof(size_t))  // 4K
-#define POOL_ALIGN_SIZE 0xFFFU // 4k - 1
+#define INSTR_ALIGN_SIZE (512U * sizeof(size_t)) // 4K
+#define POOL_ALIGN_SIZE 0xFFFU                   // 4k - 1
 
 namespace cce {
 namespace runtime {
@@ -23,42 +23,29 @@ class Kernel;
 
 class Module : public NoCopy {
 public:
-    explicit Module(Device * const dev);
+    explicit Module(Device* const dev);
     ~Module() noexcept override;
 
     void TearDown() noexcept;
-    rtError_t Load(Program * const prog);
-    rtError_t GetFunction(const Kernel * const kernelIn, uint64_t * const function) const;
-    rtError_t GetFunction(const Kernel * const kernelIn, uint64_t * const function1, uint64_t * const function2) const;
-    rtError_t GetPrefetchCnt(const Kernel * const kernelIn, uint32_t &icachePrefetchCnt) const;
-    rtError_t GetPrefetchCnt(const Kernel * const kernelIn, uint32_t &icachePrefetchCnt1,
-                             uint32_t &icachePrefetchCnt2) const;
-    rtError_t CalModuleHash(std::size_t &hash) const;
-    rtError_t GetTaskRation(const Kernel * const kernelIn,  uint32_t &taskRation) const;
+    rtError_t Load(Program* const prog);
+    rtError_t GetFunction(const Kernel* const kernelIn, uint64_t* const function) const;
+    rtError_t GetFunction(const Kernel* const kernelIn, uint64_t* const function1, uint64_t* const function2) const;
+    rtError_t GetPrefetchCnt(const Kernel* const kernelIn, uint32_t& icachePrefetchCnt) const;
+    rtError_t GetPrefetchCnt(
+        const Kernel* const kernelIn, uint32_t& icachePrefetchCnt1, uint32_t& icachePrefetchCnt2) const;
+    rtError_t CalModuleHash(std::size_t& hash) const;
+    rtError_t GetTaskRation(const Kernel* const kernelIn, uint32_t& taskRation) const;
 
-    Program *GetProgram() const;
+    Program* GetProgram() const;
 
-    const Device *Device_() const
-    {
-        return device_;
-    }
+    const Device* Device_() const { return device_; }
 
-    const void *GetBaseAddr() const
-    {
-        return baseAddrAlign_;
-    }
-    
-    uint32_t GetBaseAddrSize() const
-    {
-        return baseAddrSize_;
-    }
+    const void* GetBaseAddr() const { return baseAddrAlign_; }
 
-    uint32_t GetProgMemType_() const
-    {
-        return progMemType_;
-    }
-    void GetAicpuLoadInfo(void** soNameBase, uint32_t *soNameSize,
-        void** kernelNameBase, uint32_t *kenelNameSize) const
+    uint32_t GetBaseAddrSize() const { return baseAddrSize_; }
+
+    uint32_t GetProgMemType_() const { return progMemType_; }
+    void GetAicpuLoadInfo(void** soNameBase, uint32_t* soNameSize, void** kernelNameBase, uint32_t* kenelNameSize) const
     {
         *soNameBase = soNamesBaseAddr_;
         *soNameSize = soNamesSize_;
@@ -66,20 +53,21 @@ public:
         *kenelNameSize = kernelNamesSize_;
         return;
     }
+
 private:
-    Device *device_;
+    Device* device_;
     uint32_t programId_{UINT32_MAX};
-    void *baseAddr_;
-    void *baseFMAddr_;
-    void *baseAddrAlign_;
-    void *kernelNamesBaseAddr_;
-    void *soNamesBaseAddr_;
+    void* baseAddr_;
+    void* baseFMAddr_;
+    void* baseAddrAlign_;
+    void* kernelNamesBaseAddr_;
+    void* soNamesBaseAddr_;
     uint32_t progMemType_;
     uint32_t baseAddrSize_;
     uint32_t kernelNamesSize_;
     uint32_t soNamesSize_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_MODULE_HPP__
+#endif // __CCE_RUNTIME_MODULE_HPP__

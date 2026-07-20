@@ -20,11 +20,11 @@ namespace cce {
 namespace runtime {
 void Model::ResetForRestore(void)
 {
-    Device * const dev = context_->Device_();
-    Driver * const deviceDrv = dev->Driver_();
+    Device* const dev = context_->Device_();
+    Driver* const deviceDrv = dev->Driver_();
     const uint32_t deviceId = dev->Id_();
     const uint32_t tsId = dev->DevGetTsId();
- 
+
     if (streamInfoPtr_ != nullptr) {
         (void)deviceDrv->DevMemFree(streamInfoPtr_, deviceId);
         streamInfoPtr_ = nullptr;
@@ -59,23 +59,22 @@ void Model::ResetForRestore(void)
 
 rtError_t Model::ReAllocStreamId(void)
 {
-    for (Stream *s : streams_) {
+    for (Stream* s : streams_) {
         const int32_t streamId = s->Id_();
         const uint32_t sqId = s->GetSqId();
         const rtError_t ret = s->ReAllocStreamId();
-        ERROR_RETURN(ret, "Realloc stream_id %d->%u failed, retCode=%#x.",
-            streamId, sqId, static_cast<uint32_t>(ret));
+        ERROR_RETURN(ret, "Realloc stream_id %d->%u failed, retCode=%#x.", streamId, sqId, static_cast<uint32_t>(ret));
     }
     return RT_ERROR_NONE;
 }
 
 rtError_t Model::CheckRestoredSqStatus(void)
 {
-    Device * const dev = context_->Device_();
+    Device* const dev = context_->Device_();
     const uint32_t tsId = dev->DevGetTsId();
     const uint32_t deviceId = dev->Id_();
 
-    for (Stream *s : streams_) {
+    for (Stream* s : streams_) {
         bool enable = false;
         uint16_t sqHead = 0U;
         const int32_t streamId = s->Id_();
@@ -94,25 +93,26 @@ rtError_t Model::CheckRestoredSqStatus(void)
 
 rtError_t Model::ReSetup(void)
 {
-    Device * const dev = context_->Device_();
+    Device* const dev = context_->Device_();
     const uint32_t deviceId = dev->Id_();
     const uint32_t tsId = dev->DevGetTsId();
 
     rtError_t err = dev->Driver_()->ReAllocResourceId(deviceId, tsId, 0U, Id_(), DRV_MODEL_ID);
-    ERROR_RETURN(err, "Realloc modelId failed, devId=%u, tsId=%u, retCode=%#x!",
-        deviceId, tsId, static_cast<uint32_t>(err));
+    ERROR_RETURN(
+        err, "Realloc modelId failed, devId=%u, tsId=%u, retCode=%#x!", deviceId, tsId, static_cast<uint32_t>(err));
 
     err = dev->WriteDevValue(modeID_, sizeof(int32_t), &id_);
-    ERROR_RETURN(err, "Write modelId failed, devId=%u, tsId=%u, retCode=%#x!",
-        deviceId, tsId, static_cast<uint32_t>(err));
+    ERROR_RETURN(
+        err, "Write modelId failed, devId=%u, tsId=%u, retCode=%#x!", deviceId, tsId, static_cast<uint32_t>(err));
 
     err = dev->WriteDevString(endGraphName_, MALLOC_DEV_NAME_STRING_MAX, "endGraph");
-    ERROR_RETURN(err, "Write EndGraph failed, devId=%u, tsId=%u, retCode=%#x!",
-        deviceId, tsId, static_cast<uint32_t>(err));
+    ERROR_RETURN(
+        err, "Write EndGraph failed, devId=%u, tsId=%u, retCode=%#x!", deviceId, tsId, static_cast<uint32_t>(err));
 
     err = dev->WriteDevString(activeStreamName_, MALLOC_DEV_NAME_STRING_MAX, "activeEntryStream");
-    ERROR_RETURN(err, "Write ActiveEntryStream failed, devId=%u, tsId=%u, retCode=%#x!",
-        deviceId, tsId, static_cast<uint32_t>(err));
+    ERROR_RETURN(
+        err, "Write ActiveEntryStream failed, devId=%u, tsId=%u, retCode=%#x!", deviceId, tsId,
+        static_cast<uint32_t>(err));
 
     err = ReAllocStreamId();
     ERROR_RETURN(err, "Realloc streamId failed, error=%#x.", static_cast<uint32_t>(err));
@@ -122,13 +122,12 @@ rtError_t Model::ReSetup(void)
 
 rtError_t Model::ReBindStreams(void)
 {
-    for (Stream * const streamObj : streams_) {
+    for (Stream* const streamObj : streams_) {
         if ((streamObj->Flags() & RT_STREAM_AICPU) != 0U) {
             continue;
         }
-        const uint32_t flag = (IsModelHeadStream(streamObj)) ?
-            static_cast<uint32_t>(RT_HEAD_STREAM) :
-            static_cast<uint32_t>(RT_INVALID_FLAG);
+        const uint32_t flag = (IsModelHeadStream(streamObj)) ? static_cast<uint32_t>(RT_HEAD_STREAM) :
+                                                               static_cast<uint32_t>(RT_INVALID_FLAG);
         const rtError_t error = EnterBindStream(streamObj, flag);
         COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
     }
@@ -140,11 +139,9 @@ rtError_t Model::SinkSqTasksBackup(void)
     const size_t stmCnt = streams_.size();
     auto sqIdGrp = std::make_unique<uint32_t[]>(stmCnt);
     NULL_PTR_RETURN(sqIdGrp, RT_ERROR_MEMORY_ALLOCATION);
-    (void)std::transform(streams_.begin(), streams_.end(), sqIdGrp.get(),
-        [](const Stream * const stream) -> uint32_t {
-            return static_cast<uint32_t>(stream->GetSqId());
-        }
-    );
+    (void)std::transform(streams_.begin(), streams_.end(), sqIdGrp.get(), [](const Stream* const stream) -> uint32_t {
+        return static_cast<uint32_t>(stream->GetSqId());
+    });
     return NpuDriver::SqBackup(context_->Device_()->Id_(), sqIdGrp.get(), stmCnt);
 }
 
@@ -153,11 +150,9 @@ rtError_t Model::SinkSqTasksRestore(void)
     const size_t stmCnt = streams_.size();
     auto sqIdGrp = std::make_unique<uint32_t[]>(stmCnt);
     NULL_PTR_RETURN(sqIdGrp, RT_ERROR_MEMORY_ALLOCATION);
-    (void)std::transform(streams_.begin(), streams_.end(), sqIdGrp.get(),
-        [](const Stream * const stream) -> uint32_t {
-            return static_cast<uint32_t>(stream->GetSqId());
-        }
-    );
+    (void)std::transform(streams_.begin(), streams_.end(), sqIdGrp.get(), [](const Stream* const stream) -> uint32_t {
+        return static_cast<uint32_t>(stream->GetSqId());
+    });
     return NpuDriver::SqRestore(context_->Device_()->Id_(), sqIdGrp.get(), stmCnt);
 }
 
@@ -166,39 +161,33 @@ rtError_t Model::ReBuild(void)
     RT_LOG(RT_LOG_EVENT, "Begin to rebuild model, id=%d.", id_);
 
     rtError_t error = ReSetup();
-    ERROR_RETURN_MSG_INNER(error,"ReSetup model failed. retCode=%#x.",
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(error, "ReSetup model failed. retCode=%#x.", static_cast<uint32_t>(error));
 
     ResetForRestore();
 
     error = ReBindStreams();
-    ERROR_RETURN_MSG_INNER(error,"ReBind stream failed. retCode=%#x.",
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(error, "ReBind stream failed. retCode=%#x.", static_cast<uint32_t>(error));
 
     error = SinkSqTasksRestore();
-    ERROR_RETURN_MSG_INNER(error,"Restore tasks failed. retCode=%#x.",
-        static_cast<uint32_t>(error));
- 
+    ERROR_RETURN_MSG_INNER(error, "Restore tasks failed. retCode=%#x.", static_cast<uint32_t>(error));
+
     error = CheckRestoredSqStatus();
-    ERROR_RETURN_MSG_INNER(error,"Check SQ status failed. retCode=%#x.",
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(error, "Check SQ status failed. retCode=%#x.", static_cast<uint32_t>(error));
 
     if (context_->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_ALLOC_FROM_STREAM_POOL)) {
         error = ModelLoadCompleteByStream(this);
     } else {
         error = LoadCompleteByStream();
     }
-    
-    ERROR_RETURN_MSG_INNER(error,"ReLoad complete failed. retCode=%#x.",
-        static_cast<uint32_t>(error));
-    
+
+    ERROR_RETURN_MSG_INNER(error, "ReLoad complete failed. retCode=%#x.", static_cast<uint32_t>(error));
+
     error = UpdateSnapShotSqe();
-    ERROR_RETURN_MSG_INNER(error,"Update sqe failed. retCode=%#x.",
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(error, "Update sqe failed. retCode=%#x.", static_cast<uint32_t>(error));
 
     RT_LOG(RT_LOG_EVENT, "Success to rebuild model, id=%d.", id_);
     return RT_ERROR_NONE;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -12,15 +12,9 @@
 namespace cce {
 namespace runtime {
 
-uint32_t Model::ModelGetNodes(void) const
-{
-    return 0U;
-}
+uint32_t Model::ModelGetNodes(void) const { return 0U; }
 
-rtError_t Model::ModelDebugDotPrint(void) const
-{
-    return RT_ERROR_FEATURE_NOT_SUPPORT;
-}
+rtError_t Model::ModelDebugDotPrint(void) const { return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
 rtError_t Model::ModelDebugJsonPrint(const char* path, const unsigned int flags) const
 {
@@ -29,5 +23,5 @@ rtError_t Model::ModelDebugJsonPrint(const char* path, const unsigned int flags)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

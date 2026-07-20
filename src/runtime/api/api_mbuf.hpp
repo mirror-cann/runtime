@@ -27,37 +27,36 @@ public:
     ApiMbuf() = default;
     virtual ~ApiMbuf() = default;
 
-    ApiMbuf(const ApiMbuf &) = delete;
-    ApiMbuf &operator=(const ApiMbuf &) = delete;
-    ApiMbuf(ApiMbuf &&) = delete;
-    ApiMbuf &operator=(ApiMbuf &&) = delete;
+    ApiMbuf(const ApiMbuf&) = delete;
+    ApiMbuf& operator=(const ApiMbuf&) = delete;
+    ApiMbuf(ApiMbuf&&) = delete;
+    ApiMbuf& operator=(ApiMbuf&&) = delete;
 
     // Get ApiMbuf instance.
-    static ApiMbuf *Instance();
+    static ApiMbuf* Instance();
 
     // mbuf API
-    virtual rtError_t MbufInit(rtMemBuffCfg_t * const cfg) = 0;
-    virtual rtError_t MbufBuild(void * const buff, const uint64_t size, rtMbufPtr_t *mbufPtr) = 0;
-    virtual rtError_t MbufAlloc(rtMbufPtr_t * const mbufPtr, const uint64_t size) = 0;
-    virtual rtError_t MbufAllocEx(rtMbufPtr_t * const mbufPtr, const uint64_t size, const uint64_t flag,
-        const int32_t grpId) = 0;
-    virtual rtError_t MbufUnBuild(const rtMbufPtr_t mbufPtr, void ** const buff, uint64_t * const size) = 0;
-    virtual rtError_t MbufGet(const rtMbufPtr_t mbufPtr, void * const buff, const uint64_t size) = 0;
-    virtual rtError_t MbufPut(const rtMbufPtr_t mbufPtr, void * const buff) = 0;
+    virtual rtError_t MbufInit(rtMemBuffCfg_t* const cfg) = 0;
+    virtual rtError_t MbufBuild(void* const buff, const uint64_t size, rtMbufPtr_t* mbufPtr) = 0;
+    virtual rtError_t MbufAlloc(rtMbufPtr_t* const mbufPtr, const uint64_t size) = 0;
+    virtual rtError_t MbufAllocEx(
+        rtMbufPtr_t* const mbufPtr, const uint64_t size, const uint64_t flag, const int32_t grpId) = 0;
+    virtual rtError_t MbufUnBuild(const rtMbufPtr_t mbufPtr, void** const buff, uint64_t* const size) = 0;
+    virtual rtError_t MbufGet(const rtMbufPtr_t mbufPtr, void* const buff, const uint64_t size) = 0;
+    virtual rtError_t MbufPut(const rtMbufPtr_t mbufPtr, void* const buff) = 0;
     virtual rtError_t MbufFree(const rtMbufPtr_t mbufPtr) = 0;
     virtual rtError_t MbufSetDataLen(const rtMbufPtr_t mbufPtr, const uint64_t len) = 0;
-    virtual rtError_t MbufGetDataLen(const rtMbufPtr_t mbufPtr, uint64_t *len) = 0;
-    virtual rtError_t MbufGetBuffAddr(const rtMbufPtr_t mbufPtr, void ** const buf) = 0;
-    virtual rtError_t MbufGetBuffSize(const rtMbufPtr_t mbufPtr, uint64_t * const totalSize) = 0;
-    virtual rtError_t MbufGetPrivInfo(const rtMbufPtr_t mbufPtr, void ** const priv, uint64_t * const size) = 0;
-    virtual rtError_t MbufCopyBufRef(const rtMbufPtr_t mbufPtr, rtMbufPtr_t * const newMbufPtr) = 0;
+    virtual rtError_t MbufGetDataLen(const rtMbufPtr_t mbufPtr, uint64_t* len) = 0;
+    virtual rtError_t MbufGetBuffAddr(const rtMbufPtr_t mbufPtr, void** const buf) = 0;
+    virtual rtError_t MbufGetBuffSize(const rtMbufPtr_t mbufPtr, uint64_t* const totalSize) = 0;
+    virtual rtError_t MbufGetPrivInfo(const rtMbufPtr_t mbufPtr, void** const priv, uint64_t* const size) = 0;
+    virtual rtError_t MbufCopyBufRef(const rtMbufPtr_t mbufPtr, rtMbufPtr_t* const newMbufPtr) = 0;
     virtual rtError_t MbufChainAppend(const rtMbufPtr_t memBufChainHead, rtMbufPtr_t memBuf) = 0;
-    virtual rtError_t MbufChainGetMbufNum(const rtMbufPtr_t memBufChainHead, uint32_t *num) = 0;
-    virtual rtError_t MbufChainGetMbuf(const rtMbufPtr_t memBufChainHead, const uint32_t index,
-        rtMbufPtr_t * const memBuf) = 0;
+    virtual rtError_t MbufChainGetMbufNum(const rtMbufPtr_t memBufChainHead, uint32_t* num) = 0;
+    virtual rtError_t MbufChainGetMbuf(
+        const rtMbufPtr_t memBufChainHead, const uint32_t index, rtMbufPtr_t* const memBuf) = 0;
 };
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-
-#endif  // CCE_RUNTIME_API_MBUF_HPP
+#endif // CCE_RUNTIME_API_MBUF_HPP

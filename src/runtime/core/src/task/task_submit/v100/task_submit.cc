@@ -42,10 +42,11 @@ TIMESTAMP_EXTERN(SqTaskSendV1);
 TIMESTAMP_EXTERN(AicpuLoad);
 TIMESTAMP_EXTERN(AicoreLoad);
 
-rtError_t AllocTaskAndSend(TaskInfo *submitTask, Stream *stm, uint32_t * const flipTaskId, int32_t timeout)
+rtError_t AllocTaskAndSend(TaskInfo* submitTask, Stream* stm, uint32_t* const flipTaskId, int32_t timeout)
 {
-    if  ((!stm->IsCtrlStream()) && ((stm->Id_() == -1) || (stm->Id_() == MAX_INT32_NUM))) {
-        RT_LOG_CALL_MSG(ERR_MODULE_RTS, "stream is invalid, device_id=%u, stream_id=%d.", stm->Device_()->Id_(), stm->Id_());
+    if ((!stm->IsCtrlStream()) && ((stm->Id_() == -1) || (stm->Id_() == MAX_INT32_NUM))) {
+        RT_LOG_CALL_MSG(
+            ERR_MODULE_RTS, "stream is invalid, device_id=%u, stream_id=%d.", stm->Device_()->Id_(), stm->Id_());
         submitTask->error = static_cast<uint32_t>(TASK_ERROR_SUBMIT_FAIL);
         return RT_ERROR_STREAM_INVALID;
     }
@@ -58,51 +59,60 @@ rtError_t AllocTaskAndSend(TaskInfo *submitTask, Stream *stm, uint32_t * const f
     }
 }
 
-rtError_t LoadArgsInfoForAicoreKernelTask(TaskInfo *submitTask, Stream *stm, uint16_t taskResId)
+rtError_t LoadArgsInfoForAicoreKernelTask(TaskInfo* submitTask, Stream* stm, uint16_t taskResId)
 {
     ArgLoaderResult result = {};
-    rtArgsEx_t *argsInfo = submitTask->u.aicTaskInfo.argsInfo;
+    rtArgsEx_t* argsInfo = submitTask->u.aicTaskInfo.argsInfo;
     rtError_t error = RT_ERROR_NONE;
     if (argsInfo != nullptr) {
         error = stm->taskResMang_->Load(argsInfo, static_cast<uint32_t>(taskResId), stm, &result);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Failed to load args, device_id=%u, stream_id=%d,"
-            " retCode=%#x.", stm->Device_()->Id_(), stm->Id_(), error);
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error,
+            "Failed to load args, device_id=%u, stream_id=%d,"
+            " retCode=%#x.",
+            stm->Device_()->Id_(), stm->Id_(), error);
         SetAicoreArgs(submitTask, result.kerArgs, argsInfo->argsSize, result.handle);
     }
     return error;
 }
 
-static rtError_t LoadArgsInfoForAicpuKernelTask(TaskInfo * const submitTask, Stream * const stm,
-    uint16_t taskResId)
+static rtError_t LoadArgsInfoForAicpuKernelTask(TaskInfo* const submitTask, Stream* const stm, uint16_t taskResId)
 {
-    rtAicpuArgsEx_t *aicpuArgsInfo = submitTask->u.aicpuTaskInfo.aicpuArgsInfo;
-    rtArgsEx_t *argsInfo = submitTask->u.aicpuTaskInfo.argsInfo;
+    rtAicpuArgsEx_t* aicpuArgsInfo = submitTask->u.aicpuTaskInfo.aicpuArgsInfo;
+    rtArgsEx_t* argsInfo = submitTask->u.aicpuTaskInfo.argsInfo;
     ArgLoaderResult result = {};
     rtError_t error = RT_ERROR_NONE;
     if (argsInfo != nullptr) {
         error = stm->taskResMang_->Load(argsInfo, static_cast<uint32_t>(taskResId), stm, &result);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Failed to load args, device_id=%u, stream_id=%d,"
-            " retCode=%#x.", stm->Device_()->Id_(), stm->Id_(), error);
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error,
+            "Failed to load args, device_id=%u, stream_id=%d,"
+            " retCode=%#x.",
+            stm->Device_()->Id_(), stm->Id_(), error);
         SetAicpuArgs(submitTask, result.kerArgs, argsInfo->argsSize, result.handle);
     }
     if (aicpuArgsInfo != nullptr) {
         error = stm->taskResMang_->Load(aicpuArgsInfo, static_cast<uint32_t>(taskResId), stm, &result);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Failed to load args, device_id=%u, stream_id=%d,"
-            " retCode=%#x.", stm->Device_()->Id_(), stm->Id_(), error);
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error,
+            "Failed to load args, device_id=%u, stream_id=%d,"
+            " retCode=%#x.",
+            stm->Device_()->Id_(), stm->Id_(), error);
         SetAicpuArgs(submitTask, result.kerArgs, aicpuArgsInfo->argsSize, result.handle);
 
         /* 如果aicpuArgsInfo->args中存在soName和kernnelName，则使用args中的devAddr；
          * 否则，使用kernel注册时的devAddr（见StoreKernelLiteralNameToDevice调用的地方）
          * 注：部分场景的cpuLaunch没有kernel注册过程 */
         if ((aicpuArgsInfo->soNameAddrOffset != 0) || (aicpuArgsInfo->kernelNameAddrOffset != 0)) {
-             SetNameArgs(submitTask, (RtPtrToPtr<char_t *, void *>(result.kerArgs) + aicpuArgsInfo->soNameAddrOffset),
-                         (RtPtrToPtr<char_t *, void *>(result.kerArgs) + aicpuArgsInfo->kernelNameAddrOffset));
+            SetNameArgs(
+                submitTask, (RtPtrToPtr<char_t*, void*>(result.kerArgs) + aicpuArgsInfo->soNameAddrOffset),
+                (RtPtrToPtr<char_t*, void*>(result.kerArgs) + aicpuArgsInfo->kernelNameAddrOffset));
         }
     }
     return error;
 }
 
-rtError_t LoadArgsInfo(TaskInfo *submitTask, Stream *stm, uint16_t taskResId)
+rtError_t LoadArgsInfo(TaskInfo* submitTask, Stream* stm, uint16_t taskResId)
 {
     if (!stm->isHasPcieBar_) {
         return RT_ERROR_NONE;
@@ -128,36 +138,40 @@ rtError_t LoadArgsInfo(TaskInfo *submitTask, Stream *stm, uint16_t taskResId)
     return error;
 }
 
-rtError_t AllocTaskAndSendDc(TaskInfo *submitTask, Stream *stm, uint32_t * const flipTaskId)
+rtError_t AllocTaskAndSendDc(TaskInfo* submitTask, Stream* stm, uint32_t* const flipTaskId)
 {
-    COND_RETURN_AND_MSG_OUTER(((stm->Flags() & RT_STREAM_CP_PROCESS_USE) != 0U),
-        RT_ERROR_STREAM_INVALID, ErrorCode::EE1006, __func__, "Stream flags value " + std::to_string(stm->Flags()),
-        RtFmtMsg("Stream (stream_id=%d) with the flag RT_STREAM_CP_PROCESS_USE(0x800U) cannot be used for kernel launch", stm->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        ((stm->Flags() & RT_STREAM_CP_PROCESS_USE) != 0U), RT_ERROR_STREAM_INVALID, ErrorCode::EE1006, __func__,
+        "Stream flags value " + std::to_string(stm->Flags()),
+        RtFmtMsg(
+            "Stream (stream_id=%d) with the flag RT_STREAM_CP_PROCESS_USE(0x800U) cannot be used for kernel launch",
+            stm->Id_()));
     // 主动回收
     uint8_t failCount = 0U;
     Engine* engine = ((RawDevice*)(stm->Device_()))->Engine_();
     TIMESTAMP_BEGIN(TryRecycleTaskV1);
     rtError_t error = engine->TryRecycleTask(stm);
     TIMESTAMP_END(TryRecycleTaskV1);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "TryRecycleTask failed, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "TryRecycleTask failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     constexpr uint16_t perDetectTimes = 1000U;
     uint32_t tryCount = 0U;
     while (stm->IsTaskLimited(nullptr) && (!stm->GetRecycleFlag())) {
         TIMESTAMP_BEGIN(TaskSendLimitedV1);
         stm->SetStreamAsyncRecycleFlag(true);
-        engine->SendingWait(stm, failCount);   // Send limited, need release complete task.
+        engine->SendingWait(stm, failCount); // Send limited, need release complete task.
         stm->SetStreamAsyncRecycleFlag(false);
         TIMESTAMP_END(TaskSendLimitedV1);
         if ((tryCount % perDetectTimes) == 0) {
             error = stm->CheckContextTaskSend(submitTask);
-            COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "context is abort, status=%#x.", static_cast<int32_t>(error));
+            COND_RETURN_ERROR(
+                error != RT_ERROR_NONE, error, "context is abort, status=%#x.", static_cast<int32_t>(error));
         }
         tryCount++;
     }
 
-    Device * const dev = stm->Device_();
+    Device* const dev = stm->Device_();
     const uint32_t devId = dev->Id_();
     const uint32_t tsId = dev->DevGetTsId();
     const uint32_t sqId = stm->GetSqId();
@@ -165,13 +179,13 @@ rtError_t AllocTaskAndSendDc(TaskInfo *submitTask, Stream *stm, uint32_t * const
 
     // 调用driver接口，对RTSQ加锁
     constexpr uint32_t sendSqeNum = 1U;
-    rtTsCmdSqBuf_t *command = nullptr;
+    rtTsCmdSqBuf_t* command = nullptr;
 
     struct halSqMemGetInput sqMemGetInput = {DRV_NORMAL_TYPE, tsId, sqId, sendSqeNum, {0}};
     struct halSqMemGetOutput sqMemGetOutput = {0, nullptr, 0, {0}};
 
-    StreamSqCqManage * const stmSqCqManage = const_cast<StreamSqCqManage *>(dev->GetStreamSqCqManage());
-    std::mutex * const sqMutex = stmSqCqManage->GetSqMutex(sqId);
+    StreamSqCqManage* const stmSqCqManage = const_cast<StreamSqCqManage*>(dev->GetStreamSqCqManage());
+    std::mutex* const sqMutex = stmSqCqManage->GetSqMutex(sqId);
     if (sqMutex == nullptr) {
         RT_LOG_INNER_MSG(RT_LOG_ERROR, "GetSqMutex failed: sqId=%u", sqId);
         return RT_ERROR_INVALID_VALUE;
@@ -180,29 +194,33 @@ rtError_t AllocTaskAndSendDc(TaskInfo *submitTask, Stream *stm, uint32_t * const
 
     TIMESTAMP_BEGIN(CommandOccupyNormalV1);
     error = halSqMemGet(devId, &sqMemGetInput, &sqMemGetOutput);
-    command = RtPtrToPtr<rtTsCmdSqBuf_t *, void *>(const_cast<void *>(sqMemGetOutput.cmdPtr));
+    command = RtPtrToPtr<rtTsCmdSqBuf_t*, void*>(const_cast<void*>(sqMemGetOutput.cmdPtr));
     TIMESTAMP_END(CommandOccupyNormalV1);
-    RT_LOG(RT_LOG_DEBUG, "sqId=%u, deviceId=%u, tsId=%u, cmdCount=%u, pos=%u.",
-           sqId, devId, tsId, sqMemGetOutput.cmdCount, sqMemGetOutput.pos);
+    RT_LOG(
+        RT_LOG_DEBUG, "sqId=%u, deviceId=%u, tsId=%u, cmdCount=%u, pos=%u.", sqId, devId, tsId, sqMemGetOutput.cmdCount,
+        sqMemGetOutput.pos);
 
     tryCount = 0U;
     while (command == nullptr) {
-        RT_LOG(RT_LOG_WARNING, "device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u,"
+        RT_LOG(
+            RT_LOG_WARNING,
+            "device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u,"
             " stream_id=%d, task_id=%hu, task_type=%u, error=%u.",
-            devId, tsId, sqId, cqId, stm->Id_(), submitTask->id,
-            static_cast<uint32_t>(submitTask->type),
+            devId, tsId, sqId, cqId, stm->Id_(), submitTask->id, static_cast<uint32_t>(submitTask->type),
             static_cast<uint32_t>(error));
         TIMESTAMP_BEGIN(CommandOccupyV1);
         error = halSqMemGet(devId, &sqMemGetInput, &sqMemGetOutput);
-        command = RtPtrToPtr<rtTsCmdSqBuf_t *, void *>(const_cast<void *>(sqMemGetOutput.cmdPtr));
+        command = RtPtrToPtr<rtTsCmdSqBuf_t*, void*>(const_cast<void*>(sqMemGetOutput.cmdPtr));
         TIMESTAMP_END(CommandOccupyV1);
-        RT_LOG(RT_LOG_DEBUG, "sqId=%u, deviceId=%u, tsId=%u, cmdCount=%u, pos=%u.",
-            sqId, devId, tsId, sqMemGetOutput.cmdCount, sqMemGetOutput.pos);
+        RT_LOG(
+            RT_LOG_DEBUG, "sqId=%u, deviceId=%u, tsId=%u, cmdCount=%u, pos=%u.", sqId, devId, tsId,
+            sqMemGetOutput.cmdCount, sqMemGetOutput.pos);
         stm->SetFlowCtrlFlag();
         tryCount++;
         if ((tryCount % perDetectTimes) == 0) {
             if (stm->Device_()->GetDevRunningState() == static_cast<uint32_t>(DEV_RUNNING_DOWN)) {
-                RT_LOG(RT_LOG_ERROR, "device status error, drvError=%#x, device_id=%u, stream_id=%d",
+                RT_LOG(
+                    RT_LOG_ERROR, "device status error, drvError=%#x, device_id=%u, stream_id=%d",
                     static_cast<uint32_t>(error), devId, stm->Id_());
                 stm->DcShowStmDfxInfo();
                 return RT_ERROR_DRV_ERR;
@@ -215,12 +233,15 @@ rtError_t AllocTaskAndSendDc(TaskInfo *submitTask, Stream *stm, uint32_t * const
     taskId = (taskId != MAX_UINT16_NUM) ? ((taskId + 1U) % MAX_UINT16_NUM) : 0U;
     const uint16_t taskPool = stm->taskResMang_->GetTaskPoolNum();
     const uint16_t taskResId = taskId % taskPool;
-    TaskInfo *taskInfo = nullptr;
-    TaskFactory *taskFactory = dev->GetTaskFactory();
+    TaskInfo* taskInfo = nullptr;
+    TaskFactory* taskFactory = dev->GetTaskFactory();
 
-    RT_LOG(RT_LOG_INFO, "alloc taskinfo device_id=%u, stream_id=%d, taskResId=%u, taskResHead_=%u, "
-        "taskResTail_=%u, taskPoolNum_=%u.", stm->taskResMang_->deviceId_, stm->taskResMang_->streamId_, taskResId,
-        stm->taskResMang_->taskResHead_, stm->taskResMang_->taskResTail_, stm->taskResMang_->taskPoolNum_);
+    RT_LOG(
+        RT_LOG_INFO,
+        "alloc taskinfo device_id=%u, stream_id=%d, taskResId=%u, taskResHead_=%u, "
+        "taskResTail_=%u, taskPoolNum_=%u.",
+        stm->taskResMang_->deviceId_, stm->taskResMang_->streamId_, taskResId, stm->taskResMang_->taskResHead_,
+        stm->taskResMang_->taskResTail_, stm->taskResMang_->taskPoolNum_);
     TIMESTAMP_BEGIN(TaskRes_AllocTaskNormal);
     taskInfo = stm->taskResMang_->AllocTaskInfoByTaskResId(stm, taskResId, taskId, submitTask->type);
     TIMESTAMP_END(TaskRes_AllocTaskNormal);
@@ -235,9 +256,9 @@ rtError_t AllocTaskAndSendDc(TaskInfo *submitTask, Stream *stm, uint32_t * const
         TIMESTAMP_END(TaskRes_AllocTask);
     }
 
-    error =  LoadArgsInfo(submitTask, stm, taskResId);
-    COND_PROC_RETURN_ERROR_MSG_INNER((error != RT_ERROR_NONE),
-        error, (void)taskFactory->Recycle(taskInfo);, "LoadArgsInfo failed.");
+    error = LoadArgsInfo(submitTask, stm, taskResId);
+    COND_PROC_RETURN_ERROR_MSG_INNER((error != RT_ERROR_NONE), error, (void)taskFactory->Recycle(taskInfo);
+                                     , "LoadArgsInfo failed.");
 
     submitTask->id = taskId;
     submitTask->profEn = Runtime::Instance()->GetProfileEnableFlag();
@@ -247,11 +268,12 @@ rtError_t AllocTaskAndSendDc(TaskInfo *submitTask, Stream *stm, uint32_t * const
     SaveTaskInfo(taskInfo, submitTask);
     TIMESTAMP_END(SaveTaskInfo);
     COND_PROC(flipTaskId != nullptr, *flipTaskId = GetFlipTaskId(taskInfo->id, taskInfo->flipNum););
-    RT_LOG(RT_LOG_INFO, "ReportProfData, taskInfo->id=%hu, taskInfo->flipNum=%hu, flipTaskId=%u",
-           taskInfo->id, taskInfo->flipNum, flipTaskId);
+    RT_LOG(
+        RT_LOG_INFO, "ReportProfData, taskInfo->id=%hu, taskInfo->flipNum=%hu, flipTaskId=%u", taskInfo->id,
+        taskInfo->flipNum, flipTaskId);
     engine->ReportProfData(taskInfo);
 
-    const Profiler * const profilerObj = Runtime::Instance()->Profiler_();
+    const Profiler* const profilerObj = Runtime::Instance()->Profiler_();
     if ((profilerObj != nullptr) && (profilerObj->GetProfLogEnable())) {
         profilerObj->ReportSend(taskInfo->id, static_cast<uint16_t>(stm->Id_()));
     }
@@ -282,10 +304,12 @@ rtError_t AllocTaskAndSendDc(TaskInfo *submitTask, Stream *stm, uint32_t * const
 
     error = engine->ProcessTaskWait(taskInfo);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "ProcessTaskWait failed, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d."
+        RT_LOG(
+            RT_LOG_ERROR,
+            "ProcessTaskWait failed, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d."
             " task_id=%hu, task_type=%d(%s), retCode=%d.",
-            devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id, static_cast<int32_t>(taskInfo->type),
-            taskInfo->typeName, error);
+            devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id, static_cast<int32_t>(taskInfo->type), taskInfo->typeName,
+            error);
         stm->pendingNum_.Sub(1U);
         (void)stm->Device_()->GetTaskFactory()->Recycle(taskInfo);
         return error;
@@ -298,31 +322,37 @@ rtError_t AllocTaskAndSendDc(TaskInfo *submitTask, Stream *stm, uint32_t * const
     const drvError_t drvRet = halSqMsgSend(devId, &sendInfo);
     TIMESTAMP_END(CommandSendV1);
     if (unlikely(drvRet != DRV_ERROR_NONE)) {
-        RT_LOG(RT_LOG_ERROR, "[drv api] halSqMsgSend failed, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d."
+        RT_LOG(
+            RT_LOG_ERROR,
+            "[drv api] halSqMsgSend failed, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d."
             " task_id=%hu, task_type=%d(%s), reportCount=%u, cmdCount=%u, drvRetCode=%d.",
-            devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id, taskInfo->type, taskInfo->typeName,
-            reportCount, sendSqeNum, drvRet);
+            devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id, taskInfo->type, taskInfo->typeName, reportCount,
+            sendSqeNum, drvRet);
         stm->pendingNum_.Sub(1U);
         (void)stm->Device_()->GetTaskFactory()->Recycle(taskInfo);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
-    RT_LOG(RT_LOG_INFO, "task send ok: device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d."
+    RT_LOG(
+        RT_LOG_INFO,
+        "task send ok: device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d."
         " task_id=%hu, task_type=%d(%s), reportCount=%u, cmdCount=%u.",
-        devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id, taskInfo->type, taskInfo->typeName,
-        reportCount, sendSqeNum);
+        devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id, taskInfo->type, taskInfo->typeName, reportCount, sendSqeNum);
     return error;
 }
 
-rtError_t SubmitTaskDc(TaskInfo *submitTask, Stream *stm, uint32_t * const flipTaskId, int32_t timeout)
+rtError_t SubmitTaskDc(TaskInfo* submitTask, Stream* stm, uint32_t* const flipTaskId, int32_t timeout)
 {
     rtError_t error = RT_ERROR_NONE;
     uint16_t taskId = 0U;
     TIMESTAMP_BEGIN(AllocTaskAndSendDc);
     error = AllocTaskAndSendDc(submitTask, stm, flipTaskId);
     TIMESTAMP_END(AllocTaskAndSendDc);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "AllocTaskAndSendDc fail, streamId=%d, taskId=%hu,"
-        "taskType=%u, retCode=%#x", stm->Id_(), submitTask->id, submitTask->type, error);
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error,
+        "AllocTaskAndSendDc fail, streamId=%d, taskId=%hu,"
+        "taskType=%u, retCode=%#x",
+        stm->Id_(), submitTask->id, submitTask->type, error);
     taskId = submitTask->id;
     Engine* engine = ((RawDevice*)(stm->Device_()))->Engine_();
     if (!stm->IsCtrlStream()) {
@@ -342,32 +372,34 @@ rtError_t SubmitTaskDc(TaskInfo *submitTask, Stream *stm, uint32_t * const flipT
         stm->SetStreamStopSyncFlag(true);
         stm->StreamSyncUnLock();
 
-        COND_RETURN_INFO(error != RT_ERROR_NONE, error, "SyncTask stream_id=%u, task_id=%u, taskType=%u, result=%u",
-            stm->Id_(), submitTask->id, submitTask->type, error);
+        COND_RETURN_INFO(
+            error != RT_ERROR_NONE, error, "SyncTask stream_id=%u, task_id=%u, taskType=%u, result=%u", stm->Id_(),
+            submitTask->id, submitTask->type, error);
         error = AllocAndSendFlipTask(taskId, stm);
-        COND_RETURN_INFO(error != RT_ERROR_NONE, error,
-            "AllocAndSendFlipTask stream sync stream_id=%u, task_id=%u, taskType=%u, result=%u",
-            stm->Id_(), submitTask->id, submitTask->type, error);
+        COND_RETURN_INFO(
+            error != RT_ERROR_NONE, error,
+            "AllocAndSendFlipTask stream sync stream_id=%u, task_id=%u, taskType=%u, result=%u", stm->Id_(),
+            submitTask->id, submitTask->type, error);
 
         return error;
     }
 
     error = AllocAndSendFlipTask(taskId, stm);
-    COND_RETURN_INFO(error != RT_ERROR_NONE, error,
-        "AllocAndSendFlipTask stream_id=%u, task_id=%u, taskType=%u, result=%u",
+    COND_RETURN_INFO(
+        error != RT_ERROR_NONE, error, "AllocAndSendFlipTask stream_id=%u, task_id=%u, taskType=%u, result=%u",
         stm->Id_(), submitTask->id, submitTask->type, error);
 
-    COND_RETURN_INFO(stm->IsTaskSink(), RT_ERROR_NONE,
-        "AllocAndSendFlipTask stream_id=%u, task_id=%u, taskType=%u, result=%u",
+    COND_RETURN_INFO(
+        stm->IsTaskSink(), RT_ERROR_NONE, "AllocAndSendFlipTask stream_id=%u, task_id=%u, taskType=%u, result=%u",
         stm->Id_(), submitTask->id, submitTask->type, error);
-    const uint16_t postTaskId = submitTask->id + 1U;      // 保持原有逻辑，翻转就保留低16位
-    if ((postTaskId % RT_HALF_SEND_TASK_NUM) != 0U) {    // Half Event.
+    const uint16_t postTaskId = submitTask->id + 1U;  // 保持原有逻辑，翻转就保留低16位
+    if ((postTaskId % RT_HALF_SEND_TASK_NUM) != 0U) { // Half Event.
         return RT_ERROR_NONE;
     }
 
     TIMESTAMP_BEGIN(HalfEventProcV1);
     TaskInfo submitTask1 = {};
-    TaskInfo *halfRecordtask = &submitTask1;
+    TaskInfo* halfRecordtask = &submitTask1;
     error = stm->ProcRecordTask(halfRecordtask);
     COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
 
@@ -378,8 +410,9 @@ rtError_t SubmitTaskDc(TaskInfo *submitTask, Stream *stm, uint32_t * const flipT
     }
     taskId = halfRecordtask->id;
     TIMESTAMP_END(HalfEventProcV1);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "SendTask fail, streamId=%d, taskId=%hu, retCode=%#x",
-        stm->Id_(), halfRecordtask->id, error);
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, "SendTask fail, streamId=%d, taskId=%hu, retCode=%#x", stm->Id_(),
+        halfRecordtask->id, error);
 
     if (!stm->IsCtrlStream()) {
         engine->AddPendingNum();
@@ -392,22 +425,22 @@ rtError_t SubmitTaskDc(TaskInfo *submitTask, Stream *stm, uint32_t * const flipT
     return RT_ERROR_NONE;
 }
 
-rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * const flipTaskId)
+rtError_t AllocTaskAndSendStars(TaskInfo* submitTask, Stream* stm, uint32_t* const flipTaskId)
 {
     StarsEngine* engine = (StarsEngine*)(((RawDevice*)(stm->Device_()))->Engine_());
     rtError_t error = engine->TryRecycleTask(stm);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Try recycle task failed, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Try recycle task failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     while (stm->GetLimitFlag() && (!stm->GetRecycleFlag())) {
         TIMESTAMP_BEGIN(TaskSendLimitedV1);
-        engine->SendingWaitProc(stm);   // Send limited, need release complete task.
+        engine->SendingWaitProc(stm); // Send limited, need release complete task.
         TIMESTAMP_END(TaskSendLimitedV1);
         error = stm->CheckContextTaskSend(submitTask);
         COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "context is abort, status=%#x.", static_cast<int32_t>(error));
     }
 
-    Device *dev = stm->Device_();
+    Device* dev = stm->Device_();
     const uint32_t devId = dev->Id_();
     const uint32_t tsId = dev->DevGetTsId();
     const uint32_t sqId = stm->GetSqId();
@@ -416,18 +449,16 @@ rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * co
     // 分配TaskRes, 自增Taskid
     uint16_t taskId = 0U;
     uint16_t taskResId = 0U;
-    TaskInfo *taskInfo = nullptr;
-    TaskFactory *taskFactory = stm->Device_()->GetTaskFactory();
+    TaskInfo* taskInfo = nullptr;
+    TaskFactory* taskFactory = stm->Device_()->GetTaskFactory();
     uint16_t taskPool = stm->taskResMang_->GetTaskPoolNum();
 
     stm->StreamLock();
-    const  rtError_t status = stm->abortStatus_;
+    const rtError_t status = stm->abortStatus_;
     if (status != RT_ERROR_NONE) {
         stm->StreamUnLock();
-        RT_LOG(RT_LOG_ERROR,
-            "stream is in abort status, device_id=%u, stream_id=%u, abort status=%u",
-            devId,
-            stm->Id_(),
+        RT_LOG(
+            RT_LOG_ERROR, "stream is in abort status, device_id=%u, stream_id=%u, abort status=%u", devId, stm->Id_(),
             status);
         return status;
     }
@@ -447,7 +478,9 @@ rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * co
     while (taskInfo == nullptr) {
         if (stm->GetBindFlag()) {
             stm->StreamUnLock();
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1019, "Allocating task info", "The number of pending tasks in the stream exceeds the limit");
+            RT_LOG_OUTER_MSG_IMPL(
+                ErrorCode::EE1019, "Allocating task info",
+                "The number of pending tasks in the stream exceeds the limit");
             return RT_ERROR_STREAM_FULL;
         }
         stm->StreamUnLock();
@@ -473,10 +506,9 @@ rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * co
         TIMESTAMP_END(TaskRes_AllocTask);
     }
 
-    error =  LoadArgsInfo(submitTask, stm, taskResId);
-    COND_PROC_RETURN_ERROR_MSG_INNER((error != RT_ERROR_NONE),
-        error, stm->StreamUnLock(); (void)taskFactory->Recycle(taskInfo);,
-        "LoadArgsInfo failed.");
+    error = LoadArgsInfo(submitTask, stm, taskResId);
+    COND_PROC_RETURN_ERROR_MSG_INNER((error != RT_ERROR_NONE), error, stm->StreamUnLock();
+                                     (void)taskFactory->Recycle(taskInfo);, "LoadArgsInfo failed.");
 
     submitTask->id = taskId;
     submitTask->profEn = Runtime::Instance()->GetProfileEnableFlag();
@@ -492,9 +524,9 @@ rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * co
     const uint32_t sendSqeNum = GetSendSqeNum(taskInfo);
     if (sendSqeNum > SQE_NUM_PER_STARS_TASK_MAX) {
         stm->StreamUnLock();
-        RT_LOG(RT_LOG_ERROR, "sendSqeNum %u more than max num %d. task_id=%hu, task_type=%d(%s).",
-            sendSqeNum, SQE_NUM_PER_STARS_TASK_MAX, taskInfo->id, static_cast<int32_t>(taskInfo->type),
-            taskInfo->typeName);
+        RT_LOG(
+            RT_LOG_ERROR, "sendSqeNum %u more than max num %d. task_id=%hu, task_type=%d(%s).", sendSqeNum,
+            SQE_NUM_PER_STARS_TASK_MAX, taskInfo->id, static_cast<int32_t>(taskInfo->type), taskInfo->typeName);
         (void)stm->Device_()->GetTaskFactory()->Recycle(taskInfo);
         return RT_ERROR_INVALID_VALUE;
     }
@@ -506,9 +538,9 @@ rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * co
 
     // step6 obp使用stream自己的taskid, 也要翻转
     TIMESTAMP_BEGIN(ToCommandV1);
-    rtTsCommand_t  cmdLocal = {};
+    rtTsCommand_t cmdLocal = {};
     cmdLocal.cmdType = RT_TASK_COMMAND_TYPE_STARS_SQE;
-    rtStarsSqe_t *starsSqe = nullptr;
+    rtStarsSqe_t* starsSqe = nullptr;
     starsSqe = cmdLocal.cmdBuf.u.starsSqe;
     ToConstructSqe(taskInfo, starsSqe);
     TIMESTAMP_END(ToCommandV1);
@@ -525,7 +557,7 @@ rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * co
 
     struct halTaskSendInfo sendInfo = {};
     sendInfo.type = DRV_NORMAL_TYPE;
-    sendInfo.sqe_addr = RtPtrToPtr<uint8_t *, rtStarsSqe_t *>(starsSqe);
+    sendInfo.sqe_addr = RtPtrToPtr<uint8_t*, rtStarsSqe_t*>(starsSqe);
     sendInfo.sqe_num = sendSqeNum;
     sendInfo.tsId = tsId;
     sendInfo.sqId = sqId;
@@ -535,10 +567,12 @@ rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * co
     if (error != RT_ERROR_NONE) {
         stm->pendingNum_.Sub(1U);
         stm->StreamUnLock();
-        RT_LOG(RT_LOG_ERROR, "ProcessTaskWait failed, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d."
+        RT_LOG(
+            RT_LOG_ERROR,
+            "ProcessTaskWait failed, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d."
             " task_id=%hu, task_type=%d(%s), retCode=%d.",
-            devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id, static_cast<int32_t>(taskInfo->type),
-            taskInfo->typeName, error);
+            devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id, static_cast<int32_t>(taskInfo->type), taskInfo->typeName,
+            error);
         (void)stm->Device_()->GetTaskFactory()->Recycle(taskInfo);
         return error;
     }
@@ -548,32 +582,36 @@ rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * co
     if (!stm->IsSoftwareSqEnable()) {
         drvRet = halSqTaskSend(devId, &sendInfo);
     } else {
-        auto ret = memcpy_s(RtPtrToPtr<void *>(stm->GetSqeBuffer() + sizeof(rtStarsSqe_t) * taskInfo->pos),
-                            sendSqeNum * sizeof(rtStarsSqe_t),
-                            RtPtrToPtr<void *, rtStarsSqe_t *>(starsSqe),
-                            sendSqeNum * sizeof(rtStarsSqe_t));
+        auto ret = memcpy_s(
+            RtPtrToPtr<void*>(stm->GetSqeBuffer() + sizeof(rtStarsSqe_t) * taskInfo->pos),
+            sendSqeNum * sizeof(rtStarsSqe_t), RtPtrToPtr<void*, rtStarsSqe_t*>(starsSqe),
+            sendSqeNum * sizeof(rtStarsSqe_t));
         if (ret != EOK) {
-            RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to call memcpy_s to copy starsSqe, src=%p, dest=%p,"
+            RT_LOG_INNER_MSG(
+                RT_LOG_ERROR,
+                "Failed to call memcpy_s to copy starsSqe, src=%p, dest=%p,"
                 " dest_max=%zu, count=%zu, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d,"
-                " task_id=%hu, task_type=%u(%s), retCode=%#x.", RtPtrToPtr<void *, rtStarsSqe_t *>(starsSqe),
-                RtPtrToPtr<void *>(stm->GetSqeBuffer() + sizeof(rtStarsSqe_t) * taskInfo->pos),
-                sendSqeNum * sizeof(rtStarsSqe_t), sendSqeNum * sizeof(rtStarsSqe_t), devId, tsId, sqId,
-                cqId, stm->Id_(), taskInfo->id, static_cast<uint32_t>(taskInfo->type), taskInfo->typeName, ret);
+                " task_id=%hu, task_type=%u(%s), retCode=%#x.",
+                RtPtrToPtr<void*, rtStarsSqe_t*>(starsSqe),
+                RtPtrToPtr<void*>(stm->GetSqeBuffer() + sizeof(rtStarsSqe_t) * taskInfo->pos),
+                sendSqeNum * sizeof(rtStarsSqe_t), sendSqeNum * sizeof(rtStarsSqe_t), devId, tsId, sqId, cqId,
+                stm->Id_(), taskInfo->id, static_cast<uint32_t>(taskInfo->type), taskInfo->typeName, ret);
             error = RT_ERROR_TASK_BASE;
         }
     }
-    
+
     TIMESTAMP_END(SqTaskSendNormalV1);
     beginCnt = 0ULL;
     endCnt = 0ULL;
     checkCount = 0U;
     uint32_t tryCount = 0U;
     while (unlikely(drvRet != DRV_ERROR_NONE)) {
-        RT_LOG(RT_LOG_WARNING, "halSqTaskSend fail. device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u,"
+        RT_LOG(
+            RT_LOG_WARNING,
+            "halSqTaskSend fail. device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u,"
             " stream_id=%d, task_id=%hu, task_type=%u(%s), error=%#x, drvRetCode=%d, tryCount=%u",
-            devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id,
-            static_cast<uint32_t>(taskInfo->type), taskInfo->typeName, static_cast<uint32_t>(error),
-            static_cast<int32_t>(drvRet), tryCount);
+            devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id, static_cast<uint32_t>(taskInfo->type),
+            taskInfo->typeName, static_cast<uint32_t>(error), static_cast<int32_t>(drvRet), tryCount);
         tryCount++;
         if (stm->PrintStmDfxAndCheckDevice(beginCnt, endCnt, checkCount, tryCount) != RT_ERROR_NONE) {
             stm->pendingNum_.Sub(1U);
@@ -589,17 +627,19 @@ rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * co
 
     const uint32_t posTail = stm->GetBindFlag() ? stm->GetDelayRecycleTaskSqeNum() : stm->GetTaskPosTail();
     const uint32_t posHead = stm->GetBindFlag() ? stm->GetTaskPersistentHeadValue() : stm->GetTaskPosHead();
-    RT_LOG(RT_LOG_INFO, "device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d, task_id=%hu, task_type=%u(%s), "
+    RT_LOG(
+        RT_LOG_INFO,
+        "device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d, task_id=%hu, task_type=%u(%s), "
         "sendSqeNum=%u, isSupportASyncRecycle=%d, isNeedPostProc=%d, davinciHead=%u, davinciTail=%u, taskHead=%u, "
         "taskTail=%u, bindFlag=%d, head=%u, tail=%u, delay recycle num=%zu.",
-        devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id, static_cast<uint32_t>(taskInfo->type),
-        taskInfo->typeName, sendSqeNum, stm->GetIsSupportASyncRecycle(), stm->IsNeedPostProc(taskInfo), stm->GetDavinciTaskHead(),
+        devId, tsId, sqId, cqId, stm->Id_(), taskInfo->id, static_cast<uint32_t>(taskInfo->type), taskInfo->typeName,
+        sendSqeNum, stm->GetIsSupportASyncRecycle(), stm->IsNeedPostProc(taskInfo), stm->GetDavinciTaskHead(),
         stm->GetDavinciTaskTail(), stm->GetTaskHead(), stm->GetTaskTail(), stm->GetBindFlag(), posHead, posTail,
         stm->GetDelayRecycleTaskSize());
     return error;
 }
 
-rtError_t SubmitTaskStars(TaskInfo *submitTask, Stream *stm, uint32_t * const flipTaskId, int32_t timeout)
+rtError_t SubmitTaskStars(TaskInfo* submitTask, Stream* stm, uint32_t* const flipTaskId, int32_t timeout)
 {
     uint16_t taskId = 0U;
     TIMESTAMP_BEGIN(AllocTaskAndSendStars);
@@ -607,8 +647,11 @@ rtError_t SubmitTaskStars(TaskInfo *submitTask, Stream *stm, uint32_t * const fl
     StarsEngine* engine = (StarsEngine*)(((RawDevice*)(stm->Device_()))->Engine_());
     TIMESTAMP_END(AllocTaskAndSendStars);
     taskId = submitTask->id;
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "AllocTaskAndSendStars fail, streamId=%d, taskId=%hu, taskType=%u,"
-        " taskName=%s, retCode=%#x", stm->Id_(), submitTask->id, submitTask->type, submitTask->typeName, error);
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error,
+        "AllocTaskAndSendStars fail, streamId=%d, taskId=%hu, taskType=%u,"
+        " taskName=%s, retCode=%#x",
+        stm->Id_(), submitTask->id, submitTask->type, submitTask->typeName, error);
 
     engine->AddPendingNum();
     // simu stars report
@@ -630,33 +673,34 @@ rtError_t SubmitTaskStars(TaskInfo *submitTask, Stream *stm, uint32_t * const fl
         engine->SyncTaskCheckResult(error, stm, submitTask->id);
         stm->StreamSyncUnLock();
 
-        COND_RETURN_INFO(error != RT_ERROR_NONE, error,
-            "SyncTask stream_id=%u, task_id=%u, taskType=%u, result=%u",
-            stm->Id_(), submitTask->id, submitTask->type, error);
+        COND_RETURN_INFO(
+            error != RT_ERROR_NONE, error, "SyncTask stream_id=%u, task_id=%u, taskType=%u, result=%u", stm->Id_(),
+            submitTask->id, submitTask->type, error);
         error = AllocAndSendFlipTask(taskId, stm);
-        COND_RETURN_INFO(error != RT_ERROR_NONE, error,
-            "AllocAndSendFlipTask stream sync stream_id=%u, task_id=%u, taskType=%u, result=%u",
-            stm->Id_(), submitTask->id, submitTask->type, error);
+        COND_RETURN_INFO(
+            error != RT_ERROR_NONE, error,
+            "AllocAndSendFlipTask stream sync stream_id=%u, task_id=%u, taskType=%u, result=%u", stm->Id_(),
+            submitTask->id, submitTask->type, error);
 
         return error;
     }
 
     error = AllocAndSendFlipTask(taskId, stm);
-    COND_RETURN_INFO(error != RT_ERROR_NONE, error,
-        "AllocAndSendFlipTask stream_id=%u, task_id=%u, taskType=%u, result=%u",
+    COND_RETURN_INFO(
+        error != RT_ERROR_NONE, error, "AllocAndSendFlipTask stream_id=%u, task_id=%u, taskType=%u, result=%u",
         stm->Id_(), submitTask->id, submitTask->type, error);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t AllocAndSendFlipTask(uint16_t preTaskId, Stream *stm)
+rtError_t AllocAndSendFlipTask(uint16_t preTaskId, Stream* stm)
 {
     if (!stm->IsNeedSendFlipTask(preTaskId)) {
         return RT_ERROR_NONE;
     }
 
     TaskInfo submitTask = {};
-    TaskInfo *fliptask = &submitTask;
+    TaskInfo* fliptask = &submitTask;
 
     RT_LOG(RT_LOG_DEBUG, "AllocAndSendFlipTask, dev_id=%u, stream_id=%d", stm->Device_()->Id_(), stm->Id_());
     rtError_t error = stm->ProcFlipTask(fliptask, stm->GetTaskIdFlipNum());
@@ -668,14 +712,16 @@ rtError_t AllocAndSendFlipTask(uint16_t preTaskId, Stream *stm)
     } else {
         error = AllocTaskAndSendDc(fliptask, stm, nullptr);
     }
-    
+
     Engine* engine = RtPtrToPtr<Engine*>((RtPtrToPtr<RawDevice*>(stm->Device_()))->Engine_());
-    ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE,
+    ERROR_GOTO_MSG_INNER(
+        error, ERROR_RECYCLE,
         "SendFlipTask failed, dev_id=%u, stream_id=%d, task_id=%hu, flipNumReport=%hu, retCode=%#x.",
         stm->Device_()->Id_(), stm->Id_(), fliptask->id, fliptask->u.flipTask.flipNumReport, error);
     engine->AddPendingNum();
-    RT_LOG(RT_LOG_INFO, "SendFlipTask dev_id=%u, stream_id=%d, task_id=%hu, flipNum=%hu",
-        stm->Device_()->Id_(), stm->Id_(), fliptask->id, fliptask->u.flipTask.flipNumReport);
+    RT_LOG(
+        RT_LOG_INFO, "SendFlipTask dev_id=%u, stream_id=%d, task_id=%hu, flipNum=%hu", stm->Device_()->Id_(),
+        stm->Id_(), fliptask->id, fliptask->u.flipTask.flipNumReport);
 
     return RT_ERROR_NONE;
 
@@ -684,5 +730,5 @@ ERROR_RECYCLE:
     return error;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

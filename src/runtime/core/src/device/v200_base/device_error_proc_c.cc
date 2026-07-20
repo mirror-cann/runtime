@@ -73,8 +73,8 @@ enum RtDavidCoreErrorType : std::uint16_t {
     L1_FPOS_LARGER_FSIZE,
 
     FIXP_BIU_RDWR_RESP = RINGBUFFER_L1_ERROR_1_OFFSET + 1U,
-    FIXP_STB_ECC_ERR, 
-    FIXP_FBUF_WR_OVERFLOW ,
+    FIXP_STB_ECC_ERR,
+    FIXP_FBUF_WR_OVERFLOW,
     FIXP_FBUF_RD_OVERFLOW,
     FIXP_OUT_WR_OVERFLOW,
     FIXP_L1_WR_OVERFLOW,
@@ -85,13 +85,13 @@ enum RtDavidCoreErrorType : std::uint16_t {
     FIXP_L0C_ECC_ERR,
     FIXP_L0C_RDWR_CFLT,
     FIXP_WRITE_UB_OVFLW,
-    L1_UB_WR_OVFLW,   //reserve，not in chip doc
-    L1_WAITSET_ERR,   //reserve，not in chip doc
-    L1_L1_ECC,  //reserve，not in chip doc
-    L1_GDMA_READ_OVERFLOW,  //reserve，not in chip doc
-    L1_GDMA_WRITE_OVERFLOW,  //reserve，not in chip doc
-    L1_INSTR_ILLEGAL_CFG,  //reserve，not in chip doc
-    L1_INSTR_ADDR_MISALIGN,   //reserve，not in chip doc
+    L1_UB_WR_OVFLW,         // reserve，not in chip doc
+    L1_WAITSET_ERR,         // reserve，not in chip doc
+    L1_L1_ECC,              // reserve，not in chip doc
+    L1_GDMA_READ_OVERFLOW,  // reserve，not in chip doc
+    L1_GDMA_WRITE_OVERFLOW, // reserve，not in chip doc
+    L1_INSTR_ILLEGAL_CFG,   // reserve，not in chip doc
+    L1_INSTR_ADDR_MISALIGN, // reserve，not in chip doc
 
     SC_BUS_RESP_TIMEOUT_ERR = RINGBUFFER_SC_ERROR_OFFSET + 3U,
 
@@ -125,9 +125,9 @@ enum RtDavidCoreErrorType : std::uint16_t {
     VEC_ERR_UB_ARB_DATA_EXCP_SU_T0,
     VEC_ERR_UB_ARB_DATA_EXCP_VEC_T0,
     VEC_ERR_INSTR_TIMEOUT_T0 = RINGBUFFER_VEC_ERROR_OFFSET + 6U,
-    VEC_ERR_SU_PLD_UNDEF_T0,   //need to be updated after chip doc update
-    VEC_ERR_SU_PLD_ILL_CFG_T0,  //need to be updated after chip doc update
-    VEC_ERR_PC_OVERFLOW_T0,  //need to be updated after chip doc update
+    VEC_ERR_SU_PLD_UNDEF_T0,   // need to be updated after chip doc update
+    VEC_ERR_SU_PLD_ILL_CFG_T0, // need to be updated after chip doc update
+    VEC_ERR_PC_OVERFLOW_T0,    // need to be updated after chip doc update
     VEC_ERR_INSTR_UNDEF_T0,
     VEC_INSTR_ILLEGAL_CFG_T0,
     VEC_ERR_HWLP_STACK_OVFL_T0,
@@ -161,14 +161,14 @@ enum RtDavidCoreErrorType : std::uint16_t {
 constexpr uint32_t TS_SDMA_STATUS_DDRC_ERROR = 0x8U;
 constexpr uint32_t TS_SDMA_STATUS_LINK_ERROR = 0x9U;
 constexpr uint32_t TS_SDMA_STATUS_POISON_ERROR = 0xAU;
-}
+} // namespace
 
 enum RtAixSubErrorType : std::uint8_t {
-    AIC_TRAP_RD_OVERFLOW = 0,   /* aicore trap read out of bounds */
-    AIC_TRAP_WR_OVERFLOW,       /* aicore trap write out of bounds */
-    AIV_TRAP_RD_OVERFLOW,       /* vector core trap read out of bounds */
-    AIV_TRAP_WR_OVERFLOW,       /* vector core trap write out of bounds */
-    SUB_ERROR_TYPE_RESERVE      /* NA */
+    AIC_TRAP_RD_OVERFLOW = 0, /* aicore trap read out of bounds */
+    AIC_TRAP_WR_OVERFLOW,     /* aicore trap write out of bounds */
+    AIV_TRAP_RD_OVERFLOW,     /* vector core trap read out of bounds */
+    AIV_TRAP_WR_OVERFLOW,     /* vector core trap write out of bounds */
+    SUB_ERROR_TYPE_RESERVE    /* NA */
 };
 
 static const std::map<uint64_t, std::string> g_davidErrorMapInfo = {
@@ -177,48 +177,37 @@ static const std::map<uint64_t, std::string> g_davidErrorMapInfo = {
     {CUBE_L0A_WRAP_AROUND, "The address for CUBE to operate L0A is out of bounds."},
     {CUBE_L0B_WRAP_AROUND, "The address for CUBE to operate L0B is out of bounds."},
     {CUBE_L0C_WRAP_AROUND, "The address for CUBE to operate L0C is out of bounds."},
-    {CUBE_L0A_ECC, 
-        "A multi-bit ECC error occurs when CUBE reads L0A. See the RAS alarm handling."},
-    {CUBE_L0B_ECC, 
-        "A multi-bit ECC error occurs when CUBE reads L0B. See the RAS alarm handling."},
-    {CUBE_L0C_ECC, 
-        "A multi-bit ECC error occurs when CUBE reads L0C. See the RAS alarm handling."},
+    {CUBE_L0A_ECC, "A multi-bit ECC error occurs when CUBE reads L0A. See the RAS alarm handling."},
+    {CUBE_L0B_ECC, "A multi-bit ECC error occurs when CUBE reads L0B. See the RAS alarm handling."},
+    {CUBE_L0C_ECC, "A multi-bit ECC error occurs when CUBE reads L0C. See the RAS alarm handling."},
     {CUBE_ILLEGAL_INSTR, "The CUBE instruction is abnormal. "
-        "Possible cause: The parameter violates the instruction constraints, the binary version does not match, or the instruction is overwritten"},
+                         "Possible cause: The parameter violates the instruction constraints, the binary version does "
+                         "not match, or the instruction is overwritten"},
     {CUBE_ERR_HSET_CNT_OVF, "A overflow error occurs in the CUBE HSET counter."},
     {CUBE_ERR_HSET_CNT_UNF, "A underflow error occurs in the CUBE HSET counter."},
     {CUBE_ERR_PBUF_WRAP_AROUND, "The address for CUBE to operate FIXP buffer is out of bounds."},
     {CUBE_ERR_PARITY_ERR, "Parity error for the Cube parity ERR register."},
-    {CUBE_ERR_SF_ECC_MB_ERR, 
-        "A multi-bit ECC error occurs when CUBE reads MX buffer. See the RAS alarm handling."},
+    {CUBE_ERR_SF_ECC_MB_ERR, "A multi-bit ECC error occurs when CUBE reads MX buffer. See the RAS alarm handling."},
 
     // RINGBUFFER_MTE_ERROR_OFFSET
-    {MTE_NDDMA_CACHE_ECC, 
-        "A multi-bit ECC error occurs when MTE reads NDDMA cache. See the RAS alarm handling."},
-    {MTE_NDDMA_REG_BUF_ECC, 
-        "A multi-bit ECC error occurs when MTE reads NDDMA request buffer. See the RAS alarm handling."},
-    {MTE_L1_ECC, 
-        "A multi-bit ECC error occurs when MTE2 and MTE3 reads L1. See the RAS alarm handling."},
-    {MTE_CFG_REG_PARITY, 
-        "A parity error occurs when AICore reads the CFG register. See the RAS alarm handling"},
-    {MTE_READ_OVERFLOW,
-        "The address of the MTE 2D instruction to read L1 is out of bounds."},
-    {MTE_WRITE_OVERFLOW,
-        "The address of the MTE 2D instruction to write L1/L0A/L0B is out of bounds."},
+    {MTE_NDDMA_CACHE_ECC, "A multi-bit ECC error occurs when MTE reads NDDMA cache. See the RAS alarm handling."},
+    {MTE_NDDMA_REG_BUF_ECC,
+     "A multi-bit ECC error occurs when MTE reads NDDMA request buffer. See the RAS alarm handling."},
+    {MTE_L1_ECC, "A multi-bit ECC error occurs when MTE2 and MTE3 reads L1. See the RAS alarm handling."},
+    {MTE_CFG_REG_PARITY, "A parity error occurs when AICore reads the CFG register. See the RAS alarm handling"},
+    {MTE_READ_OVERFLOW, "The address of the MTE 2D instruction to read L1 is out of bounds."},
+    {MTE_WRITE_OVERFLOW, "The address of the MTE 2D instruction to write L1/L0A/L0B is out of bounds."},
     {MTE_INSTR_ILLEGAL_CFG, "The MTE instruction is abnormal. "
-        "Possible cause: The parameter violates the instruction constraints, the binary version does not match, or the instruction is overwritten"},
+                            "Possible cause: The parameter violates the instruction constraints, the binary version "
+                            "does not match, or the instruction is overwritten"},
     {MTE_ATM_ADD_ADDR_MISALIGN, "The MTE atomic instruction address is not aligned."},
     {MTE_INSTR_ADDR_MISALIGN, "The MTE non-atomic instruction address is not aligned."},
-    {MTE_GDMA_READ_OVERFLOW, 
-        "The address for MTE2 to read UB and MTE3 to read L1/UB is out of bounds."},
+    {MTE_GDMA_READ_OVERFLOW, "The address for MTE2 to read UB and MTE3 to read L1/UB is out of bounds."},
     {MTE_GDMA_WRITE_OVERFLOW, "The address for MTE2 to write UB and MTE3 to write L1/UB is out of bounds."},
-    {MTE_STB_ECC, 
-        "A multi-bit ECC error occurs when MTE reads STB buffer. See the RAS alarm handling."},
-    {MTE_TAGMGR_BUF_ECC, 
-        "A multi-bit ECC error occurs when MTE reads tagmgr buffer. See the RAS alarm handling."},
+    {MTE_STB_ECC, "A multi-bit ECC error occurs when MTE reads STB buffer. See the RAS alarm handling."},
+    {MTE_TAGMGR_BUF_ECC, "A multi-bit ECC error occurs when MTE reads tagmgr buffer. See the RAS alarm handling."},
     {MTE_UB_ECC, "A multi-bit ECC error occurs when MTE reads UB. See the RAS alarm handling."},
-    {MTE_ROB_ECC, 
-        "A multi-bit ECC error occurs when MTE reads ROB buffer. See the RAS alarm handling."},
+    {MTE_ROB_ECC, "A multi-bit ECC error occurs when MTE reads ROB buffer. See the RAS alarm handling."},
     {MTE_BIU_RDWR_RESP, "The DDR address of the MTE instruction is out of range."},
 
     // RINGBUFFER_L1_ERROR_OFFSET
@@ -227,29 +216,28 @@ static const std::map<uint64_t, std::string> g_davidErrorMapInfo = {
     {L1_READ_2D_OVERFLOW, "The address of the LOAD2D instruction to read L1 is out of bounds."},
     {L1_WRITE_2D_OVERFLOW, "The address of the LOAD2D instruction to write L0A/L0B is out of bounds."},
     {L1_ILLEGAL_CHN_SIZE, "The value of L1H*L1W*channel size of the LOAD3DV2 instruction is greater "
-        "than the size of L1, or the channel size is not aligned."},
-    {L1_ILLEGAL_K_M_EXT_STEP, "The k start pos + k step or m start pos + m step of the LOAD3D instruction "
-        "exceeds the range of the km matrix (the tail is considered as 16 if it is less than 16), "
-        "or the fractal number calculated by step exceeds the range of L0A/L0B."},
+                          "than the size of L1, or the channel size is not aligned."},
+    {L1_ILLEGAL_K_M_EXT_STEP,
+     "The k start pos + k step or m start pos + m step of the LOAD3D instruction "
+     "exceeds the range of the km matrix (the tail is considered as 16 if it is less than 16), "
+     "or the fractal number calculated by step exceeds the range of L0A/L0B."},
     {L1_ILLEGAL_K_M_START_POS, "The km start pos of the LOAD3D instruction is out of the range of the KM matrix, "
-        "the k start pos is not an integral multiple of the number of 32-byte data elements corresponding to the data type, "
-        "or the m start pos is not an integral multiple of 16."},
+                               "the k start pos is not an integral multiple of the number of 32-byte data elements "
+                               "corresponding to the data type, "
+                               "or the m start pos is not an integral multiple of 16."},
     {L1_ILLEGAL_FM_SIZE, "The width or height of the feature map of the LOAD3D instruction is greater than 0X8000, "
-        "or the area of the feature map is greater than the size of the L1 memory."},
+                         "or the area of the feature map is greater than the size of the L1 memory."},
     {L1_ILLEGAL_STRIDE, "The stride_w or stride_h of the LOAD3D instruction is 0."},
     {L1_PADDING_CFG, "The padding configuration of the LOAD3D instruction is invalid."},
     {L1_READ_3D_OVERFLOW, "The address for the LOAD3D instruction to read L1 is out of bounds."},
     {L1_WRITE_3D_OVERFLOW, "The address for the LOAD3D instruction to write L0A/L0B is out of bounds."},
-    {L1_F1WPOS_LARGER_FSIZE,
-        "The position of the first window of LOAD3D exceeds the left or upper padding boundary, "
-        "or exceeds the right or lower padding boundary of the feature map(without padding)."},
+    {L1_F1WPOS_LARGER_FSIZE, "The position of the first window of LOAD3D exceeds the left or upper padding boundary, "
+                             "or exceeds the right or lower padding boundary of the feature map(without padding)."},
     {L1_FMAP_LESS_KERNEL, "The width of the LOAD3D filter is greater than the width of the "
-        "feature map plus padding. or the height of the filter after dilation is greater "
-        "than the height of the feature map plus padding."},
-    {L1_FMAPWH_LARGER_L1SIZE,
-        "The LOAD3D parameter is invalid. L1H*L1W*(C1+1) is greater than L1 buffer size/32."},
-    {L1_FPOS_LARGER_FSIZE,
-        "The LOAD3D K position is out of the filter range."},
+                          "feature map plus padding. or the height of the filter after dilation is greater "
+                          "than the height of the feature map plus padding."},
+    {L1_FMAPWH_LARGER_L1SIZE, "The LOAD3D parameter is invalid. L1H*L1W*(C1+1) is greater than L1 buffer size/32."},
+    {L1_FPOS_LARGER_FSIZE, "The LOAD3D K position is out of the filter range."},
 
     // RINGBUFFER_L1_ERROR_1_OFFSET
     {FIXP_BIU_RDWR_RESP, "The address for fixpipe to write GM is invalid"},
@@ -271,23 +259,28 @@ static const std::map<uint64_t, std::string> g_davidErrorMapInfo = {
     {L1_GDMA_READ_OVERFLOW, "The address for the MTE instruction to read L1 is out of bounds."},
     {L1_GDMA_WRITE_OVERFLOW, "The address for the MTE instruction to write the L0A/L0B bias table is out of bounds."},
     {L1_INSTR_ILLEGAL_CFG, "The MTE instruction is abnormal. Possible cause: "
-        "The parameter violates the instruction constraints, the binary version does not match, or the instructinon is overwirtten."},
+                           "The parameter violates the instruction constraints, the binary version does not match, or "
+                           "the instructinon is overwirtten."},
     {L1_INSTR_ADDR_MISALIGN, "The MTE instruction address is not aligned."},
 
     // RINGBUFFER_SU_ERROR_OFFSET
-    {SU_IFU_BUS_ERR_T0, "The address of instruction is illegal when the AIcore reads instructions from GM."
-        "Possible cause: The application unloads the operator binary in advance or stack corruption occurs."},
+    {SU_IFU_BUS_ERR_T0,
+     "The address of instruction is illegal when the AIcore reads instructions from GM."
+     "Possible cause: The application unloads the operator binary in advance or stack corruption occurs."},
     {SU_CCU_CALL_DEPTH_OVRFLW_T0, "The number of nesting times of call the function is greater than CTRL[5:2]."},
     {SU_CCU_DIV0_T0, "divide by zero."},
     {SU_CCU_ILLEGAL_INSTR_T0, "The scalar instruction is abnormal. Possible cause: "
-        "The parameter violates the instruction constraints, the binary version does not match, or the instructinon is overwirtten."},
+                              "The parameter violates the instruction constraints, the binary version does not match, "
+                              "or the instructinon is overwirtten."},
     {SU_CCU_NEG_SQRT_T0, "The number of roots is negative. "},
     {SU_CCU_UB_ECC_T0, "A multi-bit ECC error occurs when scalar accesses UB. See the RAS alarm handling."},
     {SU_CCU_INF_NAN_T0, "The input of the floating-point instruction run by the CCU is nan/inf."},
-    {SU_CCU_ADDR_ERR_T0, "The address for scalar to use is unaligned or out of bounds "
-        "The GM address exceeds 48 bits, or the on-chip buffer address exceeds the size of the buffer."},
+    {SU_CCU_ADDR_ERR_T0,
+     "The address for scalar to use is unaligned or out of bounds "
+     "The GM address exceeds 48 bits, or the on-chip buffer address exceeds the size of the buffer."},
     {SU_CCU_BUS_ERR_T0, "The address for scalar to access GM is invalid"},
-    {SU_CCU_DC_DATA_ECC_T0, "A multi-bit ECC error occurs when scalar accesses dcache data. See the RAS alarm handling."},
+    {SU_CCU_DC_DATA_ECC_T0,
+     "A multi-bit ECC error occurs when scalar accesses dcache data. See the RAS alarm handling."},
     {SU_CCU_DC_TAG_ECC_T0, "A multi-bit ECC error occurs when scalar accesses dcache tag. See the RAS alarm handling."},
     {SU_CCU_DIV0_FP_T0, "A error occurs in the FP32 DIV0."},
     {SU_CCU_NEG_SQRT_FP_T0, "The input of the FP SQRT calculation unit is a negative number."},
@@ -295,18 +288,19 @@ static const std::map<uint64_t, std::string> g_davidErrorMapInfo = {
     {SU_CCU_SEQ_ERR_T0, "The SEQ command sequence is incorrect."},
     {SU_CCU_MPU_ERR_T0, "The address for scalar to access the internal buffer is out of bounds."},
     {SU_CCU_LSU_ERR_T0, "When the buffer is enabled, the stack access instruction cache is miss."},
-    {SU_CCU_PB_ECC_ERR_T0, "A multi-bit ECC error occurs when scalar reads parameter buffer. See the RAS alarm handling."},
+    {SU_CCU_PB_ECC_ERR_T0,
+     "A multi-bit ECC error occurs when scalar reads parameter buffer. See the RAS alarm handling."},
     {SU_CCU_SAFETY_CRC_ERR_T0, "MTE CRC error."},
     {SU_CCU_LSU_ATOMIC_ERR_T0, "The scalar atomic instruction accesses the GM that is modified by scalar "
-        "but is not written back."},
+                               "but is not written back."},
     {SU_CCU_CC_SET_OVFL_ERR_T0, "The accumulated value of the inter-core communication flag coutner "
-        "exceeds the maximum value 15."},
+                                "exceeds the maximum value 15."},
     {SU_SAFETY_1BIT_ECC_OVFLW_ERR_T0, "Overflow error when the number of 1-bit ECC errors exceeds the preset value."},
     {SU_CCU_DC_SSBUF_ECC_T0, "A multi-bit ECC error occurs when scalar reads SS buffer. See the RAS alarm handling."},
     {SU_HIT_TRAP_ERR_T0, "The trap instruction reports an error."},
     {WARN_AS_EXCEPTION_T0,
-        "A 1-bit ECC err occurs 15 times or a multi-hit event occurs in IFU during AICore execution. "
-        "See the RAS alarm handling."},
+     "A 1-bit ECC err occurs 15 times or a multi-hit event occurs in IFU during AICore execution. "
+     "See the RAS alarm handling."},
 
     // sc error
     {SC_BUS_RESP_TIMEOUT_ERR, "The bus is busy, and the response times out."},
@@ -317,17 +311,21 @@ static const std::map<uint64_t, std::string> g_davidErrorMapInfo = {
     {VEC_ERR_UB_ARB_DATA_EXCP_VEC_T0, "Data from the VEC is abnormal."},
     {VEC_ERR_INSTR_TIMEOUT_T0, "VEC VF execution timeout. Check the configuration of Runtime"},
     {VEC_ERR_SU_PLD_UNDEF_T0, "The non-VF instruction is abnormal. Possible cause: "
-        "The parameter violates the instruction constraints, the binary version does not match, or the instructinon is overwirtten."},
+                              "The parameter violates the instruction constraints, the binary version does not match, "
+                              "or the instructinon is overwirtten."},
     {VEC_ERR_SU_PLD_ILL_CFG_T0, "The parameter of the non-VF instruction is invalid."},
-    {VEC_ERR_PC_OVERFLOW_T0, "PC is greater than 48 bits. Possible cause: the compiler bug or the instructoin is overwirtten."},
+    {VEC_ERR_PC_OVERFLOW_T0,
+     "PC is greater than 48 bits. Possible cause: the compiler bug or the instructoin is overwirtten."},
     {VEC_ERR_INSTR_UNDEF_T0, "The instruction in VEC VF is abnormal. Possible cause: "
-        "The parameter violates the instruction constraints, the binary version does not match, or the instructinon is overwirtten."},
+                             "The parameter violates the instruction constraints, the binary version does not match, "
+                             "or the instructinon is overwirtten."},
     {VEC_INSTR_ILLEGAL_CFG_T0, "The parameter of the VEC VF instruction is invalid."},
     {VEC_ERR_HWLP_STACK_OVFL_T0, "The number of nested VLOOP exceeds the hardware limit, which may be a complier bug."},
     {VEC_ERR_HWLP_INSTR_NUM_MISMATCH_T0, "For the nested VLOOP, the number of instructions in the inner loop "
-        "is greater than that in the outer loop, which may be a complier bug."},
+                                         "is greater than that in the outer loop, which may be a complier bug."},
     {VEC_ERR_BIU_RESP_ERR_T0, "SIMT accesses an invalid GM address or the cross-device memory access times out."},
-    {VEC_ERR_PB_ECC_MBERR_T0, "A multi-bit ECC error occurs when VEC accesses parameter buffer. See the RAS alarm handling."},
+    {VEC_ERR_PB_ECC_MBERR_T0,
+     "A multi-bit ECC error occurs when VEC accesses parameter buffer. See the RAS alarm handling."},
     {VEC_ERR_IDATA_INF_NAN_T0, "The input data of the instruction operation is INF/NAN."},
     {VEC_ERR_DIV_BY_ZERO_T0, "Divide-by-zero error occurs for the VEC instruction."},
     {VEC_ERR_VALU_NEG_LN_T0, "The input data of the VALU lN operation is a negative number."},
@@ -339,32 +337,40 @@ static const std::map<uint64_t, std::string> g_davidErrorMapInfo = {
     {VEC_ERR_CSW_DATA_T0, "Exception when accessing the internal SRAM during context switch (multi-bit ECC)."},
     // RINGBUFFER_VEC_ERROR_1_OFFSET
     {VEC_ERR_UNEXP_JOIN_T0,
-        "When the VEC executes a SIMT task, some warps end with \"join\" and some warps end with \"end\"."},
+     "When the VEC executes a SIMT task, some warps end with \"join\" and some warps end with \"end\"."},
     {VEC_ERR_UB_SIZE_CFG_ERR_T0, "The dyn ubuf size is greater than 224 KB."},
     {VEC_ERR_DC_STACK_ADDR_OVFL_T0, "The VEC SIMT stack overflows. Possible cause: "
-        "The local variable is too large or there are too many local variables."},
+                                    "The local variable is too large or there are too many local variables."},
     {VEC_ERR_GM_ADDR_OVFL_T0, "The address for VEC to read GM is out of bounds(exceeding 48 bits)."},
     {VEC_ERR_DVG_STACK_OVFL_T0, "VEC SIMT DVG stack overflows, which may be caused by too many conditional branches "
-        "or too manay nested loops."},
+                                "or too manay nested loops."},
     {VEC_ERR_DVG_STACK_UNDFL_T0, "VEC SIMT push and pop operations do not mathc, which may be a compiler bug."},
     {VEC_ERR_BHU_ECC_MBERR_T0, "A multi-bit ECC error occurs when VEC SIMT accesses BHU. See the RAS alarm handling."},
-    {VEC_ERR_MROB_ECC_MBERR_T0, "A multi-bit ECC error occurs when VEC SIMT accesses MROB. See the RAS alarm handling."},
-    {VEC_ERR_DCACHE_TAG_MBERR_T0, "A multi-bit ECC error occurs when VEC SIMT accesses dcache tag. See the RAS alarm handling."},
-    {VEC_ERR_DIRTY_ECC_MBERR_T0, "A multi-bit ECC error occurs when VEC SIMT accesses the dirty mem. See the RAS alarm handling."},
-    {VEC_ERR_VTH_ID_ECC_MBERR_T0, "A multi-bit ECC error occurs when VEC SIMT accesses thread ID register. See the RAS alarm handling."},
-    {VEC_ERR_MRF_ECC_MBERR_T0, "A multi-bit ECC error occurs when VEC SIMT accesses reagister table. See the RAS alarm handling."},
-    {VEC_ERR_DVG_ECC_MBERR_T0, "A multi-bit ECC error occurs when VEC SIMT accesses DVG stack. See the RAS alarm handling."},
+    {VEC_ERR_MROB_ECC_MBERR_T0,
+     "A multi-bit ECC error occurs when VEC SIMT accesses MROB. See the RAS alarm handling."},
+    {VEC_ERR_DCACHE_TAG_MBERR_T0,
+     "A multi-bit ECC error occurs when VEC SIMT accesses dcache tag. See the RAS alarm handling."},
+    {VEC_ERR_DIRTY_ECC_MBERR_T0,
+     "A multi-bit ECC error occurs when VEC SIMT accesses the dirty mem. See the RAS alarm handling."},
+    {VEC_ERR_VTH_ID_ECC_MBERR_T0,
+     "A multi-bit ECC error occurs when VEC SIMT accesses thread ID register. See the RAS alarm handling."},
+    {VEC_ERR_MRF_ECC_MBERR_T0,
+     "A multi-bit ECC error occurs when VEC SIMT accesses reagister table. See the RAS alarm handling."},
+    {VEC_ERR_DVG_ECC_MBERR_T0,
+     "A multi-bit ECC error occurs when VEC SIMT accesses DVG stack. See the RAS alarm handling."},
 };
 
 static const std::unordered_map<uint32_t, std::string> ubRasEventIdAndDesc = {
-    {UB_POISON_ERROR_EVENT_ID, "node type=UB, sensor type=RAS State, event state=bus error, probably caused by software"},
+    {UB_POISON_ERROR_EVENT_ID,
+     "node type=UB, sensor type=RAS State, event state=bus error, probably caused by software"},
 };
 
-static bool PrintRasEvents(const Device * const dev, const rtDmsFaultEvent * const faultEventInfo, const uint32_t eventCount)
+static bool PrintRasEvents(
+    const Device* const dev, const rtDmsFaultEvent* const faultEventInfo, const uint32_t eventCount)
 {
     UNUSED(dev);
     for (uint32_t faultIndex = 0; faultIndex < eventCount; faultIndex++) {
-        const rtDmsFaultEvent &event = faultEventInfo[faultIndex];
+        const rtDmsFaultEvent& event = faultEventInfo[faultIndex];
         const uint32_t eventId = event.eventId;
         auto it = ubRasEventIdAndDesc.find(eventId);
         if (it != ubRasEventIdAndDesc.end()) {
@@ -375,7 +381,7 @@ static bool PrintRasEvents(const Device * const dev, const rtDmsFaultEvent * con
     return false;
 }
 
-void CheckAndPrintRasInfo(const Device * const dev)
+void CheckAndPrintRasInfo(const Device* const dev)
 {
     if (dev == nullptr) {
         return;
@@ -393,13 +399,10 @@ void CheckAndPrintRasInfo(const Device * const dev)
     }
 }
 
-uint32_t GetRingbufferElementNum()
-{
-    return RINGBUFFER_LEN_DAVID;
-}
+uint32_t GetRingbufferElementNum() { return RINGBUFFER_LEN_DAVID; }
 
-static void ProcessDavidStarsCoreErrorOneMapInfo(uint32_t * const cnt, uint64_t err, std::string &errorString,
-    std::string &errorCode, uint32_t offset)
+static void ProcessDavidStarsCoreErrorOneMapInfo(
+    uint32_t* const cnt, uint64_t err, std::string& errorString, std::string& errorCode, uint32_t offset)
 {
     if (err == 0ULL) {
         return;
@@ -428,24 +431,21 @@ static void ProcessDavidStarsCoreErrorOneMapInfo(uint32_t * const cnt, uint64_t 
     return;
 }
 
-static void ProcessDavidStarsCoreErrorMapInfo(const DavidOneCoreErrorInfo * const info,
-    std::string &errorString, std::string &errorCode)
+static void ProcessDavidStarsCoreErrorMapInfo(
+    const DavidOneCoreErrorInfo* const info, std::string& errorString, std::string& errorCode)
 {
     uint32_t cnt = 0U;
-    ProcessDavidStarsCoreErrorOneMapInfo(&cnt, info->scError, errorString, errorCode,
-        RINGBUFFER_SC_ERROR_OFFSET);
-    ProcessDavidStarsCoreErrorOneMapInfo(&cnt, info->suError, errorString, errorCode,
-        static_cast<uint32_t>(RINGBUFFER_SU_ERROR_OFFSET));
-    ProcessDavidStarsCoreErrorOneMapInfo(&cnt, info->mteError[0], errorString, errorCode,
-        RINGBUFFER_MTE_ERROR_OFFSET);
-    ProcessDavidStarsCoreErrorOneMapInfo(&cnt, info->vecError, errorString, errorCode,
-        static_cast<uint32_t>(RINGBUFFER_VEC_ERROR_OFFSET));
-    ProcessDavidStarsCoreErrorOneMapInfo(&cnt, info->cubeError, errorString, errorCode,
-        RINGBUFFER_CUBE_ERROR_OFFSET);
-    ProcessDavidStarsCoreErrorOneMapInfo(&cnt, info->l1Error, errorString, errorCode,
-        static_cast<uint32_t>(RINGBUFFER_L1_ERROR_OFFSET));
+    ProcessDavidStarsCoreErrorOneMapInfo(&cnt, info->scError, errorString, errorCode, RINGBUFFER_SC_ERROR_OFFSET);
+    ProcessDavidStarsCoreErrorOneMapInfo(
+        &cnt, info->suError, errorString, errorCode, static_cast<uint32_t>(RINGBUFFER_SU_ERROR_OFFSET));
+    ProcessDavidStarsCoreErrorOneMapInfo(&cnt, info->mteError[0], errorString, errorCode, RINGBUFFER_MTE_ERROR_OFFSET);
+    ProcessDavidStarsCoreErrorOneMapInfo(
+        &cnt, info->vecError, errorString, errorCode, static_cast<uint32_t>(RINGBUFFER_VEC_ERROR_OFFSET));
+    ProcessDavidStarsCoreErrorOneMapInfo(&cnt, info->cubeError, errorString, errorCode, RINGBUFFER_CUBE_ERROR_OFFSET);
+    ProcessDavidStarsCoreErrorOneMapInfo(
+        &cnt, info->l1Error, errorString, errorCode, static_cast<uint32_t>(RINGBUFFER_L1_ERROR_OFFSET));
 
-    if (cnt != 0U) {  // at least one error bit exists.
+    if (cnt != 0U) { // at least one error bit exists.
         return;
     }
 
@@ -454,14 +454,15 @@ static void ProcessDavidStarsCoreErrorMapInfo(const DavidOneCoreErrorInfo * cons
     return;
 }
 
-static void AiCoreUnknownErrProc(const Device * const dev, const StarsDeviceErrorInfo * const info)
+static void AiCoreUnknownErrProc(const Device* const dev, const StarsDeviceErrorInfo* const info)
 {
-    (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::AICORE_UNKNOWN_ERROR);
-    RT_LOG(RT_LOG_ERROR, "unknown aicore error, stream_id=%hu, task_id=%hu.",
-        info->u.coreErrorInfo.comm.streamId, info->u.coreErrorInfo.comm.taskId);
+    (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::AICORE_UNKNOWN_ERROR);
+    RT_LOG(
+        RT_LOG_ERROR, "unknown aicore error, stream_id=%hu, task_id=%hu.", info->u.coreErrorInfo.comm.streamId,
+        info->u.coreErrorInfo.comm.taskId);
 }
 
-static void AixLinkErrProc(const Device * const dev, const StarsDeviceErrorInfo * const info, TaskInfo *errTaskPtr)
+static void AixLinkErrProc(const Device* const dev, const StarsDeviceErrorInfo* const info, TaskInfo* errTaskPtr)
 {
     std::vector<rtDmsFaultEvent> faultEventInfo(RAS_GET_MAX_NUM, rtDmsFaultEvent{});
     uint32_t eventCount = 0U;
@@ -476,10 +477,11 @@ static void AixLinkErrProc(const Device * const dev, const StarsDeviceErrorInfo 
         if (errTaskPtr != nullptr) {
             errTaskPtr->mte_error = TS_ERROR_LINK_ERROR;
         }
-        RT_LOG(RT_LOG_ERROR, "network link error, stream_id=%hu, task_id=%hu, errorCode=%#hx.",
+        RT_LOG(
+            RT_LOG_ERROR, "network link error, stream_id=%hu, task_id=%hu, errorCode=%#hx.",
             info->u.coreErrorInfo.comm.streamId, info->u.coreErrorInfo.comm.taskId,
             (errTaskPtr == nullptr) ? static_cast<uint16_t>(TS_ERROR_RESERVED) : errTaskPtr->mte_error);
-        (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
+        (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
         return;
     }
     AiCoreUnknownErrProc(dev, info);
@@ -498,9 +500,8 @@ static void GetMteDeviceFaultEvent(const Device* const dev, uint32_t& faultEvent
         {L2_BUFFER_ECC_EVENT_ID, g_l2MulBitEccEventIdBlkList},
         {HBM_ECC_NOTIFY_EVENT_ID, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList},
         {HBM_ECC_EVENT_ID, g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkList},
-        {UB_REMOTE_MEM_DATA_EXCEPTION_EVENT_ID, g_hcclRemoteMulBitEccEventIdBlkList}
-    };
-    for (const auto &entry : eventId2BlkList) {
+        {UB_REMOTE_MEM_DATA_EXCEPTION_EVENT_ID, g_hcclRemoteMulBitEccEventIdBlkList}};
+    for (const auto& entry : eventId2BlkList) {
         if (IsFaultEventOccur(entry.eventId, &faultEventInfo[0U], eventCount) &&
             !IsHitBlacklist(&faultEventInfo[0U], eventCount, entry.blkList)) {
             faultEventId = entry.eventId;
@@ -509,59 +510,63 @@ static void GetMteDeviceFaultEvent(const Device* const dev, uint32_t& faultEvent
     }
 }
 
-static void SetTaskMteErrByType(const rtErrorType errType, const Device * const dev, TaskInfo *errTaskPtr)
+static void SetTaskMteErrByType(const rtErrorType errType, const Device* const dev, TaskInfo* errTaskPtr)
 {
     if (errTaskPtr == nullptr) {
         return;
     }
 
     if (errType == AICORE_ERROR) {
-        (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::AICORE_UNKNOWN_ERROR);
+        (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::AICORE_UNKNOWN_ERROR);
     }
 
     const bool hasHbmEccNotify = HasMteErr(dev);
     uint32_t faultEventId = 0U;
     GetMteDeviceFaultEvent(dev, faultEventId);
     const bool hasL2BuffEcc = (faultEventId == L2_BUFFER_ECC_EVENT_ID);
-    const bool hasHbmEcc = hasHbmEccNotify &&
-        ((faultEventId == HBM_ECC_NOTIFY_EVENT_ID) || (faultEventId == HBM_ECC_EVENT_ID));
+    const bool hasHbmEcc =
+        hasHbmEccNotify && ((faultEventId == HBM_ECC_NOTIFY_EVENT_ID) || (faultEventId == HBM_ECC_EVENT_ID));
     const bool hasRemoteErr = (faultEventId == UB_REMOTE_MEM_DATA_EXCEPTION_EVENT_ID);
-    RT_LOG(RT_LOG_ERROR, "has_hbm_ecc_notify_event=%d, event_id=0x%x, device_id=%u",
-        hasHbmEccNotify, faultEventId, dev->Id_());
+    RT_LOG(
+        RT_LOG_ERROR, "has_hbm_ecc_notify_event=%d, event_id=0x%x, device_id=%u", hasHbmEccNotify, faultEventId,
+        dev->Id_());
 
     const uint16_t local_error = (errType == AICORE_ERROR) ? TS_ERROR_AICORE_MTE_ERROR : TS_ERROR_SDMA_POISON_ERROR;
     if (hasL2BuffEcc) {
         errTaskPtr->mte_error = local_error;
-        (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::L2_BUFFER_ERROR);
+        (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::L2_BUFFER_ERROR);
         return;
     }
     if (hasHbmEcc) {
         errTaskPtr->mte_error = local_error;
-        (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
+        (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
         return;
     }
     if ((errType == AICORE_ERROR) && hasRemoteErr) {
         errTaskPtr->mte_error = TS_ERROR_REMOTE_MEM_ERROR;
-        (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
+        (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
         return;
     }
     errTaskPtr->mte_error = TS_SUCCESS;
 }
 
-static void SetDeviceFaultTypeByAixErrClass(const Device * const dev, const StarsDeviceErrorInfo * const info, TaskInfo *errTaskPtr)
+static void SetDeviceFaultTypeByAixErrClass(
+    const Device* const dev, const StarsDeviceErrorInfo* const info, TaskInfo* errTaskPtr)
 {
     switch (static_cast<AixErrClass>(info->u.coreErrorInfo.comm.flag)) {
         case AixErrClass::AIX_MTE_POISON_ERROR:
             SetTaskMteErrByType(AICORE_ERROR, dev, errTaskPtr);
-            RT_LOG(RT_LOG_ERROR, "mte error, stream_id=%hu, task_id=%hu, errorCode=%#hx.",
+            RT_LOG(
+                RT_LOG_ERROR, "mte error, stream_id=%hu, task_id=%hu, errorCode=%#hx.",
                 info->u.coreErrorInfo.comm.streamId, info->u.coreErrorInfo.comm.taskId,
                 (errTaskPtr == nullptr) ? static_cast<uint16_t>(TS_ERROR_RESERVED) : errTaskPtr->mte_error);
             CheckAndPrintRasInfo(dev);
             break;
         case AixErrClass::AIX_HW_L_ERROR:
             if (!HasBlacklistEventOnDevice(dev->Id_(), g_mulBitEccEventIdBlkList)) {
-                (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::AICORE_HW_L_ERROR);
-                RT_LOG(RT_LOG_ERROR, "hardware local error, stream_id=%hu, task_id=%hu, errorCode=%#x.",
+                (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::AICORE_HW_L_ERROR);
+                RT_LOG(
+                    RT_LOG_ERROR, "hardware local error, stream_id=%hu, task_id=%hu, errorCode=%#x.",
                     info->u.coreErrorInfo.comm.streamId, info->u.coreErrorInfo.comm.taskId,
                     static_cast<uint32_t>(RT_ERROR_DEVICE_AICORE_ERROR_HW_L));
             } else {
@@ -570,9 +575,10 @@ static void SetDeviceFaultTypeByAixErrClass(const Device * const dev, const Star
             break;
         case AixErrClass::AIX_S_ERROR:
             if (!HasBlacklistEventOnDevice(dev->Id_(), g_mulBitEccEventIdBlkList)) {
-                (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::AICORE_SW_ERROR);
-                RT_LOG(RT_LOG_ERROR, "software error, stream_id=%hu, task_id=%hu.",
-                    info->u.coreErrorInfo.comm.streamId, info->u.coreErrorInfo.comm.taskId);
+                (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::AICORE_SW_ERROR);
+                RT_LOG(
+                    RT_LOG_ERROR, "software error, stream_id=%hu, task_id=%hu.", info->u.coreErrorInfo.comm.streamId,
+                    info->u.coreErrorInfo.comm.taskId);
             } else {
                 AiCoreUnknownErrProc(dev, info);
             }
@@ -586,9 +592,10 @@ static void SetDeviceFaultTypeByAixErrClass(const Device * const dev, const Star
     }
 }
 
-static void ProcessCoreErrorClass(const Device * const dev, const StarsDeviceErrorInfo * const info)
+static void ProcessCoreErrorClass(const Device* const dev, const StarsDeviceErrorInfo* const info)
 {
-    TaskInfo *errTaskPtr = GetTaskInfo(dev, static_cast<uint32_t>(info->u.davidCoreErrorInfo.comm.streamId),
+    TaskInfo* errTaskPtr = GetTaskInfo(
+        dev, static_cast<uint32_t>(info->u.davidCoreErrorInfo.comm.streamId),
         static_cast<uint32_t>(info->u.davidCoreErrorInfo.comm.taskId), true);
     if (errTaskPtr != nullptr) {
         errTaskPtr->isRingbufferGet = true;
@@ -601,7 +608,7 @@ static void ProcessCoreErrorClass(const Device * const dev, const StarsDeviceErr
     SetDeviceFaultTypeByAixErrClass(dev, info, errTaskPtr);
 }
 
-static void GetRegInfoErrReg(const DavidOneCoreErrorInfo& info, rtExceptionErrRegInfo_t &regInfo)
+static void GetRegInfoErrReg(const DavidOneCoreErrorInfo& info, rtExceptionErrRegInfo_t& regInfo)
 {
     constexpr uint8_t REG_OFFSET = 32;
     regInfo.errReg[RT_V200_SU_ERR_INFO_T0_0] = static_cast<uint32_t>(info.suErrInfo[0]);
@@ -640,12 +647,14 @@ static void GetRegInfoErrReg(const DavidOneCoreErrorInfo& info, rtExceptionErrRe
     regInfo.errReg[RT_V200_SU_SPR_CONDITION_1] = static_cast<uint32_t>(info.aicCond >> REG_OFFSET);
 }
 
-static void AddExceptionRegInfo(const StarsDeviceErrorInfo * const starsInfo, const uint32_t coreIdx,
-    const uint16_t type, const TaskInfo *errTaskPtr)
+static void AddExceptionRegInfo(
+    const StarsDeviceErrorInfo* const starsInfo, const uint32_t coreIdx, const uint16_t type,
+    const TaskInfo* errTaskPtr)
 {
     COND_RETURN_NORMAL(type != AICORE_ERROR && type != AIVECTOR_ERROR, "the type[%hu] not match", type);
-    COND_RETURN_VOID(errTaskPtr == nullptr || errTaskPtr->stream == nullptr ||
-        errTaskPtr->stream->Device_() == nullptr, "Cannot get the device by errTaskPtr");
+    COND_RETURN_VOID(
+        errTaskPtr == nullptr || errTaskPtr->stream == nullptr || errTaskPtr->stream->Device_() == nullptr,
+        "Cannot get the device by errTaskPtr");
 
     const DavidOneCoreErrorInfo& info = starsInfo->u.davidCoreErrorInfo.info[coreIdx];
     rtExceptionErrRegInfo_t regInfo = {};
@@ -655,7 +664,7 @@ static void AddExceptionRegInfo(const StarsDeviceErrorInfo * const starsInfo, co
     regInfo.currentPC = info.currentPC;
     GetRegInfoErrReg(info, regInfo);
 
-    Device *dev = errTaskPtr->stream->Device_();
+    Device* dev = errTaskPtr->stream->Device_();
     uint32_t taskSn = errTaskPtr->taskSn;
     uint32_t streamId = starsInfo->u.davidCoreErrorInfo.comm.streamId;
     RT_LOG(RT_LOG_ERROR, "add error register: core_id=%u, stream_id=%u, task_sn=%u", regInfo.coreId, streamId, taskSn);
@@ -665,33 +674,37 @@ static void AddExceptionRegInfo(const StarsDeviceErrorInfo * const starsInfo, co
     exceptionRegMap[key].push_back(regInfo);
 }
 
-rtError_t ProcessDavidStarsCoreErrorInfo(const StarsDeviceErrorInfo * const info,
-    const uint64_t errorNumber, const Device * const dev, const DeviceErrorProc * const insPtr)
+rtError_t ProcessDavidStarsCoreErrorInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr)
 {
     UNUSED(insPtr);
     ProcessCoreErrorClass(dev, info);
     const uint16_t type = info->u.davidCoreErrorInfo.comm.type;
 
-    TaskInfo *errTaskPtr = GetTaskInfo(dev, static_cast<uint32_t>(info->u.davidCoreErrorInfo.comm.streamId),
+    TaskInfo* errTaskPtr = GetTaskInfo(
+        dev, static_cast<uint32_t>(info->u.davidCoreErrorInfo.comm.streamId),
         static_cast<uint32_t>(info->u.davidCoreErrorInfo.comm.taskId), true);
 
     for (uint32_t coreIdx = 0U; coreIdx < static_cast<uint32_t>(info->u.davidCoreErrorInfo.comm.coreNum); coreIdx++) {
         if ((errTaskPtr != nullptr) && (errTaskPtr->u.aicTaskInfo.kernel == nullptr)) {
-            AicTaskInfo *aicTask = &errTaskPtr->u.aicTaskInfo;
-            RT_LOG(RT_LOG_ERROR, "stream_id=%u, task_id=%u not with kernel info, tilingKey=0x%llx.", info->u.davidCoreErrorInfo.comm.streamId,
-                info->u.davidCoreErrorInfo.comm.taskId, aicTask->tilingKey);
+            AicTaskInfo* aicTask = &errTaskPtr->u.aicTaskInfo;
+            RT_LOG(
+                RT_LOG_ERROR, "stream_id=%u, task_id=%u not with kernel info, tilingKey=0x%llx.",
+                info->u.davidCoreErrorInfo.comm.streamId, info->u.davidCoreErrorInfo.comm.taskId, aicTask->tilingKey);
             if (aicTask->progHandle != nullptr) {
-                aicTask->kernel = aicTask->progHandle->SearchKernelByPcAddr(info->u.davidCoreErrorInfo.info[coreIdx].pcStart);
+                aicTask->kernel =
+                    aicTask->progHandle->SearchKernelByPcAddr(info->u.davidCoreErrorInfo.info[coreIdx].pcStart);
             }
         }
 
         std::string errorString;
         std::string errorCode;
-        ProcessDavidStarsCoreErrorMapInfo(&(info->u.davidCoreErrorInfo.info[coreIdx]),
-            errorString, errorCode);
+        ProcessDavidStarsCoreErrorMapInfo(&(info->u.davidCoreErrorInfo.info[coreIdx]), errorString, errorCode);
         AddExceptionRegInfo(info, coreIdx, type, errTaskPtr);
         /* logs for aic tools, do not modify the item befor making a new agreement with tools */
-        RT_LOG_CALL_MSG(ERR_MODULE_TBE,
+        RT_LOG_CALL_MSG(
+            ERR_MODULE_TBE,
             "The error from device(chipId:%u, dieId:%u), serial number is %" PRIu64 ", "
             "there is an %s exception, core id is %" PRIu64 ", "
             "error code = %s, dump info: "
@@ -702,14 +715,16 @@ rtError_t ProcessDavidStarsCoreErrorInfo(const StarsDeviceErrorInfo * const info
             "aic error mask: %#" PRIx64 ", para base: %#" PRIx64 ", mte error: %#" PRIx64 ", "
             "aic cond: %#" PRIx64 ".\n"
             "The extend info: errcode:(%s) errorStr: %s subErrType: %#x.\n"
-            "For details, see the troubleshooting document on the Ascend official website. Search for the keyword \"AI Core Error\".",
+            "For details, see the troubleshooting document on the Ascend official website. Search for the keyword \"AI "
+            "Core Error\".",
             info->u.davidCoreErrorInfo.comm.chipId, info->u.davidCoreErrorInfo.comm.dieId, errorNumber,
             GetStarsRingBufferHeadMsg(info->u.davidCoreErrorInfo.comm.type).c_str(),
             info->u.davidCoreErrorInfo.info[coreIdx].coreId, errorCode.c_str(),
             info->u.davidCoreErrorInfo.info[coreIdx].pcStart, info->u.davidCoreErrorInfo.info[coreIdx].currentPC,
             info->u.davidCoreErrorInfo.info[coreIdx].scErrInfo, info->u.davidCoreErrorInfo.info[coreIdx].suErrInfo[0],
             info->u.davidCoreErrorInfo.info[coreIdx].suErrInfo[1],
-            info->u.davidCoreErrorInfo.info[coreIdx].mteErrInfo[0], info->u.davidCoreErrorInfo.info[coreIdx].vecErrInfo[0],
+            info->u.davidCoreErrorInfo.info[coreIdx].mteErrInfo[0],
+            info->u.davidCoreErrorInfo.info[coreIdx].vecErrInfo[0],
             info->u.davidCoreErrorInfo.info[coreIdx].cubeErrInfo, info->u.davidCoreErrorInfo.info[coreIdx].l1ErrInfo,
             info->u.davidCoreErrorInfo.info[coreIdx].aicErrorMask, info->u.davidCoreErrorInfo.info[coreIdx].paraBase,
             info->u.davidCoreErrorInfo.info[coreIdx].mteError[0], info->u.davidCoreErrorInfo.info[coreIdx].aicCond,
@@ -718,11 +733,14 @@ rtError_t ProcessDavidStarsCoreErrorInfo(const StarsDeviceErrorInfo * const info
     return RT_ERROR_NONE;
 }
 
-static void RecordSdmaErrorInfo(const Device * const dev, uint32_t coreNum, TaskInfo *errTaskPtr,
-    const StarsDeviceErrorInfo * const info, const uint64_t errorNumber)
+static void RecordSdmaErrorInfo(
+    const Device* const dev, uint32_t coreNum, TaskInfo* errTaskPtr, const StarsDeviceErrorInfo* const info,
+    const uint64_t errorNumber)
 {
     for (uint32_t coreIdx = 0U; coreIdx < coreNum; coreIdx++) {
-        RT_LOG_CALL_MSG(ERR_MODULE_GE, "The error from device(chipId:%u, dieId:%u), "
+        RT_LOG_CALL_MSG(
+            ERR_MODULE_GE,
+            "The error from device(chipId:%u, dieId:%u), "
             "serial number is %" PRIu64 ".there is a sdma error, sdma channel is %hhu, "
             "sdmaChFsmState=0x%x, sdmaChFree=0x%x, irqStatus=0x%x, cqeStatus=0x%x ",
             info->u.sdmaErrorInfo.comm.chipId, info->u.sdmaErrorInfo.comm.dieId, errorNumber,
@@ -735,20 +753,23 @@ static void RecordSdmaErrorInfo(const Device * const dev, uint32_t coreNum, Task
         if ((cqeStatus == TS_SDMA_STATUS_DDRC_ERROR) || (cqeStatus == TS_SDMA_STATUS_LINK_ERROR) ||
             (cqeStatus == TS_SDMA_STATUS_POISON_ERROR)) {
             SetTaskMteErrByType(SDMA_ERROR, dev, errTaskPtr);
-            RT_LOG(RT_LOG_ERROR, "Get sdma mte error, stream_id=%hu, task_id=%hu, errorCode=%#hx.",
+            RT_LOG(
+                RT_LOG_ERROR, "Get sdma mte error, stream_id=%hu, task_id=%hu, errorCode=%#hx.",
                 info->u.coreErrorInfo.comm.streamId, info->u.coreErrorInfo.comm.taskId,
                 (errTaskPtr == nullptr) ? static_cast<uint16_t>(TS_ERROR_RESERVED) : errTaskPtr->mte_error);
         }
     }
 }
 
-rtError_t ProcessStarsSdmaErrorInfo(const StarsDeviceErrorInfo * const info,
-    const uint64_t errorNumber, const Device * const dev, const DeviceErrorProc * const insPtr)
+rtError_t ProcessStarsSdmaErrorInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr)
 {
     UNUSED(insPtr);
     RUNTIME_NULL_NO_PROC_WITH_RET(info);
     RUNTIME_NULL_NO_PROC_WITH_RET(dev);
-    TaskInfo *errTaskPtr = GetTaskInfo(dev, static_cast<uint32_t>(info->u.sdmaErrorInfo.comm.streamId),
+    TaskInfo* errTaskPtr = GetTaskInfo(
+        dev, static_cast<uint32_t>(info->u.sdmaErrorInfo.comm.streamId),
         static_cast<uint32_t>(info->u.sdmaErrorInfo.comm.taskId), true);
     if (errTaskPtr != nullptr) {
         errTaskPtr->isRingbufferGet = true;
@@ -758,17 +779,19 @@ rtError_t ProcessStarsSdmaErrorInfo(const StarsDeviceErrorInfo * const info,
     return RT_ERROR_NONE;
 }
 
-static void CheckAixErrorClassInFusionKernel(const StarsDeviceErrorInfo *errInfo, const StarsDeviceErrorInfo * const info,
-    const Device * const dev, TaskInfo *errTaskPtr)
+static void CheckAixErrorClassInFusionKernel(
+    const StarsDeviceErrorInfo* errInfo, const StarsDeviceErrorInfo* const info, const Device* const dev,
+    TaskInfo* errTaskPtr)
 {
     if ((info == nullptr) || (errInfo == nullptr)) {
         return;
     }
 
     RT_LOG(RT_LOG_ERROR, "comm_flag=%hhu", errInfo->u.coreErrorInfo.comm.flag);
- 
+
     if ((info->u.fusionKernelErrorInfo.cqeStatus & FUSION_CQE_STATUS_ERROR_MASK) != FUSION_CQE_STATUS_ONLY_AIX_ERROR) {
-        RT_LOG(RT_LOG_INFO, "Fusion task not only happens aicore exception, cqeStatus=0x%x.",
+        RT_LOG(
+            RT_LOG_INFO, "Fusion task not only happens aicore exception, cqeStatus=0x%x.",
             info->u.fusionKernelErrorInfo.cqeStatus);
         return;
     }
@@ -776,49 +799,58 @@ static void CheckAixErrorClassInFusionKernel(const StarsDeviceErrorInfo *errInfo
     SetDeviceFaultTypeByAixErrClass(dev, errInfo, errTaskPtr);
 }
 
-void GetExceptionArgsForFusionKernelTask(const TaskInfo * const taskInfo, rtExceptionArgsInfo_t * const argsInfo)
+void GetExceptionArgsForFusionKernelTask(const TaskInfo* const taskInfo, rtExceptionArgsInfo_t* const argsInfo)
 {
     (void)memset_s(argsInfo, sizeof(rtExceptionArgsInfo_t), 0U, sizeof(rtExceptionArgsInfo_t));
-    const FusionTaskInfo * const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
+    const FusionTaskInfo* const fusionKernelTask = &(taskInfo->u.fusionKernelTask);
 
-    Kernel *kernel = fusionKernelTask->aicPart.kernel;
-    GetKernelExceptionDfxInfo(kernel, &(fusionKernelTask->aicPart.inputArgsSize), fusionKernelTask->args,
-        fusionKernelTask->argsSize, argsInfo);
+    Kernel* kernel = fusionKernelTask->aicPart.kernel;
+    GetKernelExceptionDfxInfo(
+        kernel, &(fusionKernelTask->aicPart.inputArgsSize), fusionKernelTask->args, fusionKernelTask->argsSize,
+        argsInfo);
     return;
 }
 
-static void LogFusionKernelErrorInfo(const StarsDeviceErrorInfo * const info, uint64_t errorNumber)
+static void LogFusionKernelErrorInfo(const StarsDeviceErrorInfo* const info, uint64_t errorNumber)
 {
-    RT_LOG_CALL_MSG(ERR_MODULE_TBE, "The error from device(chipId=%u, dieId=%u), serial number is %" PRIu64 ", "
+    RT_LOG_CALL_MSG(
+        ERR_MODULE_TBE,
+        "The error from device(chipId=%u, dieId=%u), serial number is %" PRIu64 ", "
         "exception occurred during fusion kernel task execution, streamId=%u, taskId=%u, subtasks' subType=%hu, "
-        "sqeLength=%hu, cqeStatus=%u.", info->u.fusionKernelErrorInfo.comm.chipId, info->u.fusionKernelErrorInfo.comm.dieId,
-        errorNumber, info->u.fusionKernelErrorInfo.comm.streamId, info->u.fusionKernelErrorInfo.comm.taskId,
+        "sqeLength=%hu, cqeStatus=%u.",
+        info->u.fusionKernelErrorInfo.comm.chipId, info->u.fusionKernelErrorInfo.comm.dieId, errorNumber,
+        info->u.fusionKernelErrorInfo.comm.streamId, info->u.fusionKernelErrorInfo.comm.taskId,
         info->u.fusionKernelErrorInfo.subType, info->u.fusionKernelErrorInfo.sqeLength,
         info->u.fusionKernelErrorInfo.cqeStatus);
 
-    const uint32_t * const cmd = RtPtrToPtr<const uint32_t *, const rtDavidSqe_t *>(info->u.fusionKernelErrorInfo.davidSqe);
+    const uint32_t* const cmd =
+        RtPtrToPtr<const uint32_t*, const rtDavidSqe_t*>(info->u.fusionKernelErrorInfo.davidSqe);
     const size_t size = sizeof(rtDavidSqe_t) * (info->u.fusionKernelErrorInfo.sqeLength + 1U);
     for (uint32_t i = 0U; i < (size / sizeof(uint32_t)); i += 8U) {
-        RT_LOG(RT_LOG_ERROR, "printSqe: %08x %08x %08x %08x %08x %08x %08x %08x",
-            cmd[i], cmd[i + 1U], cmd[i + 2U], cmd[i + 3U], cmd[i + 4U], cmd[i + 5U], cmd[i + 6U],
-            cmd[i + 7U]);
+        RT_LOG(
+            RT_LOG_ERROR, "printSqe: %08x %08x %08x %08x %08x %08x %08x %08x", cmd[i], cmd[i + 1U], cmd[i + 2U],
+            cmd[i + 3U], cmd[i + 4U], cmd[i + 5U], cmd[i + 6U], cmd[i + 7U]);
     }
 
-    RT_LOG(RT_LOG_ERROR, "structSize=%u, aicError=%u, aivError=%u, aicpuError=%u, ccuError=%u."
+    RT_LOG(
+        RT_LOG_ERROR,
+        "structSize=%u, aicError=%u, aivError=%u, aicpuError=%u, ccuError=%u."
         "(just used to check if need process sub task's ringbuffer or not)",
-        sizeof(StarsFusionKernelErrorInfo),
-        info->u.fusionKernelErrorInfo.aicError, info->u.fusionKernelErrorInfo.aivError,
-        info->u.fusionKernelErrorInfo.aicpuError, info->u.fusionKernelErrorInfo.ccuError);
+        sizeof(StarsFusionKernelErrorInfo), info->u.fusionKernelErrorInfo.aicError,
+        info->u.fusionKernelErrorInfo.aivError, info->u.fusionKernelErrorInfo.aicpuError,
+        info->u.fusionKernelErrorInfo.ccuError);
 }
 
-rtError_t ProcessDavidStarsFusionKernelErrorInfo(const StarsDeviceErrorInfo * const info,
-    const uint64_t errorNumber, const Device * const dev, const DeviceErrorProc * const insPtr)
+rtError_t ProcessDavidStarsFusionKernelErrorInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr)
 {
     if (info == nullptr) {
         return RT_ERROR_NONE;
     }
 
-    TaskInfo *errTaskPtr = GetTaskInfo(dev, static_cast<uint32_t>(info->u.fusionKernelErrorInfo.comm.streamId),
+    TaskInfo* errTaskPtr = GetTaskInfo(
+        dev, static_cast<uint32_t>(info->u.fusionKernelErrorInfo.comm.streamId),
         static_cast<uint32_t>(info->u.fusionKernelErrorInfo.comm.taskId), true);
     if (errTaskPtr != nullptr) {
         errTaskPtr->isRingbufferGet = true;
@@ -828,58 +860,62 @@ rtError_t ProcessDavidStarsFusionKernelErrorInfo(const StarsDeviceErrorInfo * co
 
     rtExceptionArgsInfo_t kernelInfo = {};
     rtBinHandle binHandle = nullptr;
-    
-    if (errTaskPtr != nullptr && errTaskPtr->type == TS_TASK_TYPE_FUSION_KERNEL) { 
+
+    if (errTaskPtr != nullptr && errTaskPtr->type == TS_TASK_TYPE_FUSION_KERNEL) {
         GetExceptionArgsForFusionKernelTask(errTaskPtr, &kernelInfo);
         binHandle = kernelInfo.exceptionKernelInfo.bin;
     }
 
     /* 处理子任务 */
-    const StarsDeviceErrorInfo *errInfo = nullptr;
+    const StarsDeviceErrorInfo* errInfo = nullptr;
     if (info->u.fusionKernelErrorInfo.aicpuError == 1U) {
-        errInfo = RtPtrToPtr<const StarsDeviceErrorInfo *>(&(info->u.fusionKernelErrorInfo.u.aicpuInfo));
+        errInfo = RtPtrToPtr<const StarsDeviceErrorInfo*>(&(info->u.fusionKernelErrorInfo.u.aicpuInfo));
         (void)ProcessStarsAicpuErrorInfo(errInfo, errorNumber, dev, insPtr);
     } else if (info->u.fusionKernelErrorInfo.ccuError == 1U) {
-        errInfo = RtPtrToPtr<const StarsDeviceErrorInfo *>(&(info->u.fusionKernelErrorInfo.u.ccuInfo));
+        errInfo = RtPtrToPtr<const StarsDeviceErrorInfo*>(&(info->u.fusionKernelErrorInfo.u.ccuInfo));
         (void)ProcessDavidStarsCcuErrorInfo(errInfo, errorNumber, dev, insPtr);
     } else {
         // 分别处理aicpuerror和ccuerror，其他情况不处理
     }
 
     if (info->u.fusionKernelErrorInfo.aicError == 1U) {
-        errInfo = RtPtrToPtr<const StarsDeviceErrorInfo *>(&(info->u.fusionKernelErrorInfo.aicInfo));
+        errInfo = RtPtrToPtr<const StarsDeviceErrorInfo*>(&(info->u.fusionKernelErrorInfo.aicInfo));
         TriggerMemoryCorruptionCheck(nullptr, dev, dev->Id_(), binHandle, &kernelInfo);
-        CheckAixErrorClassInFusionKernel(errInfo, info, RtPtrToUnConstPtr<Device *>(dev), errTaskPtr);
+        CheckAixErrorClassInFusionKernel(errInfo, info, RtPtrToUnConstPtr<Device*>(dev), errTaskPtr);
         (void)ProcessDavidStarsCoreErrorInfo(errInfo, errorNumber, dev, insPtr);
     }
     if (info->u.fusionKernelErrorInfo.aivError == 1U) {
-        errInfo = RtPtrToPtr<const StarsDeviceErrorInfo *>(&(info->u.fusionKernelErrorInfo.aivInfo));
+        errInfo = RtPtrToPtr<const StarsDeviceErrorInfo*>(&(info->u.fusionKernelErrorInfo.aivInfo));
         TriggerMemoryCorruptionCheck(nullptr, dev, dev->Id_(), binHandle, &kernelInfo);
-        CheckAixErrorClassInFusionKernel(errInfo, info, RtPtrToUnConstPtr<Device *>(dev), errTaskPtr);
+        CheckAixErrorClassInFusionKernel(errInfo, info, RtPtrToUnConstPtr<Device*>(dev), errTaskPtr);
         (void)ProcessDavidStarsCoreErrorInfo(errInfo, errorNumber, dev, insPtr);
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t ProcessDavidStarsWaitTimeoutErrorInfo(const StarsDeviceErrorInfo * const info,
-    const uint64_t errorNumber, const Device * const dev, const DeviceErrorProc * const insPtr)
+rtError_t ProcessDavidStarsWaitTimeoutErrorInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr)
 {
     UNUSED(insPtr);
     if (info == nullptr) {
         return RT_ERROR_NONE;
     }
 
-    TaskInfo *errTaskPtr = GetTaskInfo(dev, info->u.timeoutErrorInfo.streamId, info->u.timeoutErrorInfo.taskId, true);
+    TaskInfo* errTaskPtr = GetTaskInfo(dev, info->u.timeoutErrorInfo.streamId, info->u.timeoutErrorInfo.taskId, true);
     if (errTaskPtr != nullptr) {
         errTaskPtr->isRingbufferGet = true;
     }
 
     const uint8_t type = info->u.timeoutErrorInfo.waitType;
     if (type == RT_DAVID_SQE_TYPE_NOTIFY_WAIT) {
-        RT_LOG_CALL_MSG(ERR_MODULE_SYSTEM, "The error from device(chipId:%u, dieId:%u), serial number is %" PRIu64 ", "
+        RT_LOG_CALL_MSG(
+            ERR_MODULE_SYSTEM,
+            "The error from device(chipId:%u, dieId:%u), serial number is %" PRIu64 ", "
             "wait timeout occurred during task execution, stream_id:%hu, sq_id:%hu, task_pos:%hu, "
             "id=%u, timeout=%us, cntFlag = %u, subType = %u(%s), cntValue = %u, clrFlag = %u, waitMode = %u, "
-            "bitmap = %u.", info->u.timeoutErrorInfo.chipId, info->u.timeoutErrorInfo.dieId, errorNumber,
+            "bitmap = %u.",
+            info->u.timeoutErrorInfo.chipId, info->u.timeoutErrorInfo.dieId, errorNumber,
             info->u.timeoutErrorInfo.streamId, info->u.timeoutErrorInfo.sqId, info->u.timeoutErrorInfo.taskId,
             info->u.timeoutErrorInfo.wait.errorInfo.notifyId, info->u.timeoutErrorInfo.wait.errorInfo.timeout,
             info->u.timeoutErrorInfo.wait.errorInfo.cntFlag, info->u.timeoutErrorInfo.wait.errorInfo.subType,
@@ -890,8 +926,9 @@ rtError_t ProcessDavidStarsWaitTimeoutErrorInfo(const StarsDeviceErrorInfo * con
     return RT_ERROR_NONE;
 }
 
-rtError_t ProcessStarsV2CoreTimeoutDfxInfo(const StarsDeviceErrorInfo *const info,
-    const uint64_t errorNumber, const Device *const dev, const DeviceErrorProc *const insPtr)
+rtError_t ProcessStarsV2CoreTimeoutDfxInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr)
 {
     UNUSED(insPtr);
     if ((info == nullptr) || (dev == nullptr)) {
@@ -902,17 +939,18 @@ rtError_t ProcessStarsV2CoreTimeoutDfxInfo(const StarsDeviceErrorInfo *const inf
     const uint32_t devId = dev->Id_();
     const uint16_t streamId = common.streamId;
     const uint16_t taskId = common.taskId;
-    RT_LOG(RT_LOG_ERROR,
+    RT_LOG(
+        RT_LOG_ERROR,
         "kernel task timeout due to no available cores, device_id=%u, stream_id=%hu, task_id=%hu, "
         "serial number is %" PRIu64 ", non-idle core_num=%hu.",
         devId, streamId, taskId, errorNumber, common.coreNum);
 
-    TaskInfo *errTaskPtr = GetTaskInfo(dev, static_cast<uint32_t>(streamId), static_cast<uint32_t>(taskId), true);
+    TaskInfo* errTaskPtr = GetTaskInfo(dev, static_cast<uint32_t>(streamId), static_cast<uint32_t>(taskId), true);
     if (errTaskPtr != nullptr) {
         errTaskPtr->isRingbufferGet = true;
     }
 
-    if (!(RtPtrToUnConstPtr<Device *>(dev))->CheckFeatureSupport(TS_FEATURE_AICORE_TIMEOUT_DFX)) {
+    if (!(RtPtrToUnConstPtr<Device*>(dev))->CheckFeatureSupport(TS_FEATURE_AICORE_TIMEOUT_DFX)) {
         RT_LOG(RT_LOG_WARNING, "feature not support because tsch version too low.");
         return RT_ERROR_NONE;
     }
@@ -924,7 +962,8 @@ rtError_t ProcessStarsV2CoreTimeoutDfxInfo(const StarsDeviceErrorInfo *const inf
     for (uint16_t coreIdx = 0U; coreIdx < common.coreNum; coreIdx++) {
         StarsV2OneCoreTimeoutDfxInfo coreInfo = info->u.starsV2CoreTimeoutDfxInfo.coreInfo[coreIdx];
         if (coreInfo.subError != 0U) {
-            RT_LOG(RT_LOG_ERROR,
+            RT_LOG(
+                RT_LOG_ERROR,
                 "aicore task timeout dfx, show core info where subError!=0(core is currently stuck), "
                 "device_id=%u, core_id=%hu, core_type=%hu(%s), stream_id=%hu, sq_head=%hu, task_sn=%u, "
                 "sub_error=%hu, current_pc=%#" PRIx64 ".",
@@ -935,15 +974,15 @@ rtError_t ProcessStarsV2CoreTimeoutDfxInfo(const StarsDeviceErrorInfo *const inf
     return RT_ERROR_NONE;
 }
 
-rtError_t ProcRingBufferTaskDavid(const Device *const dev, const void * const devMem, const bool delFlag,
-    const uint32_t len)
+rtError_t ProcRingBufferTaskDavid(
+    const Device* const dev, const void* const devMem, const bool delFlag, const uint32_t len)
 {
-    TaskInfo *tsk = nullptr;
-    Stream *stm = dev->GetCtrlSQStream(dev->PrimaryStream_());
+    TaskInfo* tsk = nullptr;
+    Stream* stm = dev->GetCtrlSQStream(dev->PrimaryStream_());
     NULL_PTR_RETURN_MSG(stm, RT_ERROR_STREAM_NULL);
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.", stm->Id_(),
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
     std::function<void()> const errRecycle = [&tsk, &stm, &pos]() {
         TaskUnInitProc(tsk);
@@ -953,19 +992,20 @@ rtError_t ProcRingBufferTaskDavid(const Device *const dev, const void * const de
     stm->StreamLock();
     error = AllocTaskInfo(&tsk, stm, pos);
     ERROR_PROC_RETURN_MSG_INNER(error, stm->StreamUnLock();, "Failed to alloc task, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
+                                                           stm->Id_(), static_cast<uint32_t>(error));
     SaveTaskCommonInfo(tsk, stm, pos);
     error = RingBufferMaintainTaskInit(tsk, devMem, delFlag, len);
     ScopeGuard tskErrRecycle(errRecycle);
-    ERROR_RETURN_MSG_INNER(error, "Failed to init create ringbuffer task, stream_id=%d, retCode=%#x.",
-        stm->Id_(), static_cast<uint32_t>(error));
-    error = DavidSendTask(tsk, stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit task, stream_id=%d, retCode=%#x.", stm->Id_(),
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to init create ringbuffer task, stream_id=%d, retCode=%#x.", stm->Id_(),
         static_cast<uint32_t>(error));
+    error = DavidSendTask(tsk, stm);
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
     stm->StreamUnLock();
     return stm->Synchronize();
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -59,17 +59,17 @@ static const std::unordered_set<RtOptionalFeatureType> CHIP_MINI_V3_FEATURE{
     RtOptionalFeatureType::RT_FEATURE_NOTIFY_WAIT,
     RtOptionalFeatureType::RT_FEATURE_KERNEL_UMA_SUPER_ARGS_ALLOC,
     RtOptionalFeatureType::RT_FEATURE_STREAM_EXECUTED_POS_INIT_DOT_STATIC,
-    RtOptionalFeatureType::RT_FEATURE_DEVICE_MEM_COPY_DOT_D2D_ONLY
-};
+    RtOptionalFeatureType::RT_FEATURE_DEVICE_MEM_COPY_DOT_D2D_ONLY};
 
 REGISTER_CHIP_FEATURE_SET(CHIP_MINI_V3, CHIP_MINI_V3_FEATURE);
 
 static constexpr uint32_t CQE_DEPTH = 2048U;
 constexpr static uint32_t SQE_DEPTH = 2048U;
 static constexpr uint32_t RT_STARS_MAX_KERNEL_CREDIT_UINT32 = 254U; // STARS MAX KERNEL_CREDIT = 255.
-static constexpr uint32_t RT_STARS_DEFAULT_KERNEL_CREDIT_UINT32 = 254U; // The STARS reference time is 1090921693.184 us.
+static constexpr uint32_t RT_STARS_DEFAULT_KERNEL_CREDIT_UINT32 =
+    254U;                                                           // The STARS reference time is 1090921693.184 us.
 static constexpr double RT_STARS_TASK_KERNEL_CREDIT_SCALE_US = 4294967.296; // 2^32 / 1000M *1000*1000(us)
-static constexpr uint32_t KERNEL_CUSTOM_STACK_SIZE_MAX = 7864320U; // 7680KB
+static constexpr uint32_t KERNEL_CUSTOM_STACK_SIZE_MAX = 7864320U;          // 7680KB
 
 static const DevProperties CHIP_MINI_V3_PROPERTIES = {
     .engineType = "STARS",
@@ -116,10 +116,9 @@ static const DevProperties CHIP_MINI_V3_PROPERTIES = {
     .starsDefaultKernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT,
     .KernelCreditScale = RT_STARS_TASK_KERNEL_CREDIT_SCALE_US,
     .isSupportInitFuncCallPara = true,
-    .rtsqVirtualAddr = {RT_STARS_BASE_ADDR_520000000 + STARS_SIMPLE_RTSQ_FSM_SEL_REG,
-        STARS_SIMPLE_SQ_ENABLE_OFFSET,
-        STARS_SIMPLE_SQ_TAIL_OFFSET,
-        STARS_SIMPLE_SQ_HEAD_OFFSET},
+    .rtsqVirtualAddr =
+        {RT_STARS_BASE_ADDR_520000000 + STARS_SIMPLE_RTSQ_FSM_SEL_REG, STARS_SIMPLE_SQ_ENABLE_OFFSET,
+         STARS_SIMPLE_SQ_TAIL_OFFSET, STARS_SIMPLE_SQ_HEAD_OFFSET},
     .rtsqFsmStateAddrCalMethod = RtsqFsmStateAddrCalMethod::FSM_ADDR_CALCULATE_STATIC,
     .starsBaseAddrMethod = StarsBaseAddrMethod::STARS_BASE_CALCULATE_STATIC,
     .rtSqEnableAddrCalMethod = RtSqEnableAddrCalMethod::RT_SQ_ENABLE_ADDR_CAL_STATIC,
@@ -211,5 +210,5 @@ static const DevProperties CHIP_MINI_V3_PROPERTIES = {
     .swapBufferProfCfgOffset = 0U,
 };
 REGISTER_DEV_PROPERTIES(CHIP_MINI_V3, CHIP_MINI_V3_PROPERTIES);
-}
-}
+} // namespace runtime
+} // namespace cce

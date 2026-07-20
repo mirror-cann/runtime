@@ -25,7 +25,7 @@
 namespace cce {
 namespace runtime {
 
-DavidEvent::DavidEvent(Device * device, uint64_t eventFlag, Context *ctx, bool isNewMode)
+DavidEvent::DavidEvent(Device* device, uint64_t eventFlag, Context* ctx, bool isNewMode)
     : Event(device, eventFlag, ctx, false, isNewMode)
 {
     if (isNewMode || eventFlag == RT_EVENT_DEFAULT) {
@@ -44,8 +44,9 @@ DavidEvent::~DavidEvent() noexcept
         (void)device_->FreeEventIdFromDrv(eventId_, static_cast<uint32_t>(eventFlag_));
         eventId_ = INVALID_EVENT_ID;
     }
-    RT_LOG(RT_LOG_INFO, "event destructor, device_id=%u, recordSize=%llu, waitSize=%llu",
-        device_->Id_(), recordResetMap_.size(), waitTaskMap_.size());
+    RT_LOG(
+        RT_LOG_INFO, "event destructor, device_id=%u, recordSize=%llu, waitSize=%llu", device_->Id_(),
+        recordResetMap_.size(), waitTaskMap_.size());
 }
 
 bool DavidEvent::TryFreeEventIdAndCheckCanBeDelete(const int32_t id, bool isNeedDestroy)
@@ -59,7 +60,7 @@ bool DavidEvent::TryFreeEventIdAndCheckCanBeDelete(const int32_t id, bool isNeed
     return isNeedDestroy_.Value() && AreTaskMapsEmptyLocked();
 }
 
-bool DavidEvent::DavidUpdateRecordMapAndDestroyEvent(TaskInfo *taskInfo)
+bool DavidEvent::DavidUpdateRecordMapAndDestroyEvent(TaskInfo* taskInfo)
 {
     const std::lock_guard<std::mutex> lock(taskMapMutex_);
     const auto it = recordResetMap_.find(taskInfo);
@@ -70,7 +71,7 @@ bool DavidEvent::DavidUpdateRecordMapAndDestroyEvent(TaskInfo *taskInfo)
     return isNeedDestroy_.Value() && AreTaskMapsEmptyLocked();
 }
 
-bool DavidEvent::DavidUpdateWaitMapAndDestroyEvent(TaskInfo *taskInfo)
+bool DavidEvent::DavidUpdateWaitMapAndDestroyEvent(TaskInfo* taskInfo)
 {
     const std::lock_guard<std::mutex> lock(taskMapMutex_);
     const auto it = waitTaskMap_.find(taskInfo);
@@ -88,28 +89,29 @@ rtError_t DavidEvent::GenEventId()
         return RT_ERROR_NONE;
     }
 
-    Runtime * const rt = Runtime::Instance();
-    Driver *devDrv =  rt->driverFactory_.GetDriver(NPU_DRIVER);
+    Runtime* const rt = Runtime::Instance();
+    Driver* devDrv = rt->driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN(devDrv, RT_ERROR_DRV_NULL);
 
     const uint32_t eventFlag = (eventFlag_ == RT_EVENT_MC2) ? RT_NOTIFY_MC2 : 0U;
-    const rtError_t error = devDrv->NotifyIdAlloc(device_->Id_(), RtPtrToPtr<uint32_t *>(&eventId_),
-        device_->DevGetTsId(), eventFlag, false, true);
+    const rtError_t error = devDrv->NotifyIdAlloc(
+        device_->Id_(), RtPtrToPtr<uint32_t*>(&eventId_), device_->DevGetTsId(), eventFlag, false, true);
 
     if ((error == RT_ERROR_DRV_NO_EVENT_RESOURCES) || (error == RT_ERROR_DRV_NO_RESOURCES)) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc Event resource",
-            "Too many events are created");
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc Event resource", "Too many events are created");
     }
-    ERROR_RETURN(error, "Failed to allocate event id, device_id=%u, tsId=%u, retCode=%#x.",
-        device_->Id_(), device_->DevGetTsId(), static_cast<uint32_t>(error));
-    RT_LOG(RT_LOG_INFO, "Event id alloc success, device_id=%u, tsId=%u, eventFlag=%u, event_id=%d",
-        device_->Id_(), device_->DevGetTsId(), eventFlag_, eventId_);
+    ERROR_RETURN(
+        error, "Failed to allocate event id, device_id=%u, tsId=%u, retCode=%#x.", device_->Id_(),
+        device_->DevGetTsId(), static_cast<uint32_t>(error));
+    RT_LOG(
+        RT_LOG_INFO, "Event id alloc success, device_id=%u, tsId=%u, eventFlag=%u, event_id=%d", device_->Id_(),
+        device_->DevGetTsId(), eventFlag_, eventId_);
 
     isCntNotify_ = false;
     return error;
 }
 
-rtError_t DavidEvent::AllocEventIdResource(Stream * const stm, int32_t &eventId)
+rtError_t DavidEvent::AllocEventIdResource(Stream* const stm, int32_t& eventId)
 {
     rtError_t error = RT_ERROR_NONE;
     if (IsEventWithoutWaitTask()) { // stream mark or timeline
@@ -127,12 +129,15 @@ rtError_t DavidEvent::AllocEventIdResource(Stream * const stm, int32_t &eventId)
         bool waitStatus = false;
         while ((error == RT_ERROR_NONE) && (!waitStatus)) {
             error = stm->CheckContextStatus();
-            COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check the context status for the stream. Reason: context is abort, status=%#x.", static_cast<uint32_t>(error));
+            COND_RETURN_ERROR(
+                error != RT_ERROR_NONE, error,
+                "Failed to check the context status for the stream. Reason: context is abort, status=%#x.",
+                static_cast<uint32_t>(error));
             error = QueryEventWaitStatus(true, waitStatus);
         }
         if (unlikely(error != RT_ERROR_NONE)) {
-            RT_LOG(RT_LOG_ERROR,
-                "Event wait status, device_id=%u, tsId=%u, stream_id=%d, waitStatus=%u, retCode=%#x.",
+            RT_LOG(
+                RT_LOG_ERROR, "Event wait status, device_id=%u, tsId=%u, stream_id=%d, waitStatus=%u, retCode=%#x.",
                 device_->Id_(), device_->DevGetTsId(), stm->Id_(), waitStatus, error);
             return error;
         }
@@ -140,7 +145,7 @@ rtError_t DavidEvent::AllocEventIdResource(Stream * const stm, int32_t &eventId)
     return RT_ERROR_NONE;
 }
 
-bool DavidEvent::WaitSendCheck(const Stream * const stm, int32_t &eventId)
+bool DavidEvent::WaitSendCheck(const Stream* const stm, int32_t& eventId)
 {
     // lock id and state
     const std::lock_guard<std::mutex> latestStateLock(recordStateMutex_);
@@ -156,23 +161,24 @@ bool DavidEvent::WaitSendCheck(const Stream * const stm, int32_t &eventId)
             return false;
         }
         if (eventId == INVALID_EVENT_ID) {
-            RT_LOG(RT_LOG_ERROR, "error status, event_id=-1, device_id=%u, stream_id=%d, task_id=%hu",
-                device_->Id_(), stm->Id_(), latestRecordTask_.taskId);
+            RT_LOG(
+                RT_LOG_ERROR, "error status, event_id=-1, device_id=%u, stream_id=%d, task_id=%hu", device_->Id_(),
+                stm->Id_(), latestRecordTask_.taskId);
             return false;
         }
     }
 
     const bool isWaitSend = (status_ == DavidEventState_t::EVT_NOT_RECORDED) ||
-        (status_ == DavidEventState_t::EVT_RECORDED && HasReset()) ||
-        ((eventFlag_ & (RT_EVENT_DDSYNC_NS | RT_EVENT_EXTERNAL)) != 0U);
+                            (status_ == DavidEventState_t::EVT_RECORDED && HasReset()) ||
+                            ((eventFlag_ & (RT_EVENT_DDSYNC_NS | RT_EVENT_EXTERNAL)) != 0U);
     if (isWaitSend) {
         return true;
     }
     return false;
 }
 
-void DavidEvent::UpdateLatestRecord(const DavidRecordTaskInfo &recordInfo, const DavidEventState_t latestStatus,
-    const uint64_t timeStamp)
+void DavidEvent::UpdateLatestRecord(
+    const DavidRecordTaskInfo& recordInfo, const DavidEventState_t latestStatus, const uint64_t timeStamp)
 {
     const std::lock_guard<std::mutex> lock(recordStateMutex_);
     if (latestStatus == DavidEventState_t::EVT_NOT_RECORDED) {
@@ -193,7 +199,7 @@ void DavidEvent::UpdateLatestRecord(const DavidRecordTaskInfo &recordInfo, const
     }
 }
 
-void DavidEvent::RecordDavidEventComplete(const TaskInfo * const tsk, const uint64_t recTimestamp)
+void DavidEvent::RecordDavidEventComplete(const TaskInfo* const tsk, const uint64_t recTimestamp)
 {
     DavidRecordTaskInfo latestRecord = {tsk->stream->Id_(), tsk->id};
     UpdateLatestRecord(latestRecord, DavidEventState_t::EVT_RECORDED, recTimestamp);
@@ -203,17 +209,20 @@ rtError_t DavidEvent::ReclaimTask(const bool evtWaitTask)
 {
     // Reclaim may modify , so make a copy first.
     UNUSED(evtWaitTask);
-    std::unordered_map<TaskInfo *, std::pair<Stream*, uint32_t>> eventTaskMaps;
+    std::unordered_map<TaskInfo*, std::pair<Stream*, uint32_t>> eventTaskMaps;
     {
         const std::lock_guard<std::mutex> reclaimLock(taskMapMutex_);
         eventTaskMaps = waitTaskMap_;
         eventTaskMaps.insert(recordResetMap_.begin(), recordResetMap_.end());
     }
 
-    for (auto &item : eventTaskMaps) {
-        Stream * const stm = item.second.first;
+    for (auto& item : eventTaskMaps) {
+        Stream* const stm = item.second.first;
         rtError_t error = stm->CheckContextStatus();
-        COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check the context status for the stream. Reason: context is abort, status=%#x.", static_cast<int32_t>(error));
+        COND_RETURN_ERROR(
+            error != RT_ERROR_NONE, error,
+            "Failed to check the context status for the stream. Reason: context is abort, status=%#x.",
+            static_cast<int32_t>(error));
         stm->StreamSyncLock();
         (void)TaskReclaimByStream(stm, true);
         stm->StreamSyncUnLock();
@@ -221,19 +230,23 @@ rtError_t DavidEvent::ReclaimTask(const bool evtWaitTask)
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidEvent::QueryEventTask(rtEventStatus_t * const status)
+rtError_t DavidEvent::QueryEventTask(rtEventStatus_t* const status)
 {
-    Stream *stm = nullptr;
+    Stream* stm = nullptr;
     DavidRecordTaskInfo latestState = GetLatestRecordInfo();
     const uint32_t streamId = static_cast<uint32_t>(latestState.streamId);
     const uint32_t taskId = latestState.taskId;
     rtError_t error = device_->GetStreamSqCqManage()->GetStreamById(static_cast<uint32_t>(streamId), &stm);
 
-    COND_RETURN_ERROR_MSG_INNER(((error != RT_ERROR_NONE) || (stm == nullptr)), error,
-                                "Failed to get stream by id, device_id=%u, stream_id=%u, retCode=%#x.",
-                                device_->Id_(), streamId, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        ((error != RT_ERROR_NONE) || (stm == nullptr)), error,
+        "Failed to get stream by id, device_id=%u, stream_id=%u, retCode=%#x.", device_->Id_(), streamId,
+        static_cast<uint32_t>(error));
     error = stm->CheckContextStatus();
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to check the context status for the stream. Reason: context is abort, status=%#x.", static_cast<int32_t>(error));
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error,
+        "Failed to check the context status for the stream. Reason: context is abort, status=%#x.",
+        static_cast<int32_t>(error));
     error = stm->JudgeHeadTailPos(status, this->recordPos_);
     if (error != RT_ERROR_NONE) { // confirm
         return RT_ERROR_NONE;
@@ -247,8 +260,9 @@ rtError_t DavidEvent::QueryEventTask(rtEventStatus_t * const status)
             stm->StreamSyncUnLock();
         }
     }
-    RT_LOG(RT_LOG_INFO, "device_id=%u, event_id=%d, status=%d, stream_id=%u, record task_id=%hu", 
-        device_->Id_(), eventId_, *status, streamId, taskId);
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%u, event_id=%d, status=%d, stream_id=%u, record task_id=%hu", device_->Id_(), eventId_,
+        *status, streamId, taskId);
     return RT_ERROR_NONE;
 }
 
@@ -262,11 +276,11 @@ rtError_t DavidEvent::WaitTask(const int32_t timeout)
     }
     std::shared_ptr<Stream> stm = nullptr;
     rtError_t error = device_->GetStreamSqCqManage()->GetStreamSharedPtrById(static_cast<uint32_t>(streamId), stm);
-    COND_RETURN_ERROR_MSG_INNER(((error != RT_ERROR_NONE) || (stm == nullptr)), error,
-                                "Failed to get stream by id, stream_id=%d, retCode=%#x.",
-                                streamId, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        ((error != RT_ERROR_NONE) || (stm == nullptr)), error, "Failed to get stream by id, stream_id=%d, retCode=%#x.",
+        streamId, static_cast<uint32_t>(error));
     // if set stream fail mode, need to reclaim task to update error info
-    bool isReclaim = (stm->Context_()->GetCtxMode() == STOP_ON_FAILURE);    
+    bool isReclaim = (stm->Context_()->GetCtxMode() == STOP_ON_FAILURE);
     error = stm->WaitTask(isReclaim, taskId, timeout);
     stm.reset();
     return error;
@@ -297,18 +311,19 @@ rtError_t DavidEvent::Query(void) // not support query after reset
     // record(recording) , return RT_ERROR_NONE. record(recorded) return Not complete
     const rtError_t queryResult =
         ((status_ == DavidEventState_t::EVT_NOT_RECORDED) && HasRecord()) ? RT_ERROR_EVENT_NOT_COMPLETE : RT_ERROR_NONE;
-    RT_LOG(RT_LOG_INFO, "device_id=%u, event_id=%d, lateststate=%d, result=%d",
-        device_->Id_(), eventId_, status_, queryResult);
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%u, event_id=%d, lateststate=%d, result=%d", device_->Id_(), eventId_, status_,
+        queryResult);
     return queryResult;
 }
 
-rtError_t DavidEvent::QueryEventStatus(rtEventStatus_t * const status)
+rtError_t DavidEvent::QueryEventStatus(rtEventStatus_t* const status)
 {
     rtError_t error = RT_ERROR_NONE;
     // No record , newMode return RT_EVENT_RECORDED oldMode return RT_EVENT_INIT
     if (!HasRecord()) {
-        RT_LOG(RT_LOG_INFO, "device_id=%u, event_id=%d no record to be query, return recorded.",
-            device_->Id_(), eventId_);
+        RT_LOG(
+            RT_LOG_INFO, "device_id=%u, event_id=%d no record to be query, return recorded.", device_->Id_(), eventId_);
         *status = (isNewMode_) ? RT_EVENT_RECORDED : RT_EVENT_INIT;
         return error;
     }
@@ -318,12 +333,13 @@ rtError_t DavidEvent::QueryEventStatus(rtEventStatus_t * const status)
     } else {
         *status = RT_EVENT_RECORDED;
     }
-    RT_LOG(RT_LOG_INFO, "device_id=%u, event_id=%d, lateststate=%d, status=%d",
-           device_->Id_(), eventId_, status_, *status);
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%u, event_id=%d, lateststate=%d, status=%d", device_->Id_(), eventId_, status_,
+        *status);
     return error;
 }
 
-rtError_t DavidEvent::QueryEventWaitStatus(const bool disableThread, bool &waitFlag)
+rtError_t DavidEvent::QueryEventWaitStatus(const bool disableThread, bool& waitFlag)
 {
     UNUSED(disableThread);
     const std::lock_guard<std::mutex> queryLock(taskMapMutex_);
@@ -333,36 +349,39 @@ rtError_t DavidEvent::QueryEventWaitStatus(const bool disableThread, bool &waitF
         return RT_ERROR_NONE;
     }
 
-    for (auto &waitMapItem : waitTaskMap_) {
-        Stream * const stm = waitMapItem.second.first;
+    for (auto& waitMapItem : waitTaskMap_) {
+        Stream* const stm = waitMapItem.second.first;
         waitFlag = false;
         const rtError_t error = stm->QueryWaitTask(waitFlag, waitMapItem.second.second);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-            "Failed to query wait status, device_id=%u, retCode=%#x.", device_->Id_(), static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error, "Failed to query wait status, device_id=%u, retCode=%#x.", device_->Id_(),
+            static_cast<uint32_t>(error));
         if (!waitFlag) {
-            RT_LOG(RT_LOG_INFO, "device_id=%u, event_id=%d, not complete wait stream_id=%d, task_id=%hu",
-                device_->Id_(), eventId_, stm->Id_(), waitMapItem.second.second);
+            RT_LOG(
+                RT_LOG_INFO, "device_id=%u, event_id=%d, not complete wait stream_id=%d, task_id=%hu", device_->Id_(),
+                eventId_, stm->Id_(), waitMapItem.second.second);
             break;
         }
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidEvent::ElapsedTime(float32_t * const timeInterval, Event * const base)
+rtError_t DavidEvent::ElapsedTime(float32_t* const timeInterval, Event* const base)
 {
-    DavidEvent *baseEvt = dynamic_cast<DavidEvent *>(base);
+    DavidEvent* baseEvt = dynamic_cast<DavidEvent*>(base);
     if ((!HasRecord()) || (!base->HasRecord())) {
         return RT_ERROR_EVENT_RECORDER_NULL;
     }
     const uint64_t deltaNs = TimeStamp() - baseEvt->TimeStamp();
-    RT_LOG(RT_LOG_DEBUG, "curNs=%#" PRIx64 ", baseNs=%#" PRIx64 ", curEventId=%d, baseEventId=%d.",
-        TimeStamp(), baseEvt->TimeStamp(), eventId_, baseEvt->EventId_());
+    RT_LOG(
+        RT_LOG_DEBUG, "curNs=%#" PRIx64 ", baseNs=%#" PRIx64 ", curEventId=%d, baseEventId=%d.", TimeStamp(),
+        baseEvt->TimeStamp(), eventId_, baseEvt->EventId_());
     *timeInterval = static_cast<float32_t>(static_cast<float64_t>(deltaNs) / RT_DEFAULT_TIMESTAMP_FREQ);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidEvent::GetTimeStamp(uint64_t * const recTimestamp)
+rtError_t DavidEvent::GetTimeStamp(uint64_t* const recTimestamp)
 {
     if (!HasRecord()) {
         return RT_ERROR_EVENT_RECORDER_NULL;
@@ -408,18 +427,20 @@ rtError_t DavidEvent::ReAllocId()
         return RT_ERROR_NONE;
     }
 
-    Runtime * const rt = Runtime::Instance();
-    Driver *devDrv = rt->driverFactory_.GetDriver(NPU_DRIVER);
+    Runtime* const rt = Runtime::Instance();
+    Driver* devDrv = rt->driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN(devDrv, RT_ERROR_DRV_NULL);
-    const rtError_t error = devDrv->ReAllocResourceId(device_->Id_(), device_->DevGetTsId(), 0U,
-        static_cast<uint32_t>(eventId_), DRV_NOTIFY_ID);
-    ERROR_RETURN(error, "Failed to realloc event id, event_id=%d, device_id=%u, retCode=%#x.",
-        eventId_, device_->Id_(), static_cast<uint32_t>(error));
+    const rtError_t error = devDrv->ReAllocResourceId(
+        device_->Id_(), device_->DevGetTsId(), 0U, static_cast<uint32_t>(eventId_), DRV_NOTIFY_ID);
+    ERROR_RETURN(
+        error, "Failed to realloc event id, event_id=%d, device_id=%u, retCode=%#x.", eventId_, device_->Id_(),
+        static_cast<uint32_t>(error));
 
-    RT_LOG(RT_LOG_INFO, "Realloc event_id success, device_id=%u, ts_id=%u, event_id=%d",
-        device_->Id_(), device_->DevGetTsId(), eventId_);
+    RT_LOG(
+        RT_LOG_INFO, "Realloc event_id success, device_id=%u, ts_id=%u, event_id=%d", device_->Id_(),
+        device_->DevGetTsId(), eventId_);
     return error;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

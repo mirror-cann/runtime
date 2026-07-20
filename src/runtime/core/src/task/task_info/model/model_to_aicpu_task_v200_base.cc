@@ -17,13 +17,13 @@
 namespace cce {
 namespace runtime {
 
-static void ConstructDavidSqeForModelToAicpuTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+static void ConstructDavidSqeForModelToAicpuTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsAicpuControlSqe *const aicpuCtrlSqe = &(davidSqe->aicpuControlSqe);
-    Stream * const stm = taskInfo->stream;
+    RtDavidStarsAicpuControlSqe* const aicpuCtrlSqe = &(davidSqe->aicpuControlSqe);
+    Stream* const stm = taskInfo->stream;
     aicpuCtrlSqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
     aicpuCtrlSqe->header.blockDim = 1U;
 
@@ -46,7 +46,8 @@ static void ConstructDavidSqeForModelToAicpuTask(TaskInfo * const taskInfo, void
     aicpuCtrlSqe->usrData.u.modelOperate.streamId = static_cast<uint16_t>(stm->Id_());
     aicpuCtrlSqe->usrData.u.modelOperate.cmdType = static_cast<uint8_t>(taskInfo->u.modelToAicpuTask.cmdType);
     aicpuCtrlSqe->usrData.u.modelOperate.modelId = static_cast<uint16_t>(taskInfo->u.modelToAicpuTask.modelId);
-    aicpuCtrlSqe->usrData.u.modelOperate.modelInfoAddrLow = static_cast<uint32_t>(taskInfo->u.modelToAicpuTask.modelArgPtr);
+    aicpuCtrlSqe->usrData.u.modelOperate.modelInfoAddrLow =
+        static_cast<uint32_t>(taskInfo->u.modelToAicpuTask.modelArgPtr);
     aicpuCtrlSqe->usrData.u.modelOperate.modelInfoAddrHigh =
         static_cast<uint16_t>(taskInfo->u.modelToAicpuTask.modelArgPtr >> UINT32_BIT_NUM);
 
@@ -57,8 +58,11 @@ static void ConstructDavidSqeForModelToAicpuTask(TaskInfo * const taskInfo, void
 
     aicpuCtrlSqe->destPid = 0U;
     PrintDavidSqe(davidSqe, "ModelToAicpuTask");
-    RT_LOG(RT_LOG_INFO, "ModelToAicpuTask, topic_type=%u, cmd_type=%u, device_id=%u,"
-        "stream_id=%d, task_id=%hu, task_sn=%u.", static_cast<uint32_t>(aicpuCtrlSqe->topicType), taskInfo->u.modelToAicpuTask.cmdType,
+    RT_LOG(
+        RT_LOG_INFO,
+        "ModelToAicpuTask, topic_type=%u, cmd_type=%u, device_id=%u,"
+        "stream_id=%d, task_id=%hu, task_sn=%u.",
+        static_cast<uint32_t>(aicpuCtrlSqe->topicType), taskInfo->u.modelToAicpuTask.cmdType,
         taskInfo->stream->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn);
 }
 
@@ -75,7 +79,7 @@ static bool ModelToAicpuTaskRegister()
         .setStarsResultFunc = &SetStarsResultForModelToAicpuTask,
     };
 
-    const auto &chips = GetDavidChips();
+    const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_TO_AICPU, funcs);
     }
@@ -86,5 +90,5 @@ static bool ModelToAicpuTaskRegister()
 
 static bool g_modelToAicpuTaskRegister = ModelToAicpuTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

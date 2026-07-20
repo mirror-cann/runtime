@@ -25,21 +25,21 @@
 #define RTS_LITE_PCIE_BAR_COPY_SIZE (1024U)
 #define UB_DIRECT_WQE_MIN_LEN (64)
 #define UB_DIRECT_WQE_MAX_LEN (128)
-#define UB_DOORBELL_NUM_MIN   (1)
-#define UB_DOORBELL_NUM_MAX   (2)
+#define UB_DOORBELL_NUM_MIN (1)
+#define UB_DOORBELL_NUM_MAX (2)
 #define UB_DB_SEND_MAX_NUM (4)
-#define RT_CCU_SQE_ARGS_LEN     (13U)
-#define RT_CCU_SQE_ARGS_LEN_128B     (13U)
-#define RT_CCU_SQE_ARGS_LEN_32B     (1U)
-#define CCU_1ST_SQE_ARGS_LEN    (10)
-#define CCU_2ND_SQE_LEFT_LEN    ((RT_CCU_SQE_ARGS_LEN * 2) - CCU_1ST_SQE_ARGS_LEN)
+#define RT_CCU_SQE_ARGS_LEN (13U)
+#define RT_CCU_SQE_ARGS_LEN_128B (13U)
+#define RT_CCU_SQE_ARGS_LEN_32B (1U)
+#define CCU_1ST_SQE_ARGS_LEN (10)
+#define CCU_2ND_SQE_LEFT_LEN ((RT_CCU_SQE_ARGS_LEN * 2) - CCU_1ST_SQE_ARGS_LEN)
 #define STARS_CCU_EXIST_ERROR (0xFF00U)
 
 namespace cce {
 namespace runtime {
 
 #pragma pack(push)
-#pragma pack (1)
+#pragma pack(1)
 struct rtStarsSqeHeader_t {
     uint8_t type : 6;
     uint8_t l1_lock : 1;
@@ -51,7 +51,7 @@ struct rtStarsSqeHeader_t {
     uint8_t wr_cqe : 1;
     uint8_t reserved : 1;
 
-    uint16_t block_dim;  // block_dim or res
+    uint16_t block_dim; // block_dim or res
 
     uint16_t rt_stream_id;
     uint16_t task_id;
@@ -86,17 +86,17 @@ struct RtFftsSqe {
 };
 
 struct rtStarsCommonSqe_t {
-    rtStarsSqeHeader_t sqeHeader;  // word 0-1
-    uint32_t commandCustom[14];       // word 2-15 is custom define by command.
+    rtStarsSqeHeader_t sqeHeader; // word 0-1
+    uint32_t commandCustom[14];   // word 2-15 is custom define by command.
 };
 #pragma pack(pop)
 
 struct DavinciTaskInfoCommon {
-    void *stubFun;
-    void *soName;
-    void *funcName;
-    void *args;
-    void *argHandle;
+    void* stubFun;
+    void* soName;
+    void* funcName;
+    void* args;
+    void* argHandle;
     uint32_t argsSize;
     uint16_t dim;
     uint8_t kernelFlag;
@@ -104,22 +104,22 @@ struct DavinciTaskInfoCommon {
 
 struct LaunchParam {
     // tiling和host input的offset放在一起
-    rtHostInputInfo_t *placeHoderPtr;
+    rtHostInputInfo_t* placeHoderPtr;
     uint16_t placeHoderNum;
     uint8_t reserved[6U]; // 预留6字节
 };
 
 struct AicTaskInfo {
     DavinciTaskInfoCommon comm;
-    void *descBuf;
-    void *descAlignBuf;
-    void *sqeDevBuf;     // used to update sqe for capture
-    void *oldArgHandle;  // the oldArgHandle in the scene of update sqe for capture
-    rtArgsEx_t *argsInfo;
-    Kernel *kernel;
-    Program *progHandle;
+    void* descBuf;
+    void* descAlignBuf;
+    void* sqeDevBuf;    // used to update sqe for capture
+    void* oldArgHandle; // the oldArgHandle in the scene of update sqe for capture
+    rtArgsEx_t* argsInfo;
+    Kernel* kernel;
+    Program* progHandle;
     uint64_t tilingKey;
-    uint64_t funcAddr;    /* only for 1910 or 1980 virtual (because of sending thread) */
+    uint64_t funcAddr; /* only for 1910 or 1980 virtual (because of sending thread) */
     uint64_t funcAddr1;
     uint8_t rsv[12];
     uint16_t groupDim;
@@ -146,17 +146,17 @@ struct AicTaskInfo {
 
 struct AicpuTaskInfo {
     DavinciTaskInfoCommon comm;
-    void *soName;
-    void *funcName;
-    rtArgsEx_t *argsInfo;
-    rtAicpuArgsEx_t *aicpuArgsInfo;
-    Kernel *kernel;
+    void* soName;
+    void* funcName;
+    rtArgsEx_t* argsInfo;
+    rtAicpuArgsEx_t* aicpuArgsInfo;
+    Kernel* kernel;
     uint32_t aicpuFlags;
     uint32_t headParamOffset;
     uint64_t timeout; // unit: us
     uint8_t aicpuKernelType;
     uint8_t resv;
-    const rtInnerObject *kernelInnerHandle;
+    const rtInnerObject* kernelInnerHandle;
 };
 
 struct rtAicAivFusionInfo_t {
@@ -164,20 +164,20 @@ struct rtAicAivFusionInfo_t {
     uint16_t dimNum;
     uint8_t mixType;
     uint8_t resv;
-    LaunchTaskCfgInfo_t *launchTaskCfg;
-    Program *program;
-    Kernel *kernel;
+    LaunchTaskCfgInfo_t* launchTaskCfg;
+    Program* program;
+    Kernel* kernel;
     uint64_t funcAddr;
     uint64_t funcAddr1;
 };
 
 struct rtAicpuArgsDesc_t {
-    void *soName;
-    void *funcName;
+    void* soName;
+    void* funcName;
 };
 
 struct FusionTaskInfoAicPart {
-    Kernel *kernel;   /* 判断Kernel是否为空来判断tilingkey下沉场景 */
+    Kernel* kernel; /* 判断Kernel是否为空来判断tilingkey下沉场景 */
     uint64_t funcAddr;
     uint64_t funcAddr1;
     uint16_t dim;
@@ -196,10 +196,10 @@ struct FusionTaskInfoAicPart {
 struct FusionTaskInfo {
     FusionTaskInfoAicPart aicPart;
     std::array<rtAicpuArgsDesc_t, FUSION_SUB_TASK_MAX_CPU_NUM> aicpuArgsDesc;
-    void *args;
-    void *fusionKernelInfo;
-    rtFusionArgsEx_t *argsInfo;
-    void *argHandle;
+    void* args;
+    void* fusionKernelInfo;
+    rtFusionArgsEx_t* argsInfo;
+    void* argHandle;
     uint32_t argsSize;
     uint8_t sqeLen;
     uint8_t aicAivType;
@@ -207,18 +207,18 @@ struct FusionTaskInfo {
     uint8_t ccuSqeNum;
     uint8_t ccuArgSize;
     std::array<uint8_t, 2> resv; // 2个字节内存空间
-    void *oldArgHandle;  // the oldArgHandle in the scene of update sqe for capture
+    void* oldArgHandle;          // the oldArgHandle in the scene of update sqe for capture
 };
 
 struct RecycleArgs {
-    void *argHandle;
-    void *mixDescBuf;
+    void* argHandle;
+    void* mixDescBuf;
 };
 
 struct DavinciMultiTaskInfo {
-    void *multipleTaskInfo;
-    std::vector<void *> *cmdListVec; // device memory for cmdlist
-    std::vector<void *> *argHandleVec;
+    void* multipleTaskInfo;
+    std::vector<void*>* cmdListVec; // device memory for cmdlist
+    std::vector<void*>* argHandleVec;
     uint32_t cqeErrorCode;
     uint32_t sqeNum;
     uint8_t multipleTaskCqeNum;
@@ -233,7 +233,7 @@ struct UbDma {
     uint16_t functionId;
     uint16_t jettyId;
     std::array<uint8_t, 64> wqe; // 64个字节内存空间
-    uint8_t *wqePtr;
+    uint8_t* wqePtr;
     int32_t wqeLen;
     uint32_t pi;
     uint64_t fixedSize;
@@ -242,15 +242,15 @@ struct UbDma {
 
 struct MemcpyAsyncTaskInfo {
     struct DMA_ADDR dmaAddr;
-    void *src;
-    void *destPtr;
-    void *srcPtr;
-    void *desPtr;
-    void *originalDes;
-    void *memcpyAddrInfo;
-    void *releaseArgHandle;  // old argHandle will be release after update
-    void *updateArgHandle;
-    std::vector<std::shared_ptr<void>> *guardMemVec;
+    void* src;
+    void* destPtr;
+    void* srcPtr;
+    void* desPtr;
+    void* originalDes;
+    void* memcpyAddrInfo;
+    void* releaseArgHandle; // old argHandle will be release after update
+    void* updateArgHandle;
+    std::vector<std::shared_ptr<void>>* guardMemVec;
     uint64_t size;
     uint32_t copyType;
     uint32_t copyKind;
@@ -274,7 +274,7 @@ struct MemcpyAsyncTaskInfo {
 };
 
 struct MemsetAsyncTaskInfo {
-    void *targetPtr;
+    void* targetPtr;
     uint64_t targetSize;
     uint32_t fillValue;
     uint64_t fillCount;
@@ -285,7 +285,7 @@ struct rtD2DAddrCfgInfo_t {
     uint64_t dstOffset;
 };
 
-union rtDsaCfgParam{
+union rtDsaCfgParam {
     struct {
         uint8_t dropoutRatio : 1; // 0:addr 1:value
         uint8_t uniformMin : 1;
@@ -300,14 +300,14 @@ union rtDsaCfgParam{
 };
 
 struct RtLogicCqReportMsg {
-    volatile uint16_t phase      : 1;
-    volatile uint16_t sop        : 1; /* start of packet, indicates this is the first 32bit return payload */
-    volatile uint16_t mop        : 1; /* middle of packet, indicates the payload is a continuation of previous task
-                                      return payload */
-    volatile uint16_t eop        : 1; /* end of packet, indicates this is the last 32bit return payload. SOP & EOP
-                                      can appear in the same packet, MOP & EOP can also appear on the same packet. */
-    volatile uint16_t logic_cq_id  : 12;
-    volatile uint16_t stream_id ;
+    volatile uint16_t phase : 1;
+    volatile uint16_t sop : 1; /* start of packet, indicates this is the first 32bit return payload */
+    volatile uint16_t mop : 1; /* middle of packet, indicates the payload is a continuation of previous task
+                               return payload */
+    volatile uint16_t eop : 1; /* end of packet, indicates this is the last 32bit return payload. SOP & EOP
+                               can appear in the same packet, MOP & EOP can also appear on the same packet. */
+    volatile uint16_t logic_cq_id : 12;
+    volatile uint16_t stream_id;
     volatile uint16_t task_id;
     volatile uint8_t error_type;
     volatile uint8_t need_sorting; /* drv need sorting cqe data to user thread */
@@ -322,8 +322,8 @@ struct RtLogicCqReportMsg {
 struct rtLogicCqReport_t {
     volatile uint16_t streamId;
     volatile uint16_t taskId;
-    volatile uint32_t errorCode;    // cqe acc_status/sq_sw_status
-    volatile uint8_t errorType;     // bit0 ~ bit5 cqe stars_defined_err_code, bit 6 cqe warning bit
+    volatile uint32_t errorCode; // cqe acc_status/sq_sw_status
+    volatile uint8_t errorType;  // bit0 ~ bit5 cqe stars_defined_err_code, bit 6 cqe warning bit
     volatile uint8_t sqeType;
     volatile uint16_t sqId;
     volatile uint16_t sqHead;
@@ -348,9 +348,9 @@ struct rtLogicCqReport_t {
 
 // =============================
 struct RtRdmaDbCmd {
-    uint32_t reserve0;  // tag 0~23 & cmd (24:27)& rsv(28:31)
+    uint32_t reserve0; // tag 0~23 & cmd (24:27)& rsv(28:31)
     uint16_t sqProducerIdx;
-    uint16_t reserve1;  // uint16_t sl : 3; uint16_t reserve:13;//RQ//SRQ & CQ
+    uint16_t reserve1; // uint16_t sl : 3; uint16_t reserve:13;//RQ//SRQ & CQ
 };
 
 union rtRdmaDbInfo_t {
@@ -366,8 +366,8 @@ struct RtRdmaDbIndexStars {
     uint32_t qpnEn : 1;
 };
 
-union rtRdmaDbIndex_t{
-    uint32_t value; // for ts module
+union rtRdmaDbIndex_t {
+    uint32_t value;                  // for ts module
     RtRdmaDbIndexStars dbIndexStars; // new define for stars
 };
 
@@ -390,7 +390,7 @@ struct rtFftsPlusTaskErrInfo_t {
     uint32_t contextId;
     uint16_t threadId;
     uint32_t errType;
-    uint64_t pcStart; // aic/aiv context
+    uint64_t pcStart;          // aic/aiv context
     rtStarsCommonSqe_t dsaSqe; // dsa context
 };
 
@@ -400,8 +400,8 @@ struct rtBarrierTaskCmoInfo_t {
 };
 
 struct rtBarrierTaskMsg_t {
-    uint8_t cmoIdNum;   //cmoIdNum max is 6
-    rtBarrierTaskCmoInfo_t cmoInfo[6U]; //6U, BarrierTask support max 6 cmoid in barrier
+    uint8_t cmoIdNum;                   // cmoIdNum max is 6
+    rtBarrierTaskCmoInfo_t cmoInfo[6U]; // 6U, BarrierTask support max 6 cmoid in barrier
 };
 
 struct rtPkgDesc {
@@ -412,9 +412,9 @@ struct rtPkgDesc {
 
 // StarsCommonTask
 struct StarsCommonTaskInfo {
-    void *cmdList; // device memory for cmdlist
-    void *srcDevAddr;  // for dsa src addr
-    void *randomDevAddr;
+    void* cmdList;    // device memory for cmdlist
+    void* srcDevAddr; // for dsa src addr
+    void* randomDevAddr;
     union {
         rtStarsCommonSqe_t commonSqe;
         rtDavidStarsCommonSqe_t commonDavidSqe;
@@ -432,22 +432,22 @@ struct CommonCmdTaskInfo {
 
 // =============================
 enum class rtAsyncCpyMethod : uint8_t {
-    RT_ASYNC_CPY        = 0, // rtMemcpyAsync
-    RT_ASYNC_CPY_2D     = 1, // rtMemcpy2dAsync
-    RT_ASYNC_CPY_BATCH  = 2  // rtMemcpyBatchAsync
+    RT_ASYNC_CPY = 0,      // rtMemcpyAsync
+    RT_ASYNC_CPY_2D = 1,   // rtMemcpy2dAsync
+    RT_ASYNC_CPY_BATCH = 2 // rtMemcpyBatchAsync
 };
 
 enum class rtDavidUbDmaSqeMode : uint16_t {
-    RT_DAVID_SQE_DIRECTWQE_MODE        = 0, // direct wqe
-    RT_DAVID_SQE_DOORBELL_MODE         = 1, // doorbell
-    RT_STARS_SQE_MODE_END              = 2
+    RT_DAVID_SQE_DIRECTWQE_MODE = 0, // direct wqe
+    RT_DAVID_SQE_DOORBELL_MODE = 1,  // doorbell
+    RT_STARS_SQE_MODE_END = 2
 };
 
 enum class UbDmaSqeSource : uint16_t {
-    RT_UBDMA_SOURCE_DEFAULT     = 0,
-    RT_UBDMA_SOURCE_API         = 1, // 上层调用rtUbDbSend
+    RT_UBDMA_SOURCE_DEFAULT = 0,
+    RT_UBDMA_SOURCE_API = 1,         // 上层调用rtUbDbSend
     RT_UBDMA_SOURCE_MODEL_ASYNC = 2, // 异步拷贝任务入图
-    RT_UBDMA_SOURCE_MODEL_EXE   = 3  // 异步拷贝任务入图，模型非首次执行之前下发
+    RT_UBDMA_SOURCE_MODEL_EXE = 3    // 异步拷贝任务入图，模型非首次执行之前下发
 };
 
 struct DavidUbDbinfo {
@@ -470,7 +470,7 @@ struct DirectSendTaskInfo {
     uint16_t dieId;
     uint16_t jettyId;
     uint16_t funcId;
-    uint8_t *wqe;
+    uint8_t* wqe;
     uint16_t wqePtrLen;
 };
 
@@ -495,7 +495,7 @@ struct CcuLaunchTaskInfo {
     uint16_t ccu_size;
     uint16_t res;
     uint32_t key;
-    uint32_t *args;
+    uint32_t* args;
 };
 
 struct AicpuMsgVersionTaskInfo {
@@ -517,6 +517,6 @@ struct RandomParamCfgInfo {
 
 // =============================
 
-}
-}
-#endif  // CCE_RUNTIME_TASK_INFO_BASE_HPP
+} // namespace runtime
+} // namespace cce
+#endif // CCE_RUNTIME_TASK_INFO_BASE_HPP

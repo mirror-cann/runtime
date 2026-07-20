@@ -106,21 +106,18 @@ rtError_t Runtime::PrimaryXpuContextRelease(const uint32_t devId)
     return RT_ERROR_NONE;
 }
 
-void Runtime::XpuDeviceRelease(Device *dev) const
-{
-    UNUSED(dev);
-}
+void Runtime::XpuDeviceRelease(Device* dev) const { UNUSED(dev); }
 
-Device *Runtime::XpuDeviceRetain(const uint32_t devId) const
+Device* Runtime::XpuDeviceRetain(const uint32_t devId) const
 {
     UNUSED(devId);
     return nullptr;
 }
 
-Context *Runtime::PrimaryXpuContextRetain(const uint32_t devId)
+Context* Runtime::PrimaryXpuContextRetain(const uint32_t devId)
 {
     UNUSED(devId);
     return nullptr;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

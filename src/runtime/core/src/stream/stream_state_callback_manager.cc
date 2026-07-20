@@ -13,14 +13,14 @@
 
 namespace cce {
 namespace runtime {
-StreamStateCallbackManager &StreamStateCallbackManager::Instance()
+StreamStateCallbackManager& StreamStateCallbackManager::Instance()
 {
     static StreamStateCallbackManager insManager;
     return insManager;
 }
 
-rtError_t StreamStateCallbackManager::RegStreamStateCallback(const char_t *regName,
-    void *callback, void *args, StreamStateCallback type)
+rtError_t StreamStateCallbackManager::RegStreamStateCallback(
+    const char_t* regName, void* callback, void* args, StreamStateCallback type)
 {
     const std::unique_lock<std::mutex> cbMapLock(mapMutex_);
     if (callback == nullptr) {
@@ -33,9 +33,11 @@ rtError_t StreamStateCallbackManager::RegStreamStateCallback(const char_t *regNa
         callbackMap_[regName].callback = RtPtrToPtr<rtStreamStateCallback>(callback);
         callbackMap_[regName].callbackV2 = nullptr;
         callbackMap_[regName].args = nullptr;
-    } else if(type == StreamStateCallback::RTS_STREAM_STATE_CALLBACK) {
-        COND_RETURN_AND_MSG_OUTER(callbackMap_.count(regName) > 0, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
-            "Registering the stream status callback function", regName, "regName", "The callback name has already been registered");
+    } else if (type == StreamStateCallback::RTS_STREAM_STATE_CALLBACK) {
+        COND_RETURN_AND_MSG_OUTER(
+            callbackMap_.count(regName) > 0, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+            "Registering the stream status callback function", regName, "regName",
+            "The callback name has already been registered");
         callbackMap_[regName].callback = nullptr;
         callbackMap_[regName].callbackV2 = RtPtrToPtr<rtsStreamStateCallback>(callback);
         callbackMap_[regName].args = args;
@@ -50,7 +52,7 @@ rtError_t StreamStateCallbackManager::RegStreamStateCallback(const char_t *regNa
     return RT_ERROR_NONE;
 }
 
-void StreamStateCallbackManager::Notify(Stream * const stm, const bool isCreate)
+void StreamStateCallbackManager::Notify(Stream* const stm, const bool isCreate)
 {
     if (stm == nullptr) {
         RT_LOG(RT_LOG_WARNING, "stream is null");
@@ -69,7 +71,7 @@ void StreamStateCallbackManager::Notify(Stream * const stm, const bool isCreate)
         notifyMap.insert(callbackMap_.cbegin(), callbackMap_.cend());
     }
     rtStream_t stream = reinterpret_cast<rtStream_t>(stm->GetInnerHandle());
-    for (const auto &info : notifyMap) {
+    for (const auto& info : notifyMap) {
         RT_LOG(RT_LOG_DEBUG, "notify [%s] stream state start.", info.first.c_str());
         const StreamStateCallback type = info.second.type;
         if (type == StreamStateCallback::RT_STREAM_STATE_CALLBACK) {
@@ -77,8 +79,8 @@ void StreamStateCallbackManager::Notify(Stream * const stm, const bool isCreate)
             callback(stream, isCreate);
         } else if (type == StreamStateCallback::RTS_STREAM_STATE_CALLBACK) {
             auto callback = info.second.callbackV2;
-            void *args = info.second.args;
-            if (isCreate){
+            void* args = info.second.args;
+            if (isCreate) {
                 callback(stream, RT_STREAM_STATE_CREATE_POST, args);
             } else {
                 callback(stream, RT_STREAM_STATE_DESTROY_PRE, args);
@@ -90,5 +92,5 @@ void StreamStateCallbackManager::Notify(Stream * const stm, const bool isCreate)
         RT_LOG(RT_LOG_DEBUG, "notify [%s] stream state end.", info.first.c_str());
     }
 }
-}
-}
+} // namespace runtime
+} // namespace cce

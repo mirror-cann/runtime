@@ -1,4 +1,4 @@
- /**
+/**
  * Copyright (c) 2026 Huawei Technologies Co., Ltd.
  * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
  * CANN Open Software License Agreement Version 2.0 (the "License").
@@ -21,7 +21,7 @@ namespace runtime {
 
 struct SnapShotCallBackInfo {
     rtSnapShotCallBack callback;
-    void *args;
+    void* args;
 };
 
 class SnapshotCallbackManager {
@@ -31,7 +31,7 @@ public:
     SnapshotCallbackManager(const SnapshotCallbackManager&) = delete;
     SnapshotCallbackManager& operator=(const SnapshotCallbackManager&) = delete;
 
-    rtError_t RegisterCallback(rtSnapShotStage stage, rtSnapShotCallBack callback, void *args);
+    rtError_t RegisterCallback(rtSnapShotStage stage, rtSnapShotCallBack callback, void* args);
     rtError_t UnregisterCallback(rtSnapShotStage stage, rtSnapShotCallBack callback);
     rtError_t InvokeCallbacks(rtSnapShotStage stage);
 
@@ -45,7 +45,7 @@ private:
     std::map<rtSnapShotStage, std::list<SnapShotCallBackInfo>> callbackMap_;
 };
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif

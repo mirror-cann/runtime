@@ -23,15 +23,17 @@ std::string BuildFusionKernelTaskName(FusionTaskInfo* fusionTaskInfo);
 void DoCompleteSuccessForFusionKernelTask(TaskInfo* taskInfo, const uint32_t devId);
 void FusionKernelTaskUnInit(TaskInfo* taskInfo);
 void PrintErrorInfoForFusionKernelTask(TaskInfo* taskInfo, const uint32_t devId);
-void SetStarsResultForFusionKernelTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq);
+void SetStarsResultForFusionKernelTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq);
 
-void ConstructAicpuSubSqeBase(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint32_t &sqeIndex,
-    uint32_t aicpuIndex, uint32_t taskIdx, uint64_t sqBaseAddr);
-void ConstructAicpuSubSqe(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint32_t &sqeIndex,
-    uint32_t aicpuIndex, uint32_t taskIdx, uint64_t sqBaseAddr);
-void ConstructDavidSqeForFusionKernelTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo &sqeInfo);
+void ConstructAicpuSubSqeBase(
+    TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe, uint32_t& sqeIndex, uint32_t aicpuIndex, uint32_t taskIdx,
+    uint64_t sqBaseAddr);
+void ConstructAicpuSubSqe(
+    TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe, uint32_t& sqeIndex, uint32_t aicpuIndex, uint32_t taskIdx,
+    uint64_t sqBaseAddr);
+void ConstructDavidSqeForFusionKernelTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_FUSION_TASK_H
+#endif // CCE_RUNTIME_FUSION_TASK_H

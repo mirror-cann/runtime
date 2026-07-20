@@ -18,7 +18,7 @@
 namespace cce {
 namespace runtime {
 
-void EngineLogObserver::TaskSubmited(Device * const dev, TaskInfo * const tsk)
+void EngineLogObserver::TaskSubmited(Device* const dev, TaskInfo* const tsk)
 {
     if (CheckLogLevel(static_cast<int32_t>(RUNTIME), DLOG_DEBUG) == 0) {
         return;
@@ -28,23 +28,24 @@ void EngineLogObserver::TaskSubmited(Device * const dev, TaskInfo * const tsk)
     const tsTaskType_t taskType = tsk->type;
     const uint16_t taskId = tsk->id;
 
-    RT_LOG(RT_LOG_DEBUG, "device_id=%u, ts_id=%u, stream_id=%d, task_id=%hu, task_type=%u (%s).",
-           deviceId, dev->DevGetTsId(), tsk->stream->Id_(), taskId, static_cast<uint32_t>(taskType),
-           tsk->typeName);
+    RT_LOG(
+        RT_LOG_DEBUG, "device_id=%u, ts_id=%u, stream_id=%d, task_id=%hu, task_type=%u (%s).", deviceId,
+        dev->DevGetTsId(), tsk->stream->Id_(), taskId, static_cast<uint32_t>(taskType), tsk->typeName);
 }
 
-void EngineLogObserver::KernelTaskEventLogProc(const uint32_t devId, const TaskInfo * const logProcTask,
-    const char_t * const kernelType) const
+void EngineLogObserver::KernelTaskEventLogProc(
+    const uint32_t devId, const TaskInfo* const logProcTask, const char_t* const kernelType) const
 {
     if (CheckLogLevel(static_cast<int32_t>(RUNTIME), DLOG_DEBUG) == 0) {
         return;
     }
 
-    RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, task_launched_num=%" PRIu64,
-           devId, logProcTask->stream->Id_(), logProcTask->id, kernelType, task_launched_num_);
+    RT_LOG(
+        RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, task_launched_num=%" PRIu64, devId,
+        logProcTask->stream->Id_(), logProcTask->id, kernelType, task_launched_num_);
 }
 
-void EngineLogObserver::TaskLaunched(const uint32_t devId, TaskInfo * const tsk, rtTsCommand_t * const command)
+void EngineLogObserver::TaskLaunched(const uint32_t devId, TaskInfo* const tsk, rtTsCommand_t* const command)
 {
     task_launched_num_++;
     if (CheckLogLevel(static_cast<int32_t>(RUNTIME), DLOG_DEBUG) == 0) {
@@ -74,7 +75,7 @@ void EngineLogObserver::TaskLaunched(const uint32_t devId, TaskInfo * const tsk,
     }
 }
 
-void EngineLogObserver::TaskLaunchedEx(const uint32_t devId, TaskInfo * const tsk, rtTsCommand_t * const command) const
+void EngineLogObserver::TaskLaunchedEx(const uint32_t devId, TaskInfo* const tsk, rtTsCommand_t* const command) const
 {
     if (CheckLogLevel(static_cast<int32_t>(RUNTIME), DLOG_DEBUG) == 0) {
         return;
@@ -86,18 +87,22 @@ void EngineLogObserver::TaskLaunchedEx(const uint32_t devId, TaskInfo * const ts
 
     switch (tsk->type) {
         case TS_TASK_TYPE_EVENT_RECORD: {
-            tsCmdEventId = isStarsCqe ? GetSqeEventId(command->cmdBuf.u.starsSqe):
-                command->cmdBuf.cmd.u.eventRecordTask.eventID;
-            RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, event_id=%hu,"
+            tsCmdEventId =
+                isStarsCqe ? GetSqeEventId(command->cmdBuf.u.starsSqe) : command->cmdBuf.cmd.u.eventRecordTask.eventID;
+            RT_LOG(
+                RT_LOG_DEBUG,
+                "device_id=%u, stream_id=%d, task_id=%hu, event_id=%hu,"
                 "task_type=EventRecord, task_launched_num=%" PRIu64,
                 devId, tsk->stream->Id_(), tsk->id, tsCmdEventId, task_launched_num_);
             break;
         }
 
         case TS_TASK_TYPE_STREAM_WAIT_EVENT: {
-            tsCmdEventId = isStarsCqe ? GetSqeEventId(command->cmdBuf.u.starsSqe):
-                command->cmdBuf.cmd.u.streamWaitEventTask.eventID;
-            RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, event_id=%hu,"
+            tsCmdEventId = isStarsCqe ? GetSqeEventId(command->cmdBuf.u.starsSqe) :
+                                        command->cmdBuf.cmd.u.streamWaitEventTask.eventID;
+            RT_LOG(
+                RT_LOG_DEBUG,
+                "device_id=%u, stream_id=%d, task_id=%hu, event_id=%hu,"
                 "task_type=StreamWaitEvent, task_launched_num=%" PRIu64,
                 devId, tsk->stream->Id_(), tsk->id, tsCmdEventId, task_launched_num_);
             break;
@@ -106,9 +111,11 @@ void EngineLogObserver::TaskLaunchedEx(const uint32_t devId, TaskInfo * const ts
         case TS_TASK_TYPE_NOTIFY_RECORD: {
             uint16_t deviceId = 0U;
             notifyId = isStarsCqe ? command->cmdBuf.u.starsSqe[0].notifySqe.notify_id :
-                command->cmdBuf.cmd.u.notifyrecordTask.notifyId;
+                                    command->cmdBuf.cmd.u.notifyrecordTask.notifyId;
             deviceId = isStarsCqe ? 0U : command->cmdBuf.cmd.u.notifyrecordTask.deviceId;
-            RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, notify_id=%hu,"
+            RT_LOG(
+                RT_LOG_DEBUG,
+                "device_id=%u, stream_id=%d, task_id=%hu, notify_id=%hu,"
                 "notify_dev_id=%hu, task_type=NotifyRecord, task_launched_num=%" PRIu64,
                 devId, tsk->stream->Id_(), tsk->id, notifyId, deviceId, task_launched_num_);
             break;
@@ -116,45 +123,51 @@ void EngineLogObserver::TaskLaunchedEx(const uint32_t devId, TaskInfo * const ts
 
         case TS_TASK_TYPE_NOTIFY_WAIT: {
             notifyId = isStarsCqe ? command->cmdBuf.u.starsSqe[0].notifySqe.notify_id :
-                command->cmdBuf.cmd.u.notifywaitTask.notifyid;
-            RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, notify_id=%hu,"
+                                    command->cmdBuf.cmd.u.notifywaitTask.notifyid;
+            RT_LOG(
+                RT_LOG_DEBUG,
+                "device_id=%u, stream_id=%d, task_id=%hu, notify_id=%hu,"
                 "task_type=NotifyWait, task_launched_num=%" PRIu64,
                 devId, tsk->stream->Id_(), tsk->id, notifyId, task_launched_num_);
             break;
         }
 
         case TS_TASK_TYPE_MEMCPY: {
-            RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, task_type=Memcpy,"
+            RT_LOG(
+                RT_LOG_DEBUG,
+                "device_id=%u, stream_id=%d, task_id=%hu, task_type=Memcpy,"
                 "task_launched_num=%" PRIu64,
                 devId, tsk->stream->Id_(), tsk->id, task_launched_num_);
             break;
         }
         case TS_TASK_TYPE_REDUCE_ASYNC_V2: {
-            RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, task_type=ReduceAsyncV2,"
-                "task_launched_num=%" PRIu64, devId, tsk->stream->Id_(), tsk->id, task_launched_num_);
+            RT_LOG(
+                RT_LOG_DEBUG,
+                "device_id=%u, stream_id=%d, task_id=%hu, task_type=ReduceAsyncV2,"
+                "task_launched_num=%" PRIu64,
+                devId, tsk->stream->Id_(), tsk->id, task_launched_num_);
             break;
         }
 
         default: {
-            RT_LOG(RT_LOG_DEBUG,
-                "device_id=%u, stream_id=%d, task_id=%hu, task_type=%d (%s), task_launched_num=%" PRIu64,
-                devId, tsk->stream->Id_(), tsk->id, static_cast<int32_t>(tsk->type), tsk->typeName,
-                task_launched_num_);
+            RT_LOG(
+                RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%d (%s), task_launched_num=%" PRIu64,
+                devId, tsk->stream->Id_(), tsk->id, static_cast<int32_t>(tsk->type), tsk->typeName, task_launched_num_);
             break;
         }
     }
 }
 
-void EngineLogObserver::TaskFinished(const uint32_t devId, const TaskInfo * const tsk)
+void EngineLogObserver::TaskFinished(const uint32_t devId, const TaskInfo* const tsk)
 {
     task_finished_num_++;
     if (CheckLogLevel(static_cast<int32_t>(RUNTIME), DLOG_INFO) == 0) {
         return;
     }
 
-    RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%d (%s), task_finish_num=%" PRIu64,
-        devId, tsk->stream->Id_(), tsk->id, static_cast<int32_t>(tsk->type), tsk->typeName,
-        task_finished_num_);
+    RT_LOG(
+        RT_LOG_DEBUG, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%d (%s), task_finish_num=%" PRIu64, devId,
+        tsk->stream->Id_(), tsk->id, static_cast<int32_t>(tsk->type), tsk->typeName, task_finished_num_);
 }
-}
-}
+} // namespace runtime
+} // namespace cce

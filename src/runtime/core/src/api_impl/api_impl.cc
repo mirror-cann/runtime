@@ -91,20 +91,20 @@
 #include "snapshot_process_helper.hpp"
 
 #define RT_DRV_FAULT_CNT 25U
-#define NULL_STREAM_PTR_RETURN_MSG(STREAM)     NULL_PTR_RETURN_MSG((STREAM), RT_ERROR_STREAM_NULL)
+#define NULL_STREAM_PTR_RETURN_MSG(STREAM) NULL_PTR_RETURN_MSG((STREAM), RT_ERROR_STREAM_NULL)
 
 namespace {
 using DevInfo = struct {
     DEV_MODULE_TYPE moduleType;
     DEV_INFO_TYPE infoType;
 };
-}
+} // namespace
 
 namespace {
 constexpr uint32_t MEM_POLICY_MASK = 0xFFU;
 constexpr uint32_t MEM_TYPE_MASK = 0xFF00U;
 
-void ResetKernelArgsParamHandles(RtArgsHandle *argsHandle, uint32_t paramCount)
+void ResetKernelArgsParamHandles(RtArgsHandle* argsHandle, uint32_t paramCount)
 {
     if (argsHandle == nullptr) {
         return;
@@ -114,7 +114,7 @@ void ResetKernelArgsParamHandles(RtArgsHandle *argsHandle, uint32_t paramCount)
     }
 }
 
-void ReinitKernelArgsEmbeddedHandle(RtArgsHandle *argsHandle, uint32_t paramCount)
+void ReinitKernelArgsEmbeddedHandle(RtArgsHandle* argsHandle, uint32_t paramCount)
 {
     if (argsHandle == nullptr) {
         return;
@@ -124,7 +124,7 @@ void ReinitKernelArgsEmbeddedHandle(RtArgsHandle *argsHandle, uint32_t paramCoun
     InitEmbeddedInnerHandle<RtArgsHandle>(argsHandle);
 }
 
-}
+} // namespace
 
 namespace cce {
 namespace runtime {
@@ -281,7 +281,7 @@ TIMESTAMP_EXTERN(TIMESTAMPs_DUMP);
 rtError_t ApiImpl::CheckCurCtxValid(const int32_t devId)
 {
     if (Runtime::Instance()->GetSetDefaultDevIdFlag()) {
-        Context * const curCtx = CurrentContext(true, devId);
+        Context* const curCtx = CurrentContext(true, devId);
         // 异构场景不校验context
         if (RtIsHeterogenous()) {
             RT_LOG(RT_LOG_DEBUG, "Heterogenous do not check ctx.");
@@ -292,12 +292,12 @@ rtError_t ApiImpl::CheckCurCtxValid(const int32_t devId)
     return RT_ERROR_NONE;
 }
 
-Context *ApiImpl::CurrentContext(const bool isNeedSetDevice, int32_t deviceId)
+Context* ApiImpl::CurrentContext(const bool isNeedSetDevice, int32_t deviceId)
 {
-    static bool setGroupFlag = IS_SUPPORT_CHIP_FEATURE(Runtime::Instance()->GetChipType(),
-        RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP_DOT_RECORD_GROUPINFO);
+    static bool setGroupFlag = IS_SUPPORT_CHIP_FEATURE(
+        Runtime::Instance()->GetChipType(), RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP_DOT_RECORD_GROUPINFO);
 
-    Context * const curCtx = InnerThreadLocalContainer::GetCurCtx();
+    Context* const curCtx = InnerThreadLocalContainer::GetCurCtx();
     if (curCtx != nullptr) {
         if (setGroupFlag) {
             procFlag.Set(true);
@@ -305,7 +305,7 @@ Context *ApiImpl::CurrentContext(const bool isNeedSetDevice, int32_t deviceId)
         return curCtx;
     }
 
-    RefObject<Context *> * const curRef = InnerThreadLocalContainer::GetCurRef();
+    RefObject<Context*>* const curRef = InnerThreadLocalContainer::GetCurRef();
     if (curRef != nullptr) {
         if (setGroupFlag) {
             procFlag.Set(true);
@@ -319,7 +319,7 @@ Context *ApiImpl::CurrentContext(const bool isNeedSetDevice, int32_t deviceId)
         return nullptr;
     }
 
-    Runtime *rtInstance = Runtime::Instance();
+    Runtime* rtInstance = Runtime::Instance();
     const int32_t defaultDeviceId = rtInstance->GetDefaultDeviceId();
     const bool hasSetDefaultDevId = rtInstance->GetSetDefaultDevIdFlag();
     if (isNeedSetDevice && hasSetDefaultDevId) {
@@ -342,9 +342,9 @@ Context *ApiImpl::CurrentContext(const bool isNeedSetDevice, int32_t deviceId)
     return nullptr;
 }
 
-rtError_t ApiImpl::DevBinaryRegister(const rtDevBinary_t * const bin, Program ** const prog)
+rtError_t ApiImpl::DevBinaryRegister(const rtDevBinary_t* const bin, Program** const prog)
 {
-    Program *programPtr = nullptr;
+    Program* programPtr = nullptr;
 
     const rtError_t error = Runtime::Instance()->ProgramRegister(bin, &programPtr);
     if (error != RT_ERROR_NONE) {
@@ -355,13 +355,13 @@ rtError_t ApiImpl::DevBinaryRegister(const rtDevBinary_t * const bin, Program **
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetNotifyAddress(Notify *const notify, uint64_t * const notifyAddress)
+rtError_t ApiImpl::GetNotifyAddress(Notify* const notify, uint64_t* const notifyAddress)
 {
     uint64_t addr;
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *const curStm = curCtx->DefaultStream_();
+    Stream* const curStm = curCtx->DefaultStream_();
     NULL_STREAM_PTR_RETURN_MSG(curStm);
     const rtError_t error = curCtx->GetNotifyAddress(notify, addr, curStm);
     if (error != RT_ERROR_NONE) {
@@ -373,9 +373,9 @@ rtError_t ApiImpl::GetNotifyAddress(Notify *const notify, uint64_t * const notif
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::RegisterAllKernel(const rtDevBinary_t * const bin, Program ** const prog)
+rtError_t ApiImpl::RegisterAllKernel(const rtDevBinary_t* const bin, Program** const prog)
 {
-    Program *programPtr = nullptr;
+    Program* programPtr = nullptr;
     const rtError_t error = Runtime::Instance()->ProgramRegister(bin, &programPtr);
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_WARNING, "register program failed, reCode=%#x", error);
@@ -386,14 +386,14 @@ rtError_t ApiImpl::RegisterAllKernel(const rtDevBinary_t * const bin, Program **
     return Runtime::Instance()->AllKernelRegister(programPtr);
 }
 
-rtError_t ApiImpl::BinaryRegisterToFastMemory(Program * const prog)
+rtError_t ApiImpl::BinaryRegisterToFastMemory(Program* const prog)
 {
     RT_LOG(RT_LOG_INFO, "Binary register to fast memory.");
     prog->SetProgMemType(Program::PROGRAM_MEM_FAST);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::DevBinaryUnRegister(Program * const prog)
+rtError_t ApiImpl::DevBinaryUnRegister(Program* const prog)
 {
     RT_LOG(RT_LOG_DEBUG, "unregister binary.");
     prog->Dereference();
@@ -402,13 +402,14 @@ rtError_t ApiImpl::DevBinaryUnRegister(Program * const prog)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::MetadataRegister(Program * const prog, const char_t * const metadata)
+rtError_t ApiImpl::MetadataRegister(Program* const prog, const char_t* const metadata)
 {
     RT_LOG(RT_LOG_DEBUG, "register binary metadata.");
     const std::string strMetadata(metadata);
     const auto pos = strMetadata.find(',');
     if (pos == std::string::npos) {
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1011, "Registering the binary metadata information of the operator", metadata, "metadata",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1011, "Registering the binary metadata information of the operator", metadata, "metadata",
             "No ',' is found in the metadata");
         RT_LOG(RT_LOG_ERROR, "Register binary metadata failed.");
         return RT_ERROR_METADATA;
@@ -420,33 +421,37 @@ rtError_t ApiImpl::MetadataRegister(Program * const prog, const char_t * const m
     }
 }
 
-rtError_t ApiImpl::DependencyRegister(Program * const mProgram, Program * const sProgram)
+rtError_t ApiImpl::DependencyRegister(Program* const mProgram, Program* const sProgram)
 {
     RT_LOG(RT_LOG_DEBUG, "register binary dependency.");
     mProgram->DependencyRegister(sProgram);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::FunctionRegister(Program * const prog, const void * const stubFunc, const char_t * const stubName,
-    const void * const kernelInfoExt, const uint32_t funcMode)
+rtError_t ApiImpl::FunctionRegister(
+    Program* const prog, const void* const stubFunc, const char_t* const stubName, const void* const kernelInfoExt,
+    const uint32_t funcMode)
 {
-    RT_LOG(RT_LOG_DEBUG, "register function, type=%d, stubFunc=%p, funcMode=%u, funcName=%s, kernelInfoExt=%s.",
-        prog->GetDefaultKernelAttrType(), stubFunc, funcMode, (stubName != nullptr) ? stubName : "(none)", kernelInfoExt);
+    RT_LOG(
+        RT_LOG_DEBUG, "register function, type=%d, stubFunc=%p, funcMode=%u, funcName=%s, kernelInfoExt=%s.",
+        prog->GetDefaultKernelAttrType(), stubFunc, funcMode, (stubName != nullptr) ? stubName : "(none)",
+        kernelInfoExt);
     return Runtime::Instance()->KernelRegister(prog, stubFunc, stubName, kernelInfoExt, funcMode);
 }
 
-rtError_t ApiImpl::RegisterVariable(void * const binHandle, const void * const hostVar,
-    const char_t * const deviceVarName, const size_t size, const uint32_t flags)
+rtError_t ApiImpl::RegisterVariable(
+    void* const binHandle, const void* const hostVar, const char_t* const deviceVarName, const size_t size,
+    const uint32_t flags)
 {
-    RT_LOG(RT_LOG_INFO, "register variable, hostVar=%p, deviceVarName=%s, size=%zu, flags=%u.",
-        hostVar, deviceVarName, size, flags);
+    RT_LOG(
+        RT_LOG_INFO, "register variable, hostVar=%p, deviceVarName=%s, size=%zu, flags=%u.", hostVar, deviceVarName,
+        size, flags);
     return Runtime::Instance()->GetSymbolTable().Register(binHandle, hostVar, deviceVarName, size, flags);
 }
 
-rtError_t ApiImpl::SymbolLookup(const void * const hostVar, void ** const devPtr,
-    size_t * const size)
+rtError_t ApiImpl::SymbolLookup(const void* const hostVar, void** const devPtr, size_t* const size)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     NULL_PTR_RETURN_MSG(curCtx->Device_(), RT_ERROR_DEVICE_NULL);
     const uint32_t deviceId = static_cast<uint32_t>(curCtx->Device_()->Id_());
@@ -458,87 +463,98 @@ rtError_t ApiImpl::SymbolLookup(const void * const hostVar, void ** const devPtr
     return error;
 }
 
-rtError_t ApiImpl::GetFunctionByName(const char_t * const stubName, void ** const stubFunc)
+rtError_t ApiImpl::GetFunctionByName(const char_t* const stubName, void** const stubFunc)
 {
     RT_LOG(RT_LOG_DEBUG, "name=%s.", (stubName != nullptr) ? stubName : "(none)");
-    const void * const stubLook = Runtime::Instance()->StubFuncLookup(stubName);
-    *stubFunc = const_cast<void *>(stubLook);
+    const void* const stubLook = Runtime::Instance()->StubFuncLookup(stubName);
+    *stubFunc = const_cast<void*>(stubLook);
     NULL_PTR_RETURN_NOLOG((*stubFunc), RT_ERROR_KERNEL_LOOKUP);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetAddrByFun(const void * const stubFunc, void ** const addr)
+rtError_t ApiImpl::GetAddrByFun(const void* const stubFunc, void** const addr)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     return Runtime::Instance()->LookupAddrByFun(stubFunc, curCtx, addr);
 }
 
-rtError_t ApiImpl::GetAddrAndPrefCntWithHandle(void * const hdl, const void * const kernelInfoExt,
-                                               void ** const addr, uint32_t * const prefetchCnt)
+rtError_t ApiImpl::GetAddrAndPrefCntWithHandle(
+    void* const hdl, const void* const kernelInfoExt, void** const addr, uint32_t* const prefetchCnt)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    return Runtime::Instance()->LookupAddrAndPrefCntWithHandle(hdl, kernelInfoExt, curCtx,
-        addr, prefetchCnt);
+    return Runtime::Instance()->LookupAddrAndPrefCntWithHandle(hdl, kernelInfoExt, curCtx, addr, prefetchCnt);
 }
 
-rtError_t ApiImpl::KernelGetAddrAndPrefCntV2(void * const hdl, const uint64_t tilingKey,
-                                             const void * const stubFunc, const uint32_t flag,
-                                             rtKernelDetailInfo_t * const kernelInfo)
+rtError_t ApiImpl::KernelGetAddrAndPrefCntV2(
+    void* const hdl, const uint64_t tilingKey, const void* const stubFunc, const uint32_t flag,
+    rtKernelDetailInfo_t* const kernelInfo)
 {
     if (tilingKey == DEFAULT_TILING_KEY) {
         RT_LOG(RT_LOG_DEBUG, "Default tilingKey[%" PRIu64 "].", tilingKey);
         return RT_ERROR_NONE;
     }
-    const Kernel *kernel = nullptr;
-    Context * const curCtx = CurrentContext();
+    const Kernel* kernel = nullptr;
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (flag == RT_STATIC_SHAPE_KERNEL) {
         kernel = Runtime::Instance()->KernelLookup(stubFunc);
-        COND_RETURN_AND_MSG_OUTER(kernel == nullptr, RT_ERROR_KERNEL_NULL, ErrorCode::EE1011, "Obtaining the on-device execution address and instruction prefetch count of the kernel function",
-            static_cast<const char_t *>(stubFunc), "stubFunc",
-            "The corresponding kernel cannot be found through stubFunc. The specified function address is invalid or the kernel status is abnormal");
+        COND_RETURN_AND_MSG_OUTER(
+            kernel == nullptr, RT_ERROR_KERNEL_NULL, ErrorCode::EE1011,
+            "Obtaining the on-device execution address and instruction prefetch count of the kernel function",
+            static_cast<const char_t*>(stubFunc), "stubFunc",
+            "The corresponding kernel cannot be found through stubFunc. The specified function address is invalid or "
+            "the kernel status is abnormal");
     } else {
-        Program * const prog = (static_cast<Program *>(hdl));
+        Program* const prog = (static_cast<Program*>(hdl));
         kernel = prog->AllKernelLookup(tilingKey);
-        COND_RETURN_AND_MSG_OUTER(kernel == nullptr, RT_ERROR_KERNEL_NULL, ErrorCode::EE1011, "Obtaining the on-device execution address and instruction prefetch count of the kernel function",
+        COND_RETURN_AND_MSG_OUTER(
+            kernel == nullptr, RT_ERROR_KERNEL_NULL, ErrorCode::EE1011,
+            "Obtaining the on-device execution address and instruction prefetch count of the kernel function",
             tilingKey, "tilingKey",
-            "The corresponding kernel cannot be found through tilingKey. The tilingKey is invalid or the kernel status is abnormal");
+            "The corresponding kernel cannot be found through tilingKey. The tilingKey is invalid or the kernel status "
+            "is abnormal");
     }
     return Runtime::Instance()->LookupAddrAndPrefCnt(kernel, curCtx, kernelInfo);
 }
 
-rtError_t ApiImpl::KernelGetAddrAndPrefCnt(void * const hdl, const uint64_t tilingKey,
-                                           const void * const stubFunc, const uint32_t flag,
-                                           void ** const addr, uint32_t * const prefetchCnt)
+rtError_t ApiImpl::KernelGetAddrAndPrefCnt(
+    void* const hdl, const uint64_t tilingKey, const void* const stubFunc, const uint32_t flag, void** const addr,
+    uint32_t* const prefetchCnt)
 {
-    const Kernel *kernel = nullptr;
-    Context * const curCtx = CurrentContext();
+    const Kernel* kernel = nullptr;
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (flag == RT_STATIC_SHAPE_KERNEL) {
         kernel = Runtime::Instance()->KernelLookup(stubFunc);
-        COND_RETURN_AND_MSG_OUTER(kernel == nullptr, RT_ERROR_KERNEL_NULL, ErrorCode::EE1011, "Obtaining the on-device execution address and instruction prefetch count of the kernel function",
-            static_cast<const char_t *>(stubFunc), "stubFunc",
-            "The corresponding kernel cannot be found through stubFunc. The specified function address is invalid or the kernel status is abnormal");
+        COND_RETURN_AND_MSG_OUTER(
+            kernel == nullptr, RT_ERROR_KERNEL_NULL, ErrorCode::EE1011,
+            "Obtaining the on-device execution address and instruction prefetch count of the kernel function",
+            static_cast<const char_t*>(stubFunc), "stubFunc",
+            "The corresponding kernel cannot be found through stubFunc. The specified function address is invalid or "
+            "the kernel status is abnormal");
     } else {
-        Program * const prog = (static_cast<Program *>(hdl));
+        Program* const prog = (static_cast<Program*>(hdl));
         kernel = prog->AllKernelLookup(tilingKey);
-        COND_RETURN_AND_MSG_OUTER(kernel == nullptr, RT_ERROR_KERNEL_NULL, ErrorCode::EE1011, "Obtaining the on-device execution address and instruction prefetch count of the kernel function",
+        COND_RETURN_AND_MSG_OUTER(
+            kernel == nullptr, RT_ERROR_KERNEL_NULL, ErrorCode::EE1011,
+            "Obtaining the on-device execution address and instruction prefetch count of the kernel function",
             tilingKey, "tilingKey",
-            "The corresponding kernel cannot be found through tilingKey. The tilingKey is invalid or the kernel status is abnormal");
+            "The corresponding kernel cannot be found through tilingKey. The tilingKey is invalid or the kernel status "
+            "is abnormal");
     }
     return Runtime::Instance()->LookupAddrAndPrefCnt(kernel, curCtx, addr, prefetchCnt);
 }
 
-rtError_t ApiImpl::QueryFunctionRegistered(const char_t * const stubName)
+rtError_t ApiImpl::QueryFunctionRegistered(const char_t* const stubName)
 {
     RT_LOG(RT_LOG_DEBUG, "name=%s", (stubName != nullptr) ? stubName : "(none)");
-    const void * const stubFunc = Runtime::Instance()->StubFuncLookup(stubName);
+    const void* const stubFunc = Runtime::Instance()->StubFuncLookup(stubName);
     NULL_PTR_RETURN_NOLOG(stubFunc, RT_ERROR_KERNEL_LOOKUP);
-    const Kernel * const stubKernel = Runtime::Instance()->KernelLookup(stubFunc);
+    const Kernel* const stubKernel = Runtime::Instance()->KernelLookup(stubFunc);
     NULL_PTR_RETURN_NOLOG(stubKernel, RT_ERROR_KERNEL_LOOKUP);
 
     const bool unRegistering = stubKernel->Program_()->GetUnRegisteringFlag();
@@ -549,14 +565,14 @@ rtError_t ApiImpl::QueryFunctionRegistered(const char_t * const stubName)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::KernelLaunch(const void * const stubFunc, const uint32_t coreDim,
-    const rtArgsEx_t * const argsInfo, Stream * const stm,
-    const rtTaskCfgInfo_t * const cfgInfo, const bool isLaunchVec)
+rtError_t ApiImpl::KernelLaunch(
+    const void* const stubFunc, const uint32_t coreDim, const rtArgsEx_t* const argsInfo, Stream* const stm,
+    const rtTaskCfgInfo_t* const cfgInfo, const bool isLaunchVec)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -564,7 +580,8 @@ rtError_t ApiImpl::KernelLaunch(const void * const stubFunc, const uint32_t core
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
     if ((cfgInfo != nullptr) && ((cfgInfo->dumpflag & RT_KERNEL_DUMPFLAG) != 0U)) {
-        ERROR_RETURN_MSG_INNER(Runtime::Instance()->StartAicpuSd(curCtx->Device_()),
+        ERROR_RETURN_MSG_INNER(
+            Runtime::Instance()->StartAicpuSd(curCtx->Device_()),
             "kernel launch with kernel dump flag failed, check and start tsd open aicpu sd error.");
     }
 
@@ -573,14 +590,14 @@ rtError_t ApiImpl::KernelLaunch(const void * const stubFunc, const uint32_t core
     return StreamLaunchKernelV1(stubFunc, coreDim, argsInfo, curStm, &taskCfg, isLaunchVec);
 }
 
-rtError_t ApiImpl::KernelLaunchWithHandle(void * const hdl, const uint64_t tilingKey, const uint32_t coreDim,
-    const rtArgsEx_t * const argsInfo, Stream * const stm,
-    const rtTaskCfgInfo_t * const cfgInfo, const bool isLaunchVec)
+rtError_t ApiImpl::KernelLaunchWithHandle(
+    void* const hdl, const uint64_t tilingKey, const uint32_t coreDim, const rtArgsEx_t* const argsInfo,
+    Stream* const stm, const rtTaskCfgInfo_t* const cfgInfo, const bool isLaunchVec)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -592,102 +609,112 @@ rtError_t ApiImpl::KernelLaunchWithHandle(void * const hdl, const uint64_t tilin
     return StreamLaunchKernelWithHandle(hdl, tilingKey, coreDim, argsInfo, curStm, &taskCfg, isLaunchVec);
 }
 
-rtError_t ApiImpl::KernelLaunchEx(const char_t * const opName, const void * const args, const uint32_t argsSize,
-    const uint32_t flags, Stream * const stm)
+rtError_t ApiImpl::KernelLaunchEx(
+    const char_t* const opName, const void* const args, const uint32_t argsSize, const uint32_t flags,
+    Stream* const stm)
 {
-    RT_LOG(RT_LOG_DEBUG, "ex launch kernel, opName=%s, argsSize=%u, flags=%u.",
-           opName, argsSize, flags);
+    RT_LOG(RT_LOG_DEBUG, "ex launch kernel, opName=%s, argsSize=%u, flags=%u.", opName, argsSize, flags);
     UNUSED(opName);
     const rtError_t error = AiCpuTaskSupportCheck();
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     COND_RETURN_ERROR(rtInstance == nullptr, RT_ERROR_INSTANCE_NULL, "Runtime instance is null.");
-    ERROR_RETURN_MSG_INNER(rtInstance->StartAicpuSd(curCtx->Device_()),
+    ERROR_RETURN_MSG_INNER(
+        rtInstance->StartAicpuSd(curCtx->Device_()),
         "Cpu kernel launch ex with args failed, check and start tsd open aicpu sd error.");
 
     return StreamLaunchKernelEx(args, argsSize, flags, curStm);
 }
 
-rtError_t ApiImpl::CpuKernelLaunch(const rtKernelLaunchNames_t * const launchNames, const uint32_t coreDim,
-    const rtArgsEx_t * const argsInfo, Stream * const stm, const uint32_t flag)
+rtError_t ApiImpl::CpuKernelLaunch(
+    const rtKernelLaunchNames_t* const launchNames, const uint32_t coreDim, const rtArgsEx_t* const argsInfo,
+    Stream* const stm, const uint32_t flag)
 {
-    RT_LOG(RT_LOG_DEBUG,
-           "launch cpu kernel, soName=%s, kernel_name=%s, opName=%s, coreDim=%u, argsSize=%u, hostInputLen=%hu,"
-           " flag=%u.", launchNames->soName, launchNames->kernelName, launchNames->opName, coreDim,
-           argsInfo->argsSize, argsInfo->hostInputInfoNum, flag);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "launch cpu kernel, soName=%s, kernel_name=%s, opName=%s, coreDim=%u, argsSize=%u, hostInputLen=%hu,"
+        " flag=%u.",
+        launchNames->soName, launchNames->kernelName, launchNames->opName, coreDim, argsInfo->argsSize,
+        argsInfo->hostInputInfoNum, flag);
     const rtError_t error = AiCpuTaskSupportCheck();
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     COND_RETURN_ERROR(rtInstance == nullptr, RT_ERROR_INSTANCE_NULL, "Runtime instance is null.");
-    ERROR_RETURN_MSG_INNER(rtInstance->StartAicpuSd(curCtx->Device_()),
+    ERROR_RETURN_MSG_INNER(
+        rtInstance->StartAicpuSd(curCtx->Device_()),
         "Cpu kernel launch failed, check and start tsd open aicpu sd error.");
 
     return StreamLaunchCpuKernel(launchNames, coreDim, argsInfo, curStm, flag);
 }
 
-rtError_t ApiImpl::CpuKernelLaunchEx(const Kernel * const kernel, const uint32_t coreDim,
-    const rtCpuKernelArgs_t * const argsInfo, const TaskCfg &taskCfg, Stream * const stm, const uint32_t flag)
+rtError_t ApiImpl::CpuKernelLaunchEx(
+    const Kernel* const kernel, const uint32_t coreDim, const rtCpuKernelArgs_t* const argsInfo, const TaskCfg& taskCfg,
+    Stream* const stm, const uint32_t flag)
 {
     const rtError_t error = AiCpuTaskSupportCheck();
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Stream *curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(curStm);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
     if (kernel->GetAicpuKernelType_() == static_cast<uint32_t>(KERNEL_TYPE_AICPU_KFC)) {
-        Device * const dev = curCtx->Device_();
+        Device* const dev = curCtx->Device_();
         COND_RETURN_ERROR(dev == nullptr, RT_ERROR_INVALID_VALUE, "device is NULL.");
         if (!CheckSupportMC2Feature(dev)) {
-            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support aicpu kfc kernel launch.",
+            RT_LOG(
+                RT_LOG_WARNING, "Current ts version[%u] does not support aicpu kfc kernel launch.",
                 dev->GetTschVersion());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
     }
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     COND_RETURN_ERROR(rtInstance == nullptr, RT_ERROR_INSTANCE_NULL, "Runtime instance is null.");
-    ERROR_RETURN_MSG_INNER(rtInstance->StartAicpuSd(curCtx->Device_()),
+    ERROR_RETURN_MSG_INNER(
+        rtInstance->StartAicpuSd(curCtx->Device_()),
         "Cpu kernel launch ex with args failed, check and start tsd open aicpu sd error.");
 
-    return StreamLaunchCpuKernelExWithArgs(coreDim, &argsInfo->baseArgs, &taskCfg, curStm, flag,
-        kernel->GetAicpuKernelType_(), kernel, argsInfo->cpuParamHeadOffset);
+    return StreamLaunchCpuKernelExWithArgs(
+        coreDim, &argsInfo->baseArgs, &taskCfg, curStm, flag, kernel->GetAicpuKernelType_(), kernel,
+        argsInfo->cpuParamHeadOffset);
 }
 
-rtError_t ApiImpl::CpuKernelLaunchExWithArgs(const char_t * const opName, const uint32_t coreDim,
-    const rtAicpuArgsEx_t * const argsInfo, Stream * const stm, const uint32_t flag,
-    const uint32_t kernelType)
+rtError_t ApiImpl::CpuKernelLaunchExWithArgs(
+    const char_t* const opName, const uint32_t coreDim, const rtAicpuArgsEx_t* const argsInfo, Stream* const stm,
+    const uint32_t flag, const uint32_t kernelType)
 {
-    RT_LOG(RT_LOG_DEBUG,
-           "launch cpu kernel ex, opName=%s, coreDim=%u, argsSize=%u, hostInputLen=%hu,"
-           " flag=%u, kernelType=%u.", opName, coreDim,
-           argsInfo->argsSize, argsInfo->hostInputInfoNum, flag, kernelType);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "launch cpu kernel ex, opName=%s, coreDim=%u, argsSize=%u, hostInputLen=%hu,"
+        " flag=%u, kernelType=%u.",
+        opName, coreDim, argsInfo->argsSize, argsInfo->hostInputInfoNum, flag, kernelType);
     UNUSED(opName);
     const rtError_t error = AiCpuTaskSupportCheck();
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -696,35 +723,38 @@ rtError_t ApiImpl::CpuKernelLaunchExWithArgs(const char_t * const opName, const 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
     if (kernelType == KERNEL_TYPE_AICPU_KFC) {
-        Device * const dev = curCtx->Device_();
+        Device* const dev = curCtx->Device_();
         COND_RETURN_ERROR(dev == nullptr, RT_ERROR_INVALID_VALUE, "device is NULL.");
         const bool isMc2SupportHccl = CheckSupportMC2Feature(dev);
         if (!isMc2SupportHccl) {
-            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support aicpu kfc kernel launch.",
+            RT_LOG(
+                RT_LOG_WARNING, "Current ts version[%u] does not support aicpu kfc kernel launch.",
                 dev->GetTschVersion());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
     }
 
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     COND_RETURN_ERROR(rtInstance == nullptr, RT_ERROR_INSTANCE_NULL, "Runtime instance is null.");
-    ERROR_RETURN_MSG_INNER(rtInstance->StartAicpuSd(curCtx->Device_()),
+    ERROR_RETURN_MSG_INNER(
+        rtInstance->StartAicpuSd(curCtx->Device_()),
         "Cpu kernel launch ex with args failed, check and start tsd open aicpu sd error.");
 
     return StreamLaunchCpuKernelExWithArgs(coreDim, argsInfo, nullptr, curStm, flag, kernelType, nullptr);
 }
 
-rtError_t ApiImpl::MultipleTaskInfoLaunch(const rtMultipleTaskInfo_t * const taskInfo, Stream * const stm,
-    const uint32_t flag)
+rtError_t ApiImpl::MultipleTaskInfoLaunch(
+    const rtMultipleTaskInfo_t* const taskInfo, Stream* const stm, const uint32_t flag)
 {
     for (size_t idx = 0U; idx < taskInfo->taskNum; idx++) {
         if (taskInfo->taskDesc[idx].type == RT_MULTIPLE_TASK_TYPE_DVPP) {
-            RT_LOG(RT_LOG_DEBUG,
-                "launch dvpp task, dvppSqeType=%hhu, pos=%hu",
+            RT_LOG(
+                RT_LOG_DEBUG, "launch dvpp task, dvppSqeType=%hhu, pos=%hu",
                 taskInfo->taskDesc[idx].u.dvppTaskDesc.sqe.sqeHeader.type,
                 taskInfo->taskDesc[idx].u.dvppTaskDesc.aicpuTaskPos);
         } else if (taskInfo->taskDesc[idx].type == RT_MULTIPLE_TASK_TYPE_AICPU) {
-            RT_LOG(RT_LOG_DEBUG,
+            RT_LOG(
+                RT_LOG_DEBUG,
                 "launch aicpu task, soName=%s, kernel_name=%s, opName=%s, blockDim=%hu, isUnderstudyOp=%hu,"
                 " argsSize=%u, hostInputLen=%hu,",
                 taskInfo->taskDesc[idx].u.aicpuTaskDesc.kernelLaunchNames.soName,
@@ -735,8 +765,9 @@ rtError_t ApiImpl::MultipleTaskInfoLaunch(const rtMultipleTaskInfo_t * const tas
                 taskInfo->taskDesc[idx].u.aicpuTaskDesc.argsInfo.argsSize,
                 taskInfo->taskDesc[idx].u.aicpuTaskDesc.argsInfo.hostInputInfoNum);
         } else {
-            Kernel *hdl = RtPtrToPtr<Kernel *>(taskInfo->taskDesc[idx].u.aicpuTaskDescByHandle.funcHdl);
-            RT_LOG(RT_LOG_DEBUG,
+            Kernel* hdl = RtPtrToPtr<Kernel*>(taskInfo->taskDesc[idx].u.aicpuTaskDescByHandle.funcHdl);
+            RT_LOG(
+                RT_LOG_DEBUG,
                 "launch aicpu task by handle, soName=%s, funcName=%s, opName=%s, blockDim=%hu, isUnderstudyOp=%hu,"
                 " argsSize=%u, hostInputInfoNum=%hu,",
                 hdl->GetCpuKernelSo().c_str(), hdl->GetCpuFuncName().c_str(), hdl->GetCpuOpType().c_str(),
@@ -747,10 +778,10 @@ rtError_t ApiImpl::MultipleTaskInfoLaunch(const rtMultipleTaskInfo_t * const tas
         }
     }
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -760,37 +791,45 @@ rtError_t ApiImpl::MultipleTaskInfoLaunch(const rtMultipleTaskInfo_t * const tas
     return LaunchMultipleTaskInfo(taskInfo, curStm, flag);
 }
 
-rtError_t ApiImpl::CalcLaunchArgsSize(size_t const argsSize, size_t const hostInfoTotalSize, size_t hostInfoNum,
-                                      size_t * const launchArgsSize)
+rtError_t ApiImpl::CalcLaunchArgsSize(
+    size_t const argsSize, size_t const hostInfoTotalSize, size_t hostInfoNum, size_t* const launchArgsSize)
 {
-    RT_LOG(RT_LOG_DEBUG, "Calc Launch ArgsSize argsSize=%zu, hostInfoTotalSize=%zu, hostInfoNum=%zu",
-           argsSize, hostInfoTotalSize, hostInfoNum);
+    RT_LOG(
+        RT_LOG_DEBUG, "Calc Launch ArgsSize argsSize=%zu, hostInfoTotalSize=%zu, hostInfoNum=%zu", argsSize,
+        hostInfoTotalSize, hostInfoNum);
     *launchArgsSize = argsSize + hostInfoTotalSize;
     RT_LOG(RT_LOG_DEBUG, "Cal Launch Args Size success. *launchArgsSize=%zu", *launchArgsSize);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::CreateLaunchArgs(size_t const argsSize, size_t const hostInfoTotalSize, size_t hostInfoNum,
-                                    void * const argsData, rtLaunchArgs_t ** const argsHandle)
+rtError_t ApiImpl::CreateLaunchArgs(
+    size_t const argsSize, size_t const hostInfoTotalSize, size_t hostInfoNum, void* const argsData,
+    rtLaunchArgs_t** const argsHandle)
 {
-    RT_LOG(RT_LOG_DEBUG, "CreateLaunchArgs, argsSize=%zu, hostInfoTotalSize=%zu, hostInfoNum=%zu, argsData=0x%x",
-        argsSize, hostInfoTotalSize, hostInfoNum, argsData);
-    auto *hdlHostInputInfo = new (std::nothrow) rtHostInputInfo_t[hostInfoNum];
-    COND_RETURN_AND_MSG_OUTER((hdlHostInputInfo == nullptr), RT_ERROR_CALLOC, ErrorCode::EE1013,
-        sizeof(rtHostInputInfo_t) * hostInfoNum, "new");
-    (void)memset_s(hdlHostInputInfo, sizeof(rtHostInputInfo_t) * hostInfoNum,
-                   0xFF, sizeof(rtHostInputInfo_t) * hostInfoNum);
-    rtLaunchArgs_t *hdlArgs = new (std::nothrow) rtLaunchArgs_t{{nullptr, nullptr, 0, 0, 0, 0, 0, 1, {0}},
-        0, static_cast<uint16_t>(argsSize), static_cast<uint16_t>(hostInfoNum), static_cast<uint16_t>(argsSize), {}};
-    COND_PROC_RETURN_AND_MSG_ALLOC_FAILED((hdlArgs == nullptr), RT_ERROR_CALLOC,
-        delete [] hdlHostInputInfo, sizeof(rtLaunchArgs_t), "new");
+    RT_LOG(
+        RT_LOG_DEBUG, "CreateLaunchArgs, argsSize=%zu, hostInfoTotalSize=%zu, hostInfoNum=%zu, argsData=0x%x", argsSize,
+        hostInfoTotalSize, hostInfoNum, argsData);
+    auto* hdlHostInputInfo = new (std::nothrow) rtHostInputInfo_t[hostInfoNum];
+    COND_RETURN_AND_MSG_OUTER(
+        (hdlHostInputInfo == nullptr), RT_ERROR_CALLOC, ErrorCode::EE1013, sizeof(rtHostInputInfo_t) * hostInfoNum,
+        "new");
+    (void)memset_s(
+        hdlHostInputInfo, sizeof(rtHostInputInfo_t) * hostInfoNum, 0xFF, sizeof(rtHostInputInfo_t) * hostInfoNum);
+    rtLaunchArgs_t* hdlArgs =
+        new (std::nothrow) rtLaunchArgs_t{{nullptr, nullptr, 0, 0, 0, 0, 0, 1, {0}}, 0,
+                                          static_cast<uint16_t>(argsSize),           static_cast<uint16_t>(hostInfoNum),
+                                          static_cast<uint16_t>(argsSize),           {}};
+    COND_PROC_RETURN_AND_MSG_ALLOC_FAILED(
+        (hdlArgs == nullptr), RT_ERROR_CALLOC, delete[] hdlHostInputInfo, sizeof(rtLaunchArgs_t), "new");
     *argsHandle = hdlArgs;
-    rtArgsEx_t *argsInfo = &(hdlArgs->argsInfo);
+    rtArgsEx_t* argsInfo = &(hdlArgs->argsInfo);
     argsInfo->args = argsData;
     argsInfo->hostInputInfoPtr = hdlHostInputInfo;
     argsInfo->argsSize = static_cast<uint32_t>(argsSize + hostInfoTotalSize);
 
-    RT_LOG(RT_LOG_DEBUG, "Create Launch Args success, argsAddrOffset=%u, argsDataOffset=%u, argsHostInputOffset=%u, "
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "Create Launch Args success, argsAddrOffset=%u, argsDataOffset=%u, argsHostInputOffset=%u, "
         "hostInfoMaxNum=%u, argsInfo->argsSize=%u, argsHandle=0x%x.",
         hdlArgs->argsAddrOffset, hdlArgs->argsDataOffset, hdlArgs->argsHostInputOffset, hdlArgs->hostInfoMaxNum,
         argsInfo->argsSize, hdlArgs);
@@ -802,7 +841,7 @@ rtError_t ApiImpl::DestroyLaunchArgs(rtLaunchArgs_t* argsHandle)
     // argsHandle->argsInfo.args : Released by the user
     RT_LOG(RT_LOG_DEBUG, "Destroy Launch Args success. argsHandle=0x%x.", argsHandle);
     if (argsHandle->argsInfo.hostInputInfoPtr != nullptr) {
-        delete [] argsHandle->argsInfo.hostInputInfoPtr;
+        delete[] argsHandle->argsInfo.hostInputInfoPtr;
     }
     ResetEmbeddedInnerHandle<rtLaunchArgs_t>(argsHandle);
     DELETE_O(argsHandle);
@@ -826,7 +865,7 @@ rtError_t ApiImpl::ResetLaunchArgs(rtLaunchArgs_t* argsHandle)
     hdlArgs->argsHostInputOffset = hdlArgs->argsDataOffset;
 
     // argsInfo->argsSize : Retain the original value
-    rtArgsEx_t *argsInfo = &(hdlArgs->argsInfo);
+    rtArgsEx_t* argsInfo = &(hdlArgs->argsInfo);
     // argsInfo->hostInputInfoPtr : Retain the original value
     argsInfo->tilingAddrOffset = 0;
     argsInfo->tilingDataOffset = 0;
@@ -834,30 +873,33 @@ rtError_t ApiImpl::ResetLaunchArgs(rtLaunchArgs_t* argsHandle)
     argsInfo->hasTiling = 0;
     argsInfo->isNoNeedH2DCopy = 1;
     (void)memset_s(argsInfo->args, argsInfo->argsSize, 0, argsInfo->argsSize);
-    (void)memset_s(argsInfo->hostInputInfoPtr, (sizeof(rtHostInputInfo_t) * hdlArgs->hostInfoMaxNum),
-                   0xFF, (sizeof(rtHostInputInfo_t) * hdlArgs->hostInfoMaxNum));
+    (void)memset_s(
+        argsInfo->hostInputInfoPtr, (sizeof(rtHostInputInfo_t) * hdlArgs->hostInfoMaxNum), 0xFF,
+        (sizeof(rtHostInputInfo_t) * hdlArgs->hostInfoMaxNum));
 
-    RT_LOG(RT_LOG_DEBUG, "argsDataOffset=%u, hostInfoMaxNum=%u, argsSize=%u.",
-           hdlArgs->argsDataOffset, hdlArgs->hostInfoMaxNum, argsInfo->argsSize);
+    RT_LOG(
+        RT_LOG_DEBUG, "argsDataOffset=%u, hostInfoMaxNum=%u, argsSize=%u.", hdlArgs->argsDataOffset,
+        hdlArgs->hostInfoMaxNum, argsInfo->argsSize);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::AppendLaunchAddrInfo(rtLaunchArgs_t* const hdl, void * const addrInfo)
+rtError_t ApiImpl::AppendLaunchAddrInfo(rtLaunchArgs_t* const hdl, void* const addrInfo)
 {
-    RT_LOG(RT_LOG_DEBUG, "Append LaunchArgs hdl=0x%llx, argsAddrOffset=%hu, argsDataOffset=%hu, addrInfo=0x%llx",
-           hdl, hdl->argsAddrOffset, hdl->argsDataOffset, addrInfo);
-    *(reinterpret_cast<uint64_t *>(reinterpret_cast<char_t *>(hdl->argsInfo.args) + (hdl->argsAddrOffset))) =
-    reinterpret_cast<uint64_t>(addrInfo);
+    RT_LOG(
+        RT_LOG_DEBUG, "Append LaunchArgs hdl=0x%llx, argsAddrOffset=%hu, argsDataOffset=%hu, addrInfo=0x%llx", hdl,
+        hdl->argsAddrOffset, hdl->argsDataOffset, addrInfo);
+    *(reinterpret_cast<uint64_t*>(reinterpret_cast<char_t*>(hdl->argsInfo.args) + (hdl->argsAddrOffset))) =
+        reinterpret_cast<uint64_t>(addrInfo);
     hdl->argsAddrOffset += sizeof(uint64_t);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::AppendLaunchHostInfo(rtLaunchArgs_t* const hdl, size_t const hostInfoSize,
-    void ** const hostInfo)
+rtError_t ApiImpl::AppendLaunchHostInfo(rtLaunchArgs_t* const hdl, size_t const hostInfoSize, void** const hostInfo)
 {
-    RT_LOG(RT_LOG_DEBUG, "Append LaunchHost Info hdl=%p, argsHostInputOffset=%hu, argsSize=%u, hostInfoSize=%zu",
-           hdl, hdl->argsHostInputOffset, hdl->argsInfo.argsSize, hostInfoSize);
-    rtLaunchArgs_t *hdlArgs = hdl;
+    RT_LOG(
+        RT_LOG_DEBUG, "Append LaunchHost Info hdl=%p, argsHostInputOffset=%hu, argsSize=%u, hostInfoSize=%zu", hdl,
+        hdl->argsHostInputOffset, hdl->argsInfo.argsSize, hostInfoSize);
+    rtLaunchArgs_t* hdlArgs = hdl;
 
     uint16_t hostInputIdx = hdlArgs->argsInfo.hostInputInfoNum;
     uint16_t HostInfoAddrOffset = hdlArgs->argsAddrOffset;
@@ -866,11 +908,11 @@ rtError_t ApiImpl::AppendLaunchHostInfo(rtLaunchArgs_t* const hdl, size_t const 
     hdlArgs->argsAddrOffset += sizeof(uint64_t);
     hdlArgs->argsInfo.hostInputInfoNum++;
 
-    char_t *ptrAddr = reinterpret_cast<char_t *>(hdlArgs->argsInfo.args) + hdlArgs->argsHostInputOffset;
-    *hostInfo = reinterpret_cast<char_t *>(ptrAddr);
+    char_t* ptrAddr = reinterpret_cast<char_t*>(hdlArgs->argsInfo.args) + hdlArgs->argsHostInputOffset;
+    *hostInfo = reinterpret_cast<char_t*>(ptrAddr);
 
-    char_t *HostInfoAddr = reinterpret_cast<char_t *>(hdlArgs->argsInfo.args) + HostInfoAddrOffset;
-    uint64_t *ptr = reinterpret_cast<uint64_t *>(HostInfoAddr);
+    char_t* HostInfoAddr = reinterpret_cast<char_t*>(hdlArgs->argsInfo.args) + HostInfoAddrOffset;
+    uint64_t* ptr = reinterpret_cast<uint64_t*>(HostInfoAddr);
     *ptr = reinterpret_cast<uint64_t>(ptrAddr);
 
     hdlArgs->argsHostInputOffset += hostInfoSize;
@@ -879,11 +921,11 @@ rtError_t ApiImpl::AppendLaunchHostInfo(rtLaunchArgs_t* const hdl, size_t const 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::BinaryLoad(const rtDevBinary_t * const bin, Program ** const prog)
+rtError_t ApiImpl::BinaryLoad(const rtDevBinary_t* const bin, Program** const prog)
 {
     RT_LOG(RT_LOG_DEBUG, "BinaryLoad, magic=%#x, binary length=%u.", bin->magic, bin->length);
-    Program *programPtr = nullptr;
-    Context * const curCtx = CurrentContext();
+    Program* programPtr = nullptr;
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     rtError_t error = Runtime::Instance()->MallocProgramAndReg(bin, &programPtr);
@@ -899,7 +941,7 @@ rtError_t ApiImpl::BinaryLoad(const rtDevBinary_t * const bin, Program ** const 
         return error;
     }
 
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     error = Runtime::Instance()->BinaryLoad(dev, programPtr);
     if (error != RT_ERROR_NONE) {
         delete programPtr;
@@ -912,33 +954,36 @@ rtError_t ApiImpl::BinaryLoad(const rtDevBinary_t * const bin, Program ** const 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::BinaryGetFunction(const Program * const prog, const uint64_t tilingKey,
-                                     Kernel ** const funcHandle)
+rtError_t ApiImpl::BinaryGetFunction(const Program* const prog, const uint64_t tilingKey, Kernel** const funcHandle)
 {
     RT_LOG(RT_LOG_DEBUG, "BinaryGetFunction prog=0x%llx, tilingKey=%llu", prog, tilingKey);
-    Kernel *kerneltmp = nullptr;
+    Kernel* kerneltmp = nullptr;
     *funcHandle = nullptr;
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     const rtError_t error = Runtime::Instance()->BinaryGetFunction(prog, tilingKey, &kerneltmp);
     if (error != RT_ERROR_NONE) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "BinaryGetFunction failed, programId=%u, "
-            "tilingKey=%" PRIu64 ", retCode=%#x.", prog->Id_(), tilingKey, static_cast<uint32_t>(error));
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR,
+            "BinaryGetFunction failed, programId=%u, "
+            "tilingKey=%" PRIu64 ", retCode=%#x.",
+            prog->Id_(), tilingKey, static_cast<uint32_t>(error));
         return RT_ERROR_INVALID_VALUE;
     }
 
     *funcHandle = kerneltmp;
-    RT_LOG(RT_LOG_DEBUG, "prog=0x%llx, programId=%u, tilingKey=%llu, funcHandle=0x%llx.",
-        prog, prog->Id_(), tilingKey, kerneltmp);
+    RT_LOG(
+        RT_LOG_DEBUG, "prog=0x%llx, programId=%u, tilingKey=%llu, funcHandle=0x%llx.", prog, prog->Id_(), tilingKey,
+        kerneltmp);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::BinaryLoadWithoutTilingKey(const void *data, const uint64_t length, Program ** const prog)
+rtError_t ApiImpl::BinaryLoadWithoutTilingKey(const void* data, const uint64_t length, Program** const prog)
 {
     RT_LOG(RT_LOG_DEBUG, "BinaryLoadWithoutTilingKey, binary length=%llu.", length);
-    Program *programPtr = nullptr;
-    Context * const curCtx = CurrentContext();
+    Program* programPtr = nullptr;
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     rtError_t error = Runtime::Instance()->MallocProgramAndRegMixKernel(data, length, &programPtr);
@@ -954,7 +999,7 @@ rtError_t ApiImpl::BinaryLoadWithoutTilingKey(const void *data, const uint64_t l
         return error;
     }
 
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     error = Runtime::Instance()->BinaryLoad(dev, programPtr);
     if (error != RT_ERROR_NONE) {
         delete programPtr;
@@ -967,17 +1012,19 @@ rtError_t ApiImpl::BinaryLoadWithoutTilingKey(const void *data, const uint64_t l
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::BinaryGetFunctionByName(const Program * const binHandle, const char_t *kernelName,
-                                           Kernel ** const funcHandle)
+rtError_t ApiImpl::BinaryGetFunctionByName(
+    const Program* const binHandle, const char_t* kernelName, Kernel** const funcHandle)
 {
-    RT_LOG(RT_LOG_DEBUG, "BinaryGetFunction prog=%p,kernel_name=%s,kernelRegType=%d",
-        binHandle, kernelName, binHandle->GetKernelRegType());
-    Kernel *kerneltmp = nullptr;
+    RT_LOG(
+        RT_LOG_DEBUG, "BinaryGetFunction prog=%p,kernel_name=%s,kernelRegType=%d", binHandle, kernelName,
+        binHandle->GetKernelRegType());
+    Kernel* kerneltmp = nullptr;
     *funcHandle = nullptr;
     const rtError_t error = Runtime::Instance()->BinaryGetFunctionByName(binHandle, kernelName, &kerneltmp);
     if (error != RT_ERROR_NONE) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "BinaryGetFunction failed, kernel_name=%s, retCode=%#x.",
-            kernelName, static_cast<uint32_t>(error));
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "BinaryGetFunction failed, kernel_name=%s, retCode=%#x.", kernelName,
+            static_cast<uint32_t>(error));
         return RT_ERROR_INVALID_VALUE;
     }
 
@@ -986,28 +1033,30 @@ rtError_t ApiImpl::BinaryGetFunctionByName(const Program * const binHandle, cons
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::BinaryGetFunctionByEntry(const Program * const binHandle, const uint64_t funcEntry,
-                                            Kernel ** const funcHandle)
+rtError_t ApiImpl::BinaryGetFunctionByEntry(
+    const Program* const binHandle, const uint64_t funcEntry, Kernel** const funcHandle)
 {
     *funcHandle = nullptr;
-    const Program * const prog = binHandle;
-    Program * const progTmp = const_cast<Program *>(prog);
+    const Program* const prog = binHandle;
+    Program* const progTmp = const_cast<Program*>(prog);
     rtError_t ret = progTmp->CopySoAndNameToCurrentDevice();
     ERROR_RETURN(ret, "copy program failed retCode=%#x.", ret);
-    const Kernel * const kernelTmp = progTmp->GetKernelByTillingKey(funcEntry);
-    COND_RETURN_AND_MSG_OUTER(kernelTmp == nullptr, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Obtaining the kernel function handle based on the function entry",
-        std::to_string(funcEntry), "funcEntry", "The funcHandle cannot be found through funcEntry");
+    const Kernel* const kernelTmp = progTmp->GetKernelByTillingKey(funcEntry);
+    COND_RETURN_AND_MSG_OUTER(
+        kernelTmp == nullptr, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+        "Obtaining the kernel function handle based on the function entry", std::to_string(funcEntry), "funcEntry",
+        "The funcHandle cannot be found through funcEntry");
 
-    *funcHandle = const_cast<Kernel *>(kernelTmp);
+    *funcHandle = const_cast<Kernel*>(kernelTmp);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetFunctionBySymbol(const void *symbol, Kernel ** const funcHandle)
+rtError_t ApiImpl::GetFunctionBySymbol(const void* symbol, Kernel** const funcHandle)
 {
-    const Kernel *kernelTmp = nullptr;
-    Context * const curCtx = CurrentContext();
+    const Kernel* kernelTmp = nullptr;
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device *device = curCtx->Device_();
+    Device* device = curCtx->Device_();
     NULL_PTR_RETURN_MSG(device, RT_ERROR_DEVICE_NULL);
     Runtime* const rtInstance = Runtime::Instance();
     kernelTmp = rtInstance->funcSymbolTable_.Lookup(symbol);
@@ -1015,24 +1064,23 @@ rtError_t ApiImpl::GetFunctionBySymbol(const void *symbol, Kernel ** const funcH
         return RT_ERROR_INVALID_DEVICE_FUNCTION;
     }
 
-    const Program * const prog = kernelTmp->Program_();
-    Program * const progTmp = const_cast<Program *>(prog);
+    const Program* const prog = kernelTmp->Program_();
+    Program* const progTmp = const_cast<Program*>(prog);
     rtError_t ret = progTmp->CopySoAndNameToCurrentDevice();
     ERROR_RETURN(ret, "copy program failed retCode=%#x.", ret);
 
-    *funcHandle = const_cast<Kernel *>(kernelTmp);
+    *funcHandle = const_cast<Kernel*>(kernelTmp);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::RegisterFuncSymbol(void * const binHandle, const void * const symbol,
-                                      const char_t * const kernelName)
+rtError_t ApiImpl::RegisterFuncSymbol(void* const binHandle, const void* const symbol, const char_t* const kernelName)
 {
-    RT_LOG(RT_LOG_INFO, "register function symbol, symbol=%p.",symbol);
+    RT_LOG(RT_LOG_INFO, "register function symbol, symbol=%p.", symbol);
     Runtime* const rtInstance = Runtime::Instance();
     return rtInstance->funcSymbolTable_.Register(binHandle, symbol, kernelName);
 }
 
-rtError_t ApiImpl::BinaryGetMetaNum(Program * const binHandle, const rtBinaryMetaType type, size_t *numOfMeta)
+rtError_t ApiImpl::BinaryGetMetaNum(Program* const binHandle, const rtBinaryMetaType type, size_t* numOfMeta)
 {
     const rtError_t error = binHandle->BinaryGetMetaNum(type, numOfMeta);
     if (error != RT_ERROR_NONE) {
@@ -1042,8 +1090,8 @@ rtError_t ApiImpl::BinaryGetMetaNum(Program * const binHandle, const rtBinaryMet
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::BinaryGetMetaInfo(Program * const binHandle, const rtBinaryMetaType type, const size_t numOfMeta,
-                                     void **data, const size_t *dataSize)
+rtError_t ApiImpl::BinaryGetMetaInfo(
+    Program* const binHandle, const rtBinaryMetaType type, const size_t numOfMeta, void** data, const size_t* dataSize)
 {
     const rtError_t error = binHandle->BinaryGetMetaInfo(type, numOfMeta, data, dataSize);
     if (error != RT_ERROR_NONE) {
@@ -1053,10 +1101,10 @@ rtError_t ApiImpl::BinaryGetMetaInfo(Program * const binHandle, const rtBinaryMe
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::FunctionGetMetaInfo(const Kernel * const funcHandle, const rtFunctionMetaType type,
-                                       void *data, const uint32_t length)
+rtError_t ApiImpl::FunctionGetMetaInfo(
+    const Kernel* const funcHandle, const rtFunctionMetaType type, void* data, const uint32_t length)
 {
-    Program * const prog = funcHandle->Program_();
+    Program* const prog = funcHandle->Program_();
     const std::string kernelName = funcHandle->Name_();
     const rtError_t error = prog->FunctionGetMetaInfo(kernelName, type, data, length);
     if (error != RT_ERROR_NONE) {
@@ -1066,29 +1114,29 @@ rtError_t ApiImpl::FunctionGetMetaInfo(const Kernel * const funcHandle, const rt
     return RT_ERROR_NONE;
 }
 
- rtError_t ApiImpl::FunctionGetMetaInfoSize(const Kernel * const funcHandle, const rtFunctionMetaType type,
- 	                                             size_t *size)
- 	 {
- 	     Program * const prog = funcHandle->Program_();
- 	     const std::string kernelName = funcHandle->Name_();
- 	     const rtError_t error = prog->FunctionGetMetaInfoSize(kernelName, type, size);
- 	     if (error != RT_ERROR_NONE) {
- 	         RT_LOG(RT_LOG_WARNING, "FunctionGetMetaInfoSize failed, kernel name = %s, type=%u", kernelName.c_str(), type);
- 	         return error;
- 	     }
- 	     return RT_ERROR_NONE;
- 	 }
+rtError_t ApiImpl::FunctionGetMetaInfoSize(const Kernel* const funcHandle, const rtFunctionMetaType type, size_t* size)
+{
+    Program* const prog = funcHandle->Program_();
+    const std::string kernelName = funcHandle->Name_();
+    const rtError_t error = prog->FunctionGetMetaInfoSize(kernelName, type, size);
+    if (error != RT_ERROR_NONE) {
+        RT_LOG(RT_LOG_WARNING, "FunctionGetMetaInfoSize failed, kernel name = %s, type=%u", kernelName.c_str(), type);
+        return error;
+    }
+    return RT_ERROR_NONE;
+}
 
-rtError_t ApiImpl::RegisterCpuFunc(rtBinHandle binHandle, const char_t *const funcName,
-    const char_t *const kernelName, rtFuncHandle *funcHandle)
+rtError_t ApiImpl::RegisterCpuFunc(
+    rtBinHandle binHandle, const char_t* const funcName, const char_t* const kernelName, rtFuncHandle* funcHandle)
 {
     RT_LOG(RT_LOG_DEBUG, "RegisterCpuFunc, funcName=%s, kernelName=%s.", funcName, kernelName);
     *funcHandle = nullptr;
-    Program * const prog = RtPtrToPtr<Program *>(binHandle);
+    Program* const prog = RtPtrToPtr<Program*>(binHandle);
     const KernelRegisterType kernelRegType = prog->GetKernelRegType();
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(kernelRegType != RT_KERNEL_REG_TYPE_CPU, RT_ERROR_INVALID_VALUE,
-        "Registering AI CPU operator information", kernelRegType, std::to_string(RT_KERNEL_REG_TYPE_CPU));
-    Kernel *kernel = nullptr;
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        kernelRegType != RT_KERNEL_REG_TYPE_CPU, RT_ERROR_INVALID_VALUE, "Registering AI CPU operator information",
+        kernelRegType, std::to_string(RT_KERNEL_REG_TYPE_CPU));
+    Kernel* kernel = nullptr;
     // 注册cpu kernel
     rtError_t error = prog->RegisterSingleCpuKernel(funcName, kernelName, &kernel);
     ERROR_RETURN_MSG_INNER(error, "register single cpu kernel failed, retCode=%#x", static_cast<uint32_t>(error));
@@ -1099,15 +1147,15 @@ rtError_t ApiImpl::RegisterCpuFunc(rtBinHandle binHandle, const char_t *const fu
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::BinaryUnLoad(Program * const binHandle)
+rtError_t ApiImpl::BinaryUnLoad(Program* const binHandle)
 {
     RT_LOG(RT_LOG_DEBUG, "BinaryUnLoad prog=0x%x", binHandle);
 
     rtError_t error = RT_ERROR_NONE;
     if (!binHandle->IsNewBinaryLoadFlow()) {
-        Context * const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-        Device * const dev = curCtx->Device_();
+        Device* const dev = curCtx->Device_();
         RT_LOG(RT_LOG_DEBUG, "BinaryUnLoad deviceId=%u, prog=0x%x.", dev->Id_(), binHandle);
         error = Runtime::Instance()->BinaryUnLoad(dev, binHandle);
         if (error != RT_ERROR_NONE) {
@@ -1129,8 +1177,8 @@ rtError_t ApiImpl::BinaryUnLoad(Program * const binHandle)
     return error;
 }
 
-rtError_t ApiImpl::BinaryLoadFromFile(const char_t * const binPath, const rtLoadBinaryConfig_t * const optionalCfg,
-                                      Program **handle)
+rtError_t ApiImpl::BinaryLoadFromFile(
+    const char_t* const binPath, const rtLoadBinaryConfig_t* const optionalCfg, Program** handle)
 {
     RT_LOG(RT_LOG_DEBUG, "binary load from file, path=[%s]", binPath);
     BinaryLoader binaryLdr(binPath, optionalCfg);
@@ -1141,8 +1189,8 @@ rtError_t ApiImpl::BinaryLoadFromFile(const char_t * const binPath, const rtLoad
     return ret;
 }
 
-rtError_t ApiImpl::BinaryLoadFromData(const void * const data, const uint64_t length,
-                                      const rtLoadBinaryConfig_t * const optionalCfg, Program **handle)
+rtError_t ApiImpl::BinaryLoadFromData(
+    const void* const data, const uint64_t length, const rtLoadBinaryConfig_t* const optionalCfg, Program** handle)
 {
     BinaryLoader binaryLdr(data, length, optionalCfg);
     const rtError_t ret = binaryLdr.Load(handle);
@@ -1153,7 +1201,7 @@ rtError_t ApiImpl::BinaryLoadFromData(const void * const data, const uint64_t le
 }
 
 // check if kernel is for vector core
-static bool CheckVectorKernel(const Kernel * const kernel)
+static bool CheckVectorKernel(const Kernel* const kernel)
 {
     // 1. common aiv kernel
     if (kernel->GetKernelAttrType() == RT_KERNEL_ATTR_TYPE_VECTOR) {
@@ -1166,7 +1214,7 @@ static bool CheckVectorKernel(const Kernel * const kernel)
     return false;
 }
 
-rtError_t ApiImpl::FuncGetAddr(const Kernel * const funcHandle, void ** const aicAddr, void ** const aivAddr)
+rtError_t ApiImpl::FuncGetAddr(const Kernel* const funcHandle, void** const aicAddr, void** const aivAddr)
 {
     uint64_t funcAddr1 = 0ULL;
     uint64_t funcAddr2 = 0ULL;
@@ -1179,16 +1227,16 @@ rtError_t ApiImpl::FuncGetAddr(const Kernel * const funcHandle, void ** const ai
 
     if ((funcAddr1 != 0ULL) && (funcAddr2 == 0ULL) && (CheckVectorKernel(funcHandle))) {
         // there is only one address, and the kernel is for vector core
-        *aivAddr = reinterpret_cast<void *>(static_cast<uintptr_t>(funcAddr1));
-        *aicAddr = reinterpret_cast<void *>(static_cast<uintptr_t>(funcAddr2));
+        *aivAddr = reinterpret_cast<void*>(static_cast<uintptr_t>(funcAddr1));
+        *aicAddr = reinterpret_cast<void*>(static_cast<uintptr_t>(funcAddr2));
     } else {
-        *aicAddr = reinterpret_cast<void *>(static_cast<uintptr_t>(funcAddr1));
-        *aivAddr = reinterpret_cast<void *>(static_cast<uintptr_t>(funcAddr2));
+        *aicAddr = reinterpret_cast<void*>(static_cast<uintptr_t>(funcAddr1));
+        *aivAddr = reinterpret_cast<void*>(static_cast<uintptr_t>(funcAddr2));
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::FuncGetSize(const Kernel * const funcHandle, size_t * const aicSize, size_t * const aivSize)
+rtError_t ApiImpl::FuncGetSize(const Kernel* const funcHandle, size_t* const aicSize, size_t* const aivSize)
 {
     uint32_t funcSize1 = 0U;
     uint32_t funcSize2 = 0U;
@@ -1204,8 +1252,9 @@ rtError_t ApiImpl::FuncGetSize(const Kernel * const funcHandle, size_t * const a
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::LaunchNonKernelByHandle(Kernel * const kernel, uint32_t blockDim, const RtArgsHandle * const argHandle,
-    Stream * const curStm, const TaskCfg &taskCfg)
+rtError_t ApiImpl::LaunchNonKernelByHandle(
+    Kernel* const kernel, uint32_t blockDim, const RtArgsHandle* const argHandle, Stream* const curStm,
+    const TaskCfg& taskCfg)
 {
     COND_RETURN_ERROR(argHandle == nullptr, RT_ERROR_INVALID_VALUE, "args handle is nullptr");
 
@@ -1228,21 +1277,23 @@ rtError_t ApiImpl::LaunchNonKernelByHandle(Kernel * const kernel, uint32_t block
             ERROR_RETURN(error, "ConvertCpuArgsByArgsHandle failed, phNum=%u, error=%#x", phNum, error);
             return CpuKernelLaunchEx(kernel, blockDim, &cpuKernelArgs, taskCfg, curStm, flag);
         }
-        rtHostInputInfo_t *hostArgsInfos = new (std::nothrow) rtHostInputInfo_t[phNum];
-        COND_RETURN_AND_MSG_OUTER(hostArgsInfos == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-            sizeof(rtHostInputInfo_t) * phNum, "new");
+        rtHostInputInfo_t* hostArgsInfos = new (std::nothrow) rtHostInputInfo_t[phNum];
+        COND_RETURN_AND_MSG_OUTER(
+            hostArgsInfos == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(rtHostInputInfo_t) * phNum,
+            "new");
         error = ConvertCpuArgsByArgsHandle(cpuKernelArgs, argHandle, hostArgsInfos, phNum);
         COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_A(hostArgsInfos), "convert args failed.");
         error = CpuKernelLaunchEx(kernel, blockDim, &cpuKernelArgs, taskCfg, curStm, flag);
         DELETE_A(hostArgsInfos);
-        ERROR_RETURN(error, "CpuKernelLaunchEx failed, blockDim=%u, streamId=%d, error=%#x",blockDim, curStm->Id_(), error);
+        ERROR_RETURN(
+            error, "CpuKernelLaunchEx failed, blockDim=%u, streamId=%d, error=%#x", blockDim, curStm->Id_(), error);
 
         return RT_ERROR_NONE;
     }
 
     // Non Cpu Kernel
     rtArgsEx_t argsInfo = {};
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const uint8_t mixType = kernel->GetMixType();
     const bool isVecLaunch =
@@ -1258,9 +1309,10 @@ rtError_t ApiImpl::LaunchNonKernelByHandle(Kernel * const kernel, uint32_t block
         return StreamLaunchKernelV2(kernel, blockDim, curStm, &launchKernelExtendArgs, isVecLaunch);
     }
 
-    rtHostInputInfo_t *hostArgsInfos = new (std::nothrow) rtHostInputInfo_t[phNum];
-    COND_RETURN_AND_MSG_OUTER((hostArgsInfos == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(rtHostInputInfo_t) * phNum, "new");
+    rtHostInputInfo_t* hostArgsInfos = new (std::nothrow) rtHostInputInfo_t[phNum];
+    COND_RETURN_AND_MSG_OUTER(
+        (hostArgsInfos == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(rtHostInputInfo_t) * phNum,
+        "new");
     error = ConvertArgsByArgsHandle(argsInfo, argHandle, hostArgsInfos, phNum);
     COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_A(hostArgsInfos), "convert args failed.");
     rtStreamLaunchKernelV2ExtendArgs_t launchKernelExtendArgs = {};
@@ -1268,26 +1320,28 @@ rtError_t ApiImpl::LaunchNonKernelByHandle(Kernel * const kernel, uint32_t block
     launchKernelExtendArgs.taskCfg = &taskCfg;
     error = StreamLaunchKernelV2(kernel, blockDim, curStm, &launchKernelExtendArgs, isVecLaunch);
     DELETE_A(hostArgsInfos);
-    ERROR_RETURN(error, "launch kernel failed, blockDim=%u, streamId=%d, error=%#x",blockDim, curStm->Id_(), error);
+    ERROR_RETURN(error, "launch kernel failed, blockDim=%u, streamId=%d, error=%#x", blockDim, curStm->Id_(), error);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim, const RtArgsWithType * const argsWithType,
-                                  Stream * const stm, const rtKernelLaunchCfg_t * const cfg)
+rtError_t ApiImpl::LaunchKernelV2(
+    Kernel* const kernel, uint32_t blockDim, const RtArgsWithType* const argsWithType, Stream* const stm,
+    const rtKernelLaunchCfg_t* const cfg)
 {
-    RT_LOG(RT_LOG_DEBUG, "launch kernel V2, blockDim=%u, argsType=%u, cfgAttrNum=%zu.",
-        blockDim, static_cast<uint32_t>(argsWithType->type), ((cfg != nullptr) ? cfg->numAttrs : 0UL));
+    RT_LOG(
+        RT_LOG_DEBUG, "launch kernel V2, blockDim=%u, argsType=%u, cfgAttrNum=%zu.", blockDim,
+        static_cast<uint32_t>(argsWithType->type), ((cfg != nullptr) ? cfg->numAttrs : 0UL));
     TaskCfg taskCfg = {};
     rtError_t error = ConvertLaunchCfgToTaskCfg(taskCfg, cfg);
     ERROR_RETURN(error, "convert task cfg failed, retCode=%#x.", error);
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
 
-    Stream *curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(curStm);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
@@ -1301,11 +1355,12 @@ rtError_t ApiImpl::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim, cons
         return RT_ERROR_KERNEL_INVALID;
     }
     // For the new launch logic, the nop task delivery is hidden in the launchKernel. only for aic/aiv kernel
-    if ((kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_NON_CPU) && (taskCfg.isExtendValid == 1U) && (taskCfg.extend.blockTaskPrefetch)) {
+    if ((kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_NON_CPU) && (taskCfg.isExtendValid == 1U) &&
+        (taskCfg.extend.blockTaskPrefetch)) {
         DevProperties props;
         error = GET_DEV_PROPERTIES(Runtime::Instance()->GetChipType(), props);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE,
-            "Failed to get properties, stream_id=%d.", curStm->Id_());
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE, "Failed to get properties, stream_id=%d.", curStm->Id_());
 
         const uint8_t prefetchCnt = props.taskPrefetchCount;
         for (uint8_t cntIdx = 0U; cntIdx < prefetchCnt; cntIdx++) {
@@ -1326,7 +1381,8 @@ rtError_t ApiImpl::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim, cons
         case RT_ARGS_CPU_EX: {
             // 由于tv是可选配置，可以通过有没有timeout可选配置来弱化RT_KERNEL_USE_SPECIAL_TIMEOUT的kernel flag
             // 对外不提供kernel flag, 如果taskCfg.extend.timeout为全F时，代表永不超时
-            uint32_t flag = (taskCfg.isBaseValid == 1U) ? (RT_KERNEL_DEFAULT | taskCfg.base.dumpflag) : RT_KERNEL_DEFAULT;
+            uint32_t flag =
+                (taskCfg.isBaseValid == 1U) ? (RT_KERNEL_DEFAULT | taskCfg.base.dumpflag) : RT_KERNEL_DEFAULT;
             error = CpuKernelLaunchEx(kernel, blockDim, argsWithType->args.cpuArgsInfo, taskCfg, curStm, flag);
             break;
         }
@@ -1349,8 +1405,8 @@ rtError_t ApiImpl::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim, cons
         }
         default:
             error = RT_ERROR_INVALID_VALUE;
-            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Starting the compute task of the corresponding operator",
-                argsWithType->type,
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(
+                "Starting the compute task of the corresponding operator", argsWithType->type,
                 "[" + std::to_string(RT_ARGS_NON_CPU_EX) + ", " + std::to_string(RT_ARGS_MAX) + ")");
             break;
     }
@@ -1358,13 +1414,14 @@ rtError_t ApiImpl::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim, cons
     return error;
 }
 
-rtError_t ApiImpl::LaunchKernel(Kernel * const kernel, uint32_t blockDim, const rtArgsEx_t * const argsInfo,
-    Stream * const stm, const rtTaskCfgInfo_t * const cfgInfo)
+rtError_t ApiImpl::LaunchKernel(
+    Kernel* const kernel, uint32_t blockDim, const rtArgsEx_t* const argsInfo, Stream* const stm,
+    const rtTaskCfgInfo_t* const cfgInfo)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -1382,56 +1439,61 @@ rtError_t ApiImpl::LaunchKernel(Kernel * const kernel, uint32_t blockDim, const 
     return StreamLaunchKernelV2(kernel, blockDim, curStm, &launchKernelExtendArgs);
 }
 
-rtError_t ApiImpl::DatadumpInfoLoad(const void * const dumpInfo, const uint32_t length, const uint32_t flag)
+rtError_t ApiImpl::DatadumpInfoLoad(const void* const dumpInfo, const uint32_t length, const uint32_t flag)
 {
     RT_LOG(RT_LOG_DEBUG, "length=%u, flag=%u.", length, flag);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     COND_RETURN_ERROR(rtInstance == nullptr, RT_ERROR_INSTANCE_NULL, "Runtime instance is null.");
-    ERROR_RETURN_MSG_INNER(rtInstance->StartAicpuSd(curCtx->Device_()),
+    ERROR_RETURN_MSG_INNER(
+        rtInstance->StartAicpuSd(curCtx->Device_()),
         "Data dump info load failed, check and start tsd open aicpu sd error.");
 
     return curCtx->DatadumpInfoLoad(dumpInfo, length, flag);
 }
 
-rtError_t ApiImpl::AicpuInfoLoad(const void * const aicpuInfo, const uint32_t length)
+rtError_t ApiImpl::AicpuInfoLoad(const void* const aicpuInfo, const uint32_t length)
 {
     RT_LOG(RT_LOG_DEBUG, "length=%u.", length);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     COND_RETURN_ERROR(rtInstance == nullptr, RT_ERROR_INSTANCE_NULL, "Runtime instance is null.");
-    ERROR_RETURN_MSG_INNER(rtInstance->StartAicpuSd(curCtx->Device_()),
+    ERROR_RETURN_MSG_INNER(
+        rtInstance->StartAicpuSd(curCtx->Device_()),
         "aicpu info load failed, check and start tsd open aicpu sd error.");
 
     return curCtx->AicpuInfoLoad(aicpuInfo, length);
 }
 
-rtError_t ApiImpl::SetupArgument(const void * const setupArg, const uint32_t size, const uint32_t offset)
+rtError_t ApiImpl::SetupArgument(const void* const setupArg, const uint32_t size, const uint32_t offset)
 {
     RT_LOG(RT_LOG_DEBUG, "size=%u, offset=%u.", size, offset);
     constexpr uint32_t argCountLimit = (ARG_ENTRY_SIZE / MIN_ARG_SIZE);
-    LaunchArgment &launchArg = ThreadLocalContainer::GetLaunchArg();
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(offset >= sizeof(launchArg.args), RT_ERROR_INVALID_VALUE, "Setting kernel launch parameters", offset,
+    LaunchArgment& launchArg = ThreadLocalContainer::GetLaunchArg();
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        offset >= sizeof(launchArg.args), RT_ERROR_INVALID_VALUE, "Setting kernel launch parameters", offset,
         "(0, " + std::to_string(sizeof(launchArg.args)) + ")");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((sizeof(launchArg.args) - offset) < size, RT_ERROR_INVALID_VALUE, "Setting kernel launch parameters", size,
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        (sizeof(launchArg.args) - offset) < size, RT_ERROR_INVALID_VALUE, "Setting kernel launch parameters", size,
         "(0, " + std::to_string(sizeof(launchArg.args) - offset) + "]");
-    COND_RETURN_AND_MSG_INNER(launchArg.argCount >= argCountLimit, RT_ERROR_INVALID_VALUE,
+    COND_RETURN_AND_MSG_INNER(
+        launchArg.argCount >= argCountLimit, RT_ERROR_INVALID_VALUE,
         "SetupArgument failed because value %u for parameter launchArg.argCount is invalid. Expected value: (0, %u).",
         launchArg.argCount, (ARG_ENTRY_SIZE / MIN_ARG_SIZE));
-    
-    char_t * const launchArgs = launchArg.args;
-    const errno_t ret = memcpy_s(launchArgs + offset, sizeof(launchArg.args) - offset,
-        setupArg, static_cast<size_t>(size));
+
+    char_t* const launchArgs = launchArg.args;
+    const errno_t ret =
+        memcpy_s(launchArgs + offset, sizeof(launchArg.args) - offset, setupArg, static_cast<size_t>(size));
     if (ret != EOK) {
         std::stringstream ss;
         ss << std::hex << "dest=0x" << RtPtrToValue(launchArgs + offset) << ", setupArg=0x" << RtPtrToValue(setupArg)
            << std::dec << ", destMax=" << sizeof(launchArg.args) - offset << ", size=" << size << ".";
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, __func__,
-            "memcpy_s", std::to_string(ret).c_str(), strerror(ret), ss.str().c_str());
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE1020, __func__, "memcpy_s", std::to_string(ret).c_str(), strerror(ret), ss.str().c_str());
         return RT_ERROR_SEC_HANDLE;
     }
     const uint32_t totalSize = size + offset;
@@ -1445,73 +1507,79 @@ rtError_t ApiImpl::SetupArgument(const void * const setupArg, const uint32_t siz
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::StreamCreate(Stream ** const stm, const int32_t priority, const uint32_t flags, DvppGrp *grp)
+rtError_t ApiImpl::StreamCreate(Stream** const stm, const int32_t priority, const uint32_t flags, DvppGrp* grp)
 {
     RT_LOG(RT_LOG_INFO, "priority=%d, flags=%u.", priority, flags);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if ((flags & RT_STREAM_AICPU) != 0U) {
         // need aicpu sd in aicpu stream
-        Runtime * const rtInstance = Runtime::Instance();
+        Runtime* const rtInstance = Runtime::Instance();
         COND_RETURN_ERROR(rtInstance == nullptr, RT_ERROR_INSTANCE_NULL, "Runtime instance is null.");
-        ERROR_RETURN_MSG_INNER(rtInstance->StartAicpuSd(curCtx->Device_()),
+        ERROR_RETURN_MSG_INNER(
+            rtInstance->StartAicpuSd(curCtx->Device_()),
             "StreamActive failed, check and start tsd open aicpu sd error.");
     }
 
-    Device *const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     COND_RETURN_ERROR(dev == nullptr, RT_ERROR_INVALID_VALUE, "device is NULL.");
     const uint64_t failMode = dev->GetDevFailureMode();
     RT_LOG(RT_LOG_DEBUG, "device failMode is %llu.", failMode);
     if (failMode != CONTINUE_ON_FAILURE && (flags & RT_STREAM_CP_PROCESS_USE) != 0U) {
-        RT_LOG(RT_LOG_EVENT,
-            "Setting failure mode for coprocessor streams is not supported, flags=%u, failMode=%llu.", flags,
-            failMode);
+        RT_LOG(
+            RT_LOG_EVENT, "Setting failure mode for coprocessor streams is not supported, flags=%u, failMode=%llu.",
+            flags, failMode);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
-    bool isHostSupport = dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MODEL_PERSISTENT_STREAM_UNLIMITED_DEPTH);
+    bool isHostSupport =
+        dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MODEL_PERSISTENT_STREAM_UNLIMITED_DEPTH);
     bool isTsSupport = dev->CheckFeatureSupport(TS_FEATURE_SOFTWARE_SQ_ENABLE);
-    bool isDrvSupport = NpuDriver::CheckIsSupportFeature(curCtx->Device_()->Id_(), FEATURE_TRSDRV_SQ_SUPPORT_DYNAMIC_BIND);
+    bool isDrvSupport =
+        NpuDriver::CheckIsSupportFeature(curCtx->Device_()->Id_(), FEATURE_TRSDRV_SQ_SUPPORT_DYNAMIC_BIND);
 
     bool isAutoSplitEnable = false;
     if (((flags & RT_STREAM_PERSISTENT) != 0U && (flags & RT_STREAM_AICPU) == 0U) && isHostSupport && isTsSupport &&
-            isDrvSupport) {
+        isDrvSupport) {
         isAutoSplitEnable = true;
     }
 
     rtError_t error = curCtx->StreamCreate(static_cast<uint32_t>(priority), flags, stm, grp, false, isAutoSplitEnable);
 
-    COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-                     "Create stream failed: flags=%u are not supported", flags);
+    COND_RETURN_WARN(
+        error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
+        "Create stream failed: flags=%u are not supported", flags);
     ERROR_RETURN(error, "Create stream failed, priority=%d, flags=%u.", priority, flags);
 
     if (failMode != CONTINUE_ON_FAILURE) {
         error = (*stm)->SetFailMode(failMode);
         if (error != RT_ERROR_NONE) {
-            RT_LOG(RT_LOG_ERROR,
-                "Failed to set stream failure mode, failMode = %llu, stream_id=%d, device_id=%u, retCode=%d",
-                failMode, (*stm)->Id_(), dev->Id_(), error);
+            RT_LOG(
+                RT_LOG_ERROR,
+                "Failed to set stream failure mode, failMode = %llu, stream_id=%d, device_id=%u, retCode=%d", failMode,
+                (*stm)->Id_(), dev->Id_(), error);
             // 因为返回error日志，所以需要释放掉已经创建好的stream
             (void)StreamDestroy(*stm, false);
             return error;
         }
     }
 
-    RT_LOG(RT_LOG_INFO, "Succ, flags=%u, stream_id=%d, context=0x%llx", flags, (*stm)->Id_(),
-        reinterpret_cast<uint64_t *>((*stm)->Context_()));
+    RT_LOG(
+        RT_LOG_INFO, "Succ, flags=%u, stream_id=%d, context=0x%llx", flags, (*stm)->Id_(),
+        reinterpret_cast<uint64_t*>((*stm)->Context_()));
     return error;
 }
 
-rtError_t ApiImpl::KernelTransArgSet(const void * const ptr, const uint64_t size, const uint32_t flag,
-    void ** const setupArg)
+rtError_t ApiImpl::KernelTransArgSet(
+    const void* const ptr, const uint64_t size, const uint32_t flag, void** const setupArg)
 {
     UNUSED(flag);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const auto dev = curCtx->Device_();
-    Driver * const curDrv = dev->Driver_();
-    (*setupArg) = const_cast<void *>(ptr);
+    Driver* const curDrv = dev->Driver_();
+    (*setupArg) = const_cast<void*>(ptr);
     if ((curDrv->GetRunMode() == static_cast<uint32_t>(RT_RUN_MODE_ONLINE))) {
         // stub device and online does not support
         return RT_ERROR_NONE;
@@ -1520,13 +1588,13 @@ rtError_t ApiImpl::KernelTransArgSet(const void * const ptr, const uint64_t size
     return curDrv->DevMemFlushCache(RtPtrToValue(ptr), size);
 }
 
-rtError_t ApiImpl::KernelFusionStart(Stream * const stm)
+rtError_t ApiImpl::KernelFusionStart(Stream* const stm)
 {
     RT_LOG(RT_LOG_DEBUG, "kernel fusion start.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -1536,13 +1604,13 @@ rtError_t ApiImpl::KernelFusionStart(Stream * const stm)
     return curStm->KernelFusionStart();
 }
 
-rtError_t ApiImpl::KernelFusionEnd(Stream * const stm)
+rtError_t ApiImpl::KernelFusionEnd(Stream* const stm)
 {
     RT_LOG(RT_LOG_DEBUG, "kernel fusion end.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -1552,10 +1620,10 @@ rtError_t ApiImpl::KernelFusionEnd(Stream * const stm)
     return curStm->KernelFusionEnd();
 }
 
-rtError_t ApiImpl::StreamDestroy(Stream * const stm, bool flag)
+rtError_t ApiImpl::StreamDestroy(Stream* const stm, bool flag)
 {
     RT_LOG(RT_LOG_INFO, "stream_id=%d.", stm->Id_());
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
     const rtError_t error = curCtx->StreamDestroy(stm, flag);
@@ -1563,44 +1631,50 @@ rtError_t ApiImpl::StreamDestroy(Stream * const stm, bool flag)
     return error;
 }
 
-rtError_t ApiImpl::StreamWaitEvent(Stream * const stm, Event * const evt, const uint32_t timeout, const uint32_t flag)
+rtError_t ApiImpl::StreamWaitEvent(Stream* const stm, Event* const evt, const uint32_t timeout, const uint32_t flag)
 {
     RT_LOG(RT_LOG_DEBUG, "Stream wait event, timeout=%us.", timeout);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
     const bool supFlag = ((evt->IsNewMode()) || ((!evt->IsNotify()) && (evt->GetEventFlag() == RT_EVENT_DEFAULT))) &&
-            (curStm->GetModelNum() != 0);
-    COND_RETURN_WARN(supFlag, RT_ERROR_FEATURE_NOT_SUPPORT,
+                         (curStm->GetModelNum() != 0);
+    COND_RETURN_WARN(
+        supFlag, RT_ERROR_FEATURE_NOT_SUPPORT,
         "Current mode does not support binding the stream, mode=%d, flag=%" PRIu64
         ", isNotify=%d, isModel=%d, stream_id=%d.",
         evt->IsNewMode(), evt->GetEventFlag(), evt->IsNotify(), (curStm->GetModelNum() != 0U), curStm->Id_());
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
     if (flag == RT_EVENT_WAIT_EXTERNAL) {
-        COND_RETURN_AND_MSG_OUTER((!curStm->IsCapturing()), RT_ERROR_STREAM_NOT_CAPTURED, ErrorCode::EE1016,
+        COND_RETURN_AND_MSG_OUTER(
+            (!curStm->IsCapturing()), RT_ERROR_STREAM_NOT_CAPTURED, ErrorCode::EE1016,
             "Triggering stream event waiting", RtFmtMsg("Stream %d is not in the capture stage", curStm->Id_()));
 
         const rtError_t supportRet = CheckCaptureModelSupportExternalEvent(curStm->Device_(), false);
         if (supportRet != RT_ERROR_NONE) {
             return supportRet;
         }
-        
+
         return CaptureExternalEventWait(evt, curStm);
     }
 
     if (evt->IsCapturing()) {
-        COND_RETURN_AND_MSG_OUTER(!StreamFlagIsSupportCapture(curStm->Flags()), RT_ERROR_STREAM_INVALID, ErrorCode::EE1011, "Triggering stream event waiting",
-            std::to_string(curStm->Flags()), "stream flag",
+        COND_RETURN_AND_MSG_OUTER(
+            !StreamFlagIsSupportCapture(curStm->Flags()), RT_ERROR_STREAM_INVALID, ErrorCode::EE1011,
+            "Triggering stream event waiting", std::to_string(curStm->Flags()), "stream flag",
             RtFmtMsg("Stream (stream_id=%d) does not support the ACL Graph", curStm->Id_()));
-        COND_RETURN_AND_MSG_OUTER(curStm == curCtx->DefaultStream_(), RT_ERROR_STREAM_CAPTURE_IMPLICIT, ErrorCode::EE1017, "Triggering stream event waiting",
-            "stream", RtFmtMsg("The default stream (stream_id=%d) cannot be used in the ACL Graph", curStm->Id_()));
-        COND_RETURN_AND_MSG_OUTER(evt->IsEventWithoutWaitTask(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Triggering stream event waiting",
+        COND_RETURN_AND_MSG_OUTER(
+            curStm == curCtx->DefaultStream_(), RT_ERROR_STREAM_CAPTURE_IMPLICIT, ErrorCode::EE1017,
+            "Triggering stream event waiting", "stream",
+            RtFmtMsg("The default stream (stream_id=%d) cannot be used in the ACL Graph", curStm->Id_()));
+        COND_RETURN_AND_MSG_OUTER(
+            evt->IsEventWithoutWaitTask(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Triggering stream event waiting",
             std::to_string(evt->GetEventFlag()), "event flag",
             RtFmtMsg("Event (event_id=%d) does not support the ACL Graph", evt->EventId_()));
         const std::lock_guard<std::mutex> lk(curCtx->GetCaptureLock());
@@ -1612,9 +1686,11 @@ rtError_t ApiImpl::StreamWaitEvent(Stream * const stm, Event * const evt, const 
     } else {
         if (curStm->IsCapturing()) {
             if ((!(evt->IsNewMode())) && (evt->GetEventFlag() != RT_EVENT_EXTERNAL)) {
-                RT_LOG(RT_LOG_WARNING, "Event created via the API rtEventCreate and rtEventCreateWithFlag are not"
-                " supported, except for the RT_EVENT_EXTERNAL type, mode=%d, flag=%" PRIu64 "", evt->IsNewMode(),
-                 evt->GetEventFlag());
+                RT_LOG(
+                    RT_LOG_WARNING,
+                    "Event created via the API rtEventCreate and rtEventCreateWithFlag are not"
+                    " supported, except for the RT_EVENT_EXTERNAL type, mode=%d, flag=%" PRIu64 "",
+                    evt->IsNewMode(), evt->GetEventFlag());
                 return RT_ERROR_FEATURE_NOT_SUPPORT;
             }
             if ((evt->IsNewMode()) && (evt->HasRecord())) {
@@ -1622,14 +1698,15 @@ rtError_t ApiImpl::StreamWaitEvent(Stream * const stm, Event * const evt, const 
                 // 2.Be a capture stream
                 // 3.Event was created using the rtCreateEventExWithFlag interface
                 // 4. A record was added the single-operator stream
-                RT_LOG(RT_LOG_ERROR, "The record corresponding to the event not be captured, mode=%d", evt->IsNewMode());
+                RT_LOG(
+                    RT_LOG_ERROR, "The record corresponding to the event not be captured, mode=%d", evt->IsNewMode());
                 return RT_ERROR_STREAM_CAPTURE_ISOLATION;
             }
         }
     }
     rtError_t error = RT_ERROR_NONE;
     if (evt->GetEventFlag() == RT_EVENT_IPC) {
-        error = (dynamic_cast<IpcEvent *>(evt))->IpcEventWait(curStm);
+        error = (dynamic_cast<IpcEvent*>(evt))->IpcEventWait(curStm);
     } else {
         error = curStm->WaitEvent(evt, timeout);
     }
@@ -1637,18 +1714,19 @@ rtError_t ApiImpl::StreamWaitEvent(Stream * const stm, Event * const evt, const 
     return error;
 }
 
-static rtError_t CheckStreamSynchronizeParam(Stream *&curStm, Context * const curCtx)
+static rtError_t CheckStreamSynchronizeParam(Stream*& curStm, Context* const curCtx)
 {
     if (IS_SUPPORT_CHIP_FEATURE(curCtx->Device_()->GetChipType(), RtOptionalFeatureType::RT_FEATURE_XPU)) {
-        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(curStm, RT_ERROR_INVALID_VALUE, "Checking the stream synchronization parameters");
+        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+            curStm, RT_ERROR_INVALID_VALUE, "Checking the stream synchronization parameters");
     }
 
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     } else if (curStm->Id_() == MAX_INT32_NUM) {
-        Stream * const onlineStream = curCtx->OnlineStream_();
-        Stream * const defaultStream = curCtx->DefaultStream_();
+        Stream* const onlineStream = curCtx->OnlineStream_();
+        Stream* const defaultStream = curCtx->DefaultStream_();
         if (onlineStream != nullptr) {
             curStm = onlineStream;
         } else {
@@ -1660,12 +1738,12 @@ static rtError_t CheckStreamSynchronizeParam(Stream *&curStm, Context * const cu
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::StreamSynchronize(Stream * const stm, const int32_t timeout)
+rtError_t ApiImpl::StreamSynchronize(Stream* const stm, const int32_t timeout)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     rtError_t error = RT_ERROR_NONE;
     error = CheckStreamSynchronizeParam(curStm, curCtx);
     if (error != RT_ERROR_NONE) {
@@ -1676,8 +1754,9 @@ rtError_t ApiImpl::StreamSynchronize(Stream * const stm, const int32_t timeout)
     // and switch back after current function is complete.
     bool ctxSwitch = false;
     if (curCtx != curStm->Context_()) {
-        RT_LOG(RT_LOG_INFO, "Ctx switch, stream_id=%d, old ctx=%#" PRIx64 ", new ctx=%#" PRIx64,
-            curStm->Id_(), static_cast<uint64_t>(reinterpret_cast<uintptr_t>(curCtx)),
+        RT_LOG(
+            RT_LOG_INFO, "Ctx switch, stream_id=%d, old ctx=%#" PRIx64 ", new ctx=%#" PRIx64, curStm->Id_(),
+            static_cast<uint64_t>(reinterpret_cast<uintptr_t>(curCtx)),
             static_cast<uint64_t>(reinterpret_cast<uintptr_t>(curStm->Context_())));
         error = ContextSetCurrent(curStm->Context_());
         ERROR_RETURN(error, "Failed to set current context, retCode=%#x", error);
@@ -1690,11 +1769,13 @@ rtError_t ApiImpl::StreamSynchronize(Stream * const stm, const int32_t timeout)
     if (errCode == RT_ERROR_STREAM_SYNC_TIMEOUT) {
         (void)GetStreamTimeoutSnapshotMsg();
         uint16_t taskId = std::numeric_limits<uint16_t>::max();
-        const char_t *taskTypeName = "UNKOWN";
+        const char_t* taskTypeName = "UNKOWN";
         tsTaskType_t taskType = TS_TASK_TYPE_RESERVED;
         curStm->GetCurrentRunningTaskInfo(taskId, taskType, taskTypeName);
-        RT_LOG_OUTER_MSG(RT_STREAM_SYNC_TIMEOUT_INNER_ERROR,
-            "Stream synchronize timeout, the current task is type_name=%s, device_id=%u, stream_id=%d, task_id=%u, task_type=%d",
+        RT_LOG_OUTER_MSG(
+            RT_STREAM_SYNC_TIMEOUT_INNER_ERROR,
+            "Stream synchronize timeout, the current task is type_name=%s, device_id=%u, stream_id=%d, task_id=%u, "
+            "task_type=%d",
             taskTypeName, curStm->Device_()->Id_(), curStm->Id_(), taskId, taskType);
     } else {
         if ((curStm->Device_()->GetIsRingbufferGetErr()) && (curCtx->GetFailureError() == RT_ERROR_NONE) &&
@@ -1706,8 +1787,9 @@ rtError_t ApiImpl::StreamSynchronize(Stream * const stm, const int32_t timeout)
     if (ctxSwitch) {
         error = ContextSetCurrent(curCtx);
         COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "Failed to set current context, retCode=%#x", error);
-        RT_LOG(RT_LOG_INFO, "Ctx switch back, stream_id=%d, current ctx=%#" PRIx64,
-            curStm->Id_(), static_cast<uint64_t>(reinterpret_cast<uintptr_t>(CurrentContext())));
+        RT_LOG(
+            RT_LOG_INFO, "Ctx switch back, stream_id=%d, current ctx=%#" PRIx64, curStm->Id_(),
+            static_cast<uint64_t>(reinterpret_cast<uintptr_t>(CurrentContext())));
     }
 
     RT_LOG(RT_LOG_INFO, "Trigger implicit mempool trim (exclude graph pool).");
@@ -1719,13 +1801,13 @@ rtError_t ApiImpl::StreamSynchronize(Stream * const stm, const int32_t timeout)
     return errCode;
 }
 
-rtError_t ApiImpl::StreamQuery(Stream * const stm)
+rtError_t ApiImpl::StreamQuery(Stream* const stm)
 {
     RT_LOG(RT_LOG_DEBUG, "Query stream.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -1733,16 +1815,16 @@ rtError_t ApiImpl::StreamQuery(Stream * const stm)
     rtError_t error = curStm->CheckContextStatus();
     COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "context is abort, status=%#x.", static_cast<uint32_t>(error));
     error = curStm->Query();
-    COND_RETURN_ERROR((error != RT_ERROR_NONE) && (error != RT_ERROR_STREAM_NOT_COMPLETE), error,
-        "Query stream failed.");
+    COND_RETURN_ERROR(
+        (error != RT_ERROR_NONE) && (error != RT_ERROR_STREAM_NOT_COMPLETE), error, "Query stream failed.");
     return error;
 }
 
-rtError_t ApiImpl::GetStreamId(Stream * const stm, int32_t * const streamId)
+rtError_t ApiImpl::GetStreamId(Stream* const stm, int32_t* const streamId)
 {
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
-        Context * const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -1752,18 +1834,18 @@ rtError_t ApiImpl::GetStreamId(Stream * const stm, int32_t * const streamId)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetSqId(Stream * const stm, uint32_t * const sqId)
+rtError_t ApiImpl::GetSqId(Stream* const stm, uint32_t* const sqId)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     *sqId = stm->GetSqId();
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetCqId(Stream * const stm, uint32_t * const cqId, uint32_t * const logicCqId)
+rtError_t ApiImpl::GetCqId(Stream* const stm, uint32_t* const cqId, uint32_t* const logicCqId)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     *cqId = stm->GetCqId();
@@ -1771,13 +1853,12 @@ rtError_t ApiImpl::GetCqId(Stream * const stm, uint32_t * const cqId, uint32_t *
     return RT_ERROR_NONE;
 }
 
-
-rtError_t ApiImpl::StreamGetPriority(Stream * const stm, uint32_t * const priority)
+rtError_t ApiImpl::StreamGetPriority(Stream* const stm, uint32_t* const priority)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -1787,12 +1868,12 @@ rtError_t ApiImpl::StreamGetPriority(Stream * const stm, uint32_t * const priori
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::StreamGetFlags(Stream * const stm, uint32_t * const flags)
+rtError_t ApiImpl::StreamGetFlags(Stream* const stm, uint32_t* const flags)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -1802,20 +1883,23 @@ rtError_t ApiImpl::StreamGetFlags(Stream * const stm, uint32_t * const flags)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetMaxStreamAndTask(const uint32_t streamType, uint32_t * const maxStrCount,
-    uint32_t * const maxTaskCount)
+rtError_t ApiImpl::GetMaxStreamAndTask(
+    const uint32_t streamType, uint32_t* const maxStrCount, uint32_t* const maxTaskCount)
 {
-    const Runtime * const rt = Runtime::Instance();
+    const Runtime* const rt = Runtime::Instance();
     if (!rt->HaveDevice() && !rt->GetIsUserSetSocVersion()) {
         RT_LOG(RT_LOG_WARNING, "No device exists, Resources cannot be queried without set soc version.");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
-    const DevProperties &props = rt->GetCurChipProperties();
+    const DevProperties& props = rt->GetCurChipProperties();
     if (streamType == RT_HUGE_STREAM) {
         if (props.maxAllocHugeStreamNum == 0U) {
-            RT_LOG(RT_LOG_WARNING, "Get max stream and task failed, unsupported huge stream mode in chipType=%d, "
-                                   "streamType=%u", rt->GetChipType(), streamType);
+            RT_LOG(
+                RT_LOG_WARNING,
+                "Get max stream and task failed, unsupported huge stream mode in chipType=%d, "
+                "streamType=%u",
+                rt->GetChipType(), streamType);
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
         *maxStrCount = props.maxAllocHugeStreamNum;
@@ -1828,21 +1912,21 @@ rtError_t ApiImpl::GetMaxStreamAndTask(const uint32_t streamType, uint32_t * con
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetAvailStreamNum(const uint32_t streamType, uint32_t * const streamCount)
+rtError_t ApiImpl::GetAvailStreamNum(const uint32_t streamType, uint32_t* const streamCount)
 {
     RT_LOG(RT_LOG_DEBUG, "streamType=%u.", streamType);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const uint32_t deviceId = curCtx->Device_()->Id_();
     const uint32_t tsId = curCtx->Device_()->DevGetTsId();
-    const Runtime * const rt = Runtime::Instance();
+    const Runtime* const rt = Runtime::Instance();
     const rtChipType_t chipType = rt->GetChipType();
-    const DevProperties &props = rt->GetCurChipProperties();
+    const DevProperties& props = rt->GetCurChipProperties();
     if (streamType == RT_HUGE_STREAM) {
-        COND_RETURN_ERROR_MSG_INNER(props.maxAllocHugeStreamNum == 0U,
-            RT_ERROR_FEATURE_NOT_SUPPORT,
-            "Get max stream and task failed, unsupported huge stream mode in chipType=%d, streamType=%u",
-            chipType, streamType);
+        COND_RETURN_ERROR_MSG_INNER(
+            props.maxAllocHugeStreamNum == 0U, RT_ERROR_FEATURE_NOT_SUPPORT,
+            "Get max stream and task failed, unsupported huge stream mode in chipType=%d, streamType=%u", chipType,
+            streamType);
         *streamCount = props.maxAllocHugeStreamNum;
         return RT_ERROR_NONE;
     }
@@ -1854,46 +1938,45 @@ rtError_t ApiImpl::GetAvailStreamNum(const uint32_t streamType, uint32_t * const
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetFreeStreamNum(uint32_t * const streamCount)
+rtError_t ApiImpl::GetFreeStreamNum(uint32_t* const streamCount)
 {
     RT_LOG(RT_LOG_DEBUG, "Query free stream num");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const uint32_t deviceId = curCtx->Device_()->Id_();
     const uint32_t tsId = curCtx->Device_()->DevGetTsId();
     return NpuDriver::GetAvailStreamNum(deviceId, tsId, streamCount);
 }
 
-rtError_t ApiImpl::GetAvailEventNum(uint32_t * const eventCount)
+rtError_t ApiImpl::GetAvailEventNum(uint32_t* const eventCount)
 {
     RT_LOG(RT_LOG_DEBUG, "Query event num");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const uint32_t deviceId = curCtx->Device_()->Id_();
     const uint32_t tsId = curCtx->Device_()->DevGetTsId();
-    const Runtime * const rt = Runtime::Instance();
+    const Runtime* const rt = Runtime::Instance();
     const rtChipType_t chipType = rt->GetChipType();
-    const DevProperties &eventProps = rt->GetCurChipProperties();
+    const DevProperties& eventProps = rt->GetCurChipProperties();
     *eventCount = eventProps.stubEventCount;
     if (IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GET_RESOURCE_NUM_DYNAMIC)) {
         Driver* driver = curCtx->Device_()->Driver_();
-        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(driver, RT_ERROR_INVALID_VALUE, "Querying the number of available events on the current device");
+        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+            driver, RT_ERROR_INVALID_VALUE, "Querying the number of available events on the current device");
         return driver->GetAvailEventNum(deviceId, tsId, eventCount);
     }
     RT_LOG(RT_LOG_INFO, "get avail event num is gen");
     return RT_ERROR_NONE;
 }
 
-
-rtError_t ApiImpl::GetTaskIdAndStreamID(uint32_t * const taskId, uint32_t * const streamId)
+rtError_t ApiImpl::GetTaskIdAndStreamID(uint32_t* const taskId, uint32_t* const streamId)
 {
     const uint32_t lastTaskId = InnerThreadLocalContainer::GetLastTaskId();
     const uint32_t lastStreamId = InnerThreadLocalContainer::GetLastStreamId();
 
     if (CheckLogLevel(static_cast<int32_t>(RUNTIME), DLOG_DEBUG) == 1) {
         const uint64_t threadId = PidTidFetcher::GetCurrentUserTid();
-        RT_LOG(RT_LOG_DEBUG, "stream_id=%u, task_id=%u, threadIdentifier=%" PRIu64,
-            lastStreamId, lastTaskId, threadId);
+        RT_LOG(RT_LOG_DEBUG, "stream_id=%u, task_id=%u, threadIdentifier=%" PRIu64, lastStreamId, lastTaskId, threadId);
     }
 
     *taskId = lastTaskId;
@@ -1901,141 +1984,154 @@ rtError_t ApiImpl::GetTaskIdAndStreamID(uint32_t * const taskId, uint32_t * cons
 
     if (CheckLogLevel(static_cast<int32_t>(RUNTIME), DLOG_DEBUG) == 1) {
         const uint64_t threadId = PidTidFetcher::GetCurrentUserTid();
-        RT_LOG(RT_LOG_DEBUG,"Query last stream id and task id in current thread, task_id=%u,"
-                            " stream_id=%u, threadIdentifier=%" PRIu64 ".", *taskId, *streamId, threadId);
+        RT_LOG(
+            RT_LOG_DEBUG,
+            "Query last stream id and task id in current thread, task_id=%u,"
+            " stream_id=%u, threadIdentifier=%" PRIu64 ".",
+            *taskId, *streamId, threadId);
     }
     return RT_ERROR_NONE;
 }
 
 rtError_t ApiImpl::SetDeviceFailureMode(uint64_t failureMode)
 {
-    Context *const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device *const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     COND_RETURN_ERROR(dev == nullptr, RT_ERROR_INVALID_VALUE, "device is NULL.");
-    COND_RETURN_AND_MSG_OUTER(dev->GetTschVersion() < static_cast<uint32_t>(TS_VERSION_SET_STREAM_MODE), 
-        RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1015, "Setting the fault handling mode of a device", "");
+    COND_RETURN_AND_MSG_OUTER(
+        dev->GetTschVersion() < static_cast<uint32_t>(TS_VERSION_SET_STREAM_MODE), RT_ERROR_FEATURE_NOT_SUPPORT,
+        ErrorCode::EE1015, "Setting the fault handling mode of a device", "");
 
     failureMode &= 0x1U;
     const uint64_t currentMode = dev->GetDevFailureMode();
     if (currentMode == failureMode) {
-        RT_LOG(RT_LOG_INFO,
-            "Input mode is same with the current mode which is %llu, device_id=%u.",
-            failureMode,
+        RT_LOG(
+            RT_LOG_INFO, "Input mode is same with the current mode which is %llu, device_id=%u.", failureMode,
             dev->Id_());
         return RT_ERROR_NONE;
     }
 
-    COND_RETURN_AND_MSG_OUTER(currentMode != CONTINUE_ON_FAILURE, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016, 
-        "Setting the fault handling mode of a device", RtFmtMsg("The current failure mode of device %u is %u."
-            " This operation is supported only when the device is in CONTINUE_ON_FAILURE mode", dev->Id_(), currentMode));
+    COND_RETURN_AND_MSG_OUTER(
+        currentMode != CONTINUE_ON_FAILURE, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016,
+        "Setting the fault handling mode of a device",
+        RtFmtMsg(
+            "The current failure mode of device %u is %u."
+            " This operation is supported only when the device is in CONTINUE_ON_FAILURE mode",
+            dev->Id_(), currentMode));
 
     dev->SetDevFailureMode(failureMode);
     RT_LOG(RT_LOG_INFO, "Set device=%u failure mode success, failureMode=%llu.", dev->Id_(), failureMode);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::StreamSetMode(Stream * const stm, const uint64_t stmMode)
+rtError_t ApiImpl::StreamSetMode(Stream* const stm, const uint64_t stmMode)
 {
     RT_LOG(RT_LOG_DEBUG, "set stream mode entry, stream_id=%d, mode=%llu.", stm->Id_(), stmMode);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
-    COND_RETURN_AND_MSG_OUTER(dev->GetTschVersion() < static_cast<uint32_t>(TS_VERSION_SET_STREAM_MODE), 
-        RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1015, "Setting the error handling mode of a stream", "");
+    Device* const dev = curCtx->Device_();
+    COND_RETURN_AND_MSG_OUTER(
+        dev->GetTschVersion() < static_cast<uint32_t>(TS_VERSION_SET_STREAM_MODE), RT_ERROR_FEATURE_NOT_SUPPORT,
+        ErrorCode::EE1015, "Setting the error handling mode of a stream", "");
 
-    Stream * const curStm = stm;
-    COND_RETURN_AND_MSG_OUTER(curStm->GetBindFlag(), RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1017, "Setting the error handling mode of a stream", "stream",
-        RtFmtMsg("Stream (stream_id=%d) has been bound to a model (model_id=%u)."
-            " This operation only supports single-operator streams", curStm->Id_(), curStm->Model_()->Id_()));
+    Stream* const curStm = stm;
+    COND_RETURN_AND_MSG_OUTER(
+        curStm->GetBindFlag(), RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1017,
+        "Setting the error handling mode of a stream", "stream",
+        RtFmtMsg(
+            "Stream (stream_id=%d) has been bound to a model (model_id=%u)."
+            " This operation only supports single-operator streams",
+            curStm->Id_(), curStm->Model_()->Id_()));
 
     const uint64_t failmode = (stmMode & 0x1U);
     if (curStm->GetFailureMode() == failmode) {
-        RT_LOG(RT_LOG_INFO, "input mode is same with the current mode which is %llu stream_id=%d.",
-            failmode, curStm->Id_());
+        RT_LOG(
+            RT_LOG_INFO, "input mode is same with the current mode which is %llu stream_id=%d.", failmode,
+            curStm->Id_());
         return RT_ERROR_NONE;
     }
 
-    COND_RETURN_AND_MSG_OUTER((curStm->GetFailureMode() == STOP_ON_FAILURE) && (failmode == CONTINUE_ON_FAILURE), 
+    COND_RETURN_AND_MSG_OUTER(
+        (curStm->GetFailureMode() == STOP_ON_FAILURE) && (failmode == CONTINUE_ON_FAILURE),
         RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016, "Setting the error handling mode of a stream",
         RtFmtMsg("Changing stream %u from stop mode to continue mode is not supported", curStm->Id_()));
     // GetMode取到的是配置的模式,不会改变为Abort,当stm状态是Abort，但是配置还是Continue时，需要支持接口配置为Stop.
     const bool isStopSet = ((curStm->GetMode() & STREAM_FAILURE_MODE_MASK) == STOP_ON_FAILURE);
-    COND_RETURN_AND_MSG_OUTER((curStm->GetFailureMode() == ABORT_ON_FAILURE) && isStopSet, 
-        RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016, "Setting the error handling mode of a stream",
+    COND_RETURN_AND_MSG_OUTER(
+        (curStm->GetFailureMode() == ABORT_ON_FAILURE) && isStopSet, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016,
+        "Setting the error handling mode of a stream",
         RtFmtMsg("Changing stream %u from abort mode to stop mode is not supported", curStm->Id_()));
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
     return curStm->SetFailMode(failmode);
 }
 
-rtError_t ApiImpl::StreamGetMode(const Stream * const stm, uint64_t * const stmMode)
+rtError_t ApiImpl::StreamGetMode(const Stream* const stm, uint64_t* const stmMode)
 {
     *stmMode = stm->GetMode();
     RT_LOG(RT_LOG_DEBUG, "get stream_id=%d mode entry, mode = %llu.", stm->Id_(), *stmMode);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::EventCreate(Event ** const evt, const uint64_t flag)
+rtError_t ApiImpl::EventCreate(Event** const evt, const uint64_t flag)
 {
     RT_LOG(RT_LOG_DEBUG, "flag=%" PRIu64 ".", flag);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     COND_RETURN_ERROR(dev == nullptr, RT_ERROR_INVALID_VALUE, "device is NULL.");
     if (flag == RT_EVENT_MC2) {
         const bool isMc2SupportHccl = CheckSupportMC2Feature(dev);
         if (!isMc2SupportHccl) {
-            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support creating coprocessor events.",
+            RT_LOG(
+                RT_LOG_WARNING, "Current ts version[%u] does not support creating coprocessor events.",
                 dev->GetTschVersion());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
     }
     *evt = new (std::nothrow) Event(dev, flag, curCtx);
-    COND_RETURN_AND_MSG_OUTER((*evt == nullptr), RT_ERROR_EVENT_NEW, ErrorCode::EE1013,
-        sizeof(Event), "new");
+    COND_RETURN_AND_MSG_OUTER((*evt == nullptr), RT_ERROR_EVENT_NEW, ErrorCode::EE1013, sizeof(Event), "new");
 
     dev->PushEvent(*evt);
 
     if (flag != RT_EVENT_DEFAULT) {
         const rtError_t error = (*evt)->GenEventId();
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_O(*evt);,
-            "Gen event id failed, device_id=%u, tsId=%u, retCode=%#x", dev->Id_(), dev->DevGetTsId(), error);
+        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_O(*evt);
+                               , "Gen event id failed, device_id=%u, tsId=%u, retCode=%#x", dev->Id_(),
+                               dev->DevGetTsId(), error);
     }
     InitEmbeddedInnerHandle<Event>(*evt);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::EventCreateEx(Event ** const evt, const uint64_t flag)
+rtError_t ApiImpl::EventCreateEx(Event** const evt, const uint64_t flag)
 {
     RT_LOG(RT_LOG_DEBUG, "flag=%" PRIu64 ".", flag);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     COND_RETURN_ERROR(dev == nullptr, RT_ERROR_INVALID_VALUE, "device is NULL.");
     if (flag == RT_EVENT_IPC) {
         *evt = new (std::nothrow) IpcEvent(dev, flag, curCtx);
-        COND_RETURN_AND_MSG_OUTER((*evt == nullptr), RT_ERROR_EVENT_NEW, ErrorCode::EE1013,
-            sizeof(IpcEvent), "new");
+        COND_RETURN_AND_MSG_OUTER((*evt == nullptr), RT_ERROR_EVENT_NEW, ErrorCode::EE1013, sizeof(IpcEvent), "new");
         const rtError_t error = (*evt)->Setup();
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_O(*evt);,
-                            "setup failed, retCode=%#x", error);
+        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, DELETE_O(*evt);, "setup failed, retCode=%#x", error);
     } else {
         *evt = new (std::nothrow) Event(dev, flag, curCtx, false, true);
-        COND_RETURN_AND_MSG_OUTER((*evt == nullptr), RT_ERROR_EVENT_NEW, ErrorCode::EE1013,
-            sizeof(Event), "new");
+        COND_RETURN_AND_MSG_OUTER((*evt == nullptr), RT_ERROR_EVENT_NEW, ErrorCode::EE1013, sizeof(Event), "new");
     }
     InitEmbeddedInnerHandle<Event>(*evt);
     dev->PushEvent(*evt);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::EventDestroy(Event *evt)
+rtError_t ApiImpl::EventDestroy(Event* evt)
 {
     ResetEmbeddedInnerHandle<Event>(evt);
     EventStateCallbackManager::Instance().Notify(nullptr, evt, EventStatePeriod::EVENT_STATE_PERIOD_DESTROY);
     if (evt->GetEventFlag() == RT_EVENT_IPC) {
-        IpcEvent *eventIpc = dynamic_cast<IpcEvent *>(evt);
+        IpcEvent* eventIpc = dynamic_cast<IpcEvent*>(evt);
         IpcEventDestroy(&eventIpc, MAX_INT32_NUM, true);
         return RT_ERROR_NONE;
     }
@@ -2044,16 +2140,16 @@ rtError_t ApiImpl::EventDestroy(Event *evt)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::EventDestroySync(Event *evt)
+rtError_t ApiImpl::EventDestroySync(Event* evt)
 {
     const bool isDisableThreadFlag = Runtime::Instance()->GetDisableThread();
     if (!isDisableThreadFlag) {
         return EventDestroy(evt);
     }
 
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     if ((!dev->IsStarsPlatform()) && (!dev->CheckFeatureSupport(TS_FEATURE_EVENT_DESTROY_SYNC_FIX))) {
         RT_LOG(RT_LOG_WARNING, "ts not support event destroy sync in this drv, revert event destroy.");
@@ -2071,22 +2167,23 @@ rtError_t ApiImpl::EventDestroySync(Event *evt)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::EventRecord(Event * const evt, Stream * const stm, const uint32_t flag)
+rtError_t ApiImpl::EventRecord(Event* const evt, Stream* const stm, const uint32_t flag)
 {
     RT_LOG(RT_LOG_DEBUG, "event record.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
-    const bool supportFlag = (evt->IsNewMode() || (evt->GetEventFlag() == RT_EVENT_DEFAULT)) &&
-        (curStm->GetModelNum() != 0);
-    COND_RETURN_WARN(supportFlag, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Current mode does not support binding the stream, mode=%d, flag=%" PRIu64 ", isModel=%d.",
-        evt->IsNewMode(), evt->GetEventFlag(), (curStm->GetModelNum() != 0U));
+    const bool supportFlag =
+        (evt->IsNewMode() || (evt->GetEventFlag() == RT_EVENT_DEFAULT)) && (curStm->GetModelNum() != 0);
+    COND_RETURN_WARN(
+        supportFlag, RT_ERROR_FEATURE_NOT_SUPPORT,
+        "Current mode does not support binding the stream, mode=%d, flag=%" PRIu64 ", isModel=%d.", evt->IsNewMode(),
+        evt->GetEventFlag(), (curStm->GetModelNum() != 0U));
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
     if (flag == RT_EVENT_RECORD_EXTERNAL) {
@@ -2103,15 +2200,19 @@ rtError_t ApiImpl::EventRecord(Event * const evt, Stream * const stm, const uint
     }
 
     if (evt->ToBeCaptured(curStm)) {
-        COND_RETURN_WARN(!evt->IsNewMode(), RT_ERROR_FEATURE_NOT_SUPPORT,
+        COND_RETURN_WARN(
+            !evt->IsNewMode(), RT_ERROR_FEATURE_NOT_SUPPORT,
             "Calling rtEventCreate or rtEventCreateWithFlag without the external flag is not supported, mode=%d",
             evt->IsNewMode());
-        COND_RETURN_AND_MSG_OUTER(!StreamFlagIsSupportCapture(curStm->Flags()), RT_ERROR_STREAM_INVALID, ErrorCode::EE1011, "Event recording",
+        COND_RETURN_AND_MSG_OUTER(
+            !StreamFlagIsSupportCapture(curStm->Flags()), RT_ERROR_STREAM_INVALID, ErrorCode::EE1011, "Event recording",
             std::to_string(curStm->Flags()), "stream flag",
             RtFmtMsg("Stream (stream_id=%d) does not support the ACL Graph", curStm->Id_()));
-        COND_RETURN_AND_MSG_OUTER(curStm == curCtx->DefaultStream_(), RT_ERROR_STREAM_CAPTURE_IMPLICIT, ErrorCode::EE1017, "Event recording",
+        COND_RETURN_AND_MSG_OUTER(
+            curStm == curCtx->DefaultStream_(), RT_ERROR_STREAM_CAPTURE_IMPLICIT, ErrorCode::EE1017, "Event recording",
             "stream", RtFmtMsg("The default stream (stream_id=%d) cannot be used in the ACL Graph", curStm->Id_()));
-        COND_RETURN_WARN(evt->IsEventWithoutWaitTask(), RT_ERROR_NONE,
+        COND_RETURN_WARN(
+            evt->IsEventWithoutWaitTask(), RT_ERROR_NONE,
             "The event flag %" PRIu64 " is not supported in capture mode.", evt->GetEventFlag());
         const std::lock_guard<std::mutex> lk(curCtx->GetCaptureLock());
         if (evt->ToBeCaptured(curStm)) {
@@ -2121,53 +2222,57 @@ rtError_t ApiImpl::EventRecord(Event * const evt, Stream * const stm, const uint
         }
     }
     if (evt->GetEventFlag() == RT_EVENT_IPC) {
-        return (dynamic_cast<IpcEvent *>(evt))->IpcEventRecord(curStm);
+        return (dynamic_cast<IpcEvent*>(evt))->IpcEventRecord(curStm);
     } else {
         return evt->Record(curStm, true);
     }
 }
 
-rtError_t ApiImpl::GetEventID(Event * const evt, uint32_t * const evtId)
-{
-    return evt->GetEventID(evtId);
-}
+rtError_t ApiImpl::GetEventID(Event* const evt, uint32_t* const evtId) { return evt->GetEventID(evtId); }
 
-rtError_t ApiImpl::EventReset(Event * const evt, Stream * const stm)
+rtError_t ApiImpl::EventReset(Event* const evt, Stream* const stm)
 {
     RT_LOG(RT_LOG_DEBUG, "event reset.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
-    const bool supportFlag = (evt->IsNewMode()) || ((!evt->IsNotify())
-        && (evt->GetEventFlag() == RT_EVENT_DEFAULT) && (curStm->GetModelNum() != 0));
-    COND_RETURN_WARN(supportFlag, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Current mode does not support binding the stream, mode=%d, flag=%" PRIu64 ", isModel=%d.",
-        evt->IsNewMode(), evt->GetEventFlag(), (curStm->GetModelNum() != 0U));
+    const bool supportFlag = (evt->IsNewMode()) || ((!evt->IsNotify()) && (evt->GetEventFlag() == RT_EVENT_DEFAULT) &&
+                                                    (curStm->GetModelNum() != 0));
+    COND_RETURN_WARN(
+        supportFlag, RT_ERROR_FEATURE_NOT_SUPPORT,
+        "Current mode does not support binding the stream, mode=%d, flag=%" PRIu64 ", isModel=%d.", evt->IsNewMode(),
+        evt->GetEventFlag(), (curStm->GetModelNum() != 0U));
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
     if (evt->IsCapturing()) {
-        COND_RETURN_AND_MSG_OUTER(!StreamFlagIsSupportCapture(curStm->Flags()), RT_ERROR_STREAM_INVALID, ErrorCode::EE1011, "Event reset",
+        COND_RETURN_AND_MSG_OUTER(
+            !StreamFlagIsSupportCapture(curStm->Flags()), RT_ERROR_STREAM_INVALID, ErrorCode::EE1011, "Event reset",
             std::to_string(curStm->Flags()), "stream flag",
             RtFmtMsg("Stream (stream_id=%d) does not support the ACL Graph", curStm->Id_()));
-        COND_RETURN_AND_MSG_OUTER(curStm == curCtx->DefaultStream_(), RT_ERROR_STREAM_CAPTURE_IMPLICIT, ErrorCode::EE1017, "Event reset",
+        COND_RETURN_AND_MSG_OUTER(
+            curStm == curCtx->DefaultStream_(), RT_ERROR_STREAM_CAPTURE_IMPLICIT, ErrorCode::EE1017, "Event reset",
             "stream", RtFmtMsg("The default stream (stream_id=%d) cannot be used in the ACL Graph", curStm->Id_()));
-        COND_RETURN_AND_MSG_OUTER(evt->IsEventWithoutWaitTask(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Event reset",
+        COND_RETURN_AND_MSG_OUTER(
+            evt->IsEventWithoutWaitTask(), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Event reset",
             std::to_string(evt->GetEventFlag()), "event flag",
             RtFmtMsg("Event (event_id=%d) does not support the ACL Graph", evt->EventId_()));
         const std::lock_guard<std::mutex> lk(curCtx->GetCaptureLock());
         if (evt->IsCapturing()) {
             const rtError_t retCode = CaptureEventReset(evt, curStm);
-            ERROR_PROC_RETURN_MSG_INNER(retCode, TerminateCapture(evt, curStm), "Capture event Reset failed, eventId=%u, streamId=%d.", evt->EventId_(), curStm->Id_());
+            ERROR_PROC_RETURN_MSG_INNER(
+                retCode, TerminateCapture(evt, curStm), "Capture event Reset failed, eventId=%u, streamId=%d.",
+                evt->EventId_(), curStm->Id_());
             return RT_ERROR_NONE;
         }
     } else {
         if ((curStm != curCtx->DefaultStream_()) && (evt->ToBeCaptured(curStm))) {
-            RT_LOG(RT_LOG_WARNING,
+            RT_LOG(
+                RT_LOG_WARNING,
                 "Calling rtEventCreate or rtEventCreateWithFlag without the external flag is not supported");
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
@@ -2176,9 +2281,9 @@ rtError_t ApiImpl::EventReset(Event * const evt, Stream * const stm)
     return evt->Reset(curStm);
 }
 
-rtError_t ApiImpl::EventSynchronize(Event * const evt, const int32_t timeout)
+rtError_t ApiImpl::EventSynchronize(Event* const evt, const int32_t timeout)
 {
-    Context *eventCtx = evt->Context_();
+    Context* eventCtx = evt->Context_();
     rtError_t error = RT_ERROR_NONE;
     if (eventCtx != nullptr) {
         error = eventCtx->CheckStatus();
@@ -2186,7 +2291,7 @@ rtError_t ApiImpl::EventSynchronize(Event * const evt, const int32_t timeout)
     }
     RT_LOG(RT_LOG_DEBUG, "Event synchronize entry, timeout=%dms.", timeout);
     if (evt->GetEventFlag() == RT_EVENT_IPC) {
-        error = (dynamic_cast<IpcEvent *>(evt))->IpcEventSync(timeout);
+        error = (dynamic_cast<IpcEvent*>(evt))->IpcEventSync(timeout);
     } else {
         error = evt->Synchronize(timeout);
     }
@@ -2200,9 +2305,9 @@ rtError_t ApiImpl::EventSynchronize(Event * const evt, const int32_t timeout)
     return error;
 }
 
-rtError_t ApiImpl::EventQuery(Event * const evt)
+rtError_t ApiImpl::EventQuery(Event* const evt)
 {
-    Context *eventCtx = evt->Context_();
+    Context* eventCtx = evt->Context_();
     if (eventCtx != nullptr) {
         const rtError_t error = eventCtx->CheckStatus();
         ERROR_RETURN(error, "context is abort, status=%#x.", static_cast<uint32_t>(error));
@@ -2210,33 +2315,34 @@ rtError_t ApiImpl::EventQuery(Event * const evt)
     return evt->Query();
 }
 
-rtError_t ApiImpl::EventQueryStatus(Event * const evt, rtEventStatus_t * const status)
+rtError_t ApiImpl::EventQueryStatus(Event* const evt, rtEventStatus_t* const status)
 {
-    Context *eventCtx = evt->Context_();
+    Context* eventCtx = evt->Context_();
     if (eventCtx != nullptr) {
         const rtError_t error = eventCtx->CheckStatus();
         ERROR_RETURN(error, "context is abort, status=%#x.", static_cast<uint32_t>(error));
     }
     *status = RT_EVENT_INIT;
     if (evt->GetEventFlag() == RT_EVENT_IPC) {
-        return (dynamic_cast<IpcEvent *>(evt))->IpcEventQuery(status);
+        return (dynamic_cast<IpcEvent*>(evt))->IpcEventQuery(status);
     } else {
         return evt->QueryEventStatus(status);
     }
 }
 
-rtError_t ApiImpl::EventQueryWaitStatus(Event * const evt, rtEventWaitStatus_t * const status)
+rtError_t ApiImpl::EventQueryWaitStatus(Event* const evt, rtEventWaitStatus_t* const status)
 {
-    Context *const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     rtError_t error = RT_ERROR_NONE;
 
     if ((curCtx != nullptr)) {
-        Device *device = curCtx->Device_();
+        Device* device = curCtx->Device_();
         (void)device->GetDevRunningState();
         error = device->GetDevStatus();
-        COND_PROC_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, error != RT_ERROR_NONE, error,
-                                        RT_LOG_INNER_DETAIL_MSG(RT_DRV_INNER_ERROR, {"device_id"}, {std::to_string(device->Id_())});,
-                                        "Device[%u] fault, ret=%#x.", device->Id_(), error);
+        COND_PROC_RETURN_ERROR_MSG_CALL(
+            ERR_MODULE_DRV, error != RT_ERROR_NONE, error,
+            RT_LOG_INNER_DETAIL_MSG(RT_DRV_INNER_ERROR, {"device_id"}, {std::to_string(device->Id_())});
+            , "Device[%u] fault, ret=%#x.", device->Id_(), error);
         error = device->GetDeviceStatus();
         ERROR_RETURN(error, "device_id=%d status=%d is abnormal.", device->Id_(), error);
         error = curCtx->GetFailureError();
@@ -2252,24 +2358,21 @@ rtError_t ApiImpl::EventQueryWaitStatus(Event * const evt, rtEventWaitStatus_t *
     return error;
 }
 
-rtError_t ApiImpl::EventElapsedTime(float32_t * const retTime, Event * const startEvt, Event * const endEvt)
+rtError_t ApiImpl::EventElapsedTime(float32_t* const retTime, Event* const startEvt, Event* const endEvt)
 {
     return endEvt->ElapsedTime(retTime, startEvt);
 }
 
-rtError_t ApiImpl::EventGetTimeStamp(uint64_t * const retTime, Event * const evt)
-{
-    return evt->GetTimeStamp(retTime);
-}
+rtError_t ApiImpl::EventGetTimeStamp(uint64_t* const retTime, Event* const evt) { return evt->GetTimeStamp(retTime); }
 
-rtError_t ApiImpl::DevMalloc(void ** const devPtr, const uint64_t size, const rtMemType_t type,
-    const uint16_t moduleId)
+rtError_t ApiImpl::DevMalloc(void** const devPtr, const uint64_t size, const rtMemType_t type, const uint16_t moduleId)
 {
     RT_LOG(RT_LOG_INFO, "size=%" PRIu64 ", type=%u, moduleId=%hu.", size, type, moduleId);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    const uint64_t tmpSize = ((((size > (MAX_UINT64_NUM - 0x1FU)) ? MAX_UINT64_NUM : (size + 0x1FU)) >> 5U) << 5U); // 32 byte align
+    const uint64_t tmpSize =
+        ((((size > (MAX_UINT64_NUM - 0x1FU)) ? MAX_UINT64_NUM : (size + 0x1FU)) >> 5U) << 5U); // 32 byte align
 
     auto driver = curCtx->Device_()->Driver_();
     uint32_t devId = curCtx->Device_()->Id_();
@@ -2286,22 +2389,23 @@ rtError_t ApiImpl::DevMalloc(void ** const devPtr, const uint64_t size, const rt
     return ret;
 }
 
-rtError_t ApiImpl::DevFree(void * const devPtr)
+rtError_t ApiImpl::DevFree(void* const devPtr)
 {
-    RT_LOG(RT_LOG_INFO, "device free mem=0x%llx", reinterpret_cast<uint64_t *>(devPtr));
-    Context * const curCtx = CurrentContext(false);
+    RT_LOG(RT_LOG_INFO, "device free mem=0x%llx", reinterpret_cast<uint64_t*>(devPtr));
+    Context* const curCtx = CurrentContext(false);
     rtError_t error = DevFreeStatic(devPtr, curCtx);
     if ((error == RT_ERROR_NONE) && Runtime::Instance()->ApiSoma_()->InMemPoolRegion(devPtr)) {
-        RT_LOG(RT_LOG_INFO, "Pointer %#" PRIx64 " is in SOMA memory pool range, assuming it's allocated by async api.",
+        RT_LOG(
+            RT_LOG_INFO, "Pointer %#" PRIx64 " is in SOMA memory pool range, assuming it's allocated by async api.",
             RtPtrToValue(devPtr));
         return Runtime::Instance()->ApiSoma_()->MemPoolFreeSync(devPtr);
     }
     return error;
 }
 
-rtError_t ApiImpl::DevFreeStatic(void * const devPtr, Context * const curCtx)
+rtError_t ApiImpl::DevFreeStatic(void* const devPtr, Context* const curCtx)
 {
-    Driver *curDrv = nullptr;
+    Driver* curDrv = nullptr;
     Runtime* rt = Runtime::Instance();
     uint32_t id = RT_MAX_DEV_NUM;
     if (!ContextManage::CheckContextIsValid(curCtx)) {
@@ -2314,22 +2418,20 @@ rtError_t ApiImpl::DevFreeStatic(void * const devPtr, Context * const curCtx)
     return curDrv->DevMemFree(devPtr, id);
 }
 
-rtError_t ApiImpl::DevDvppMalloc(void ** const devPtr, const uint64_t size, const uint32_t flag,
-    const uint16_t moduleId)
+rtError_t ApiImpl::DevDvppMalloc(void** const devPtr, const uint64_t size, const uint32_t flag, const uint16_t moduleId)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     const uint64_t curSize = (((size + 0x1FU) >> 5U) << 5U); // 32 byte align
 
-    return curCtx->Device_()->Driver_()
-        ->DevDvppMemAlloc(devPtr, curSize, curCtx->Device_()->Id_(), flag, moduleId);
+    return curCtx->Device_()->Driver_()->DevDvppMemAlloc(devPtr, curSize, curCtx->Device_()->Id_(), flag, moduleId);
 }
 
-rtError_t ApiImpl::DevDvppFree(void * const devPtr)
+rtError_t ApiImpl::DevDvppFree(void* const devPtr)
 {
-    Context * const curCtx = CurrentContext();
-    Driver *curDrv = nullptr;
+    Context* const curCtx = CurrentContext();
+    Driver* curDrv = nullptr;
     uint32_t id = RT_MAX_DEV_NUM;
     if (!ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER); // stub id???
@@ -2344,27 +2446,30 @@ rtError_t ApiImpl::DevDvppFree(void * const devPtr)
     rtPtrAttributes_t attributes;
     const rtError_t error = curDrv->PtrGetAttributes(devPtr, &attributes);
     const rtMemLocationType locationType = attributes.location.type;
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE,
-        "Get devPtr pointer attributes failed, retCode=%#x", static_cast<uint32_t>(error));
-    COND_RETURN_AND_MSG_OUTER(locationType != RT_MEMORY_LOC_DEVICE && locationType != RT_MEMORY_LOC_MANAGED, RT_ERROR_INVALID_VALUE,
-        ErrorCode::EE1011, "Releasing DVPP device memory", MemLocationTypeToStr(locationType), "devPtr locationType", "The specified address must be a device address");
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE, "Get devPtr pointer attributes failed, retCode=%#x",
+        static_cast<uint32_t>(error));
+    COND_RETURN_AND_MSG_OUTER(
+        locationType != RT_MEMORY_LOC_DEVICE && locationType != RT_MEMORY_LOC_MANAGED, RT_ERROR_INVALID_VALUE,
+        ErrorCode::EE1011, "Releasing DVPP device memory", MemLocationTypeToStr(locationType), "devPtr locationType",
+        "The specified address must be a device address");
 #endif
 
     return curDrv->DevMemFree(devPtr, id);
 }
 
-rtError_t ApiImpl::HostMalloc(void ** const hostPtr, const uint64_t size, const uint16_t moduleId)
+rtError_t ApiImpl::HostMalloc(void** const hostPtr, const uint64_t size, const uint16_t moduleId)
 {
     RT_LOG(RT_LOG_INFO, "size=%" PRIu64, size);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    const uint64_t curSize = (((size + 0x1FU) >> 5U) << 5U);  // 32 byte align
+    const uint64_t curSize = (((size + 0x1FU) >> 5U) << 5U); // 32 byte align
 
     return curCtx->Device_()->Driver_()->HostMemAlloc(hostPtr, curSize, curCtx->Device_()->Id_(), moduleId);
 }
 
-void ApiImpl::CheckMallocHostCfg(uint16_t *moduleId) const
+void ApiImpl::CheckMallocHostCfg(uint16_t* moduleId) const
 {
     if (*moduleId > DEFAULT_MODULEID) {
         *moduleId = static_cast<uint16_t>(MODULEID_RUNTIME);
@@ -2372,9 +2477,10 @@ void ApiImpl::CheckMallocHostCfg(uint16_t *moduleId) const
     return;
 }
 
-rtError_t ApiImpl::GetMallocHostConfigAttr(rtMallocAttribute_t* attr, uint16_t *moduleId, uint32_t *vaFlag) const
+rtError_t ApiImpl::GetMallocHostConfigAttr(rtMallocAttribute_t* attr, uint16_t* moduleId, uint32_t* vaFlag) const
 {
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(attr, RT_ERROR_INVALID_VALUE, "Obtaining the configuration attributes of the memory allocated on the host");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        attr, RT_ERROR_INVALID_VALUE, "Obtaining the configuration attributes of the memory allocated on the host");
     if (attr->attr == RT_MEM_MALLOC_ATTR_MODULE_ID) {
         *moduleId = attr->value.moduleId;
         return RT_ERROR_NONE;
@@ -2387,12 +2493,13 @@ rtError_t ApiImpl::GetMallocHostConfigAttr(rtMallocAttribute_t* attr, uint16_t *
     }
 
     // 申请内存的接口不支持传入其他类型cfg
-    RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Obtaining the configuration attributes of the memory allocated on the host",
-        attr->attr, RT_MEM_MALLOC_ATTR_MODULE_ID);
+    RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(
+        "Obtaining the configuration attributes of the memory allocated on the host", attr->attr,
+        RT_MEM_MALLOC_ATTR_MODULE_ID);
     return RT_ERROR_INVALID_VALUE;
 }
 
-rtError_t ApiImpl::GetMallocHostConfigInfo(const rtMallocConfig_t *cfg, uint16_t *moduleId, uint32_t *vaFlag) const
+rtError_t ApiImpl::GetMallocHostConfigInfo(const rtMallocConfig_t* cfg, uint16_t* moduleId, uint32_t* vaFlag) const
 {
     rtError_t error = RT_ERROR_NONE;
     for (uint32_t i = 0U; i < cfg->numAttrs; i++) {
@@ -2406,38 +2513,40 @@ rtError_t ApiImpl::GetMallocHostConfigInfo(const rtMallocConfig_t *cfg, uint16_t
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::HostMallocWithCfg(void ** const hostPtr, const uint64_t size,
-    const rtMallocConfig_t *cfg)
+rtError_t ApiImpl::HostMallocWithCfg(void** const hostPtr, const uint64_t size, const rtMallocConfig_t* cfg)
 {
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(hostPtr, RT_ERROR_INVALID_VALUE, "Allocating host memory based on the configuration attributes");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        hostPtr, RT_ERROR_INVALID_VALUE, "Allocating host memory based on the configuration attributes");
     ZERO_RETURN_AND_MSG_OUTER(size);
     uint16_t moduleId = static_cast<uint16_t>(MODULEID_RUNTIME);
     uint32_t vaFlag = 0U;
     rtError_t error = RT_ERROR_NONE;
     if (cfg != nullptr) {
-        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(cfg->attrs, RT_ERROR_INVALID_VALUE, "Allocating host memory based on the configuration attributes");
+        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+            cfg->attrs, RT_ERROR_INVALID_VALUE, "Allocating host memory based on the configuration attributes");
         error = GetMallocHostConfigInfo(cfg, &moduleId, &vaFlag);
         ERROR_RETURN(error, "Host memory malloc failed, size=%" PRIu64 "(bytes)", size);
     }
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     // 32 byte align
     const uint64_t curSize = (((size + 0x1FU) >> 5U) << 5U);
 
     error = curCtx->Device_()->Driver_()->HostMemAlloc(hostPtr, curSize, curCtx->Device_()->Id_(), moduleId, vaFlag);
-    ERROR_RETURN(error, "Host memory malloc failed, size=%" PRIu64 "(bytes), moduleId=%hu, vaFlag=%u.",
-        size, moduleId, vaFlag);
-    RT_LOG(RT_LOG_INFO,
-        "Host memory malloc succeed,size=%" PRIu64 "(bytes), moduleId=%hu, vaFlag=%u, host addr=%#" PRIx64 ".",
-        size, moduleId, vaFlag, RtPtrToValue(*hostPtr));
+    ERROR_RETURN(
+        error, "Host memory malloc failed, size=%" PRIu64 "(bytes), moduleId=%hu, vaFlag=%u.", size, moduleId, vaFlag);
+    RT_LOG(
+        RT_LOG_INFO,
+        "Host memory malloc succeed,size=%" PRIu64 "(bytes), moduleId=%hu, vaFlag=%u, host addr=%#" PRIx64 ".", size,
+        moduleId, vaFlag, RtPtrToValue(*hostPtr));
     return error;
 }
 
-rtError_t ApiImpl::HostFree(void * const hostPtr)
+rtError_t ApiImpl::HostFree(void* const hostPtr)
 {
-    Context * const curCtx = CurrentContext();
-    Driver *curDrv = nullptr;
+    Context* const curCtx = CurrentContext();
+    Driver* curDrv = nullptr;
     if (!ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     } else {
@@ -2449,60 +2558,57 @@ rtError_t ApiImpl::HostFree(void * const hostPtr)
     rtPtrAttributes_t attributes;
     const rtError_t error = PtrGetAttributes(hostPtr, &attributes);
     const rtMemLocationType locationType = attributes.location.type;
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE,
-        "Get hostPtr pointer attributes failed, retCode=%#x", static_cast<uint32_t>(error));
-    COND_RETURN_AND_MSG_OUTER(locationType != RT_MEMORY_LOC_HOST && locationType != RT_MEMORY_LOC_UNREGISTERED, RT_ERROR_INVALID_VALUE,
-        ErrorCode::EE1011, "Host memory release", MemLocationTypeToStr(locationType), "hostPtr locationType", "The specified address must be a host address");
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE, "Get hostPtr pointer attributes failed, retCode=%#x",
+        static_cast<uint32_t>(error));
+    COND_RETURN_AND_MSG_OUTER(
+        locationType != RT_MEMORY_LOC_HOST && locationType != RT_MEMORY_LOC_UNREGISTERED, RT_ERROR_INVALID_VALUE,
+        ErrorCode::EE1011, "Host memory release", MemLocationTypeToStr(locationType), "hostPtr locationType",
+        "The specified address must be a host address");
 #endif
 
     return curDrv->HostMemFree(hostPtr);
 }
 
-rtError_t ApiImpl::MallocHostSharedMemory(rtMallocHostSharedMemoryIn * const in,
-    rtMallocHostSharedMemoryOut * const out)
+rtError_t ApiImpl::MallocHostSharedMemory(rtMallocHostSharedMemoryIn* const in, rtMallocHostSharedMemoryOut* const out)
 {
-    RT_LOG(RT_LOG_INFO, "sharedMemName=%s, sharedMemSize=%" PRIu64 ", flag=%u.",
-        in->name, in->size, in->flag);
-    Context * const curCtx = CurrentContext();
+    RT_LOG(RT_LOG_INFO, "sharedMemName=%s, sharedMemSize=%" PRIu64 ", flag=%u.", in->name, in->size, in->flag);
+    Context* const curCtx = CurrentContext();
     NULL_PTR_RETURN_MSG(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    return curCtx->Device_()->Driver_()->MallocHostSharedMemory(in, out,
-        curCtx->Device_()->Id_());
+    return curCtx->Device_()->Driver_()->MallocHostSharedMemory(in, out, curCtx->Device_()->Id_());
 }
 
-rtError_t ApiImpl::FreeHostSharedMemory(rtFreeHostSharedMemoryIn * const in)
+rtError_t ApiImpl::FreeHostSharedMemory(rtFreeHostSharedMemoryIn* const in)
 {
-    RT_LOG(RT_LOG_INFO, "sharedMemName=%s, sharedMemSize=%" PRIu64 ", fd=%u.",
-        in->name, in->size,  in->fd);
-    Context * const curCtx = CurrentContext();
+    RT_LOG(RT_LOG_INFO, "sharedMemName=%s, sharedMemSize=%" PRIu64 ", fd=%u.", in->name, in->size, in->fd);
+    Context* const curCtx = CurrentContext();
     NULL_PTR_RETURN_MSG(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    return curCtx->Device_()->Driver_()->FreeHostSharedMemory(in,
-        curCtx->Device_()->Id_());
+    return curCtx->Device_()->Driver_()->FreeHostSharedMemory(in, curCtx->Device_()->Id_());
 }
 
-rtError_t ApiImpl::HostRegister(void *ptr, uint64_t size, rtHostRegisterType type, void **devPtr)
+rtError_t ApiImpl::HostRegister(void* ptr, uint64_t size, rtHostRegisterType type, void** devPtr)
 {
     RT_LOG(RT_LOG_INFO, "MemSize=%" PRIu64 "u, type=%d.", size, type);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     NULL_PTR_RETURN_MSG(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    return curCtx->Device_()->Driver_()->HostRegister(ptr, size, type, devPtr,
-        curCtx->Device_()->Id_());
+    return curCtx->Device_()->Driver_()->HostRegister(ptr, size, type, devPtr, curCtx->Device_()->Id_());
 }
 
-rtError_t ApiImpl::HostRegisterV2(void *ptr, uint64_t size, uint32_t flag)
+rtError_t ApiImpl::HostRegisterV2(void* ptr, uint64_t size, uint32_t flag)
 {
     RT_LOG(RT_LOG_INFO, "MemSize=%" PRIu64 ", flag=%u.", size, flag);
-    Context *const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     NULL_PTR_RETURN_MSG(curCtx, RT_ERROR_CONTEXT_NULL);
-    const Device *const dev = curCtx->Device_();
+    const Device* const dev = curCtx->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     const uint32_t deviceId = dev->Id_();
 
     rtError_t error = RT_ERROR_NONE;
-    void *devPtr = nullptr;
-    void **pDevice = &devPtr;
+    void* devPtr = nullptr;
+    void** pDevice = &devPtr;
 
     if ((flag & (RT_MEM_HOST_REGISTER_MAPPED | RT_MEM_HOST_REGISTER_IOMEMORY | RT_MEM_HOST_REGISTER_READONLY)) != 0U) {
         uint32_t typeMask = static_cast<uint32_t>(RT_HOST_REGISTER_MAPPED);
@@ -2512,8 +2618,7 @@ rtError_t ApiImpl::HostRegisterV2(void *ptr, uint64_t size, uint32_t flag)
         if ((flag & RT_MEM_HOST_REGISTER_READONLY) != 0U) {
             typeMask |= static_cast<uint32_t>(RT_HOST_REGISTER_READONLY);
         }
-        error = dev->Driver_()->HostRegister(ptr, size, static_cast<rtHostRegisterType>(typeMask), pDevice,
-            deviceId);
+        error = dev->Driver_()->HostRegister(ptr, size, static_cast<rtHostRegisterType>(typeMask), pDevice, deviceId);
         COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
     }
 
@@ -2524,59 +2629,62 @@ rtError_t ApiImpl::HostRegisterV2(void *ptr, uint64_t size, uint32_t flag)
     return error;
 }
 
-rtError_t ApiImpl::HostUnregister(void *ptr)
+rtError_t ApiImpl::HostUnregister(void* ptr)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     NULL_PTR_RETURN_MSG(curCtx, RT_ERROR_CONTEXT_NULL);
 
     bool isRegister = false;
-    if(IsMappedMemoryBase(ptr)) {
+    if (IsMappedMemoryBase(ptr)) {
         isRegister = true;
         const uint32_t deviceId = curCtx->Device_()->Id_();
         const rtError_t error = curCtx->Device_()->Driver_()->HostUnregister(ptr, deviceId);
         COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
     }
 
-    if(IsPinnedMemoryBase(ptr)) {
+    if (IsPinnedMemoryBase(ptr)) {
         isRegister = true;
         ErasePinnedMemory(ptr);
     }
     return (isRegister) ? RT_ERROR_NONE : RT_ERROR_HOST_MEMORY_NOT_REGISTERED;
 }
 
-rtError_t ApiImpl::HostGetDevicePointer(void *pHost, void **pDevice, uint32_t flag)
+rtError_t ApiImpl::HostGetDevicePointer(void* pHost, void** pDevice, uint32_t flag)
 {
     (void)flag;
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const rtError_t ret = curCtx->Device_()->Driver_()->HostGetDevPointer(pHost, curCtx->Device_()->Id_(), pDevice);
     if (ret == RT_ERROR_FEATURE_NOT_SUPPORT) {
         *pDevice = GetMappedDevicePointer(pHost);
-        COND_RETURN_AND_MSG_OUTER(*pDevice == nullptr, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
-            "Obtaining the on-device memory pointer based on the on-host virtual address", RtFmtMsg("%#" PRIx64, RtPtrToValue(pHost)), "pHost",
+        COND_RETURN_AND_MSG_OUTER(
+            *pDevice == nullptr, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+            "Obtaining the on-device memory pointer based on the on-host virtual address",
+            RtFmtMsg("%#" PRIx64, RtPtrToValue(pHost)), "pHost",
             "The host pointer has not been registered for device address mapping");
         return RT_ERROR_NONE;
     } else {
-        COND_RETURN_AND_MSG_OUTER(ret == RT_ERROR_INVALID_VALUE, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
-            "Obtaining the on-device memory pointer based on the on-host virtual address", RtFmtMsg("%#" PRIx64, RtPtrToValue(pHost)), "pHost",
+        COND_RETURN_AND_MSG_OUTER(
+            ret == RT_ERROR_INVALID_VALUE, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+            "Obtaining the on-device memory pointer based on the on-host virtual address",
+            RtFmtMsg("%#" PRIx64, RtPtrToValue(pHost)), "pHost",
             "The host pointer has not been registered for device address mapping");
     }
     return ret;
 }
 
-rtError_t ApiImpl::HostMemMapCapabilities(uint32_t deviceId, rtHacType hacType, rtHostMemMapCapability *capabilities)
+rtError_t ApiImpl::HostMemMapCapabilities(uint32_t deviceId, rtHacType hacType, rtHostMemMapCapability* capabilities)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     NULL_PTR_RETURN_MSG(curCtx, RT_ERROR_CONTEXT_NULL);
 
     return curCtx->Device_()->Driver_()->HostMemMapCapabilities(deviceId, hacType, capabilities);
 }
 
-rtError_t ApiImpl::ManagedMemAlloc(void ** const ptr, const uint64_t size, const uint32_t flag,
-    const uint16_t moduleId)
+rtError_t ApiImpl::ManagedMemAlloc(void** const ptr, const uint64_t size, const uint32_t flag, const uint16_t moduleId)
 {
     RT_LOG(RT_LOG_DEBUG, "managed memory alloc, size=%" PRIu64 ", flag=%u", size, flag);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if ((flag == RT_MEMORY_SPM) && (size <= 512U)) { // 512:alloc size
@@ -2584,20 +2692,21 @@ rtError_t ApiImpl::ManagedMemAlloc(void ** const ptr, const uint64_t size, const
     } else if (flag == RT_MEMORY_DDR_NC) {
         return curCtx->Device_()->Driver_()->MemAllocEx(ptr, size, RT_MEMORY_DDR_NC);
     } else if (flag == RT_MEMORY_ATTACH_GLOBAL) {
-        const uint64_t alignSize = (((size + 0x1FFFFFUL) >> 21U) <<21U);
-        return curCtx->Device_()->Driver_()->ManagedMemAlloc(ptr, alignSize, Driver::MANAGED_MEM_UVM, curCtx->Device_()->Id_(), moduleId);
+        const uint64_t alignSize = (((size + 0x1FFFFFUL) >> 21U) << 21U);
+        return curCtx->Device_()->Driver_()->ManagedMemAlloc(
+            ptr, alignSize, Driver::MANAGED_MEM_UVM, curCtx->Device_()->Id_(), moduleId);
     } else {
-        return curCtx->Device_()->Driver_()
-            ->ManagedMemAlloc(ptr, size, Driver::MANAGED_MEM_RW, curCtx->Device_()->Id_(), moduleId);
+        return curCtx->Device_()->Driver_()->ManagedMemAlloc(
+            ptr, size, Driver::MANAGED_MEM_RW, curCtx->Device_()->Id_(), moduleId);
     }
 }
 
-rtError_t ApiImpl::ManagedMemFree(const void * const ptr)
+rtError_t ApiImpl::ManagedMemFree(const void* const ptr)
 {
     RT_LOG(RT_LOG_INFO, "managed memory free.");
 
-    Context * const curCtx = CurrentContext();
-    Driver *curDrv = nullptr;
+    Context* const curCtx = CurrentContext();
+    Driver* curDrv = nullptr;
     if (!ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     } else {
@@ -2613,28 +2722,29 @@ rtError_t ApiImpl::ManagedMemFree(const void * const ptr)
     return curDrv->ManagedMemFree(ptr);
 }
 
-rtError_t ApiImpl::MemAdvise(void *devPtr, uint64_t count, uint32_t advise)
+rtError_t ApiImpl::MemAdvise(void* devPtr, uint64_t count, uint32_t advise)
 {
     RT_LOG(RT_LOG_DEBUG, "memory advise, count=%" PRIu64 ", advise=%u.", count, advise);
-    Context *ctx = CurrentContext();
+    Context* ctx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(ctx, RT_ERROR_CONTEXT_NULL);
 
     return ctx->Device_()->Driver_()->MemAdvise(devPtr, count, advise, ctx->Device_()->Id_());
 }
 
-rtError_t ApiImpl::DevMallocCached(void ** const devPtr, const uint64_t size, const rtMemType_t type,
-    const uint16_t moduleId)
+rtError_t ApiImpl::DevMallocCached(
+    void** const devPtr, const uint64_t size, const rtMemType_t type, const uint16_t moduleId)
 {
     RT_LOG(RT_LOG_INFO, "dev cached memory alloc, size=%" PRIu64 ", type=%u.", size, type);
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(devPtr, RT_ERROR_INVALID_VALUE, "Allocating device memory with the cache attribute");
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(size > MAX_ALLOC_SIZE, RT_ERROR_INVALID_VALUE, 
-        "Allocating device memory with the cache attribute", size, "(0, " + std::to_string(MAX_ALLOC_SIZE) + "]");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        devPtr, RT_ERROR_INVALID_VALUE, "Allocating device memory with the cache attribute");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        size > MAX_ALLOC_SIZE, RT_ERROR_INVALID_VALUE, "Allocating device memory with the cache attribute", size,
+        "(0, " + std::to_string(MAX_ALLOC_SIZE) + "]");
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    return curCtx->Device_()->Driver_()
-        ->DevMemAllocCached(devPtr, size, type, curCtx->Device_()->Id_(), moduleId);
+    return curCtx->Device_()->Driver_()->DevMemAllocCached(devPtr, size, type, curCtx->Device_()->Id_(), moduleId);
 }
 
 rtError_t ApiImpl::FlushCache(const uint64_t base, const size_t len)
@@ -2642,7 +2752,7 @@ rtError_t ApiImpl::FlushCache(const uint64_t base, const size_t len)
     RT_LOG(RT_LOG_INFO, "flush cache base=%" PRIu64 ", len=%zu.", base, len);
     COND_RETURN_AND_MSG_OUTER_WITH_PARAM(base == 0U, RT_ERROR_INVALID_VALUE, base, "not equal to 0");
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     rtError_t error = curCtx->Device_()->GetDeviceStatus();
     COND_PROC((error == RT_ERROR_DEVICE_TASK_ABORT), return error);
@@ -2652,20 +2762,20 @@ rtError_t ApiImpl::FlushCache(const uint64_t base, const size_t len)
 rtError_t ApiImpl::InvalidCache(const uint64_t base, const size_t len)
 {
     RT_LOG(RT_LOG_INFO, "invalid cache base=%" PRIu64 ", len=%zu.", base, len);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(base == 0U, RT_ERROR_INVALID_VALUE, 
-        base, "not equal to 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(base == 0U, RT_ERROR_INVALID_VALUE, base, "not equal to 0");
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::MemCopySync(void * const dst, const uint64_t destMax, const void * const src, const uint64_t cnt,
-    const rtMemcpyKind_t kind, const uint32_t checkKind)
+rtError_t ApiImpl::MemCopySync(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind_t kind,
+    const uint32_t checkKind)
 {
     RT_LOG(RT_LOG_DEBUG, "memcpy sync, cnt=%" PRIu64 ", kind=%d.", cnt, kind);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     Device* device = curCtx->Device_();
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(device, RT_ERROR_INVALID_VALUE, "Synchronous memory copy");
@@ -2678,24 +2788,24 @@ rtError_t ApiImpl::MemCopySync(void * const dst, const uint64_t destMax, const v
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(driver, RT_ERROR_INVALID_VALUE, "Synchronous memory copy");
     rtMemcpyKind_t curKind = kind;
     if (device->IsSPM(dst)) {
-        curKind = (driver->GetRunMode() == static_cast<uint32_t>(RT_RUN_MODE_ONLINE)) ?
-            RT_MEMCPY_HOST_TO_DEVICE : RT_MEMCPY_DEVICE_TO_DEVICE;
+        curKind = (driver->GetRunMode() == static_cast<uint32_t>(RT_RUN_MODE_ONLINE)) ? RT_MEMCPY_HOST_TO_DEVICE :
+                                                                                        RT_MEMCPY_DEVICE_TO_DEVICE;
     }
 
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     if (((checkKind == WITHOUT_CHECK_KIND) || (checkKind == NOT_CHECK_KIND_BUT_CHECK_PINNED)) &&
         IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_MEM_MBUF_COPY)) {
-            /* on cloudv2, mbuff memcpy */
-            return driver->MemCopySync(dst, destMax, src, cnt, curKind, true, device->Id_());
+        /* on cloudv2, mbuff memcpy */
+        return driver->MemCopySync(dst, destMax, src, cnt, curKind, true, device->Id_());
     }
     return driver->MemCopySync(dst, destMax, src, cnt, curKind);
 }
 
-rtError_t ApiImpl::MemCopySyncEx(void * const dst, const uint64_t destMax, const void * const src, const uint64_t cnt,
-    const rtMemcpyKind_t kind)
+rtError_t ApiImpl::MemCopySyncEx(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind_t kind)
 {
     RT_LOG(RT_LOG_DEBUG, "memcpy sync, cnt=%" PRIu64 ", kind=%d.", cnt, kind);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     Device* device = curCtx->Device_();
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(device, RT_ERROR_INVALID_VALUE, "Synchronous memory copy");
@@ -2707,8 +2817,8 @@ rtError_t ApiImpl::MemCopySyncEx(void * const dst, const uint64_t destMax, const
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(driver, RT_ERROR_INVALID_VALUE, "Synchronous memory copy");
     rtMemcpyKind_t curKind = kind;
     if (device->IsSPM(dst)) {
-        curKind = (driver->GetRunMode() == static_cast<uint32_t>(RT_RUN_MODE_ONLINE)) ?
-            RT_MEMCPY_HOST_TO_DEVICE : RT_MEMCPY_DEVICE_TO_DEVICE;
+        curKind = (driver->GetRunMode() == static_cast<uint32_t>(RT_RUN_MODE_ONLINE)) ? RT_MEMCPY_HOST_TO_DEVICE :
+                                                                                        RT_MEMCPY_DEVICE_TO_DEVICE;
     }
 
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
@@ -2719,7 +2829,7 @@ rtError_t ApiImpl::MemCopySyncEx(void * const dst, const uint64_t destMax, const
     return driver->MemCopySync(dst, destMax, src, cnt, curKind);
 }
 
-static void ConvertMappedAddrToDevice(Device* const device, void* &src, rtMemcpyKind_t &kind)
+static void ConvertMappedAddrToDevice(Device* const device, void*& src, rtMemcpyKind_t& kind)
 {
 #if defined(__x86_64__)
     RT_LOG(RT_LOG_DEBUG, "On x86, hardware does not support using sdma for h2d copy.");
@@ -2733,11 +2843,11 @@ static void ConvertMappedAddrToDevice(Device* const device, void* &src, rtMemcpy
     if (kind != RT_MEMCPY_HOST_TO_DEVICE) {
         return;
     }
-    Driver *driver = device->Driver_();
+    Driver* driver = device->Driver_();
     if (unlikely(driver == nullptr)) {
         return;
     }
-    void *devicePtr = nullptr;
+    void* devicePtr = nullptr;
     (void)driver->HostGetDevPointer(src, device->Id_(), &devicePtr, false);
     if (devicePtr != nullptr) {
         RT_LOG(RT_LOG_DEBUG, "Convert host addr=%p to device addr=%p, device id=%u.", src, devicePtr, device->Id_());
@@ -2746,10 +2856,11 @@ static void ConvertMappedAddrToDevice(Device* const device, void* &src, rtMemcpy
     }
 }
 
-static rtError_t LaunchAsyncCopy(void *dst, const uint64_t destMax, void *src, const uint64_t cnt, rtMemcpyKind_t kind,
-    Stream * const stm, const rtTaskCfgInfo_t * const cfgInfo, const rtD2DAddrCfgInfo_t * const addrCfg)
+static rtError_t LaunchAsyncCopy(
+    void* dst, const uint64_t destMax, void* src, const uint64_t cnt, rtMemcpyKind_t kind, Stream* const stm,
+    const rtTaskCfgInfo_t* const cfgInfo, const rtD2DAddrCfgInfo_t* const addrCfg)
 {
-    Device *const device = stm->Device_();
+    Device* const device = stm->Device_();
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(device, RT_ERROR_INVALID_VALUE, "Asynchronous memory copy");
     ConvertMappedAddrToDevice(device, src, kind);
 
@@ -2781,16 +2892,17 @@ static rtError_t LaunchAsyncCopy(void *dst, const uint64_t destMax, void *src, c
     return error;
 }
 
-rtError_t ApiImpl::MemcpyAsync(void * const dst, const uint64_t destMax, const void * const src, const uint64_t cnt,
-    const rtMemcpyKind_t kind, Stream * const stm, const rtTaskCfgInfo_t * const cfgInfo,
-    const rtD2DAddrCfgInfo_t * const addrCfg, bool checkKind, const rtMemcpyConfig_t * const memcpyConfig)
+rtError_t ApiImpl::MemcpyAsync(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind_t kind,
+    Stream* const stm, const rtTaskCfgInfo_t* const cfgInfo, const rtD2DAddrCfgInfo_t* const addrCfg, bool checkKind,
+    const rtMemcpyConfig_t* const memcpyConfig)
 {
     RT_LOG(RT_LOG_DEBUG, "async memcpy, count=%" PRIu64 ", kind=%d", cnt, kind);
     UNUSED(memcpyConfig);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -2798,83 +2910,98 @@ rtError_t ApiImpl::MemcpyAsync(void * const dst, const uint64_t destMax, const v
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
     // UVM memcpyAsync doesn't support RT_MEMCPY_ADDR_DEVICE_TO_DEVICE
-    if ((kind != RT_MEMCPY_ADDR_DEVICE_TO_DEVICE) && (UvmCallback::IsUvmMem(src, cnt) || UvmCallback::IsUvmMem(dst, cnt))) {
-        rtMemcpyCallbackParam *params = new (std::nothrow) rtMemcpyCallbackParam;
-        COND_RETURN_AND_MSG_OUTER((params == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-            sizeof(rtMemcpyCallbackParam), "new");
+    if ((kind != RT_MEMCPY_ADDR_DEVICE_TO_DEVICE) &&
+        (UvmCallback::IsUvmMem(src, cnt) || UvmCallback::IsUvmMem(dst, cnt))) {
+        rtMemcpyCallbackParam* params = new (std::nothrow) rtMemcpyCallbackParam;
+        COND_RETURN_AND_MSG_OUTER(
+            (params == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(rtMemcpyCallbackParam), "new");
         UvmCallback::CreateMemcpyCallbackParam(dst, destMax, src, cnt, kind, checkKind, curStm, params);
-        const rtError_t error = LaunchHostFunc(curStm, &UvmCallback::MemcpyAsyncCallback, static_cast<void *>(params));
-        ERROR_PROC_RETURN_MSG_INNER(error, delete params, "CallbackLaunch fails in MemcopyAsync, err:%#x.", static_cast<uint32_t>(error));
+        const rtError_t error = LaunchHostFunc(curStm, &UvmCallback::MemcpyAsyncCallback, static_cast<void*>(params));
+        ERROR_PROC_RETURN_MSG_INNER(
+            error, delete params, "CallbackLaunch fails in MemcopyAsync, err:%#x.", static_cast<uint32_t>(error));
         return RT_ERROR_NONE;
     }
 
-    void *mutableSrc = RtPtrToUnConstPtr<void *>(src);
+    void* mutableSrc = RtPtrToUnConstPtr<void*>(src);
     return LaunchAsyncCopy(dst, destMax, mutableSrc, cnt, kind, curStm, cfgInfo, addrCfg);
 }
 
-rtError_t ApiImpl::LaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void *src, uint64_t cnt, Stream * const stm, bool needCpuTask)
+rtError_t ApiImpl::LaunchSqeUpdateTask(
+    uint32_t streamId, uint32_t taskId, void* src, uint64_t cnt, Stream* const stm, bool needCpuTask)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Stream *curStm = const_cast<Stream *>(stm);
+    Stream* curStm = const_cast<Stream*>(stm);
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
 
-    COND_RETURN_AND_MSG_OUTER(curStm->GetBindFlag() == true, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
-        "Updating task information", "stream", RtFmtMsg("Stream (stream_id=%d) should be a single-operator flow stream", curStm->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        curStm->GetBindFlag() == true, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Updating task information", "stream",
+        RtFmtMsg("Stream (stream_id=%d) should be a single-operator flow stream", curStm->Id_()));
 
-    COND_RETURN_AND_MSG_OUTER(curStm->IsCapturing() == true, RT_ERROR_STREAM_CAPTURED, ErrorCode::EE1016,
-        "Updating task information", RtFmtMsg("Stream (stream_id=%d) during the capture stage is not supported", curStm->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        curStm->IsCapturing() == true, RT_ERROR_STREAM_CAPTURED, ErrorCode::EE1016, "Updating task information",
+        RtFmtMsg("Stream (stream_id=%d) during the capture stage is not supported", curStm->Id_()));
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
-    Device * const dev = curCtx->Device_();
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dev, RT_ERROR_INVALID_VALUE, "Delivering the Submission Queue Entry (SQE) update task");
+    Device* const dev = curCtx->Device_();
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        dev, RT_ERROR_INVALID_VALUE, "Delivering the Submission Queue Entry (SQE) update task");
 
-    StreamSqCqManage * const streamSqCqManagePtr = dev->GetStreamSqCqManage();
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(streamSqCqManagePtr, RT_ERROR_INVALID_VALUE, "Delivering the Submission Queue Entry (SQE) update task");
+    StreamSqCqManage* const streamSqCqManagePtr = dev->GetStreamSqCqManage();
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        streamSqCqManagePtr, RT_ERROR_INVALID_VALUE, "Delivering the Submission Queue Entry (SQE) update task");
 
-    TaskFactory * const devTaskFactory = dev->GetTaskFactory();
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(devTaskFactory, RT_ERROR_INVALID_VALUE, "Delivering the Submission Queue Entry (SQE) update task");
+    TaskFactory* const devTaskFactory = dev->GetTaskFactory();
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        devTaskFactory, RT_ERROR_INVALID_VALUE, "Delivering the Submission Queue Entry (SQE) update task");
 
-    Stream *modelStream = nullptr;
+    Stream* modelStream = nullptr;
     rtError_t error = streamSqCqManagePtr->GetStreamById(streamId, &modelStream);
-    COND_RETURN_ERROR_MSG_INNER(((error != RT_ERROR_NONE) || (modelStream == nullptr)), error,
-        "Query stream failed, dev_id=%d, stream_id=%u, retCode=%#x.",
-        dev->Id_(), streamId, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        ((error != RT_ERROR_NONE) || (modelStream == nullptr)), error,
+        "Query stream failed, dev_id=%d, stream_id=%u, retCode=%#x.", dev->Id_(), streamId,
+        static_cast<uint32_t>(error));
 
     if ((modelStream->GetBindFlag() == false) || (modelStream->GetModelNum() == 0)) {
-        RT_LOG_CALL_MSG(ERR_MODULE_GE, "Invalid dev_id=%d, stream_id=%u, stream is not in model",
-            dev->Id_(), streamId);
+        RT_LOG_CALL_MSG(ERR_MODULE_GE, "Invalid dev_id=%d, stream_id=%u, stream is not in model", dev->Id_(), streamId);
         return RT_ERROR_INVALID_VALUE;
     }
 
     TaskInfo* task = devTaskFactory->GetTask(static_cast<int32_t>(streamId), taskId);
 
-    COND_RETURN_AND_MSG_OUTER(task == nullptr, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Updating task information",
-        "stream ID and task ID", "The corresponding task cannot be found through the device ID " + std::to_string(dev->Id_()) +
-        ", stream ID " + std::to_string(streamId) + ", task ID " + std::to_string(taskId));
-    COND_RETURN_AND_MSG_OUTER((task->type != TS_TASK_TYPE_STARS_COMMON || task->u.starsCommTask.commonStarsSqe.commonSqe.sqeHeader.type != RT_STARS_SQE_TYPE_DSA), 
-        RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Updating task information",
-        "stream ID and task ID", "Only the random number generation task supports this update operation");
+    COND_RETURN_AND_MSG_OUTER(
+        task == nullptr, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Updating task information",
+        "stream ID and task ID",
+        "The corresponding task cannot be found through the device ID " + std::to_string(dev->Id_()) + ", stream ID " +
+            std::to_string(streamId) + ", task ID " + std::to_string(taskId));
+    COND_RETURN_AND_MSG_OUTER(
+        (task->type != TS_TASK_TYPE_STARS_COMMON ||
+         task->u.starsCommTask.commonStarsSqe.commonSqe.sqeHeader.type != RT_STARS_SQE_TYPE_DSA),
+        RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Updating task information", "stream ID and task ID",
+        "Only the random number generation task supports this update operation");
 
     const uint32_t sqId = modelStream->GetSqId();
     const uint32_t pos = task->pos;
 
-    if (needCpuTask == false){
+    if (needCpuTask == false) {
         if (task->u.starsCommTask.srcDevAddr == nullptr) {
             task->u.starsCommTask.srcDevAddr = src;
         } else {
             const uint64_t dsaSrcDevAddr =
                 static_cast<uint64_t>(reinterpret_cast<uintptr_t>(task->u.starsCommTask.srcDevAddr));
             const uint64_t currentSrcDevAddr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(src));
-            COND_RETURN_AND_MSG_OUTER(dsaSrcDevAddr != currentSrcDevAddr, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
+            COND_RETURN_AND_MSG_OUTER(
+                dsaSrcDevAddr != currentSrcDevAddr, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
                 "Updating task information", "info",
                 "The device memory address " + std::to_string(dsaSrcDevAddr) +
-                " for storing the data to be updated in the configuration is inconsistent with the currently specified device memory address " +
-                std::to_string(currentSrcDevAddr) + ". Ensure that the same device memory address is used for multiple task updates.");
+                    " for storing the data to be updated in the configuration is inconsistent with the currently "
+                    "specified device memory address " +
+                    std::to_string(currentSrcDevAddr) +
+                    ". Ensure that the same device memory address is used for multiple task updates.");
         }
         return curCtx->LaunchSqeUpdateTask(src, cnt, sqId, pos, curStm);
     } else {
@@ -2882,8 +3009,8 @@ rtError_t ApiImpl::LaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void 
             task->u.starsCommTask.randomDevAddr == nullptr, RT_ERROR_INVALID_VALUE, "randomDevAddr is null.");
         // randomDevAddr + RANDOM_INPUT_PARAM_SIZE bytes used as dsa update aicpu op's output sqe addr
         constexpr uint32_t randomIuputParamSize = 16U;
-        void *outputSqeAddr =
-            RtPtrToPtr<void *, uint8_t*>(static_cast<uint8_t *>(task->u.starsCommTask.randomDevAddr) + randomIuputParamSize);
+        void* outputSqeAddr = RtPtrToPtr<void*, uint8_t*>(
+            static_cast<uint8_t*>(task->u.starsCommTask.randomDevAddr) + randomIuputParamSize);
 
         // built aicpu task param
         const std::string soName = "libaicpu_extend_kernels.so";
@@ -2896,32 +3023,42 @@ rtError_t ApiImpl::LaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void 
         // append RtAicpuKernelArgs, refer to RtAicpuKernelArgs.
         constexpr uint32_t kernelType = 0U;
         errno_t ret = memcpy_s(args + offset, sizeof(kernelType), &kernelType, sizeof(kernelType));
-        COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE,
-            "Failed to call Memcpy_s function to copy kernelType, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, retCode=%#x",
+        COND_RETURN_ERROR_MSG_INNER(
+            ret != EOK, RT_ERROR_SEC_HANDLE,
+            "Failed to call Memcpy_s function to copy kernelType, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, "
+            "retCode=%#x",
             args + offset, &kernelType, sizeof(kernelType), sizeof(kernelType), static_cast<uint32_t>(ret));
 
         offset += sizeof(kernelType);
-        constexpr uint32_t paramLength = 24U;  // DsaUpdateParam size
+        constexpr uint32_t paramLength = 24U; // DsaUpdateParam size
         ret = memcpy_s(args + offset, sizeof(paramLength), &paramLength, sizeof(paramLength));
-        COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE,
-            "Failed to call Memcpy_s function to copy paramLength, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, retCode=%#x",
+        COND_RETURN_ERROR_MSG_INNER(
+            ret != EOK, RT_ERROR_SEC_HANDLE,
+            "Failed to call Memcpy_s function to copy paramLength, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, "
+            "retCode=%#x",
             args + offset, &paramLength, sizeof(paramLength), sizeof(paramLength), static_cast<uint32_t>(ret));
         offset += sizeof(paramLength);
         // append DsaUpdateParam, refer to DsaUpdateParam struct
         ret = memcpy_s(args + offset, sizeof(src), &src, sizeof(src));
-        COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE,
-            "Failed to call Memcpy_s function to copy src, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, retCode=%#x",
+        COND_RETURN_ERROR_MSG_INNER(
+            ret != EOK, RT_ERROR_SEC_HANDLE,
+            "Failed to call Memcpy_s function to copy src, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, "
+            "retCode=%#x",
             args + offset, &src, sizeof(src), sizeof(src), static_cast<uint32_t>(ret));
         offset += sizeof(src);
         ret = memcpy_s(args + offset, sizeof(outputSqeAddr), &outputSqeAddr, sizeof(outputSqeAddr));
-        COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE,
-            "Failed to call Memcpy_s function to copy outputSqeAddr, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, retCode=%#x",
+        COND_RETURN_ERROR_MSG_INNER(
+            ret != EOK, RT_ERROR_SEC_HANDLE,
+            "Failed to call Memcpy_s function to copy outputSqeAddr, destAddr=%p, srcAddr=%p, maxLen=%zu, "
+            "actualLen=%zu, retCode=%#x",
             args + offset, &outputSqeAddr, sizeof(outputSqeAddr), sizeof(outputSqeAddr), static_cast<uint32_t>(ret));
         offset += sizeof(outputSqeAddr);
-        void *dsaCfgParam = task->u.starsCommTask.randomDevAddr;
-        ret = memcpy_s(args + offset, sizeof(dsaCfgParam), &dsaCfgParam, sizeof(dsaCfgParam)); 
-        COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE,
-            "Failed to call Memcpy_s function to copy dsaCfgParam, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, retCode=%#x",
+        void* dsaCfgParam = task->u.starsCommTask.randomDevAddr;
+        ret = memcpy_s(args + offset, sizeof(dsaCfgParam), &dsaCfgParam, sizeof(dsaCfgParam));
+        COND_RETURN_ERROR_MSG_INNER(
+            ret != EOK, RT_ERROR_SEC_HANDLE,
+            "Failed to call Memcpy_s function to copy dsaCfgParam, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, "
+            "retCode=%#x",
             args + offset, &dsaCfgParam, sizeof(dsaCfgParam), sizeof(dsaCfgParam), static_cast<uint32_t>(ret));
 
         offset += sizeof(dsaCfgParam);
@@ -2929,8 +3066,10 @@ rtError_t ApiImpl::LaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void 
         const uint32_t soNameAddrOffset = static_cast<uint32_t>(offset);
         const size_t soNameLen = soName.length() + 1U;
         ret = memcpy_s(args + offset, soNameLen, soName.c_str(), soNameLen);
-        COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE,
-            "Failed to call Memcpy_s function to copy soName, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, retCode=%#x",
+        COND_RETURN_ERROR_MSG_INNER(
+            ret != EOK, RT_ERROR_SEC_HANDLE,
+            "Failed to call Memcpy_s function to copy soName, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, "
+            "retCode=%#x",
             args + offset, soName.c_str(), soNameLen, soNameLen, static_cast<uint32_t>(ret));
         offset += soNameLen;
 
@@ -2938,8 +3077,10 @@ rtError_t ApiImpl::LaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void 
         const uint32_t kernelNameAddrOffset = static_cast<uint32_t>(offset);
         const size_t kernelNameLen = kernelName.length() + 1U;
         ret = memcpy_s(args + offset, kernelNameLen, kernelName.c_str(), kernelNameLen);
-        COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE,
-            "Failed to call Memcpy_s function to copy kernelName, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, retCode=%#x",
+        COND_RETURN_ERROR_MSG_INNER(
+            ret != EOK, RT_ERROR_SEC_HANDLE,
+            "Failed to call Memcpy_s function to copy kernelName, destAddr=%p, srcAddr=%p, maxLen=%zu, actualLen=%zu, "
+            "retCode=%#x",
             args + offset, kernelName.c_str(), kernelNameLen, kernelNameLen, static_cast<uint32_t>(ret));
 
         // launch aicpu task to update dsa.
@@ -2955,35 +3096,38 @@ rtError_t ApiImpl::LaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void 
         argsInfo.argsSize = argsSize;
         argsInfo.args = args;
 
-        error = StreamLaunchCpuKernelExWithArgs(1U, &argsInfo, nullptr, curStm, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU_KFC, nullptr);
+        error = StreamLaunchCpuKernelExWithArgs(
+            1U, &argsInfo, nullptr, curStm, RT_KERNEL_DEFAULT, KERNEL_TYPE_AICPU_KFC, nullptr);
         COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "update dsa failed, due to launch cpu task failed.");
         RT_LOG(RT_LOG_INFO, "launch dsa update cpu task success.");
         // LaunchSqeUpdateTask only update sqe from offset=DSA_SQE_UPDATE_OFFSET, so need add offset.
         constexpr uint32_t dsaSqeUpdateOffset = 16U;
-        constexpr uint32_t dsaSqeUpdateSize = 40U;   // SqeUpdateTask only can copy 40 bytes;
-        void *copySqeAddr = RtPtrToPtr<void *, uint8_t*>(static_cast<uint8_t *>(outputSqeAddr) + dsaSqeUpdateOffset);
+        constexpr uint32_t dsaSqeUpdateSize = 40U; // SqeUpdateTask only can copy 40 bytes;
+        void* copySqeAddr = RtPtrToPtr<void*, uint8_t*>(static_cast<uint8_t*>(outputSqeAddr) + dsaSqeUpdateOffset);
         return curCtx->LaunchSqeUpdateTask(copySqeAddr, dsaSqeUpdateSize, sqId, pos, curStm);
     }
 }
 
-rtError_t ApiImpl::MemcpyAsyncPtr(void * const memcpyAddrInfo, const uint64_t destMax,
-    const uint64_t count, Stream *stm, const rtTaskCfgInfo_t * const cfgInfo, const bool isMemcpyDesc)
+rtError_t ApiImpl::MemcpyAsyncPtr(
+    void* const memcpyAddrInfo, const uint64_t destMax, const uint64_t count, Stream* stm,
+    const rtTaskCfgInfo_t* const cfgInfo, const bool isMemcpyDesc)
 {
     RT_LOG(RT_LOG_DEBUG, "async memcpy, using ptr_mode = 1, stream=%p, count=%" PRIu64 ".", stm, count);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (stm == nullptr) {
         stm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(stm);
     }
-    
+
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
     return MemcopyAsyncPtr(memcpyAddrInfo, destMax, count, stm, nullptr, cfgInfo, isMemcpyDesc);
 }
 
-rtError_t ApiImpl::RtsMemcpyAsync(void * const dst, const uint64_t destMax, const void * const src, const uint64_t cnt,
-    const rtMemcpyKind kind, rtMemcpyConfig_t * const config, Stream * const stm)
+rtError_t ApiImpl::RtsMemcpyAsync(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind kind,
+    rtMemcpyConfig_t* const config, Stream* const stm)
 {
     UNUSED(dst);
     UNUSED(destMax);
@@ -2995,8 +3139,9 @@ rtError_t ApiImpl::RtsMemcpyAsync(void * const dst, const uint64_t destMax, cons
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::RtsMemcpy(void * const dst, const uint64_t destMax, const void * const src, const uint64_t cnt,
-    const rtMemcpyKind kind, rtMemcpyConfig_t * const config)
+rtError_t ApiImpl::RtsMemcpy(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind kind,
+    rtMemcpyConfig_t* const config)
 {
     UNUSED(dst);
     UNUSED(destMax);
@@ -3007,18 +3152,19 @@ rtError_t ApiImpl::RtsMemcpy(void * const dst, const uint64_t destMax, const voi
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::SetMemcpyDesc(rtMemcpyDesc_t desc, const void * const srcAddr, const void * const dstAddr,
-    const size_t count, const rtMemcpyKind kind, rtMemcpyConfig_t * const config)
+rtError_t ApiImpl::SetMemcpyDesc(
+    rtMemcpyDesc_t desc, const void* const srcAddr, const void* const dstAddr, const size_t count,
+    const rtMemcpyKind kind, rtMemcpyConfig_t* const config)
 {
     UNUSED(kind);
     UNUSED(config);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     return curCtx->SetMemcpyDesc(desc, srcAddr, dstAddr, count);
 }
 
-rtError_t ApiImpl::MemcpyAsyncWithDesc(rtMemcpyDesc_t desc, Stream *stm, const rtMemcpyKind kind,
-    rtMemcpyConfig_t * const config)
+rtError_t ApiImpl::MemcpyAsyncWithDesc(
+    rtMemcpyDesc_t desc, Stream* stm, const rtMemcpyKind kind, rtMemcpyConfig_t* const config)
 {
     UNUSED(desc);
     UNUSED(stm);
@@ -3027,15 +3173,15 @@ rtError_t ApiImpl::MemcpyAsyncWithDesc(rtMemcpyDesc_t desc, Stream *stm, const r
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ReduceAsync(void * const dst, const void * const src, const uint64_t cnt,
-    const rtRecudeKind_t kind, const rtDataType_t type, Stream * const stm,
-    const rtTaskCfgInfo_t * const cfgInfo)
+rtError_t ApiImpl::ReduceAsync(
+    void* const dst, const void* const src, const uint64_t cnt, const rtRecudeKind_t kind, const rtDataType_t type,
+    Stream* const stm, const rtTaskCfgInfo_t* const cfgInfo)
 {
     RT_LOG(RT_LOG_INFO, "ReduceAsync, count=%" PRIu64 ", kind=%d.", cnt, kind);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -3045,27 +3191,29 @@ rtError_t ApiImpl::ReduceAsync(void * const dst, const void * const src, const u
     return cce::runtime::ReduceAsync(dst, src, cnt, kind, type, curStm, cfgInfo);
 }
 
-rtError_t ApiImpl::ReduceAsyncV2(void * const dst, const void * const src, const uint64_t cnt,
-    const rtRecudeKind_t kind, const rtDataType_t type, Stream * const stm, void * const overflowAddr)
+rtError_t ApiImpl::ReduceAsyncV2(
+    void* const dst, const void* const src, const uint64_t cnt, const rtRecudeKind_t kind, const rtDataType_t type,
+    Stream* const stm, void* const overflowAddr)
 {
     RT_LOG(RT_LOG_INFO, "ReduceAsyncV2, count=%" PRIu64 ", kind=%d.", cnt, kind);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = const_cast<Stream *>(stm);
+    Stream* curStm = const_cast<Stream*>(stm);
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     const uint32_t tsVersion = dev->GetTschVersion() & 0xFFFFU; // low 16bit means tschversion
     const auto reduceOverflowProp = dev->GetDevProperties().reduceOverflow;
-    if ((reduceOverflowProp == ReduceOverflowType::REDUCE_OVERFLOW_TS_VERSION_REDUCE_V2_ID) && 
+    if ((reduceOverflowProp == ReduceOverflowType::REDUCE_OVERFLOW_TS_VERSION_REDUCE_V2_ID) &&
         (tsVersion >= static_cast<uint32_t>(TS_VERSION_REDUCE_V2_ID))) {
         return cce::runtime::ReduceAsyncV2(dst, src, cnt, kind, type, curStm, overflowAddr);
-    } else if ((reduceOverflowProp == ReduceOverflowType::REDUCE_OVERFLOW_TS_VERSION_REDUCV2_SUPPORT_DC) && 
+    } else if (
+        (reduceOverflowProp == ReduceOverflowType::REDUCE_OVERFLOW_TS_VERSION_REDUCV2_SUPPORT_DC) &&
         (tsVersion >= static_cast<uint32_t>(TS_VERSION_REDUCV2_SUPPORT_DC))) {
         return cce::runtime::ReduceAsyncV2(dst, src, cnt, kind, type, curStm, overflowAddr);
     } else {
@@ -3073,11 +3221,10 @@ rtError_t ApiImpl::ReduceAsyncV2(void * const dst, const void * const src, const
     }
 }
 
-rtError_t ApiImpl::MemSetSync(const void * const devPtr, const uint64_t destMax, const uint32_t val,
-    const uint64_t cnt)
+rtError_t ApiImpl::MemSetSync(const void* const devPtr, const uint64_t destMax, const uint32_t val, const uint64_t cnt)
 {
     RT_LOG(RT_LOG_INFO, "destMax=%" PRIu64 ", value=%u, count=%" PRIu64, destMax, val, cnt);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const rtError_t error = curCtx->Device_()->GetDeviceStatus();
     COND_PROC((error == RT_ERROR_DEVICE_TASK_ABORT), return error);
@@ -3087,14 +3234,14 @@ rtError_t ApiImpl::MemSetSync(const void * const devPtr, const uint64_t destMax,
     return curCtx->Device_()->Driver_()->MemSetSync(devPtr, destMax, val, cnt);
 }
 
-rtError_t ApiImpl::MemsetAsync(void * const ptr, const uint64_t destMax, const uint32_t val, const uint64_t cnt,
-    Stream * const stm)
+rtError_t ApiImpl::MemsetAsync(
+    void* const ptr, const uint64_t destMax, const uint32_t val, const uint64_t cnt, Stream* const stm)
 {
     RT_LOG(RT_LOG_DEBUG, "destMax=%" PRIu64 ", value=%u, count=%" PRIu64 ".", destMax, val, cnt);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -3102,14 +3249,16 @@ rtError_t ApiImpl::MemsetAsync(void * const ptr, const uint64_t destMax, const u
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
     if (UvmCallback::IsUvmMem(ptr, cnt)) {
-        MemsetCallbackStruct *memsetCallbackParams = new (std::nothrow) MemsetCallbackStruct;
-        COND_RETURN_AND_MSG_OUTER((memsetCallbackParams == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+        MemsetCallbackStruct* memsetCallbackParams = new (std::nothrow) MemsetCallbackStruct;
+        COND_RETURN_AND_MSG_OUTER(
+            (memsetCallbackParams == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
             sizeof(MemsetCallbackStruct), "new");
         memsetCallbackParams->ptr = ptr;
         memsetCallbackParams->destMax = destMax;
         memsetCallbackParams->val = val;
         memsetCallbackParams->cnt = cnt;
-        const rtError_t error = LaunchHostFunc(stm, &UvmCallback::MemsetAsyncCallback, static_cast<void *>(memsetCallbackParams));
+        const rtError_t error =
+            LaunchHostFunc(stm, &UvmCallback::MemsetAsyncCallback, static_cast<void*>(memsetCallbackParams));
         if (error != RT_ERROR_NONE) {
             RT_LOG(RT_LOG_ERROR, "CallbackLaunch fails in MemsetAsync with error code %#x.", error);
             delete memsetCallbackParams;
@@ -3120,61 +3269,60 @@ rtError_t ApiImpl::MemsetAsync(void * const ptr, const uint64_t destMax, const u
     return MemSetAsync(curStm, ptr, destMax, val, cnt);
 }
 
-rtError_t ApiImpl::MemGetInfo(size_t * const freeSize, size_t * const totalSize)
+rtError_t ApiImpl::MemGetInfo(size_t* const freeSize, size_t* const totalSize)
 {
     RT_LOG(RT_LOG_DEBUG, "mem get info free=%zu, total=%zu.", *freeSize, *totalSize);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     return curCtx->Device_()->Driver_()->MemGetInfo(curCtx->Device_()->Id_(), true, freeSize, totalSize);
 }
 
-rtError_t ApiImpl::MemGetInfoByType(const int32_t devId, const rtMemType_t type, rtMemInfo_t * const info)
+rtError_t ApiImpl::MemGetInfoByType(const int32_t devId, const rtMemType_t type, rtMemInfo_t* const info)
 {
     RT_LOG(RT_LOG_DEBUG, "mem get info drv devId=%d, type=%u.", devId, type);
-    Context * const curCtx = CurrentContext(true, devId);
+    Context* const curCtx = CurrentContext(true, devId);
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     return curCtx->Device_()->Driver_()->MemGetInfoByType(static_cast<uint32_t>(devId), type, info);
 }
 
-rtError_t ApiImpl::CheckMemType(void **addrs, uint32_t size, uint32_t memType, uint32_t *checkResult, uint32_t reserve)
+rtError_t ApiImpl::CheckMemType(void** addrs, uint32_t size, uint32_t memType, uint32_t* checkResult, uint32_t reserve)
 {
     UNUSED(reserve);
     RT_LOG(RT_LOG_INFO, "mem get info size=%u, type=%u.", size, memType);
     Runtime* runtime = Runtime::Instance();
     NULL_PTR_RETURN_MSG(runtime, RT_ERROR_INSTANCE_NULL);
-    Context * const curCtx = runtime->CurrentContext();
+    Context* const curCtx = runtime->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const uint32_t deviceId = curCtx->Device_()->Id_();
     return curCtx->Device_()->Driver_()->CheckMemType(addrs, size, memType, checkResult, deviceId);
 }
 
-rtError_t ApiImpl::GetMemUsageInfo(const uint32_t deviceId, rtMemUsageInfo_t * const memUsageInfo,
-                                   const size_t inputNum, size_t * const outputNum)
+rtError_t ApiImpl::GetMemUsageInfo(
+    const uint32_t deviceId, rtMemUsageInfo_t* const memUsageInfo, const size_t inputNum, size_t* const outputNum)
 {
     RT_LOG(RT_LOG_INFO, "get mem usage info: deviceId=%u, inputNum=%zu.", deviceId, inputNum);
-    Context * const curCtx = CurrentContext(true, deviceId);
+    Context* const curCtx = CurrentContext(true, deviceId);
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     return curCtx->Device_()->Driver_()->GetMemUsageInfo(deviceId, memUsageInfo, inputNum, outputNum);
 }
 
-rtError_t ApiImpl::MemGetInfoEx(const rtMemInfoType_t memInfoType, size_t * const freeSize, size_t * const totalSize)
+rtError_t ApiImpl::MemGetInfoEx(const rtMemInfoType_t memInfoType, size_t* const freeSize, size_t* const totalSize)
 {
     RT_LOG(RT_LOG_DEBUG, "mem get info memInfoType=%u, free=%zu, total=%zu.", memInfoType, *freeSize, *totalSize);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     NULL_PTR_RETURN_MSG(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    return curCtx->Device_()->Driver_()->MemGetInfoEx(curCtx->Device_()->Id_(), memInfoType, freeSize,
-        totalSize);
+    return curCtx->Device_()->Driver_()->MemGetInfoEx(curCtx->Device_()->Id_(), memInfoType, freeSize, totalSize);
 }
 
-rtError_t ApiImpl::PointerGetAttributes(rtPointerAttributes_t * const attributes, const void * const ptr)
+rtError_t ApiImpl::PointerGetAttributes(rtPointerAttributes_t* const attributes, const void* const ptr)
 {
     RT_LOG(RT_LOG_DEBUG, "get memory attribute.");
-    Context * const curCtx = CurrentContext();
-    Driver *curDrv = nullptr;
+    Context* const curCtx = CurrentContext();
+    Driver* curDrv = nullptr;
 
     if (!ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
@@ -3184,11 +3332,11 @@ rtError_t ApiImpl::PointerGetAttributes(rtPointerAttributes_t * const attributes
     return curDrv->PointerGetAttributes(attributes, ptr);
 }
 
-rtError_t ApiImpl::PtrGetAttributes(const void * const ptr, rtPtrAttributes_t * const attributes)
+rtError_t ApiImpl::PtrGetAttributes(const void* const ptr, rtPtrAttributes_t* const attributes)
 {
     RT_LOG(RT_LOG_DEBUG, "get memory attribute.");
-    Context * const curCtx = CurrentContext();
-    Driver *curDrv = nullptr;
+    Context* const curCtx = CurrentContext();
+    Driver* curDrv = nullptr;
     if (!ContextManage::CheckContextIsValid(curCtx)) {
         curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     } else {
@@ -3200,37 +3348,38 @@ rtError_t ApiImpl::PtrGetAttributes(const void * const ptr, rtPtrAttributes_t * 
     if ((locationType == RT_MEMORY_LOC_DEVICE) || (locationType == RT_MEMORY_LOC_MANAGED)) {
         const uint32_t drvDeviceId = attributes->location.id;
         error = Runtime::Instance()->GetUserDevIdByDeviceId(drvDeviceId, &attributes->location.id);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Failed to convert the driver device ID %u to user device ID, retCode=%#x",
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error, "Failed to convert the driver device ID %u to user device ID, retCode=%#x",
             drvDeviceId, static_cast<uint32_t>(error));
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::MemPrefetchToDevice(const void * const devPtr, const uint64_t len, const int32_t devId)
+rtError_t ApiImpl::MemPrefetchToDevice(const void* const devPtr, const uint64_t len, const int32_t devId)
 {
     RT_LOG(RT_LOG_DEBUG, "memory prefetch to device, len=%" PRIu64 ", devId=%d.", len, devId);
-    Context * const curCtx = CurrentContext(true, devId);
+    Context* const curCtx = CurrentContext(true, devId);
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     return curCtx->Device_()->Driver_()->MemPrefetchToDevice(devPtr, len, devId);
 }
 
-rtError_t ApiImpl::GetDeviceIDs(uint32_t * const devId, const uint32_t len)
+rtError_t ApiImpl::GetDeviceIDs(uint32_t* const devId, const uint32_t len)
 {
     int32_t devCnt = 0;
-    FacadeDriver &curDrv = Runtime::Instance()->FacadeDriver_();
+    FacadeDriver& curDrv = Runtime::Instance()->FacadeDriver_();
     rtError_t error = curDrv.GetDeviceCount(&devCnt);
     ERROR_RETURN_MSG_INNER(error, "failed to GetDeviceCount, err:%#x.", static_cast<uint32_t>(error));
 
     COND_RETURN_WARN(devCnt <= 0, RT_ERROR_NONE, "No device found.");
 
-    uint32_t *devices = new (std::nothrow) uint32_t[devCnt];
-    COND_RETURN_AND_MSG_OUTER((devices == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(uint32_t) * devCnt, "new");
+    uint32_t* devices = new (std::nothrow) uint32_t[devCnt];
+    COND_RETURN_AND_MSG_OUTER(
+        (devices == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(uint32_t) * devCnt, "new");
 
     error = curDrv.GetDeviceIDs(devices, static_cast<uint32_t>(devCnt));
-    ERROR_PROC_RETURN_MSG_INNER(error, delete [] devices,
-        "failed to GetDeviceIDs, err:%#x.", static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(
+        error, delete[] devices, "failed to GetDeviceIDs, err:%#x.", static_cast<uint32_t>(error));
 
     size_t retCnt = 0U;
     for (size_t i = 0U; i < static_cast<size_t>(devCnt); i++) {
@@ -3239,21 +3388,24 @@ rtError_t ApiImpl::GetDeviceIDs(uint32_t * const devId, const uint32_t len)
         }
         uint32_t realDeviceId = 0U;
         error = Runtime::Instance()->GetUserDevIdByDeviceId(devices[i], &realDeviceId, false, true);
-        if (error != RT_ERROR_NONE) { continue; }
+        if (error != RT_ERROR_NONE) {
+            continue;
+        }
         devId[retCnt++] = realDeviceId;
     }
 
-    delete [] devices;
+    delete[] devices;
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::OpenNetService(const rtNetServiceOpenArgs *args)
+rtError_t ApiImpl::OpenNetService(const rtNetServiceOpenArgs* args)
 {
-    const char *paramInfo = args->extParamList->paramInfo;
+    const char* paramInfo = args->extParamList->paramInfo;
     std::string paramInfoStr = (paramInfo != nullptr) ? paramInfo : "";
-    RT_LOG(RT_LOG_INFO, "OpenNetService begin. extParamCnt=%u, paramLen=%u, paramInfo=%s",
-        args->extParamCnt, args->extParamList->paramLen, paramInfoStr.c_str());
-    Runtime * const rt = Runtime::Instance();
+    RT_LOG(
+        RT_LOG_INFO, "OpenNetService begin. extParamCnt=%u, paramLen=%u, paramInfo=%s", args->extParamCnt,
+        args->extParamList->paramLen, paramInfoStr.c_str());
+    Runtime* const rt = Runtime::Instance();
     rtError_t error = rt->OpenNetService(args);
     ERROR_RETURN(error, "failed to open NetService, retCode:%#x", static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
@@ -3261,16 +3413,16 @@ rtError_t ApiImpl::OpenNetService(const rtNetServiceOpenArgs *args)
 
 rtError_t ApiImpl::CloseNetService()
 {
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     rtError_t error = rt->CloseNetService();
     ERROR_RETURN(error, "failed to close NetService, retCode:%#x", static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetDeviceCount(int32_t * const cnt)
+rtError_t ApiImpl::GetDeviceCount(int32_t* const cnt)
 {
     if (!Runtime::Instance()->isSetVisibleDev) {
-        FacadeDriver &curDrv = Runtime::Instance()->FacadeDriver_();
+        FacadeDriver& curDrv = Runtime::Instance()->FacadeDriver_();
         return curDrv.GetDeviceCount(cnt);
     }
 
@@ -3280,22 +3432,26 @@ rtError_t ApiImpl::GetDeviceCount(int32_t * const cnt)
             *cnt = static_cast<int32_t>(Runtime::Instance()->userDeviceCnt);
             break;
         case RT_GET_DRIVER_ERROR:
-            DRV_ERROR_PROCESS(DRV_ERROR_NO_DEVICE, "[drv api] drvGetDevNum failed: drvRetCode=%d!",
+            DRV_ERROR_PROCESS(
+                DRV_ERROR_NO_DEVICE, "[drv api] drvGetDevNum failed: drvRetCode=%d!",
                 static_cast<int32_t>(DRV_ERROR_NO_DEVICE));
             error = RT_GET_DRV_ERRCODE(DRV_ERROR_NO_DEVICE);
             break;
         case RT_ALL_DUPLICATED_ERROR:
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE2002, Runtime::Instance()->inputDeviceStr, "ASCEND_RT_VISIBLE_DEVICES",
+            RT_LOG_OUTER_MSG_IMPL(
+                ErrorCode::EE2002, Runtime::Instance()->inputDeviceStr, "ASCEND_RT_VISIBLE_DEVICES",
                 "Cannot be duplicated");
             error = RT_ERROR_DRV_NO_DEVICE;
             break;
         case RT_ALL_ORDER_ERROR:
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE2002, Runtime::Instance()->inputDeviceStr, "ASCEND_RT_VISIBLE_DEVICES",
+            RT_LOG_OUTER_MSG_IMPL(
+                ErrorCode::EE2002, Runtime::Instance()->inputDeviceStr, "ASCEND_RT_VISIBLE_DEVICES",
                 "configured in ascending order");
             error = RT_ERROR_DRV_NO_DEVICE;
             break;
         case RT_ALL_DATA_ERROR:
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE2002, Runtime::Instance()->inputDeviceStr, "ASCEND_RT_VISIBLE_DEVICES",
+            RT_LOG_OUTER_MSG_IMPL(
+                ErrorCode::EE2002, Runtime::Instance()->inputDeviceStr, "ASCEND_RT_VISIBLE_DEVICES",
                 "[0, " + std::to_string(Runtime::Instance()->deviceCnt) + ")");
             error = RT_ERROR_DRV_NO_DEVICE;
             break;
@@ -3309,19 +3465,20 @@ rtError_t ApiImpl::SetDevice(const int32_t devId)
 {
     RT_LOG(RT_LOG_INFO, "drv devId=%d.", devId);
 
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     const rtError_t ret = GetDrvSentinelMode();
     COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "GetDrvSentinelMode failed");
-    RefObject<Context *> *context = nullptr;
+    RefObject<Context*>* context = nullptr;
     context = rt->PrimaryContextRetain(static_cast<uint32_t>(devId));
     NULL_PTR_RETURN(context, RT_ERROR_DEVICE_RETAIN);
 
     RT_LOG(RT_LOG_INFO, "SetCurRef = %p,drv devId=%u", context->GetVal(), devId);
     InnerThreadLocalContainer::SetCurRef(context);
-    DeviceStateCallbackManager::Instance().Notify(static_cast<uint32_t>(devId), true, DEV_CB_POS_BACK, RT_DEVICE_STATE_SET_POST);
+    DeviceStateCallbackManager::Instance().Notify(
+        static_cast<uint32_t>(devId), true, DEV_CB_POS_BACK, RT_DEVICE_STATE_SET_POST);
     RT_LOG(RT_LOG_INFO, "New device success, deviceId=%d.", devId);
 
-    Context * const curCtx = context->GetVal();
+    Context* const curCtx = context->GetVal();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     NULL_PTR_RETURN_MSG(curCtx->DefaultStream_(), RT_ERROR_CONTEXT_DEFAULT_STREAM_NULL);
     curCtx->Device_()->SetSatMode(Runtime::Instance()->GetSatMode());
@@ -3332,19 +3489,20 @@ rtError_t ApiImpl::SetDevice(const int32_t devId)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetDevice(int32_t * const devId)
+rtError_t ApiImpl::GetDevice(int32_t* const devId)
 {
-    Runtime * const rtInstance = Runtime::Instance();
-    Context * const curCtx = rtInstance->CurrentContext();
+    Runtime* const rtInstance = Runtime::Instance();
+    Context* const curCtx = rtInstance->CurrentContext();
     const bool flag = ContextManage::CheckContextIsValid(curCtx);
     if (!flag) {
         if (rtInstance->GetSetDefaultDevIdFlag()) {
             const uint32_t drvDeviceId = rtInstance->GetDefaultDeviceId();
             uint32_t deviceId = 0U;
             const rtError_t error = rtInstance->GetUserDevIdByDeviceId(drvDeviceId, &deviceId);
-            COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, 
-                "Failed to convert the driver device ID %u to user device ID, retCode=%#x",
-                drvDeviceId, static_cast<uint32_t>(error));
+            COND_RETURN_ERROR_MSG_INNER(
+                error != RT_ERROR_NONE, error,
+                "Failed to convert the driver device ID %u to user device ID, retCode=%#x", drvDeviceId,
+                static_cast<uint32_t>(error));
             *devId = static_cast<int32_t>(deviceId);
             return RT_ERROR_NONE;
         }
@@ -3352,9 +3510,10 @@ rtError_t ApiImpl::GetDevice(int32_t * const devId)
     }
     uint32_t deviceId = curCtx->UserDeviceId();
     rtError_t error = RT_ERROR_NONE;
-    COND_PROC(deviceId == MAX_UINT32_NUM,
-        error = rtInstance->GetUserDevIdByDeviceId(curCtx->Device_()->Id_(), &deviceId));
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Failed to convert the driver device ID %u to user device ID, retCode=%#x",
+    COND_PROC(
+        deviceId == MAX_UINT32_NUM, error = rtInstance->GetUserDevIdByDeviceId(curCtx->Device_()->Id_(), &deviceId));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Failed to convert the driver device ID %u to user device ID, retCode=%#x",
         curCtx->Device_()->Id_(), static_cast<uint32_t>(error));
 
     *devId = static_cast<int32_t>(deviceId);
@@ -3362,22 +3521,24 @@ rtError_t ApiImpl::GetDevice(int32_t * const devId)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetDevicePhyIdByIndex(const uint32_t devIndex, uint32_t * const phyId)
+rtError_t ApiImpl::GetDevicePhyIdByIndex(const uint32_t devIndex, uint32_t* const phyId)
 {
     // the api use before setdevice, so it do not need context
     RT_LOG(RT_LOG_INFO, "get PhyId by Index=%u.", devIndex);
     return Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER)->GetDevicePhyIdByIndex(devIndex, phyId);
 }
 
-rtError_t ApiImpl::GetDeviceIndexByPhyId(const uint32_t phyId, uint32_t * const devIndex)
+rtError_t ApiImpl::GetDeviceIndexByPhyId(const uint32_t phyId, uint32_t* const devIndex)
 {
     // the api use before setdevice, so it do not need context
     RT_LOG(RT_LOG_INFO, "get Index by PhyId=%u.", phyId);
-    COND_RETURN_ERROR(CheckCurCtxValid(static_cast<int32_t>(phyId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, phyId[%d].", phyId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(static_cast<int32_t>(phyId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
+        "Current Context is null, phyId[%d].", phyId);
     rtError_t error = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER)->GetDeviceIndexByPhyId(phyId, devIndex);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, 
-        "GetDeviceIndexByPhyId failed, phyId = %u, retCode=%#x.", phyId, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "GetDeviceIndexByPhyId failed, phyId = %u, retCode=%#x.", phyId,
+        static_cast<uint32_t>(error));
     return error;
 }
 
@@ -3393,10 +3554,10 @@ rtError_t ApiImpl::DisableP2P(const uint32_t devIdDes, const uint32_t phyIdSrc)
     return NpuDriver::DisableP2P(devIdDes, phyIdSrc);
 }
 
-rtError_t ApiImpl::DeviceCanAccessPeer(int32_t * const canAccessPeer, const uint32_t devId, const uint32_t peerDevice)
+rtError_t ApiImpl::DeviceCanAccessPeer(int32_t* const canAccessPeer, const uint32_t devId, const uint32_t peerDevice)
 {
     RT_LOG(RT_LOG_INFO, "DeviceCanAccessPeer drv devId=%u, peerDevice=%u.", devId, peerDevice);
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     const rtChipType_t chipType = rtInstance->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_P2P)) {
         UNUSED(devId);
@@ -3406,24 +3567,25 @@ rtError_t ApiImpl::DeviceCanAccessPeer(int32_t * const canAccessPeer, const uint
 
     const rtRunMode runMode = static_cast<rtRunMode>(NpuDriver::RtGetRunMode());
     if (runMode == RT_RUN_MODE_OFFLINE) {
-        RT_LOG(RT_LOG_ERROR, "This feature is not supported in offline mode, drv devId=%u, peer=%u", devId,
-            peerDevice);
+        RT_LOG(RT_LOG_ERROR, "This feature is not supported in offline mode, drv devId=%u, peer=%u", devId, peerDevice);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
-    COND_RETURN_ERROR(CheckCurCtxValid(static_cast<int32_t>(devId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%lu].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(static_cast<int32_t>(devId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
+        "Current Context is null, drv devId[%lu].", devId);
     return NpuDriver::DeviceCanAccessPeer(canAccessPeer, devId, peerDevice);
 }
 
-rtError_t ApiImpl::GetP2PStatus(const uint32_t devIdDes, const uint32_t phyIdSrc, uint32_t * const status)
+rtError_t ApiImpl::GetP2PStatus(const uint32_t devIdDes, const uint32_t phyIdSrc, uint32_t* const status)
 {
     RT_LOG(RT_LOG_INFO, "drv devId=%u, phyIdSrc=%u.", devIdDes, phyIdSrc);
-    COND_RETURN_ERROR(CheckCurCtxValid(static_cast<int32_t>(devIdDes)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%lu].", devIdDes);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(static_cast<int32_t>(devIdDes)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
+        "Current Context is null, drv devId[%lu].", devIdDes);
     return NpuDriver::GetP2PStatus(devIdDes, phyIdSrc, status);
 }
 
-rtError_t ApiImpl::DeviceGetBareTgid(uint32_t * const pid)
+rtError_t ApiImpl::DeviceGetBareTgid(uint32_t* const pid)
 {
     Driver* const curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
@@ -3596,7 +3758,7 @@ void ApiImpl::DumpTimeStampPart2() const
     TIMESTAMP_DUMP(rtHostGetDevicePointer);
 }
 
-static rtError_t DestroyInactiveContext(Context * const ctx)
+static rtError_t DestroyInactiveContext(Context* const ctx)
 {
     COND_RETURN_ERROR_MSG_INNER(ctx == nullptr, RT_ERROR_CONTEXT_NULL, "Context destroy failed, ctx is null.");
     COND_RETURN_ERROR_MSG_INNER(ctx->GetContextIsNeedDelStatus(), RT_ERROR_CONTEXT_DEL, "Ctx is destroying.");
@@ -3608,7 +3770,7 @@ static rtError_t DestroyInactiveContext(Context * const ctx)
 rtError_t ApiImpl::DeviceReset(const int32_t devId, const bool isForceReset)
 {
     RT_LOG(RT_LOG_INFO, "Reset device, drv devId=%d.", devId);
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     rtError_t ret = rt->PrimaryContextRelease(static_cast<uint32_t>(devId), isForceReset);
     if (ret != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "DeviceReset context release failed, drv devId=%d, retCode=%#x", devId, ret);
@@ -3630,45 +3792,47 @@ rtError_t ApiImpl::DeviceSetLimit(const int32_t devId, const rtLimitType_t type,
     (void)devId;
     if (type == RT_LIMIT_TYPE_SIMT_PRINTF_FIFO_SIZE || type == RT_LIMIT_TYPE_SIMT_STACK_SIZE ||
         type == RT_LIMIT_TYPE_SIMT_DVG_WARP_STACK_SIZE) {
-        RT_LOG(RT_LOG_WARNING, "SIMT limit type is not supported on this platform, type=%u",
-            static_cast<uint32_t>(type));
+        RT_LOG(
+            RT_LOG_WARNING, "SIMT limit type is not supported on this platform, type=%u", static_cast<uint32_t>(type));
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     rtError_t ret = RT_ERROR_NONE;
     if (type == RT_LIMIT_TYPE_STACK_SIZE) {
-        Runtime *rt = Runtime::Instance();
+        Runtime* rt = Runtime::Instance();
         rt->SetDeviceCustomerStackSize(val);
     } else if (type == RT_LIMIT_TYPE_SIMD_PRINTF_FIFO_SIZE_PER_CORE) {
-        Runtime *rt = Runtime::Instance();
+        Runtime* rt = Runtime::Instance();
         std::unique_lock<std::mutex> lock(rt->GetSimdFifoMutex());
         ret = rt->SetSimdPrintFifoSize(val);
     } else {
-        Context *const curCtx = CurrentContext(true, devId);
+        Context* const curCtx = CurrentContext(true, devId);
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-        Device *const dev = curCtx->Device_();
+        Device* const dev = curCtx->Device_();
         ret = dev->DevSetLimit(type, val);
     }
     return ret;
 }
 
-rtError_t ApiImpl::DeviceGetLimit(const rtLimitType_t type, uint32_t *val)
+rtError_t ApiImpl::DeviceGetLimit(const rtLimitType_t type, uint32_t* val)
 {
     RT_LOG(RT_LOG_INFO, "Get Limit, type=%d.", static_cast<int32_t>(type));
     rtError_t ret = RT_ERROR_NONE;
     if (type == RT_LIMIT_TYPE_STACK_SIZE) {
-        Runtime *rt = Runtime::Instance();
+        Runtime* rt = Runtime::Instance();
         *val = rt->GetDeviceCustomerStackSize();
-    } else if (type == RT_LIMIT_TYPE_SIMT_PRINTF_FIFO_SIZE || type == RT_LIMIT_TYPE_SIMT_STACK_SIZE ||
-               type == RT_LIMIT_TYPE_SIMT_DVG_WARP_STACK_SIZE) {
-        RT_LOG(RT_LOG_WARNING, "SIMT limit type is not supported on this platform, type=%u",
-            static_cast<uint32_t>(type));
+    } else if (
+        type == RT_LIMIT_TYPE_SIMT_PRINTF_FIFO_SIZE || type == RT_LIMIT_TYPE_SIMT_STACK_SIZE ||
+        type == RT_LIMIT_TYPE_SIMT_DVG_WARP_STACK_SIZE) {
+        RT_LOG(
+            RT_LOG_WARNING, "SIMT limit type is not supported on this platform, type=%u", static_cast<uint32_t>(type));
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     } else if (type == RT_LIMIT_TYPE_SIMD_PRINTF_FIFO_SIZE_PER_CORE) {
-        Runtime *rt = Runtime::Instance();
+        Runtime* rt = Runtime::Instance();
         std::unique_lock<std::mutex> lock(rt->GetSimdFifoMutex());
         *val = rt->GetSimdPrintFifoSize();
     } else {
-        RT_LOG(RT_LOG_WARNING, "Limit type not supported on this platform, type=%u, returning default 0.",
+        RT_LOG(
+            RT_LOG_WARNING, "Limit type not supported on this platform, type=%u, returning default 0.",
             static_cast<uint32_t>(type));
         *val = 0U;
     }
@@ -3676,7 +3840,7 @@ rtError_t ApiImpl::DeviceGetLimit(const rtLimitType_t type, uint32_t *val)
     return ret;
 }
 
-rtError_t ApiImpl::DeviceGetStreamPriorityRange(int32_t * const leastPriority, int32_t * const greatestPriority)
+rtError_t ApiImpl::DeviceGetStreamPriorityRange(int32_t* const leastPriority, int32_t* const greatestPriority)
 {
     if (leastPriority != nullptr) {
         *leastPriority = RT_STREAM_LEAST_PRIORITY;
@@ -3689,19 +3853,17 @@ rtError_t ApiImpl::DeviceGetStreamPriorityRange(int32_t * const leastPriority, i
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::DavidGetGroupAccNum(const int32_t moduleType, const int32_t infoType,
-    int64_t * const val)
+rtError_t ApiImpl::DavidGetGroupAccNum(const int32_t moduleType, const int32_t infoType, int64_t* const val)
 {
-    Context * const curCtx = CurrentContext();
-    CHECK_CONTEXT_VALID_WITH_PROC_RETURN(curCtx, RT_ERROR_CONTEXT_NULL,);
-    Device * const dev = curCtx->Device_();
+    Context* const curCtx = CurrentContext();
+    CHECK_CONTEXT_VALID_WITH_PROC_RETURN(curCtx, RT_ERROR_CONTEXT_NULL, );
+    Device* const dev = curCtx->Device_();
     const uint8_t groupId = dev->GetGroupId();
     // vf scene
     if (groupId != UNINIT_GROUP_ID) {
         rtGroupInfo_t groupInfo = {};
         const rtError_t error = dev->GetGroupInfo(static_cast<int32_t>(groupId), &groupInfo, 1);
-        COND_RETURN_ERROR(error != RT_ERROR_NONE, RT_ERROR_GROUP_BASE,
-            "Get group info failed, groupId=%u.", groupId);
+        COND_RETURN_ERROR(error != RT_ERROR_NONE, RT_ERROR_GROUP_BASE, "Get group info failed, groupId=%u.", groupId);
         if ((moduleType == MODULE_TYPE_AICORE) && (infoType == INFO_TYPE_CORE_NUM)) {
             *val = static_cast<int64_t>(groupInfo.aicoreNum);
             RT_LOG(RT_LOG_INFO, "groupId=%u, aic core cnt is %lld.", groupId, *val);
@@ -3717,14 +3879,14 @@ rtError_t ApiImpl::DavidGetGroupAccNum(const int32_t moduleType, const int32_t i
     return RT_ERROR_GROUP_NOT_CREATE;
 }
 
-rtError_t ApiImpl::GetDeviceInfo(const uint32_t deviceId, const int32_t moduleType, const int32_t infoType,
-    int64_t * const val)
+rtError_t ApiImpl::GetDeviceInfo(
+    const uint32_t deviceId, const int32_t moduleType, const int32_t infoType, int64_t* const val)
 {
     RT_LOG(RT_LOG_INFO, "get device info, drv devId=%u", deviceId);
     rtError_t error = RT_ERROR_NONE;
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
 
-    Driver* const curDrv =  rt->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* const curDrv = rt->driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
 
     // want to return cube core num(=aicore num)
@@ -3742,14 +3904,13 @@ rtError_t ApiImpl::GetDeviceInfo(const uint32_t deviceId, const int32_t moduleTy
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     if (IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_DOT_GET_GROUP_AIC_NUM)) {
         error = DavidGetGroupAccNum(moduleType, infoType, val);
-        COND_RETURN_DEBUG(error == RT_ERROR_NONE, error,
-            "moduleType= %d, core cnt is %lld.", moduleType, *val);
+        COND_RETURN_DEBUG(error == RT_ERROR_NONE, error, "moduleType= %d, core cnt is %lld.", moduleType, *val);
     }
 
     error = curDrv->GetDevInfo(deviceId, moduleType, infoType, val);
     uint32_t temp = static_cast<uint32_t>(*val);
-    if (curDrv->GetDevProperties().reduceAicNum && (temp == RT_AICORE_NUM_25) &&
-        (moduleType == MODULE_TYPE_AICORE) && (infoType == INFO_TYPE_CORE_NUM)) {
+    if (curDrv->GetDevProperties().reduceAicNum && (temp == RT_AICORE_NUM_25) && (moduleType == MODULE_TYPE_AICORE) &&
+        (infoType == INFO_TYPE_CORE_NUM)) {
         temp = RT_AICORE_NUM_25 - 1U;
     }
     if (curDrv->GetDevProperties().reduceAicNum && (temp == RT_AICORE_NUM_25 * 2U) &&
@@ -3762,7 +3923,7 @@ rtError_t ApiImpl::GetDeviceInfo(const uint32_t deviceId, const int32_t moduleTy
     return error;
 }
 
-rtError_t ApiImpl::GetDeviceSimtInfo(rtDevAttr attr, int64_t *val)
+rtError_t ApiImpl::GetDeviceSimtInfo(rtDevAttr attr, int64_t* val)
 {
     *val = 0;
 
@@ -3772,7 +3933,7 @@ rtError_t ApiImpl::GetDeviceSimtInfo(rtDevAttr attr, int64_t *val)
         return RT_ERROR_NONE;
     }
 
-    switch(attr) {
+    switch (attr) {
         case RT_DEV_ATTR_WARP_SIZE:
             *val = static_cast<int64_t>(properties.simtWarpSize);
             break;
@@ -3815,8 +3976,8 @@ rtError_t ApiImpl::GetDeviceSimtInfo(rtDevAttr attr, int64_t *val)
     return error;
 }
 
-rtError_t ApiImpl::GetPhyDeviceInfo(const uint32_t phyId, const int32_t moduleType, const int32_t infoType,
-    int64_t * const val)
+rtError_t ApiImpl::GetPhyDeviceInfo(
+    const uint32_t phyId, const int32_t moduleType, const int32_t infoType, int64_t* const val)
 {
     RT_LOG(RT_LOG_INFO, "get phy device info, phyId=%u", phyId);
     Driver* const curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
@@ -3827,7 +3988,7 @@ rtError_t ApiImpl::GetPhyDeviceInfo(const uint32_t phyId, const int32_t moduleTy
 rtError_t ApiImpl::DeviceSynchronize(const int32_t timeout)
 {
     RT_LOG(RT_LOG_INFO, "device synchronize.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     rtError_t error = curCtx->Synchronize(timeout);
 
@@ -3889,7 +4050,7 @@ rtError_t ApiImpl::SnapShotProcessRestore()
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::SnapShotCallbackRegister(rtSnapShotStage stage, rtSnapShotCallBack callback, void *args)
+rtError_t ApiImpl::SnapShotCallbackRegister(rtSnapShotStage stage, rtSnapShotCallBack callback, void* args)
 {
     return SnapshotCallbackManager::GetInstance().RegisterCallback(stage, callback, args);
 }
@@ -3906,12 +4067,12 @@ rtError_t ApiImpl::DeviceSetTsId(const uint32_t tsId)
     COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "GetDrvSentinelMode failed");
     const bool sentinelMode = Runtime::Instance()->GetSentinelMode();
     if (sentinelMode) {
-        COND_RETURN_ERROR(tsId == RT_TSC_ID, RT_ERROR_INVALID_VALUE,
-            "tsid=0 is not supported in sentinelMode or single-f mode");
+        COND_RETURN_ERROR(
+            tsId == RT_TSC_ID, RT_ERROR_INVALID_VALUE, "tsid=0 is not supported in sentinelMode or single-f mode");
     }
 
     if ((InnerThreadLocalContainer::GetCurCtx() == nullptr) && (InnerThreadLocalContainer::GetCurRef() != nullptr)) {
-        Runtime * const rt = Runtime::Instance();
+        Runtime* const rt = Runtime::Instance();
         InnerThreadLocalContainer::SetCurRef(rt->GetRefPriCtx(0U, tsId));
     }
 
@@ -3919,7 +4080,7 @@ rtError_t ApiImpl::DeviceSetTsId(const uint32_t tsId)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::DeviceGetTsId(uint32_t *tsId)
+rtError_t ApiImpl::DeviceGetTsId(uint32_t* tsId)
 {
     const uint32_t devTsId = InnerThreadLocalContainer::GetTsId();
     *tsId = devTsId;
@@ -3937,27 +4098,28 @@ rtError_t ApiImpl::DeviceGetTsId(uint32_t *tsId)
 
 rtError_t ApiImpl::NewContext(const uint32_t deviceId, const uint32_t tsId, Context** const ctx) const
 {
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
 
-    Device * const dev = rt->DeviceRetain(deviceId, tsId);
+    Device* const dev = rt->DeviceRetain(deviceId, tsId);
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dev, RT_ERROR_DEVICE_NULL, "Creating a context in the current thread");
 
-    Context *curCtx = new (std::nothrow) Context(dev, false);
-    COND_RETURN_AND_MSG_OUTER((curCtx == nullptr), RT_ERROR_CONTEXT_NEW, ErrorCode::EE1013,
-        sizeof(Context), "new");
-    RT_LOG(RT_LOG_INFO, "curCtx=%p, device_id=%d, ts_id=%u, Runtime_alloc_size %zu", curCtx, deviceId, tsId, sizeof(Context));
+    Context* curCtx = new (std::nothrow) Context(dev, false);
+    COND_RETURN_AND_MSG_OUTER((curCtx == nullptr), RT_ERROR_CONTEXT_NEW, ErrorCode::EE1013, sizeof(Context), "new");
+    RT_LOG(
+        RT_LOG_INFO, "curCtx=%p, device_id=%d, ts_id=%u, Runtime_alloc_size %zu", curCtx, deviceId, tsId,
+        sizeof(Context));
     rtError_t error = curCtx->Setup();
-    ERROR_PROC_RETURN_MSG_INNER(error, (void)curCtx->TearDown(); DELETE_O(curCtx);, "Failed to setup context, retCode=%#x",
-        static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, (void)curCtx->TearDown(); DELETE_O(curCtx);
+                                , "Failed to setup context, retCode=%#x", static_cast<uint32_t>(error));
 
     *ctx = curCtx;
     return error;
 }
 
-rtError_t ApiImpl::ContextCreate(Context ** const inCtx, const int32_t devId)
+rtError_t ApiImpl::ContextCreate(Context** const inCtx, const int32_t devId)
 {
     RT_LOG(RT_LOG_INFO, "drv devId=%d.", devId);
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     rtError_t error = RT_ERROR_NONE;
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     if (IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP_DOT_RECORD_GROUPINFO)) {
@@ -3969,8 +4131,9 @@ rtError_t ApiImpl::ContextCreate(Context ** const inCtx, const int32_t devId)
     Driver* const curDrv = rt->driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
     (void)curDrv->GetDeviceCount(&devCnt);
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC((devId < 0) || (devId >= devCnt), 
-        RT_ERROR_DEVICE_ID, "Context creation", devId, "[0, " + std::to_string(devCnt) + ")");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        (devId < 0) || (devId >= devCnt), RT_ERROR_DEVICE_ID, "Context creation", devId,
+        "[0, " + std::to_string(devCnt) + ")");
     tsId = InnerThreadLocalContainer::GetTsId();
 
     error = NewContext(static_cast<uint32_t>(devId), tsId, inCtx);
@@ -3982,26 +4145,31 @@ rtError_t ApiImpl::ContextCreate(Context ** const inCtx, const int32_t devId)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ContextDestroy(Context * const inCtx)
+rtError_t ApiImpl::ContextDestroy(Context* const inCtx)
 {
     rtError_t validError = RT_ERROR_CONTEXT_NULL;
     if (!ContextManage::CheckContextIsValid(inCtx, ContextAccessMode::USER, &validError)) {
-        COND_RETURN_ERROR_MSG_INNER(!ContextManage::AcquireInactiveContextForDestroy(inCtx, &validError), validError,
+        COND_RETURN_ERROR_MSG_INNER(
+            !ContextManage::AcquireInactiveContextForDestroy(inCtx, &validError), validError,
             "Context destroy failed, ctx=%p.", inCtx);
         return DestroyInactiveContext(inCtx);
     }
-    COND_RETURN_AND_MSG_OUTER(inCtx->IsPrimary(), RT_ERROR_CONTEXT_NULL, ErrorCode::EE1017,
-        "Context destruction", "context", "Primary context cannot be destroyed explicitly");
-    COND_RETURN_AND_MSG_OUTER(inCtx->GetContextIsNeedDelStatus(), RT_ERROR_CONTEXT_DEL, ErrorCode::EE1017,
-        "Context destruction", "context", "Context is being destroyed");
-    COND_RETURN_AND_MSG_OUTER(!inCtx->TearDownIsCanExecute(), RT_ERROR_CONTEXT_DEL, ErrorCode::EE1017,
-        "Context destruction", "context", "Context is being destroyed");
+    COND_RETURN_AND_MSG_OUTER(
+        inCtx->IsPrimary(), RT_ERROR_CONTEXT_NULL, ErrorCode::EE1017, "Context destruction", "context",
+        "Primary context cannot be destroyed explicitly");
+    COND_RETURN_AND_MSG_OUTER(
+        inCtx->GetContextIsNeedDelStatus(), RT_ERROR_CONTEXT_DEL, ErrorCode::EE1017, "Context destruction", "context",
+        "Context is being destroyed");
+    COND_RETURN_AND_MSG_OUTER(
+        !inCtx->TearDownIsCanExecute(), RT_ERROR_CONTEXT_DEL, ErrorCode::EE1017, "Context destruction", "context",
+        "Context is being destroyed");
     {
-        Context * const previousCtx = InnerThreadLocalContainer::GetCurCtx();
+        Context* const previousCtx = InnerThreadLocalContainer::GetCurCtx();
         const bool previousInternalAccess = InnerThreadLocalContainer::IsInternalContextAccess();
         Runtime::Instance()->SetInternalThreadContext(inCtx);
         const ScopeGuard internalCtxGuard([previousCtx, previousInternalAccess, inCtx]() {
-            InnerThreadLocalContainer::SetCurCtx((previousCtx == inCtx) ? nullptr : previousCtx, previousInternalAccess);
+            InnerThreadLocalContainer::SetCurCtx(
+                (previousCtx == inCtx) ? nullptr : previousCtx, previousInternalAccess);
         });
 
         /* first call back default stream, make sure that the slave stream is destroyed behind the mainstream */
@@ -4011,8 +4179,8 @@ rtError_t ApiImpl::ContextDestroy(Context * const inCtx)
         const rtError_t error = inCtx->TearDown();
         if (error != RT_ERROR_NONE) {
             inCtx->SetTearDownExecuteResult(TEARDOWN_ERROR);
-            ERROR_RETURN_MSG_INNER(error, "Failed to destroy context because TearDown failed, retCode=%#x",
-                static_cast<uint32_t>(error));
+            ERROR_RETURN_MSG_INNER(
+                error, "Failed to destroy context because TearDown failed, retCode=%#x", static_cast<uint32_t>(error));
         }
         inCtx->SetTearDownExecuteResult(TEARDOWN_SUCCESS);
         inCtx->SetContextDeleteStatus();
@@ -4021,24 +4189,25 @@ rtError_t ApiImpl::ContextDestroy(Context * const inCtx)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ContextSetCurrent(Context * const inCtx)
+rtError_t ApiImpl::ContextSetCurrent(Context* const inCtx)
 {
     RT_LOG(RT_LOG_INFO, "set context=%p", inCtx);
     if (inCtx == nullptr) {
         InnerThreadLocalContainer::SetCurCtx(nullptr);
-        InnerThreadLocalContainer::SetCurRef(nullptr);  // must be null for context switch
+        InnerThreadLocalContainer::SetCurRef(nullptr); // must be null for context switch
         return RT_ERROR_NONE;
     }
 
     rtError_t validError = RT_ERROR_CONTEXT_NULL;
-    COND_RETURN_ERROR_MSG_INNER(!ContextManage::CheckContextIsValid(inCtx, ContextAccessMode::USER,
-        &validError), validError, "Set current context failed, ctx=%p.", inCtx);
+    COND_RETURN_ERROR_MSG_INNER(
+        !ContextManage::CheckContextIsValid(inCtx, ContextAccessMode::USER, &validError), validError,
+        "Set current context failed, ctx=%p.", inCtx);
     InnerThreadLocalContainer::SetCurCtx(inCtx);
-    InnerThreadLocalContainer::SetCurRef(nullptr);  // must be null for context switch
+    InnerThreadLocalContainer::SetCurRef(nullptr); // must be null for context switch
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ContextGetCurrent(Context ** const inCtx)
+rtError_t ApiImpl::ContextGetCurrent(Context** const inCtx)
 {
     // there is no need to check context which is valid.
     *inCtx = Runtime::Instance()->CurrentContext();
@@ -4046,52 +4215,54 @@ rtError_t ApiImpl::ContextGetCurrent(Context ** const inCtx)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ContextGetDevice(int32_t * const devId)
+rtError_t ApiImpl::ContextGetDevice(int32_t* const devId)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     const uint32_t drvDeviceId = curCtx->Device_()->Id_();
     uint32_t deviceId;
     const rtError_t error = Runtime::Instance()->GetUserDevIdByDeviceId(drvDeviceId, &deviceId);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Failed to convert the driver device ID %u to user device ID, retCode=%#x",
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Failed to convert the driver device ID %u to user device ID, retCode=%#x",
         drvDeviceId, static_cast<uint32_t>(error));
     *devId = static_cast<int32_t>(deviceId);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::NameStream(Stream * const stm, const char_t * const name)
+rtError_t ApiImpl::NameStream(Stream* const stm, const char_t* const name)
 {
     UNUSED(stm);
     UNUSED(name);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ProfilerStart(const uint64_t profConfig, const int32_t numsDev,
-    uint32_t * const deviceList, const uint32_t cacheFlag, const uint64_t profSwitchHi)
+rtError_t ApiImpl::ProfilerStart(
+    const uint64_t profConfig, const int32_t numsDev, uint32_t* const deviceList, const uint32_t cacheFlag,
+    const uint64_t profSwitchHi)
 {
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     return rtInstance->ProfilerStart(profConfig, numsDev, deviceList, cacheFlag, profSwitchHi);
 }
 
 rtError_t ApiImpl::ProfilerStop(
-    const uint64_t profConfig, const int32_t numsDev, uint32_t *const deviceList, const uint64_t profSwitchHi)
+    const uint64_t profConfig, const int32_t numsDev, uint32_t* const deviceList, const uint64_t profSwitchHi)
 {
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
 
     return rtInstance->ProfilerStop(profConfig, numsDev, deviceList, profSwitchHi);
 }
 
-rtError_t ApiImpl::StartOnlineProf(Stream * const stm, const uint32_t sampleNum)
+rtError_t ApiImpl::StartOnlineProf(Stream* const stm, const uint32_t sampleNum)
 {
     if (stm != nullptr) {
         RT_LOG(RT_LOG_INFO, "start online profile task stream_id=%d, sample_num=%u", stm->Id_(), sampleNum);
     }
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -4101,16 +4272,16 @@ rtError_t ApiImpl::StartOnlineProf(Stream * const stm, const uint32_t sampleNum)
     return curCtx->StartOnlineProf(curStm, sampleNum);
 }
 
-rtError_t ApiImpl::StopOnlineProf(Stream * const stm)
+rtError_t ApiImpl::StopOnlineProf(Stream* const stm)
 {
     if (stm != nullptr) {
         RT_LOG(RT_LOG_INFO, "stop online profile task stream_id=%d", stm->Id_());
     }
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -4121,16 +4292,16 @@ rtError_t ApiImpl::StopOnlineProf(Stream * const stm)
     return curCtx->StopOnlineProf(curStm);
 }
 
-rtError_t ApiImpl::GetOnlineProfData(Stream * const stm, rtProfDataInfo_t * const pProfData, const uint32_t profDataNum)
+rtError_t ApiImpl::GetOnlineProfData(Stream* const stm, rtProfDataInfo_t* const pProfData, const uint32_t profDataNum)
 {
     if (stm != nullptr) {
         RT_LOG(RT_LOG_INFO, "get online profile data stream_id=%d, data_num=%u", stm->Id_(), profDataNum);
     }
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -4144,10 +4315,10 @@ rtError_t ApiImpl::GetOnlineProfData(Stream * const stm, rtProfDataInfo_t * cons
 rtError_t ApiImpl::AdcProfiler(const uint64_t addr, const uint32_t length)
 {
     RT_LOG(RT_LOG_INFO, "addr=%#" PRIx64 ", length=%u.", addr, length);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream * const stm = curCtx->DefaultStream_();
+    Stream* const stm = curCtx->DefaultStream_();
     NULL_STREAM_PTR_RETURN_MSG(stm);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
     return curCtx->AdcProfiler(stm, addr, length);
@@ -4157,23 +4328,23 @@ rtError_t ApiImpl::SetMsprofReporterCallback(const MsprofReporterCallback callba
 {
     RT_LOG(RT_LOG_INFO, "Set prof reporter callback.");
     ProfilingAgent::Instance().SetMsprofReporterCallback(callback);
-    const Runtime * const rt = Runtime::Instance();
+    const Runtime* const rt = Runtime::Instance();
     const rtError_t error = rt->SetTsdProfCallback(callback);
     ERROR_RETURN(error, "Set msprof reporter callback failed.");
     return error;
 }
 
-rtError_t ApiImpl::ModelCreate(Model ** const mdl, const uint32_t flag)
+rtError_t ApiImpl::ModelCreate(Model** const mdl, const uint32_t flag)
 {
     RT_LOG(RT_LOG_DEBUG, "model create, flag=%u.", flag);
     UNUSED(flag);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     return curCtx->ModelCreate(mdl);
 }
 
-rtError_t ApiImpl::ModelSetExtId(Model * const mdl, const uint32_t extId)
+rtError_t ApiImpl::ModelSetExtId(Model* const mdl, const uint32_t extId)
 {
     RT_LOG(RT_LOG_DEBUG, "model set extend id to aicpu, modelId=%u, id=%u.", mdl->Id_(), extId);
     const rtError_t error = mdl->AicpuModelSetExtId(mdl->Id_(), extId);
@@ -4181,9 +4352,9 @@ rtError_t ApiImpl::ModelSetExtId(Model * const mdl, const uint32_t extId)
     return error;
 }
 
-rtError_t ApiImpl::ModelDestroy(Model * const mdl)
+rtError_t ApiImpl::ModelDestroy(Model* const mdl)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
@@ -4191,9 +4362,9 @@ rtError_t ApiImpl::ModelDestroy(Model * const mdl)
     return curCtx->ModelDestroy(mdl);
 }
 
-rtError_t ApiImpl::ModelBindStream(Model * const mdl, Stream * const stm, const uint32_t flag)
+rtError_t ApiImpl::ModelBindStream(Model* const mdl, Stream* const stm, const uint32_t flag)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
@@ -4205,36 +4376,37 @@ rtError_t ApiImpl::ModelBindStream(Model * const mdl, Stream * const stm, const 
     return curCtx->ModelBindStream(mdl, stm, flag);
 }
 
-rtError_t ApiImpl::ModelUnbindStream(Model * const mdl, Stream * const stm)
+rtError_t ApiImpl::ModelUnbindStream(Model* const mdl, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
 
     // 自动切分场景需解绑 slave streams
     if (mdl->IsAutoSplitSq() && stm->GetAutoSplitCtx() != nullptr) {
-        AutoSplitSqContext *autoSplitCtx = stm->GetAutoSplitCtx();
-        for (Stream *slave : autoSplitCtx->slaveStreams) {
+        AutoSplitSqContext* autoSplitCtx = stm->GetAutoSplitCtx();
+        for (Stream* slave : autoSplitCtx->slaveStreams) {
             if (slave != nullptr) {
                 rtError_t slaveErr = curCtx->ModelUnbindStream(mdl, slave);
-                COND_RETURN_ERROR_MSG_INNER(slaveErr != RT_ERROR_NONE, slaveErr,
-                    "Unbind slave stream failed, stream_id=%d, retCode=%#x.", slave->Id_(), slaveErr);
+                COND_RETURN_ERROR_MSG_INNER(
+                    slaveErr != RT_ERROR_NONE, slaveErr, "Unbind slave stream failed, stream_id=%d, retCode=%#x.",
+                    slave->Id_(), slaveErr);
             }
-        }   
+        }
     }
 
     // 解绑 master stream
     return curCtx->ModelUnbindStream(mdl, stm);
 }
 
-rtError_t ApiImpl::ModelLoadComplete(Model * const mdl)
+rtError_t ApiImpl::ModelLoadComplete(Model* const mdl)
 {
     if (mdl != nullptr) {
         RT_LOG(RT_LOG_INFO, "model load complete, mdl_id=%u.", mdl->Id_());
     }
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(mdl, RT_ERROR_MODEL_NULL, "Ending the build of a model running instance");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
@@ -4242,10 +4414,10 @@ rtError_t ApiImpl::ModelLoadComplete(Model * const mdl)
     return curCtx->ModelLoadComplete(mdl);
 }
 
-rtError_t ApiImpl::ModelExecute(Model * const mdl, Stream * const stm, const uint32_t flag, int32_t timeout)
+rtError_t ApiImpl::ModelExecute(Model* const mdl, Stream* const stm, const uint32_t flag, int32_t timeout)
 {
     UNUSED(flag);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
@@ -4253,9 +4425,9 @@ rtError_t ApiImpl::ModelExecute(Model * const mdl, Stream * const stm, const uin
     return mdl->Execute(stm, timeout);
 }
 
-rtError_t ApiImpl::ModelExecuteSync(Model * const mdl, int32_t timeout)
+rtError_t ApiImpl::ModelExecuteSync(Model* const mdl, int32_t timeout)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
@@ -4263,9 +4435,9 @@ rtError_t ApiImpl::ModelExecuteSync(Model * const mdl, int32_t timeout)
     return mdl->ExecuteSync(timeout);
 }
 
-rtError_t ApiImpl::ModelExecuteAsync(Model * const mdl, Stream * const stm)
+rtError_t ApiImpl::ModelExecuteAsync(Model* const mdl, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
@@ -4273,7 +4445,7 @@ rtError_t ApiImpl::ModelExecuteAsync(Model * const mdl, Stream * const stm)
     return mdl->ExecuteAsync(stm);
 }
 
-rtError_t ApiImpl::ModelGetTaskId(Model * const mdl, uint32_t * const taskId, uint32_t * const streamId)
+rtError_t ApiImpl::ModelGetTaskId(Model* const mdl, uint32_t* const taskId, uint32_t* const streamId)
 {
     *taskId = mdl->LastTaskId_();
     *streamId = mdl->LastStreamId_();
@@ -4281,59 +4453,61 @@ rtError_t ApiImpl::ModelGetTaskId(Model * const mdl, uint32_t * const taskId, ui
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ModelGetId(Model * const mdl, uint32_t * const modelId)
+rtError_t ApiImpl::ModelGetId(Model* const mdl, uint32_t* const modelId)
 {
     *modelId = mdl->Id_();
     RT_LOG(RT_LOG_DEBUG, "get model_id=%u", *modelId);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ModelEndGraph(Model * const mdl, Stream * const stm, const uint32_t flags)
+rtError_t ApiImpl::ModelEndGraph(Model* const mdl, Stream* const stm, const uint32_t flags)
 {
-    RT_LOG(RT_LOG_DEBUG, "model add end graph task model_id=%u, stream_id=%d, flags=%u",
-            mdl->Id_(), stm->Id_(), flags);
+    RT_LOG(RT_LOG_DEBUG, "model add end graph task model_id=%u, stream_id=%d, flags=%u", mdl->Id_(), stm->Id_(), flags);
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
 
     if ((flags & RT_KERNEL_DUMPFLAG) != 0U) {
-        ERROR_RETURN_MSG_INNER(Runtime::Instance()->StartAicpuSd(curCtx->Device_()),
+        ERROR_RETURN_MSG_INNER(
+            Runtime::Instance()->StartAicpuSd(curCtx->Device_()),
             "Model end graph with kernel dump flag failed, check and start tsd open aicpu sd error.");
     }
     return curCtx->ModelAddEndGraph(mdl, stm, flags);
 }
 
-rtError_t ApiImpl::ModelExecutorSet(Model * const mdl, const uint8_t flags)
+rtError_t ApiImpl::ModelExecutorSet(Model* const mdl, const uint8_t flags)
 {
     RT_LOG(RT_LOG_INFO, "model executor set, mode_id=%u, flags=%hhu", mdl->Id_(), flags);
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     COND_RETURN_ERROR(rtInstance == nullptr, RT_ERROR_INSTANCE_NULL, "Runtime instance is null.");
-    ERROR_RETURN_MSG_INNER(rtInstance->StartAicpuSd(curCtx->Device_()),
+    ERROR_RETURN_MSG_INNER(
+        rtInstance->StartAicpuSd(curCtx->Device_()),
         "Model executor set failed, check and start tsd open aicpu sd error.");
     return curCtx->ModelExecutorSet(mdl, flags);
 }
 
-rtError_t ApiImpl::ModelAbort(Model * const mdl)
+rtError_t ApiImpl::ModelAbort(Model* const mdl)
 {
     if (mdl != nullptr) {
         RT_LOG(RT_LOG_INFO, "model abort, mode_id=%u", mdl->Id_());
     }
 
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(mdl, RT_ERROR_MODEL_NULL, "Aborting the model running instance");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     if (mdl->GetModelExecutorType() == EXECUTOR_TS) {
-        COND_RETURN_AND_MSG_OUTER(dev->GetTschVersion() < static_cast<uint32_t>(TS_VERSION_TS_MODEL_ABORT), 
-            RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1015, "Aborting the model running instance", "");
+        COND_RETURN_AND_MSG_OUTER(
+            dev->GetTschVersion() < static_cast<uint32_t>(TS_VERSION_TS_MODEL_ABORT), RT_ERROR_FEATURE_NOT_SUPPORT,
+            ErrorCode::EE1015, "Aborting the model running instance", "");
         if (!IS_SUPPORT_CHIP_FEATURE(dev->GetChipType(), RtOptionalFeatureType::RT_FEATURE_MODEL_ABORT)) {
             RT_LOG(RT_LOG_ERROR, "feature not supported. Ts model cannot be abort in current device");
             RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Aborting the model running instance");
@@ -4344,11 +4518,11 @@ rtError_t ApiImpl::ModelAbort(Model * const mdl)
     return curCtx->ModelAbort(mdl);
 }
 
-rtError_t ApiImpl::ModelExit(Model * const mdl, Stream * const stm)
+rtError_t ApiImpl::ModelExit(Model* const mdl, Stream* const stm)
 {
     RT_LOG(RT_LOG_INFO, "model add model exit task mode_id=%u, stream_id=%d.", mdl->Id_(), stm->Id_());
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
@@ -4357,29 +4531,29 @@ rtError_t ApiImpl::ModelExit(Model * const mdl, Stream * const stm)
     return curCtx->ModelExit(mdl, stm);
 }
 
-
-rtError_t ApiImpl::ModelBindQueue(Model * const mdl, const uint32_t queueId, const rtModelQueueFlag_t flag)
+rtError_t ApiImpl::ModelBindQueue(Model* const mdl, const uint32_t queueId, const rtModelQueueFlag_t flag)
 {
     RT_LOG(RT_LOG_INFO, "model bind queue. modelId=%u, queueId=%u, flag=%d", mdl->Id_(), queueId, flag);
 
     const rtError_t error = AiCpuTaskSupportCheck();
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
 
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     COND_RETURN_ERROR(rtInstance == nullptr, RT_ERROR_INSTANCE_NULL, "Runtime instance is null.");
-    ERROR_RETURN_MSG_INNER(rtInstance->StartAicpuSd(curCtx->Device_()),
+    ERROR_RETURN_MSG_INNER(
+        rtInstance->StartAicpuSd(curCtx->Device_()),
         "Model bind queue failed, check and start tsd open aicpu sd error.");
 
     return curCtx->ModelBindQueue(mdl, queueId, flag);
 }
 
-rtError_t ApiImpl::DebugRegister(Model * const mdl, const uint32_t flag, const void * const addr,
-    uint32_t * const streamId, uint32_t * const taskId)
+rtError_t ApiImpl::DebugRegister(
+    Model* const mdl, const uint32_t flag, const void* const addr, uint32_t* const streamId, uint32_t* const taskId)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
@@ -4387,9 +4561,9 @@ rtError_t ApiImpl::DebugRegister(Model * const mdl, const uint32_t flag, const v
     return curCtx->DebugRegister(mdl, flag, addr, streamId, taskId);
 }
 
-rtError_t ApiImpl::DebugUnRegister(Model * const mdl)
+rtError_t ApiImpl::DebugUnRegister(Model* const mdl)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
@@ -4397,19 +4571,19 @@ rtError_t ApiImpl::DebugUnRegister(Model * const mdl)
     return curCtx->DebugUnRegister(mdl);
 }
 
-rtError_t ApiImpl::DebugRegisterForStream(Stream * const stm, const uint32_t flag, const void * const addr,
-                                          uint32_t * const streamId, uint32_t * const taskId)
+rtError_t ApiImpl::DebugRegisterForStream(
+    Stream* const stm, const uint32_t flag, const void* const addr, uint32_t* const streamId, uint32_t* const taskId)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
     return curCtx->DebugRegisterForStream(stm, flag, addr, streamId, taskId);
 }
 
-rtError_t ApiImpl::DebugUnRegisterForStream(Stream * const stm)
+rtError_t ApiImpl::DebugUnRegisterForStream(Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
@@ -4417,10 +4591,10 @@ rtError_t ApiImpl::DebugUnRegisterForStream(Stream * const stm)
     return curCtx->DebugUnRegisterForStream(stm);
 }
 
-rtError_t ApiImpl::ModelSetSchGroupId(Model * const mdl, const int16_t schGrpId)
+rtError_t ApiImpl::ModelSetSchGroupId(Model* const mdl, const int16_t schGrpId)
 {
     RT_LOG(RT_LOG_INFO, "ModelSetSchGroupId, schGrpId=%hd.", schGrpId);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MODEL_SCHED_GROUP)) {
@@ -4443,7 +4617,8 @@ rtError_t ApiImpl::CacheLastTaskExtendInfo(const char* const extendInfoPtr, cons
 
     Device* const dev = curContext->Device_();
     StreamSqCqManage* const streamSqCqManagePtr = dev->GetStreamSqCqManage();
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(streamSqCqManagePtr, RT_ERROR_INVALID_VALUE, "Caching the extended information of the latest task");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        streamSqCqManagePtr, RT_ERROR_INVALID_VALUE, "Caching the extended information of the latest task");
 
     Stream* stm = nullptr;
     rtError_t error = streamSqCqManagePtr->GetStreamById(lastStreamId, &stm);
@@ -4457,17 +4632,16 @@ rtError_t ApiImpl::CacheLastTaskExtendInfo(const char* const extendInfoPtr, cons
         lastStreamId);
 
     Model* model = stm->Model_();
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(model, RT_ERROR_MODEL_NULL, "Caching the extended information of the latest task");
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        model, RT_ERROR_MODEL_NULL, "Caching the extended information of the latest task");
 
     return model->CacheLastTaskExtendInfo(stm, extendInfoPtr, infoSize);
 }
 
-
-rtError_t ApiImpl::ModelTaskUpdate(Stream *desStm, uint32_t desTaskId, Stream *sinkStm,
-                                   rtMdlTaskUpdateInfo_t *para)
+rtError_t ApiImpl::ModelTaskUpdate(Stream* desStm, uint32_t desTaskId, Stream* sinkStm, rtMdlTaskUpdateInfo_t* para)
 {
     RT_LOG(RT_LOG_INFO, "ModelTaskUpdate, desStm=%d.desTaskId=%u,sinkStm=%d", desStm->Id_(), desTaskId, sinkStm->Id_());
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     return curCtx->ModelTaskUpdate(desStm, desTaskId, sinkStm, para);
@@ -4481,8 +4655,7 @@ rtError_t ApiImpl::SetExceptCallback(const rtErrorCallback callback)
     return error;
 }
 
-rtError_t ApiImpl::SetTaskAbortCallBack(const char_t *regName, void *callback, void *args,
-    TaskAbortCallbackType type)
+rtError_t ApiImpl::SetTaskAbortCallBack(const char_t* regName, void* callback, void* args, TaskAbortCallbackType type)
 {
     RT_LOG(RT_LOG_INFO, "set task abort callback.");
     const rtError_t error = Runtime::Instance()->SetTaskAbortCallBack(regName, callback, args, type);
@@ -4490,23 +4663,24 @@ rtError_t ApiImpl::SetTaskAbortCallBack(const char_t *regName, void *callback, v
     return error;
 }
 
-rtError_t ApiImpl::SetTaskFailCallback(void *callback, void *args, TaskFailCallbackType type)
+rtError_t ApiImpl::SetTaskFailCallback(void* callback, void* args, TaskFailCallbackType type)
 {
-    constexpr const char_t *regName = "_DEFAULT_MODEL_NAME_";
+    constexpr const char_t* regName = "_DEFAULT_MODEL_NAME_";
     return TaskFailCallBackReg(regName, callback, args, type);
 }
 
-rtError_t ApiImpl::RegTaskFailCallbackByModule(const char_t *regName, void *callback, void *args,
-    TaskFailCallbackType type)
+rtError_t ApiImpl::RegTaskFailCallbackByModule(
+    const char_t* regName, void* callback, void* args, TaskFailCallbackType type)
 {
     return TaskFailCallBackReg(regName, callback, args, type);
 }
 
-rtError_t ApiImpl::RegDeviceStateCallback(const char_t *regName, void *callback, void *args,
-    DeviceStateCallback type, rtDevCallBackDir_t notifyPos)
+rtError_t ApiImpl::RegDeviceStateCallback(
+    const char_t* regName, void* callback, void* args, DeviceStateCallback type, rtDevCallBackDir_t notifyPos)
 {
     RT_LOG(RT_LOG_INFO, "Reg device state callback, regName=%s.", regName);
-    const rtError_t error = DeviceStateCallbackManager::Instance().RegDeviceStateCallback(regName, callback, args, type, notifyPos);
+    const rtError_t error =
+        DeviceStateCallbackManager::Instance().RegDeviceStateCallback(regName, callback, args, type, notifyPos);
     ERROR_RETURN(error, "Register device state callback failed, regName=%s.", regName);
     return error;
 }
@@ -4519,24 +4693,25 @@ rtError_t ApiImpl::RegProfCtrlCallback(const uint32_t moduleId, const rtProfCtrl
     return error;
 }
 
-rtError_t ApiImpl::GetL2CacheOffset(uint32_t deviceId, uint64_t *offset)
+rtError_t ApiImpl::GetL2CacheOffset(uint32_t deviceId, uint64_t* offset)
 {
     RT_LOG(RT_LOG_DEBUG, "Get l2cache offset.");
-    Context * const curCtx = CurrentContext(true, deviceId);
+    Context* const curCtx = CurrentContext(true, deviceId);
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Driver * const curDrv = curCtx->Device_()->Driver_();
+    Driver* const curDrv = curCtx->Device_()->Driver_();
 
     return curDrv->GetL2CacheOffset(deviceId, offset);
 }
 
-rtError_t ApiImpl::IpcSetMemoryAttr(const char *name, uint32_t type, uint64_t attr)
+rtError_t ApiImpl::IpcSetMemoryAttr(const char* name, uint32_t type, uint64_t attr)
 {
     RT_LOG(RT_LOG_DEBUG, "Set ipc memory attribute. name=%s, type=%u, attr=%" PRIx64 ".", name, type, attr);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    const bool isNewChip = (curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_NON_UNIFIED_ADDR) &&
-        g_isAddrFlatDevice);
+    const bool isNewChip =
+        (curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_NON_UNIFIED_ADDR) &&
+         g_isAddrFlatDevice);
     if (isNewChip) {
         return curCtx->Device_()->Driver_()->SetIpcMemAttr(name, type, attr);
     }
@@ -4544,23 +4719,24 @@ rtError_t ApiImpl::IpcSetMemoryAttr(const char *name, uint32_t type, uint64_t at
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::NopTask(Stream * const stm)
+rtError_t ApiImpl::NopTask(Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     const uint32_t ver = curCtx->Device_()->GetTschVersion();
-    COND_RETURN_AND_MSG_OUTER(ver < static_cast<uint32_t>(TS_VERSION_NOP_TASK), RT_ERROR_FEATURE_NOT_SUPPORT, 
-        ErrorCode::EE1015, "Executing a No-Operation (NOP) task", "");
+    COND_RETURN_AND_MSG_OUTER(
+        ver < static_cast<uint32_t>(TS_VERSION_NOP_TASK), RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1015,
+        "Executing a No-Operation (NOP) task", "");
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
     return curCtx->NopTask(stm);
 }
 
-rtError_t ApiImpl::IpcCloseMemory(const void * const ptr)
+rtError_t ApiImpl::IpcCloseMemory(const void* const ptr)
 {
     RT_LOG(RT_LOG_DEBUG, "Start close ipc memory.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_IPC_MEMORY)) {
@@ -4571,15 +4747,15 @@ rtError_t ApiImpl::IpcCloseMemory(const void * const ptr)
     return curCtx->Device_()->Driver_()->CloseIpcMem(static_cast<uint64_t>(reinterpret_cast<uintptr_t>(ptr)));
 }
 
-rtError_t ApiImpl::IpcCloseMemoryByName(const char_t * const name)
+rtError_t ApiImpl::IpcCloseMemoryByName(const char_t* const name)
 {
     RT_LOG(RT_LOG_DEBUG, "start close ipc memory, name=%s.", name);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Runtime * const rtInstance = Runtime::Instance();
-    std::unordered_map<uint64_t, ipcMemInfo_t> &ipcMemNameMap = rtInstance->GetIpcMemNameMap();
+    Runtime* const rtInstance = Runtime::Instance();
+    std::unordered_map<uint64_t, ipcMemInfo_t>& ipcMemNameMap = rtInstance->GetIpcMemNameMap();
     const std::string ipcName(name);
-    for (auto &pairMap : ipcMemNameMap) {
+    for (auto& pairMap : ipcMemNameMap) {
         if (pairMap.second.name == ipcName) {
             return curCtx->Device_()->Driver_()->CloseIpcMem(pairMap.first);
         }
@@ -4588,10 +4764,10 @@ rtError_t ApiImpl::IpcCloseMemoryByName(const char_t * const name)
     return curCtx->Device_()->Driver_()->DestroyIpcMem(name);
 }
 
-rtError_t ApiImpl::IpcDestroyMemoryName(const char_t * const name)
+rtError_t ApiImpl::IpcDestroyMemoryName(const char_t* const name)
 {
     RT_LOG(RT_LOG_DEBUG, "Destroy ipc memory. name=%s.", name);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_IPC_MEMORY)) {
@@ -4602,83 +4778,85 @@ rtError_t ApiImpl::IpcDestroyMemoryName(const char_t * const name)
     return curCtx->Device_()->Driver_()->DestroyIpcMem(name);
 }
 
-rtError_t ApiImpl::SetIpcNotifyPid(const char_t * const name, int32_t pid[], const int32_t num)
+rtError_t ApiImpl::SetIpcNotifyPid(const char_t* const name, int32_t pid[], const int32_t num)
 {
     RT_LOG(RT_LOG_DEBUG, "Set ipc notify pid. name=%s.", name);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_IPC_MEMORY)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Setting the trustlist of processes that can share a Notify object");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1005, "Setting the trustlist of processes that can share a Notify object");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
     return curCtx->Device_()->Driver_()->SetIpcNotifyPid(name, pid, num);
 }
 
-rtError_t ApiImpl::SetIpcMemPid(const char_t * const name, int32_t pid[], const int32_t num)
+rtError_t ApiImpl::SetIpcMemPid(const char_t* const name, int32_t pid[], const int32_t num)
 {
     RT_LOG(RT_LOG_DEBUG, "Set ipc mem pid. name=%s.", name);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_IPC_MEMORY)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Setting the trustlist of processes that can share memory through IPC");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1005, "Setting the trustlist of processes that can share memory through IPC");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
     return curCtx->Device_()->Driver_()->SetIpcMemPid(name, pid, num);
 }
 
-rtError_t ApiImpl::NotifyCreate(const int32_t deviceId, Notify ** const retNotify, uint64_t flag)
+rtError_t ApiImpl::NotifyCreate(const int32_t deviceId, Notify** const retNotify, uint64_t flag)
 {
     RT_LOG(RT_LOG_INFO, "Notify create.");
-    Context * const curCtx = CurrentContext(true, deviceId);
+    Context* const curCtx = CurrentContext(true, deviceId);
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     COND_RETURN_ERROR(dev == nullptr, RT_ERROR_INVALID_VALUE, "device is NULL.");
 
     if (flag == RT_NOTIFY_MC2) {
         const bool isMc2SupportHccl = CheckSupportMC2Feature(dev);
         if (!isMc2SupportHccl) {
-            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support creating coprocessor notify.",
+            RT_LOG(
+                RT_LOG_WARNING, "Current ts version[%u] does not support creating coprocessor notify.",
                 dev->GetTschVersion());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
     }
 
     *retNotify = new (std::nothrow) Notify(static_cast<uint32_t>(deviceId), dev->DevGetTsId());
-    COND_RETURN_AND_MSG_OUTER((*retNotify == nullptr), RT_ERROR_NOTIFY_NEW, ErrorCode::EE1013,
-        sizeof(Notify), "new");
+    COND_RETURN_AND_MSG_OUTER((*retNotify == nullptr), RT_ERROR_NOTIFY_NEW, ErrorCode::EE1013, sizeof(Notify), "new");
 
     (*retNotify)->SetNotifyFlag(static_cast<uint32_t>(flag));
     const rtError_t error = (*retNotify)->Setup();
     if ((error == RT_ERROR_DRV_NO_NOTIFY_RESOURCES) || (error == RT_ERROR_DRV_NO_RESOURCES)) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc Notify resource",
-            "Too many Notify objects are created");
+        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc Notify resource", "Too many Notify objects are created");
     }
-    ERROR_PROC_RETURN_MSG_INNER(error, DELETE_O(*retNotify);,
-                                "Notify create failed, setup failed, drv devId=%d, retCode=%#x", deviceId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, DELETE_O(*retNotify);
+                                , "Notify create failed, setup failed, drv devId=%d, retCode=%#x", deviceId,
+                                static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::NotifyDestroy(Notify * const inNotify)
+rtError_t ApiImpl::NotifyDestroy(Notify* const inNotify)
 {
     RT_LOG(RT_LOG_INFO, "Notify destroy.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     delete inNotify;
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::NotifyRecord(Notify * const inNotify, Stream * const stm)
+rtError_t ApiImpl::NotifyRecord(Notify* const inNotify, Stream* const stm)
 {
     RT_LOG(RT_LOG_INFO, "Notify record.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -4688,24 +4866,25 @@ rtError_t ApiImpl::NotifyRecord(Notify * const inNotify, Stream * const stm)
 
     const uint32_t notifyId = inNotify->GetNotifyId();
     const rtError_t error = inNotify->Record(curStm);
-    ERROR_RETURN_MSG_INNER(error, "Notify record failed, notifyId=%u, retCode=%#x.",
-                            notifyId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Notify record failed, notifyId=%u, retCode=%#x.", notifyId, static_cast<uint32_t>(error));
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::NotifyReset(Notify * const inNotify)
+rtError_t ApiImpl::NotifyReset(Notify* const inNotify)
 {
     RT_LOG(RT_LOG_INFO, "notify reset.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Stream *curStm = curCtx->DefaultStream_();
+    Stream* curStm = curCtx->DefaultStream_();
     NULL_STREAM_PTR_RETURN_MSG(curStm);
 
-    COND_RETURN_ERROR(curStm->Context_() != curCtx, RT_ERROR_STREAM_CONTEXT,
+    COND_RETURN_ERROR(
+        curStm->Context_() != curCtx, RT_ERROR_STREAM_CONTEXT,
         "Notify reset failed, stream is not in current ctx, stream_id=%d.", curStm->Id_());
 
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     if (!dev->IsStarsPlatform()) {
         RT_LOG(RT_LOG_ERROR, "feature support only in stars platform");
         RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Notify resetting");
@@ -4720,8 +4899,8 @@ rtError_t ApiImpl::NotifyReset(Notify * const inNotify)
 
     const uint32_t notifyId = inNotify->GetNotifyId();
     const rtError_t error = inNotify->Reset(curStm);
-    ERROR_RETURN_MSG_INNER(error, "Notify reset failed, notifyId=%u, retCode=%#x",
-                           notifyId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Notify reset failed, notifyId=%u, retCode=%#x", notifyId, static_cast<uint32_t>(error));
 
     return RT_ERROR_NONE;
 }
@@ -4731,38 +4910,41 @@ rtError_t ApiImpl::ResourceClean(int32_t devId, rtIdType_t type)
     RT_LOG(RT_LOG_INFO, "resource clean.");
     UNUSED(type);
     rtError_t error = RT_ERROR_NONE;
-    Context * const curCtx = CurrentContext(false, devId);
+    Context* const curCtx = CurrentContext(false, devId);
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (!curCtx->Device_()->CheckFeatureSupport(TS_FEATURE_TASK_ABORT)) {
         RT_LOG(RT_LOG_WARNING, "This feature is not supported because the tsch version is too low");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
-    Driver * const curDrv = curCtx->Device_()->Driver_();
+    Driver* const curDrv = curCtx->Device_()->Driver_();
     for (uint32_t tsId = 0; tsId < Runtime::Instance()->GetTsNum(); tsId++) {
         error = curDrv->ResourceReset(devId, tsId, DRV_NOTIFY_ID);
-        ERROR_RETURN_MSG_INNER(error, "Resource Clean failed, devId=%u, tsId=%u, retCode=%#x", devId, tsId, static_cast<uint32_t>(error));
+        ERROR_RETURN_MSG_INNER(
+            error, "Resource Clean failed, devId=%u, tsId=%u, retCode=%#x", devId, tsId, static_cast<uint32_t>(error));
     }
     return error;
 }
 
-rtError_t ApiImpl::NotifyWait(Notify * const inNotify, Stream * const stm, const uint32_t timeOut)
+rtError_t ApiImpl::NotifyWait(Notify* const inNotify, Stream* const stm, const uint32_t timeOut)
 {
     RT_LOG(RT_LOG_INFO, "notify wait, timeout=%us.", timeOut);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
-    Stream *curStm = stm;
+    Device* const dev = curCtx->Device_();
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
-    COND_RETURN_AND_MSG_OUTER(inNotify->CheckIpcNotifyDevId() != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE,
-        ErrorCode::EE1012, "Waiting for a Notify", dev->Id_(), "current deviceId",
-            RtFmtMsg("The device (device_id=%u) cannot deliver the notify wait task."
-                " The notify wait task must be delivered on the device (device_id=%u) where the IPC Notify is created",
+    COND_RETURN_AND_MSG_OUTER(
+        inNotify->CheckIpcNotifyDevId() != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE, ErrorCode::EE1012,
+        "Waiting for a Notify", dev->Id_(), "current deviceId",
+        RtFmtMsg(
+            "The device (device_id=%u) cannot deliver the notify wait task."
+            " The notify wait task must be delivered on the device (device_id=%u) where the IPC Notify is created",
             dev->Id_(), inNotify->GetDeviceId()));
 
     uint32_t timeOutTmp = timeOut;
@@ -4772,23 +4954,24 @@ rtError_t ApiImpl::NotifyWait(Notify * const inNotify, Stream * const stm, const
     }
     const rtError_t error = NtyWait(inNotify, curStm, timeOutTmp);
     const uint32_t notify_id = inNotify->GetNotifyId();
-    ERROR_RETURN_MSG_INNER(error, "Notify wait failed, notify_id=%u, time_out = %us, retCode=%#x.",
-        notify_id, timeOutTmp, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Notify wait failed, notify_id=%u, time_out = %us, retCode=%#x.", notify_id, timeOutTmp,
+        static_cast<uint32_t>(error));
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetNotifyID(Notify * const inNotify, uint32_t * const notifyID)
+rtError_t ApiImpl::GetNotifyID(Notify* const inNotify, uint32_t* const notifyID)
 {
     RT_LOG(RT_LOG_INFO, "Get notify id.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     *notifyID = inNotify->GetNotifyId();
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetNotifyPhyInfo(Notify *const inNotify, rtNotifyPhyInfo *notifyInfo)
+rtError_t ApiImpl::GetNotifyPhyInfo(Notify* const inNotify, rtNotifyPhyInfo* notifyInfo)
 {
     RT_LOG(RT_LOG_INFO, "get phy info.");
     if (inNotify == nullptr) {
@@ -4805,154 +4988,172 @@ rtError_t ApiImpl::GetNotifyPhyInfo(Notify *const inNotify, rtNotifyPhyInfo *not
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::IpcSetNotifyName(Notify * const inNotify, char_t * const name, const uint32_t len, const uint64_t flag)
+rtError_t ApiImpl::IpcSetNotifyName(Notify* const inNotify, char_t* const name, const uint32_t len, const uint64_t flag)
 {
     RT_LOG(RT_LOG_INFO, "IpcSetNotifyName, name=%s, len=%u, flag=%#" PRIx64 ".", name, len, flag);
     const uint32_t notify_id = inNotify->GetNotifyId();
     rtError_t error = inNotify->CreateIpcNotify(name, len);
     ERROR_RETURN_MSG_INNER(
-        error, "CreateIpcNotify failed, notify_id=%u, name=%s, len=%u retCode=%#x", notify_id, name, len, static_cast<uint32_t>(error));
+        error, "CreateIpcNotify failed, notify_id=%u, name=%s, len=%u retCode=%#x", notify_id, name, len,
+        static_cast<uint32_t>(error));
 
-    if ((flag & RT_NOTIFY_EXPORT_FLAG_DISABLE_PID_VALIDATION ) != 0UL) {
+    if ((flag & RT_NOTIFY_EXPORT_FLAG_DISABLE_PID_VALIDATION) != 0UL) {
         error = NpuDriver::SetIpcNotifyDisablePidVerify(name);
         COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::IpcOpenNotify(Notify ** const retNotify, const char_t * const name, uint32_t flag)
+rtError_t ApiImpl::IpcOpenNotify(Notify** const retNotify, const char_t* const name, uint32_t flag)
 {
     RT_LOG(RT_LOG_INFO, "open ipc notify. name=%s, flag=%#x.", name, flag);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     COND_RETURN_ERROR(dev == nullptr, RT_ERROR_INVALID_VALUE, "device is NULL.");
 
     if ((flag & RT_NOTIFY_FLAG_DOWNLOAD_TO_DEV) != 0) {
         const bool isMc2SupportHccl = CheckSupportMC2Feature(dev);
         if (!isMc2SupportHccl) {
-            RT_LOG(RT_LOG_WARNING, "Current ts version[%u] does not support opening IPC coprocessor notifies.",
+            RT_LOG(
+                RT_LOG_WARNING, "Current ts version[%u] does not support opening IPC coprocessor notifies.",
                 dev->GetTschVersion());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
     }
 
     *retNotify = new (std::nothrow) Notify(dev->Id_(), dev->DevGetTsId());
-    COND_RETURN_AND_MSG_OUTER((*retNotify == nullptr), RT_ERROR_NOTIFY_NEW, ErrorCode::EE1013,
-        sizeof(Notify), "new");
+    COND_RETURN_AND_MSG_OUTER((*retNotify == nullptr), RT_ERROR_NOTIFY_NEW, ErrorCode::EE1013, sizeof(Notify), "new");
 
     const rtError_t error = (*retNotify)->OpenIpcNotify(name, flag);
-    ERROR_PROC_RETURN_MSG_INNER(error, DELETE_O(*retNotify);,
-                                "Ipc open notify failed, retCode=%#x", static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, DELETE_O(*retNotify);
+                                , "Ipc open notify failed, retCode=%#x", static_cast<uint32_t>(error));
     return error;
 }
 
-rtError_t ApiImpl::NotifyGetAddrOffset(Notify * const inNotify, uint64_t * const devAddrOffset)
+rtError_t ApiImpl::NotifyGetAddrOffset(Notify* const inNotify, uint64_t* const devAddrOffset)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     const uint32_t notify_id = inNotify->GetNotifyId();
     const rtError_t error = inNotify->GetAddrOffset(devAddrOffset);
-    ERROR_RETURN_MSG_INNER(error, "Notify get addr offset failed, notify_id=%u, retCode=%#x",
-                            notify_id, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Notify get addr offset failed, notify_id=%u, retCode=%#x", notify_id, static_cast<uint32_t>(error));
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::StreamSwitchEx(void * const ptr, const rtCondition_t condition, void * const valuePtr,
-    Stream * const trueStream, Stream * const stm, const rtSwitchDataType_t dataType)
+rtError_t ApiImpl::StreamSwitchEx(
+    void* const ptr, const rtCondition_t condition, void* const valuePtr, Stream* const trueStream, Stream* const stm,
+    const rtSwitchDataType_t dataType)
 {
     RT_LOG(RT_LOG_DEBUG, "Switch, condition=%d, dataType=%d.", condition, dataType);
-    COND_RETURN_AND_MSG_OUTER(trueStream->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011, "Switching between streams based on conditions",
-        0, "trueStream->modelNum", RtFmtMsg("The stream (stream_id=%d) is not bound to a model", trueStream->Id_()));
-    COND_RETURN_AND_MSG_OUTER(stm->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011, "Switching between streams based on conditions",
-        0, "stm->modelNum", RtFmtMsg("The stream (stream_id=%d) is not bound to a model", stm->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        trueStream->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011,
+        "Switching between streams based on conditions", 0, "trueStream->modelNum",
+        RtFmtMsg("The stream (stream_id=%d) is not bound to a model", trueStream->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        stm->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011,
+        "Switching between streams based on conditions", 0, "stm->modelNum",
+        RtFmtMsg("The stream (stream_id=%d) is not bound to a model", stm->Id_()));
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
     return CondStreamSwitchEx(ptr, condition, valuePtr, trueStream, stm, dataType, curCtx);
 }
 
-rtError_t ApiImpl::StreamSwitchN(void * const ptr, const uint32_t size, void * const valuePtr,
-    Stream ** const trueStreamPtr, const uint32_t elementSize, Stream * const stm, const rtSwitchDataType_t dataType)
+rtError_t ApiImpl::StreamSwitchN(
+    void* const ptr, const uint32_t size, void* const valuePtr, Stream** const trueStreamPtr,
+    const uint32_t elementSize, Stream* const stm, const rtSwitchDataType_t dataType)
 {
     RT_LOG(RT_LOG_DEBUG, "SwitchN, size=%u, elementSize=%u, dataType=%d.", size, elementSize, dataType);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     for (uint32_t i = 0U; i < elementSize; i++) {
-        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(trueStreamPtr[i], RT_ERROR_STREAM_NULL, "Switching between multi-dimensional streams based on conditional operators");
-        COND_RETURN_AND_MSG_OUTER(trueStreamPtr[i]->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011,
-            "Switching between multi-dimensional streams based on conditional operators", 0, "trueStreamPtr[" + std::to_string(i) + "]->modelNum", RtFmtMsg("The stream (stream_id=%d) is not bound to a model", trueStreamPtr[i]->Id_()));
+        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+            trueStreamPtr[i], RT_ERROR_STREAM_NULL,
+            "Switching between multi-dimensional streams based on conditional operators");
+        COND_RETURN_AND_MSG_OUTER(
+            trueStreamPtr[i]->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011,
+            "Switching between multi-dimensional streams based on conditional operators", 0,
+            "trueStreamPtr[" + std::to_string(i) + "]->modelNum",
+            RtFmtMsg("The stream (stream_id=%d) is not bound to a model", trueStreamPtr[i]->Id_()));
     }
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
-    COND_RETURN_AND_MSG_OUTER(stm->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011, "Switching between multi-dimensional streams based on conditional operators",
-            0, "stm->modelNum", RtFmtMsg("The stream (stream_id=%d) is not bound to a model", stm->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        stm->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011,
+        "Switching between multi-dimensional streams based on conditional operators", 0, "stm->modelNum",
+        RtFmtMsg("The stream (stream_id=%d) is not bound to a model", stm->Id_()));
     return CondStreamSwitchN(ptr, size, valuePtr, trueStreamPtr, elementSize, stm, dataType, curCtx);
 }
 
-
-rtError_t ApiImpl::StreamActive(Stream * const activeStream, Stream * const stm)
+rtError_t ApiImpl::StreamActive(Stream* const activeStream, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    COND_RETURN_AND_MSG_OUTER(stm->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011, "Stream activation",
-            0, "stm->modelNum", RtFmtMsg("The stream (stream_id=%d) is not bound to a model", stm->Id_()));
-    COND_RETURN_AND_MSG_OUTER(activeStream->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011, "Stream activation",
-            0, "activeStream->modelNum", RtFmtMsg("The stream (stream_id=%d) is not bound to a model", activeStream->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        stm->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011, "Stream activation", 0, "stm->modelNum",
+        RtFmtMsg("The stream (stream_id=%d) is not bound to a model", stm->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        activeStream->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011, "Stream activation", 0,
+        "activeStream->modelNum", RtFmtMsg("The stream (stream_id=%d) is not bound to a model", activeStream->Id_()));
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
     return CondStreamActive(activeStream, stm, curCtx);
 }
 
-rtError_t ApiImpl::LabelCreate(Label ** const lbl, Model * const mdl)
+rtError_t ApiImpl::LabelCreate(Label** const lbl, Model* const mdl)
 {
     RT_LOG(RT_LOG_INFO, "label create.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     if (mdl != nullptr) {
         COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
     }
 
     if (mdl != nullptr && mdl->GetModelType() == RT_MODEL_CAPTURE_MODEL) {
-        CaptureModel *captureModel = dynamic_cast<CaptureModel *>(mdl);
-        COND_RETURN_WARN(((captureModel != nullptr) && captureModel->IsSubCaptureModel()),
-            RT_ERROR_FEATURE_NOT_SUPPORT, "sub ACL Graph does not support creating label");
+        CaptureModel* captureModel = dynamic_cast<CaptureModel*>(mdl);
+        COND_RETURN_WARN(
+            ((captureModel != nullptr) && captureModel->IsSubCaptureModel()), RT_ERROR_FEATURE_NOT_SUPPORT,
+            "sub ACL Graph does not support creating label");
     }
 
     return CondLabelCreate(lbl, mdl, curCtx);
 }
 
-rtError_t ApiImpl::LabelDestroy(Label * const lbl)
+rtError_t ApiImpl::LabelDestroy(Label* const lbl)
 {
     RT_LOG(RT_LOG_INFO, "label destroy.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_LABEL(lbl, curCtx, RT_ERROR_LABEL_CONTEXT);
     return CondLabelDestroy(lbl);
 }
 
-rtError_t ApiImpl::LabelSet(Label * const lbl, Stream * const stm)
+rtError_t ApiImpl::LabelSet(Label* const lbl, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_LABEL(lbl, curCtx, RT_ERROR_LABEL_CONTEXT);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
-    COND_RETURN_WARN(IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support setting label");
+    COND_RETURN_WARN(
+        IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT,
+        "stream belongs to sub ACL Graph, does not support setting label");
 
     return lbl->Set(stm);
 }
 
-rtError_t ApiImpl::LabelGoto(Label * const lbl, Stream * const stm)
+rtError_t ApiImpl::LabelGoto(Label* const lbl, Stream* const stm)
 {
     RT_LOG(RT_LOG_DEBUG, "label goto.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_LABEL(lbl, curCtx, RT_ERROR_LABEL_CONTEXT);
 
@@ -4960,20 +5161,22 @@ rtError_t ApiImpl::LabelGoto(Label * const lbl, Stream * const stm)
 
 #ifndef CFG_DEV_PLATFORM_PC
     const uint32_t ver = curCtx->Device_()->GetTschVersion();
-    COND_RETURN_ERROR_MSG_INNER(ver >= TS_VERSION_MORE_LABEL, RT_ERROR_FEATURE_NOT_SUPPORT,
-                                "Old label goto is not supported for 64K labels.");
+    COND_RETURN_ERROR_MSG_INNER(
+        ver >= TS_VERSION_MORE_LABEL, RT_ERROR_FEATURE_NOT_SUPPORT, "Old label goto is not supported for 64K labels.");
 #endif
 
-    COND_RETURN_WARN(IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support goto label");
+    COND_RETURN_WARN(
+        IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT,
+        "stream belongs to sub ACL Graph, does not support goto label");
     return lbl->Goto(stm);
 }
 
-rtError_t ApiImpl::ProfilerTrace(const uint64_t id, const bool notifyFlag, const uint32_t flags, Stream * const stm)
+rtError_t ApiImpl::ProfilerTrace(const uint64_t id, const bool notifyFlag, const uint32_t flags, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -4983,9 +5186,9 @@ rtError_t ApiImpl::ProfilerTrace(const uint64_t id, const bool notifyFlag, const
     return curCtx->ProfilerTrace(id, notifyFlag, flags, curStm);
 }
 
-rtError_t ApiImpl::ProfilerTraceEx(const uint64_t id, const uint64_t modelId, const uint16_t tagId, Stream *stm)
+rtError_t ApiImpl::ProfilerTraceEx(const uint64_t id, const uint64_t modelId, const uint16_t tagId, Stream* stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     if (stm == nullptr) {
@@ -4997,41 +5200,42 @@ rtError_t ApiImpl::ProfilerTraceEx(const uint64_t id, const uint64_t modelId, co
     return curCtx->ProfilerTraceEx(id, modelId, tagId, stm);
 }
 
-rtError_t ApiImpl::SubscribeReport(const uint64_t threadId, Stream * const stm)
+rtError_t ApiImpl::SubscribeReport(const uint64_t threadId, Stream* const stm)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
-        Context * const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
 
-    Event *curEvent = nullptr;
+    Event* curEvent = nullptr;
     if (Runtime::Instance()->ChipIsHaveStars()) {
         ret = EventCreate(&curEvent, RT_EVENT_DDSYNC_NS);
         ERROR_RETURN(ret, "Call EventCreate failed for block callback, ret=%#x.", ret);
-        ret = Runtime::Instance()->SubscribeReport(threadId, curStm, static_cast<void *>(curEvent));
+        ret = Runtime::Instance()->SubscribeReport(threadId, curStm, static_cast<void*>(curEvent));
         if (ret != RT_ERROR_NONE) {
             (void)EventDestroy(curEvent);
         }
         return ret;
     }
 
-    return Runtime::Instance()->SubscribeReport(threadId, curStm, static_cast<void *>(curEvent));
+    return Runtime::Instance()->SubscribeReport(threadId, curStm, static_cast<void*>(curEvent));
 }
 
-rtError_t ApiImpl::CallbackLaunchWithEvent(const rtCallback_t callBackFunc, void * const fnData, Stream * const stm,
-        const bool isBlock, Event ** const evt, const uint64_t threadId)
+rtError_t ApiImpl::CallbackLaunchWithEvent(
+    const rtCallback_t callBackFunc, void* const fnData, Stream* const stm, const bool isBlock, Event** const evt,
+    const uint64_t threadId)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Device * const dev = stm->Device_();
+    Device* const dev = stm->Device_();
     TaskInfo submitTask = {};
     rtError_t errorReason;
     uint32_t curEventId = 0U;
-    Event *curEvent = nullptr;
-    Runtime * const rtInstance = Runtime::Instance();
+    Event* curEvent = nullptr;
+    Runtime* const rtInstance = Runtime::Instance();
     TaskInfo* rtCbLaunchTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_HOSTFUNC_CALLBACK, errorReason);
     NULL_PTR_RETURN_MSG(rtCbLaunchTask, errorReason);
 
@@ -5039,11 +5243,12 @@ rtError_t ApiImpl::CallbackLaunchWithEvent(const rtCallback_t callBackFunc, void
         (void)dev->GetTaskFactory()->Recycle(rtCbLaunchTask);
     };
     ScopeGuard callbackTaskGuarder(callbackTaskRecycle);
-    Stream * const launchStm = rtCbLaunchTask->stream;
+    Stream* const launchStm = rtCbLaunchTask->stream;
 
     if ((stm->IsCapturing()) && (launchStm->GetSubscribeFlag() == StreamSubscribeFlag::SUBSCRIBE_NONE)) {
         ret = EventCreate(&curEvent, RT_EVENT_DDSYNC_NS);
-        ERROR_RETURN(ret,
+        ERROR_RETURN(
+            ret,
             "Create callback event failed, drv devId=%u, original stream_id=%d, capture stream_id=%d, retCode=%#x.",
             dev->Id_(), stm->Id_(), launchStm->Id_(), ret);
         if (threadId != MAX_UINT64_NUM) {
@@ -5052,34 +5257,41 @@ rtError_t ApiImpl::CallbackLaunchWithEvent(const rtCallback_t callBackFunc, void
             /* get thread id */
             uint64_t threadIdx = 0UL;
             ret = rtInstance->GetThreadIdByStreamId(dev->Id_(), stm->Id_(), &threadIdx);
-            COND_PROC_RETURN_ERROR(ret != RT_ERROR_NONE, ret, (void)EventDestroy(curEvent),
+            COND_PROC_RETURN_ERROR(
+                ret != RT_ERROR_NONE, ret, (void)EventDestroy(curEvent),
                 "Get threadId by streamId failed, drv devId=%u, original stream_id=%d, "
-                "capture stream_id=%d, retCode=%#x.", dev->Id_(), stm->Id_(), launchStm->Id_(), ret);
+                "capture stream_id=%d, retCode=%#x.",
+                dev->Id_(), stm->Id_(), launchStm->Id_(), ret);
             ret = rtInstance->SubscribeReport(threadIdx, launchStm, curEvent);
         }
         if (ret != RT_ERROR_NONE) {
             (void)EventDestroy(curEvent);
             return ret;
         }
-        RT_LOG(RT_LOG_INFO, "Launched stream_id=%d, subscribeFlag=%d, original stream_id=%d, subscribeFlag=%d",
-               launchStm->Id_(), static_cast<int32_t>(launchStm->GetSubscribeFlag()), stm->Id_(),
-               static_cast<int32_t>(stm->GetSubscribeFlag()));
+        RT_LOG(
+            RT_LOG_INFO, "Launched stream_id=%d, subscribeFlag=%d, original stream_id=%d, subscribeFlag=%d",
+            launchStm->Id_(), static_cast<int32_t>(launchStm->GetSubscribeFlag()), stm->Id_(),
+            static_cast<int32_t>(stm->GetSubscribeFlag()));
     } else {
         ret = rtInstance->GetEventByStreamId(dev->Id_(), stm->AllocTaskStreamId(), &curEvent);
-        ERROR_RETURN(ret,
-            "Get callback event failed, drv devId=%u, original stream_id=%d, launch stream_id=%d, retCode=%#x.",
+        ERROR_RETURN(
+            ret, "Get callback event failed, drv devId=%u, original stream_id=%d, launch stream_id=%d, retCode=%#x.",
             dev->Id_(), stm->Id_(), launchStm->Id_(), ret);
     }
 
     ret = curEvent->GetEventID(&curEventId);
-    ERROR_RETURN(ret, "Call GetEventID failed for block callback, "
+    ERROR_RETURN(
+        ret,
+        "Call GetEventID failed for block callback, "
         "drv devId=%u, original stream_id=%d, launch stream_id=%d, retCode=%#x",
         dev->Id_(), stm->Id_(), launchStm->Id_(), ret);
 
     (void)CallbackLaunchTaskInit(rtCbLaunchTask, callBackFunc, fnData, isBlock, static_cast<int32_t>(curEventId));
 
     ret = dev->SubmitTask(rtCbLaunchTask, (stm->Context_())->TaskGenCallback_());
-    ERROR_RETURN(ret, "Callback launch task submit failed, "
+    ERROR_RETURN(
+        ret,
+        "Callback launch task submit failed, "
         "drv devId=%u, original stream_id=%d, launch stream_id=%d, retCode=%#x",
         dev->Id_(), stm->Id_(), launchStm->Id_(), ret);
 
@@ -5091,14 +5303,14 @@ rtError_t ApiImpl::CallbackLaunchWithEvent(const rtCallback_t callBackFunc, void
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::CallbackLaunchWithoutEvent(const rtCallback_t callBackFunc, void * const fnData, Stream * const stm,
-        const bool isBlock) const
+rtError_t ApiImpl::CallbackLaunchWithoutEvent(
+    const rtCallback_t callBackFunc, void* const fnData, Stream* const stm, const bool isBlock) const
 {
     rtError_t ret = RT_ERROR_NONE;
-    Device * const dev = stm->Device_();
+    Device* const dev = stm->Device_();
     TaskInfo submitTask = {};
     rtError_t errorReason;
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     TaskInfo* rtCbLaunchTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_HOSTFUNC_CALLBACK, errorReason);
     NULL_PTR_RETURN_MSG(rtCbLaunchTask, errorReason);
 
@@ -5106,15 +5318,17 @@ rtError_t ApiImpl::CallbackLaunchWithoutEvent(const rtCallback_t callBackFunc, v
         (void)dev->GetTaskFactory()->Recycle(rtCbLaunchTask);
     };
     ScopeGuard callbackTaskGuarder(callbackTaskRecycle);
-    Stream * const launchStm = rtCbLaunchTask->stream;
+    Stream* const launchStm = rtCbLaunchTask->stream;
 
     if ((stm->IsCapturing()) && (launchStm->GetSubscribeFlag() == StreamSubscribeFlag::SUBSCRIBE_NONE)) {
         /* get thread id */
         uint64_t threadId = 0UL;
         ret = rtInstance->GetThreadIdByStreamId(dev->Id_(), stm->Id_(), &threadId);
-        ERROR_RETURN(ret,
+        ERROR_RETURN(
+            ret,
             "Get threadId by streamId failed, drv devId=%u, original stream_id=%d, "
-            "capture stream_id=%d, retCode=%#x.", dev->Id_(), stm->Id_(), launchStm->Id_(), ret);
+            "capture stream_id=%d, retCode=%#x.",
+            dev->Id_(), stm->Id_(), launchStm->Id_(), ret);
 
         ret = (stm->GetSubscribeFlag() == StreamSubscribeFlag::SUBSCRIBE_RUNTIME) ?
                   rtInstance->SubscribeCallback(threadId, launchStm, nullptr) :
@@ -5122,15 +5336,18 @@ rtError_t ApiImpl::CallbackLaunchWithoutEvent(const rtCallback_t callBackFunc, v
         if (ret != RT_ERROR_NONE) {
             return ret;
         }
-        RT_LOG(RT_LOG_INFO, "Launched stream_id=%d, subscribeFlag=%d, original stream_id=%d, subscribeFlag=%d",
-               launchStm->Id_(), static_cast<int32_t>(launchStm->GetSubscribeFlag()), stm->Id_(),
-               static_cast<int32_t>(stm->GetSubscribeFlag()));
+        RT_LOG(
+            RT_LOG_INFO, "Launched stream_id=%d, subscribeFlag=%d, original stream_id=%d, subscribeFlag=%d",
+            launchStm->Id_(), static_cast<int32_t>(launchStm->GetSubscribeFlag()), stm->Id_(),
+            static_cast<int32_t>(stm->GetSubscribeFlag()));
     }
 
     (void)CallbackLaunchTaskInit(rtCbLaunchTask, callBackFunc, fnData, isBlock, INVALID_EVENT_ID);
 
     ret = dev->SubmitTask(rtCbLaunchTask, (stm->Context_())->TaskGenCallback_());
-    ERROR_RETURN(ret, "Callback launch task submit failed, "
+    ERROR_RETURN(
+        ret,
+        "Callback launch task submit failed, "
         "drv devId=%u, original stream_id=%d, launch stream_id=%d, retCode=%#x",
         dev->Id_(), stm->Id_(), launchStm->Id_(), ret);
 
@@ -5141,24 +5358,27 @@ rtError_t ApiImpl::CallbackLaunchWithoutEvent(const rtCallback_t callBackFunc, v
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::CallbackLaunch(const rtCallback_t callBackFunc, void * const fnData, Stream * const stm,
-    const bool isBlock)
+rtError_t ApiImpl::CallbackLaunch(
+    const rtCallback_t callBackFunc, void* const fnData, Stream* const stm, const bool isBlock)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
-    COND_RETURN_AND_MSG_OUTER(!curStm->IsHostFuncCbReg(), RT_ERROR_STREAM_NO_CB_REG, ErrorCode::EE1018,
+    COND_RETURN_AND_MSG_OUTER(
+        !curStm->IsHostFuncCbReg(), RT_ERROR_STREAM_NO_CB_REG, ErrorCode::EE1018,
         "Delivering an on-host callback function task in a stream",
-        RtFmtMsg("Stream (stream_id=%d) is not bound to any thread. Call the rtSubscribeReport API to bind a thread to the stream",
-        curStm->Id_()));
+        RtFmtMsg(
+            "Stream (stream_id=%d) is not bound to any thread. Call the rtSubscribeReport API to bind a thread to the "
+            "stream",
+            curStm->Id_()));
 
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     if (rt->ChipIsHaveStars() && isBlock) {
         return StarsLaunchEventProc(curStm, callBackFunc, fnData, MAX_UINT64_NUM);
     }
@@ -5174,30 +5394,31 @@ rtError_t ApiImpl::ProcessReport(const int32_t timeout, const bool noLog)
     uint32_t groupId = 0U;
     uint64_t bit = 0U;
 
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
 
     const uint64_t threadId = PidTidFetcher::GetCurrentUserTid();
     rtError_t ret = rt->GetGroupIdByThreadId(threadId, &deviceId, &tsId, &groupId, noLog);
-    COND_RETURN_WARN((ret != RT_ERROR_NONE) && (!noLog), ret, "get groupId fail, threadIdentifier=%" PRIu64 ", retCode=%#x",
-                     threadId, ret);
+    COND_RETURN_WARN(
+        (ret != RT_ERROR_NONE) && (!noLog), ret, "get groupId fail, threadIdentifier=%" PRIu64 ", retCode=%#x",
+        threadId, ret);
     COND_RETURN_WITH_NOLOG((ret != RT_ERROR_NONE) && (noLog), ret);
     rt->LockGroupId(groupId);
     std::function<void()> const func = [=]() { rt->UnlockGroupId(groupId); };
     const ScopeGuard groupIdGuarder(func);
 
-    Context *priCtx = rt->GetPriCtxByDeviceId(deviceId, tsId);
+    Context* priCtx = rt->GetPriCtxByDeviceId(deviceId, tsId);
     if (priCtx == nullptr) {
         priCtx = CurrentContext();
     }
 
     if (noLog) {
-        CHECK_CONTEXT_VALID_WITH_PROC_RETURN(priCtx, RT_ERROR_CONTEXT_NULL,);
+        CHECK_CONTEXT_VALID_WITH_PROC_RETURN(priCtx, RT_ERROR_CONTEXT_NULL, );
     } else {
         CHECK_CONTEXT_VALID_WITH_RETURN(priCtx, RT_ERROR_CONTEXT_NULL);
     }
 
-    Device * const dev = priCtx->Device_();
-    Driver * const curDrv = dev->Driver_();
+    Device* const dev = priCtx->Device_();
+    Driver* const curDrv = dev->Driver_();
 
     ret = curDrv->CqReportIrqWait(deviceId, tsId, groupId, timeout, &cqidBit[0], HOST_CALLBACK_SQCQ_BIT / 64U);
     COND_RETURN_WARN((ret != RT_ERROR_NONE) && (!noLog), ret, "CqReportIrqWait, retCode=%#x", ret);
@@ -5206,7 +5427,7 @@ rtError_t ApiImpl::ProcessReport(const int32_t timeout, const bool noLog)
 
     // per uint64_t num has 64 bit
     for (uint32_t index = 0U; index < (HOST_CALLBACK_SQCQ_BIT / 64U); index++) {
-        for (; ; RT_BITMAP_CLR(cqidBit[index], bit)) {
+        for (;; RT_BITMAP_CLR(cqidBit[index], bit)) {
             bit = BitScan(cqidBit[index]);
             if (bit >= 64U) { // 64 bit for uint64_t
                 break;
@@ -5215,7 +5436,7 @@ rtError_t ApiImpl::ProcessReport(const int32_t timeout, const bool noLog)
             // left move 6 is multiply 64
             const uint32_t cqidValue = (index << 6U) + static_cast<uint32_t>(bit);
             uint32_t cnt = 0U;
-            rtHostFuncCqReport_t *report = nullptr;
+            rtHostFuncCqReport_t* report = nullptr;
             ret = curDrv->CqReportGet(deviceId, tsId, cqidValue, &report, &cnt);
             if (unlikely((report == nullptr) || (cnt == 0U))) {
                 continue;
@@ -5229,14 +5450,15 @@ rtError_t ApiImpl::ProcessReport(const int32_t timeout, const bool noLog)
                     reinterpret_cast<rtCallback_t>(static_cast<uintptr_t>(report[idx].hostFuncCbPtr));
                 NULL_PTR_RETURN_MSG(hostFunc, RT_ERROR_DRV_REPORT);
 
-                RT_LOG(RT_LOG_INFO, "report[%u], sqid=%hu, streamId=%hu, taskId=%hu, eventId=%hu, isBlock=%hhu",
-                    idx, report[idx].sqId, report[idx].streamId, report[idx].taskId,
-                    report[idx].eventId, report[idx].isBlock);
+                RT_LOG(
+                    RT_LOG_INFO, "report[%u], sqid=%hu, streamId=%hu, taskId=%hu, eventId=%hu, isBlock=%hhu", idx,
+                    report[idx].sqId, report[idx].streamId, report[idx].taskId, report[idx].eventId,
+                    report[idx].isBlock);
 
                 ProcessHostFunc(report[idx].hostFuncCbPtr, report[idx].fnDataPtr, dev, report[idx].streamId);
                 if (report[idx].isBlock != 0) {
                     uint32_t sqId = 0U;
-                    rtHostFuncCommand_t *command = nullptr;
+                    rtHostFuncCommand_t* command = nullptr;
                     (void)rt->GetSqIdByStreamId(deviceId, static_cast<int32_t>(report[idx].streamId), &sqId);
                     ret = curDrv->SqCommandOccupy(deviceId, tsId, sqId, &command, 1U);
                     ERROR_RETURN_MSG_INNER(ret, "SqCommandOccupy failed, sqId=%u, retCode=%#x", sqId, ret);
@@ -5266,11 +5488,11 @@ rtError_t ApiImpl::ProcessReport(const int32_t timeout, const bool noLog)
     return ret;
 }
 
-rtError_t ApiImpl::UnSubscribeReport(const uint64_t threadId, Stream * const stm)
+rtError_t ApiImpl::UnSubscribeReport(const uint64_t threadId, Stream* const stm)
 {
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
-        Context * const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -5279,7 +5501,7 @@ rtError_t ApiImpl::UnSubscribeReport(const uint64_t threadId, Stream * const stm
     return Runtime::Instance()->UnSubscribeReport(threadId, curStm);
 }
 
-rtError_t ApiImpl::GetRunMode(rtRunMode * const runMode)
+rtError_t ApiImpl::GetRunMode(rtRunMode* const runMode)
 {
     // the api do not need context
     const rtRunMode ret = static_cast<rtRunMode>(NpuDriver::RtGetRunMode());
@@ -5287,82 +5509,93 @@ rtError_t ApiImpl::GetRunMode(rtRunMode * const runMode)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::LabelSwitchByIndex(void * const ptr, const uint32_t maxVal, void * const labelInfoPtr,
-    Stream * const stm)
+rtError_t ApiImpl::LabelSwitchByIndex(
+    void* const ptr, const uint32_t maxVal, void* const labelInfoPtr, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
-    COND_RETURN_AND_MSG_OUTER(stm->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011, "Redirecting to the corresponding label position based on the label index",
-            0, "stm->modelNum", RtFmtMsg("The stream (stream_id=%d) is not bound to a model", stm->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        stm->GetModelNum() == 0, RT_ERROR_STREAM_MODEL, ErrorCode::EE1011,
+        "Redirecting to the corresponding label position based on the label index", 0, "stm->modelNum",
+        RtFmtMsg("The stream (stream_id=%d) is not bound to a model", stm->Id_()));
 
-    COND_RETURN_WARN(IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support switching label by index");
+    COND_RETURN_WARN(
+        IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT,
+        "stream belongs to sub ACL Graph, does not support switching label by index");
 
     return CondLabelSwitchByIndex(ptr, maxVal, labelInfoPtr, stm);
 }
 
-rtError_t ApiImpl::LabelGotoEx(Label * const lbl, Stream * const stm)
+rtError_t ApiImpl::LabelGotoEx(Label* const lbl, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_LABEL(lbl, curCtx, RT_ERROR_LABEL_CONTEXT);
 
-    COND_RETURN_WARN(IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support goto label extended");
+    COND_RETURN_WARN(
+        IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT,
+        "stream belongs to sub ACL Graph, does not support goto label extended");
 
 #ifndef CFG_DEV_PLATFORM_PC
     const uint32_t ver = curCtx->Device_()->GetTschVersion();
-    COND_RETURN_ERROR_MSG_INNER(ver >= TS_VERSION_MORE_LABEL, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Old label goto is not supported for 64K labels.");
+    COND_RETURN_ERROR_MSG_INNER(
+        ver >= TS_VERSION_MORE_LABEL, RT_ERROR_FEATURE_NOT_SUPPORT, "Old label goto is not supported for 64K labels.");
 #endif
     return lbl->StreamGoto(stm);
 }
 
-rtError_t ApiImpl::LabelListCpy(Label ** const lbl, const uint32_t labelNumber, void * const dst,
-    const uint32_t dstMax)
+rtError_t ApiImpl::LabelListCpy(Label** const lbl, const uint32_t labelNumber, void* const dst, const uint32_t dstMax)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    const Stream *stm = lbl[0]->Stream_();
+    const Stream* stm = lbl[0]->Stream_();
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(stm, RT_ERROR_LABEL_STREAM, "Label list copy");
 
-    const Model *mdl = stm->Model_();
-    COND_RETURN_ERROR_MSG_INNER(mdl == nullptr, RT_ERROR_STREAM_MODEL,
-        "Model is nullptr, stream is not in model");
+    const Model* mdl = stm->Model_();
+    COND_RETURN_ERROR_MSG_INNER(mdl == nullptr, RT_ERROR_STREAM_MODEL, "Model is nullptr, stream is not in model");
 
     const uint32_t modelId = mdl->Id_();
 
     for (uint32_t lbIdx = 0U; lbIdx < labelNumber; lbIdx++) {
         if (lbl[lbIdx]->Context_() != curCtx) {
-            std::string extendInfo = RtFmtMsg("label_id=%u, label_ctx=%p, cur_ctx=%p.",
-                lbl[lbIdx]->Id_(), lbl[lbIdx]->Context_(), curCtx);
+            std::string extendInfo =
+                RtFmtMsg("label_id=%u, label_ctx=%p, cur_ctx=%p.", lbl[lbIdx]->Id_(), lbl[lbIdx]->Context_(), curCtx);
             RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1010, __func__, "label[" + std::to_string(lbIdx) + "]", extendInfo);
             return RT_ERROR_LABEL_CONTEXT;
         }
-        COND_RETURN_AND_MSG_OUTER(lbl[lbIdx]->Stream_() == nullptr, RT_ERROR_LABEL_STREAM, ErrorCode::EE1018, "Label list copy",
-            "Label[" + std::to_string(lbIdx) + "] is not associated with any stream. "
-            "Call the rtSetLabel API to associate the label with a stream");
-        COND_RETURN_AND_MSG_OUTER(lbl[lbIdx]->Stream_()->Model_() == nullptr, RT_ERROR_LABEL_MODEL, ErrorCode::EE1018, "Label list copy",
-            RtFmtMsg("Stream (stream_id=%d) associated with label[%u] is not in the model."
-            " Call the rtLabelSet API to bind the stream to the model first",
-            lbl[lbIdx]->Stream_()->Id_(), lbIdx));
+        COND_RETURN_AND_MSG_OUTER(
+            lbl[lbIdx]->Stream_() == nullptr, RT_ERROR_LABEL_STREAM, ErrorCode::EE1018, "Label list copy",
+            "Label[" + std::to_string(lbIdx) +
+                "] is not associated with any stream. "
+                "Call the rtSetLabel API to associate the label with a stream");
+        COND_RETURN_AND_MSG_OUTER(
+            lbl[lbIdx]->Stream_()->Model_() == nullptr, RT_ERROR_LABEL_MODEL, ErrorCode::EE1018, "Label list copy",
+            RtFmtMsg(
+                "Stream (stream_id=%d) associated with label[%u] is not in the model."
+                " Call the rtLabelSet API to bind the stream to the model first",
+                lbl[lbIdx]->Stream_()->Id_(), lbIdx));
 
         stm = lbl[lbIdx]->Stream_();
         mdl = stm->Model_();
-        COND_RETURN_AND_MSG_OUTER(mdl->Id_() != modelId, RT_ERROR_LABEL_MODEL, ErrorCode::EE1017, "Label list copy",
+        COND_RETURN_AND_MSG_OUTER(
+            mdl->Id_() != modelId, RT_ERROR_LABEL_MODEL, ErrorCode::EE1017, "Label list copy",
             RtFmtMsg("label[%u]", lbIdx),
-            RtFmtMsg("The stream associated with label[%u] is not in the same model as that associated with label[0]. "
-            "The stream associated with label[%u] belongs to model (model_id=%u), "
-            "and the stream associated with label[0] belongs to model (model_id=%u)", lbIdx, lbIdx, mdl->Id_(), modelId));
+            RtFmtMsg(
+                "The stream associated with label[%u] is not in the same model as that associated with label[0]. "
+                "The stream associated with label[%u] belongs to model (model_id=%u), "
+                "and the stream associated with label[0] belongs to model (model_id=%u)",
+                lbIdx, lbIdx, mdl->Id_(), modelId));
     }
 
     return CondLabelListCpy(lbl, labelNumber, dst, dstMax, curCtx->Device_());
 }
 
-rtError_t ApiImpl::LabelCreateEx(Label ** const lbl, Model * const mdl, Stream * const stm)
+rtError_t ApiImpl::LabelCreateEx(Label** const lbl, Model* const mdl, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
     if (mdl != nullptr) {
@@ -5370,9 +5603,10 @@ rtError_t ApiImpl::LabelCreateEx(Label ** const lbl, Model * const mdl, Stream *
     }
 
     if (mdl != nullptr && mdl->GetModelType() == RT_MODEL_CAPTURE_MODEL) {
-        CaptureModel *captureModel = dynamic_cast<CaptureModel *>(mdl);
-        COND_RETURN_WARN(((captureModel != nullptr) && captureModel->IsSubCaptureModel()),
-            RT_ERROR_FEATURE_NOT_SUPPORT, "sub ACL Graph does not support creating label extended");
+        CaptureModel* captureModel = dynamic_cast<CaptureModel*>(mdl);
+        COND_RETURN_WARN(
+            ((captureModel != nullptr) && captureModel->IsSubCaptureModel()), RT_ERROR_FEATURE_NOT_SUPPORT,
+            "sub ACL Graph does not support creating label extended");
     }
 
     const rtError_t error = CondLabelCreate(lbl, mdl, curCtx);
@@ -5381,31 +5615,32 @@ rtError_t ApiImpl::LabelCreateEx(Label ** const lbl, Model * const mdl, Stream *
     return (*lbl)->SetStream(stm);
 }
 
-rtError_t ApiImpl::LabelSwitchListCreate(Label ** const labels, const size_t num, void ** const labelList)
+rtError_t ApiImpl::LabelSwitchListCreate(Label** const labels, const size_t num, void** const labelList)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     return curCtx->LabelSwitchListCreate(labels, num, labelList);
 }
 
-rtError_t ApiImpl::GetAicpuDeploy(rtAicpuDeployType_t * const deployType)
+rtError_t ApiImpl::GetAicpuDeploy(rtAicpuDeployType_t* const deployType)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     const uint32_t type = dev->Driver_()->GetAicpuDeploy();
-    COND_RETURN_ERROR_MSG_INNER(type > AICPU_DEPLOY_RESERVED, RT_ERROR_DEVICE_DEPLOY,
-                                "Get aicpu deploy failed, invalid deployType, current deployType=%u,"
-                                " valid deployType range is [0, %d]",
-                                type, AICPU_DEPLOY_RESERVED);
+    COND_RETURN_ERROR_MSG_INNER(
+        type > AICPU_DEPLOY_RESERVED, RT_ERROR_DEVICE_DEPLOY,
+        "Get aicpu deploy failed, invalid deployType, current deployType=%u,"
+        " valid deployType range is [0, %d]",
+        type, AICPU_DEPLOY_RESERVED);
     *deployType = static_cast<rtAicpuDeployType_t>(type);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetAiCoreCount(uint32_t * const aiCoreCnt)
+rtError_t ApiImpl::GetAiCoreCount(uint32_t* const aiCoreCnt)
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     std::string socVersion = rtInstance->GetSocVersion();
     std::string result = "";
     const std::string label = "SoCInfo";
@@ -5419,20 +5654,20 @@ rtError_t ApiImpl::GetAiCoreCount(uint32_t * const aiCoreCnt)
         RT_LOG(RT_LOG_ERROR, "ai_core_cnt=%s is invalid.", result.c_str());
         return RT_ERROR_INVALID_VALUE;
     }
-    
+
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetAiCpuCount(uint32_t * const aiCpuCnt)
+rtError_t ApiImpl::GetAiCpuCount(uint32_t* const aiCpuCnt)
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     std::string socVersion = rtInstance->GetSocVersion();
     std::string result = "";
     const std::string label = "SoCInfo";
     const std::string key = "ai_cpu_cnt";
     const int32_t ret = PlatformManagerV2::Instance().GetSocSpec(socVersion, label, key, result);
     COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "Get soc spec failed, ret = %u, please check.", ret);
-    
+
     try {
         const uint32_t aiCpuCount = static_cast<uint32_t>(std::stoi(result));
         *aiCpuCnt = aiCpuCount;
@@ -5440,14 +5675,14 @@ rtError_t ApiImpl::GetAiCpuCount(uint32_t * const aiCpuCnt)
         RT_LOG(RT_LOG_ERROR, "ai_cpu_cnt=%s is invalid.", result.c_str());
         return RT_ERROR_INVALID_VALUE;
     }
-    
+
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetPairDevicesInfo(const uint32_t devId, const uint32_t otherDevId, const int32_t infoType,
-    int64_t * const val)
+rtError_t ApiImpl::GetPairDevicesInfo(
+    const uint32_t devId, const uint32_t otherDevId, const int32_t infoType, int64_t* const val)
 {
-    Driver * const curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* const curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
     rtError_t ret = curDrv->GetPairDevicesInfo(devId, otherDevId, infoType, val);
     if (infoType == DEVS_INFO_TYPE_TOPOLOGY && *val == TOPOLOGY_HCCS_SW && devId == otherDevId) {
@@ -5457,10 +5692,10 @@ rtError_t ApiImpl::GetPairDevicesInfo(const uint32_t devId, const uint32_t other
     return ret;
 }
 
-rtError_t ApiImpl::GetPairPhyDevicesInfo(const uint32_t devId, const uint32_t otherDevId, const int32_t infoType,
-    int64_t * const val)
+rtError_t ApiImpl::GetPairPhyDevicesInfo(
+    const uint32_t devId, const uint32_t otherDevId, const int32_t infoType, int64_t* const val)
 {
-    Driver * const curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
+    Driver* const curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
     const rtError_t ret = curDrv->GetPairDevicesInfo(devId, otherDevId, infoType, val, true);
     if (infoType == DEVS_INFO_TYPE_TOPOLOGY && *val == TOPOLOGY_HCCS_SW && devId == otherDevId) {
@@ -5469,26 +5704,28 @@ rtError_t ApiImpl::GetPairPhyDevicesInfo(const uint32_t devId, const uint32_t ot
     return ret;
 }
 
-static rtError_t HandlePersistentStreamFeature(const rtChipType_t chipType, int64_t * const val, Context * const curCtx)
+static rtError_t HandlePersistentStreamFeature(const rtChipType_t chipType, int64_t* const val, Context* const curCtx)
 {
     rtError_t error = RT_ERROR_NONE;
     bool haveDevice = Runtime::Instance()->HaveDevice();
-    bool isChipSupport = IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_MODEL_PERSISTENT_STREAM_UNLIMITED_DEPTH);
-    *val = isChipSupport ? 
-        static_cast<int64_t>(RT_CAPABILITY_SUPPORT) : static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
+    bool isChipSupport =
+        IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_MODEL_PERSISTENT_STREAM_UNLIMITED_DEPTH);
+    *val =
+        isChipSupport ? static_cast<int64_t>(RT_CAPABILITY_SUPPORT) : static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
     if (haveDevice && curCtx != nullptr) {
-        Device * const dev = curCtx->Device_();
+        Device* const dev = curCtx->Device_();
         bool isTsSupport = dev->CheckFeatureSupport(TS_FEATURE_SOFTWARE_SQ_ENABLE);
-        bool isDrvSupport = NpuDriver::CheckIsSupportFeature(curCtx->Device_()->Id_(), FEATURE_TRSDRV_SQ_SUPPORT_DYNAMIC_BIND);
-        *val = isChipSupport && isTsSupport && isDrvSupport ?
-            static_cast<int64_t>(RT_CAPABILITY_SUPPORT) : static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
+        bool isDrvSupport =
+            NpuDriver::CheckIsSupportFeature(curCtx->Device_()->Id_(), FEATURE_TRSDRV_SQ_SUPPORT_DYNAMIC_BIND);
+        *val = isChipSupport && isTsSupport && isDrvSupport ? static_cast<int64_t>(RT_CAPABILITY_SUPPORT) :
+                                                              static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
     } else {
-        *val = static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT); 
+        *val = static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
     }
     return error;
 }
 
-rtError_t ApiImpl::GetRtCapability(const rtFeatureType_t featureType, const int32_t featureInfo, int64_t * const val)
+rtError_t ApiImpl::GetRtCapability(const rtFeatureType_t featureType, const int32_t featureInfo, int64_t* const val)
 {
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     RT_LOG(RT_LOG_INFO, "GetRtCapability chip_type=%d", chipType);
@@ -5503,7 +5740,7 @@ rtError_t ApiImpl::GetRtCapability(const rtFeatureType_t featureType, const int3
     }
 
     if (featureType == FEATURE_TYPE_PERSISTENT_STREAM_UNLIMITED_DEPTH) {
-        Context * const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         (void)HandlePersistentStreamFeature(chipType, val, curCtx);
         return RT_ERROR_NONE;
     }
@@ -5518,22 +5755,22 @@ rtError_t ApiImpl::GetRtCapability(const rtFeatureType_t featureType, const int3
         } else if (getCapMethod == GetCapabilityMethod::GET_CAPABILITY_BY_FEATURE_CHECK) {
             *val = static_cast<int64_t>(RT_CAPABILITY_SUPPORT);
         } else {
-            Driver * const curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
+            Driver* const curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
             NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
             const bool isSupport = curDrv->CheckIfSupportNumaTs();
-            *val = isSupport ?
-                static_cast<int64_t>(RT_CAPABILITY_SUPPORT) : static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
+            *val = isSupport ? static_cast<int64_t>(RT_CAPABILITY_SUPPORT) :
+                               static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
         }
         return RT_ERROR_NONE;
     }
 
     if ((featureType == FEATURE_TYPE_UPDATE_SQE) && (featureInfo == static_cast<int32_t>(UPDATE_SQE_SUPPORT_DSA))) {
         if (getCapMethod == GetCapabilityMethod::GET_CAPABILITY_BY_DRIVER_CHECK) {
-            Driver * const curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
+            Driver* const curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
             NULL_PTR_RETURN_MSG(curDrv, RT_ERROR_DRV_NULL);
             const bool isSupport = curDrv->CheckIfSupportDsaUpdate();
-            *val = isSupport ?
-                static_cast<int64_t>(RT_CAPABILITY_SUPPORT) : static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
+            *val = isSupport ? static_cast<int64_t>(RT_CAPABILITY_SUPPORT) :
+                               static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
         } else {
             *val = static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
         }
@@ -5542,21 +5779,21 @@ rtError_t ApiImpl::GetRtCapability(const rtFeatureType_t featureType, const int3
     return RT_ERROR_INVALID_VALUE;
 }
 
-rtError_t ApiImpl::GetOverflowDetectionCapability(rtChipType_t chipType, int64_t *val)
+rtError_t ApiImpl::GetOverflowDetectionCapability(rtChipType_t chipType, int64_t* val)
 {
     bool haveDevice = Runtime::Instance()->HaveDevice();
     if (haveDevice) {
-        Context * const curCtx = CurrentContext();
- 	    CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);    
- 	    Device * const dev = curCtx->Device_();
- 	    const bool isSupport = dev->CheckFeatureSupport(TS_FEATURE_QUERY_STREAM_OVERFLOW_STATUS);
+        Context* const curCtx = CurrentContext();
+        CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
+        Device* const dev = curCtx->Device_();
+        const bool isSupport = dev->CheckFeatureSupport(TS_FEATURE_QUERY_STREAM_OVERFLOW_STATUS);
         if (isSupport) {
             *val = static_cast<int64_t>(RT_CAPABILITY_SUPPORT);
         } else {
             RT_LOG(RT_LOG_WARNING, "Querying AICPU dump is not supported on chipType=%d", chipType);
             *val = static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
         }
- 	} else {
+    } else {
         RT_LOG(RT_LOG_WARNING, "Querying AICPU dump is not supported because no device has been set");
         *val = static_cast<int64_t>(RT_CAPABILITY_NOT_SUPPORT);
     }
@@ -5565,16 +5802,16 @@ rtError_t ApiImpl::GetOverflowDetectionCapability(rtChipType_t chipType, int64_t
 
 rtError_t ApiImpl::ContextSetINFMode(const bool infMode)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     curCtx->SetINFMode(infMode);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetScheduleType(const int32_t deviceId, int32_t * const val) const
+rtError_t ApiImpl::GetScheduleType(const int32_t deviceId, int32_t* const val) const
 {
-    Device * const dev = Runtime::Instance()->GetDevice(static_cast<uint32_t>(deviceId),
-        static_cast<uint32_t>(RT_TSC_ID));
+    Device* const dev =
+        Runtime::Instance()->GetDevice(static_cast<uint32_t>(deviceId), static_cast<uint32_t>(RT_TSC_ID));
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     const uint32_t ver = dev->GetTschVersion();
     int32_t schedule = 0;
@@ -5591,12 +5828,12 @@ rtError_t ApiImpl::GetScheduleType(const int32_t deviceId, int32_t * const val) 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetBlockingOpIsSupport(const int32_t deviceId, int32_t * const val) const
+rtError_t ApiImpl::GetBlockingOpIsSupport(const int32_t deviceId, int32_t* const val) const
 {
     *val = static_cast<int32_t>(RT_AICPU_BLOCKING_OP_NOT_SUPPORT);
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     const bool isVirtualMode = rtInstance->IsVirtualMachineMode();
-    Device * const dev = rtInstance->GetDevice(static_cast<uint32_t>(deviceId), static_cast<uint32_t>(RT_TSC_ID));
+    Device* const dev = rtInstance->GetDevice(static_cast<uint32_t>(deviceId), static_cast<uint32_t>(RT_TSC_ID));
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     const uint32_t tschVersion = dev->GetTschVersion();
     if ((tschVersion >= static_cast<uint32_t>(TS_VERSION_AICPU_EVENT_RECORD)) && (!isVirtualMode)) {
@@ -5605,19 +5842,20 @@ rtError_t ApiImpl::GetBlockingOpIsSupport(const int32_t deviceId, int32_t * cons
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetFftsWorkMode(int32_t * const val)
+rtError_t ApiImpl::GetFftsWorkMode(int32_t* const val)
 {
     *val = static_cast<int32_t>(RT_MODE_NO_FFTS);
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_FFTS_PLUS)) {
-        *val  = static_cast<int32_t>(RT_MODE_NO_FFTS);
+        *val = static_cast<int32_t>(RT_MODE_NO_FFTS);
     } else {
         int64_t fftsMode = 0;
-        const rtError_t ret = GetDeviceInfo(RT_DEV_ZERO, static_cast<int32_t>(MODULE_TYPE_TSCPU),
-            static_cast<int32_t>(INFO_TYPE_FFTS_TYPE), &fftsMode);
-        COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, ret != RT_ERROR_NONE, ret,
-            "Call GetDeviceInfo failed: retCode=%d, module type=%d, info type=%d.",
-            ret, MODULE_TYPE_TSCPU, INFO_TYPE_FFTS_TYPE);
+        const rtError_t ret = GetDeviceInfo(
+            RT_DEV_ZERO, static_cast<int32_t>(MODULE_TYPE_TSCPU), static_cast<int32_t>(INFO_TYPE_FFTS_TYPE), &fftsMode);
+        COND_RETURN_ERROR_MSG_CALL(
+            ERR_MODULE_DRV, ret != RT_ERROR_NONE, ret,
+            "Call GetDeviceInfo failed: retCode=%d, module type=%d, info type=%d.", ret, MODULE_TYPE_TSCPU,
+            INFO_TYPE_FFTS_TYPE);
         // drv query register info, 0 is ffts mode, 1 is ffts+, default is ffts+
         if (fftsMode == 0) {
             *val = static_cast<int32_t>(RT_MODE_FFTS);
@@ -5628,19 +5866,19 @@ rtError_t ApiImpl::GetFftsWorkMode(int32_t * const val)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetHostAicpuDeviceInfo(const uint32_t deviceId, const int32_t featureType,
-                                          int32_t * const val)
+rtError_t ApiImpl::GetHostAicpuDeviceInfo(const uint32_t deviceId, const int32_t featureType, int32_t* const val)
 {
     if ((featureType != static_cast<int32_t>(INFO_TYPE_CORE_NUM)) &&
         (featureType != static_cast<int32_t>(INFO_TYPE_FREQUE)) &&
-        (featureType != static_cast<int32_t>(INFO_TYPE_WORK_MODE)))  {
-        RT_LOG_OUTER_MSG_INVALID_PARAM(featureType, "INFO_TYPE_CORE_NUM(3), INFO_TYPE_FREQUE(4), or INFO_TYPE_WORK_MODE(22)");
+        (featureType != static_cast<int32_t>(INFO_TYPE_WORK_MODE))) {
+        RT_LOG_OUTER_MSG_INVALID_PARAM(
+            featureType, "INFO_TYPE_CORE_NUM(3), INFO_TYPE_FREQUE(4), or INFO_TYPE_WORK_MODE(22)");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
     int64_t hostAicpuNum = 0;
-    const rtError_t ret = GetDeviceInfo(deviceId, static_cast<int32_t>(RT_MODULE_TYPE_HOST_AICPU),
-                                        featureType, &hostAicpuNum);
+    const rtError_t ret =
+        GetDeviceInfo(deviceId, static_cast<int32_t>(RT_MODULE_TYPE_HOST_AICPU), featureType, &hostAicpuNum);
     COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "GetDeviceInfo failed for GetDeviceCapability, ret=%#x.", ret);
     RT_LOG(RT_LOG_INFO, "hostAicpuNum=%lld", hostAicpuNum);
     *val = static_cast<int32_t>(hostAicpuNum);
@@ -5648,53 +5886,62 @@ rtError_t ApiImpl::GetHostAicpuDeviceInfo(const uint32_t deviceId, const int32_t
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetDeviceCapability(const int32_t deviceId, const int32_t moduleType, const int32_t featureType,
-    int32_t * const val)
+rtError_t ApiImpl::GetDeviceCapability(
+    const int32_t deviceId, const int32_t moduleType, const int32_t featureType, int32_t* const val)
 {
-    RT_LOG(RT_LOG_DEBUG, "get feature info deviceId=%d, moduleType=%d, featureType=%d.",
-        deviceId, moduleType, featureType);
-    COND_RETURN_ERROR(CheckCurCtxValid(deviceId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", deviceId);
+    RT_LOG(
+        RT_LOG_DEBUG, "get feature info deviceId=%d, moduleType=%d, featureType=%d.", deviceId, moduleType,
+        featureType);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(deviceId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        deviceId);
     if ((featureType == static_cast<int32_t>(FEATURE_TYPE_SCHE)) &&
         (moduleType == static_cast<int32_t>(MODULE_TYPE_AICPU))) {
         return GetScheduleType(deviceId, val);
-    } else if ((featureType == static_cast<int32_t>(FEATURE_TYPE_BLOCKING_OPERATOR)) &&
+    } else if (
+        (featureType == static_cast<int32_t>(FEATURE_TYPE_BLOCKING_OPERATOR)) &&
         (moduleType == static_cast<int32_t>(RT_MODULE_TYPE_AICPU))) {
         return GetBlockingOpIsSupport(deviceId, val);
-    } else if ((featureType == static_cast<int32_t>(FEATURE_TYPE_FFTS_MODE)) &&
+    } else if (
+        (featureType == static_cast<int32_t>(FEATURE_TYPE_FFTS_MODE)) &&
         (moduleType == static_cast<int32_t>(RT_MODULE_TYPE_TSCPU))) {
         return GetFftsWorkMode(val);
-    } else if ((featureType == static_cast<int32_t>(FEATURE_TYPE_MODEL_TASK_UPDATE)) &&
+    } else if (
+        (featureType == static_cast<int32_t>(FEATURE_TYPE_MODEL_TASK_UPDATE)) &&
         (moduleType == static_cast<int32_t>(RT_MODULE_TYPE_TSCPU))) {
         return GetModelTaskUpdateIsSupport(deviceId, val);
     } else if (moduleType == static_cast<int32_t>(RT_MODULE_TYPE_HOST_AICPU)) {
         return GetHostAicpuDeviceInfo(static_cast<uint32_t>(deviceId), featureType, val);
-    } else if ((featureType == static_cast<int32_t>(FEATURE_TYPE_MEMQ_EVENT_CROSS_DEV)) &&
+    } else if (
+        (featureType == static_cast<int32_t>(FEATURE_TYPE_MEMQ_EVENT_CROSS_DEV)) &&
         (moduleType == static_cast<int32_t>(RT_MODULE_TYPE_SYSTEM))) {
         return NpuDriver::MemQEventCrossDevSupported(val);
-    } else if ((featureType == static_cast<int32_t>(RT_FEATURE_SYSTEM_TASKID_BIT_WIDTH)) &&
+    } else if (
+        (featureType == static_cast<int32_t>(RT_FEATURE_SYSTEM_TASKID_BIT_WIDTH)) &&
         (moduleType == static_cast<int32_t>(RT_MODULE_TYPE_SYSTEM))) {
         *val = GetTaskIdBitWidth();
         return RT_ERROR_NONE;
     } else {
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1006, "Querying features supported by the device",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1006, "Querying features supported by the device",
             "The combination of featureType value " + InfoTypeToString(static_cast<uint32_t>(featureType)) +
-            " and moduleType value " + ModuleTypeToString(moduleType),
+                " and moduleType value " + ModuleTypeToString(moduleType),
             "Use a valid combination of featureType and moduleType");
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 }
 
-rtError_t ApiImpl::GetFaultEvent(const int32_t deviceId, rtDmsEventFilter *filter,
-    rtDmsFaultEvent *dmsEvent, uint32_t len, uint32_t *eventCount)
+rtError_t ApiImpl::GetFaultEvent(
+    const int32_t deviceId, rtDmsEventFilter* filter, rtDmsFaultEvent* dmsEvent, uint32_t len, uint32_t* eventCount)
 {
     RT_LOG(RT_LOG_DEBUG, "Get Fault Event.");
-    COND_RETURN_ERROR(CheckCurCtxValid(deviceId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", deviceId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(deviceId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        deviceId);
     return NpuDriver::GetFaultEvent(deviceId, filter, dmsEvent, len, eventCount);
 }
 
-rtError_t ApiImpl::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceInfo)
+rtError_t ApiImpl::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo* memUceInfo)
 {
     mmTimeval tv[5U] = {};
     int32_t index = 0;
@@ -5705,11 +5952,12 @@ rtError_t ApiImpl::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceIn
     bool isSmmuFault;
     std::vector<rtDmsFaultEvent> faultEventInfo(RAS_GET_MAX_NUM, rtDmsFaultEvent{});
     uint32_t eventCount = 0U;
-    COND_RETURN_ERROR(CheckCurCtxValid(static_cast<int32_t>(deviceId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%u].", deviceId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(static_cast<int32_t>(deviceId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
+        "Current Context is null, drv devId[%u].", deviceId);
     error = NpuDriver::GetAllFaultEvent(deviceId, &faultEventInfo[0U], &eventCount);
-    COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-                     "Getting fault events is not supported");
+    COND_RETURN_WARN(
+        error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "Getting fault events is not supported");
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "Cannot get fault event of device_id=%u, error=%d", deviceId, error);
         return error;
@@ -5720,15 +5968,15 @@ rtError_t ApiImpl::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceIn
         if (g_mulBitEccEventId.find(faultEventInfo[faultIndex].eventId) != g_mulBitEccEventId.end()) {
             std::ostringstream oss;
             oss << std::hex << faultEventInfo[faultIndex].eventId;
-            faultInfo = faultInfo + "[0x" + oss.str() + "]"
-                + faultEventInfo[faultIndex].eventName + ";";
+            faultInfo = faultInfo + "[0x" + oss.str() + "]" + faultEventInfo[faultIndex].eventName + ";";
             break;
         }
     }
     (void)mmGetTimeOfDay(&tv[index++], nullptr);
     error = NpuDriver::GetSmmuFaultValid(deviceId, isSmmuFault);
-    COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-                     "Getting the fault SMMU valid status is not supported");
+    COND_RETURN_WARN(
+        error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
+        "Getting the fault SMMU valid status is not supported");
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "Cannot get smmu of device_id=%u, error=%d", deviceId, error);
         return error;
@@ -5750,7 +5998,8 @@ rtError_t ApiImpl::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceIn
     GlobalContainer::UceMutexUnlock();
     (void)mmGetTimeOfDay(&tv[index++], nullptr);
     for (int32_t i = 1; i < index; ++i) {
-        RT_LOG(RT_LOG_EVENT, "deviceId %u, step %d: time cost: %llu us", deviceId, i,
+        RT_LOG(
+            RT_LOG_EVENT, "deviceId %u, step %d: time cost: %llu us", deviceId, i,
             (tv[i].tv_sec - tv[i - 1U].tv_sec) * 1000000ULL + tv[i].tv_usec - tv[i - 1U].tv_usec);
     }
 
@@ -5761,10 +6010,11 @@ rtError_t ApiImpl::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceIn
     return error;
 }
 
-rtError_t ApiImpl::MemUceRepair(const uint32_t deviceId, rtMemUceInfo *memUceInfo)
+rtError_t ApiImpl::MemUceRepair(const uint32_t deviceId, rtMemUceInfo* memUceInfo)
 {
-    COND_RETURN_ERROR(CheckCurCtxValid(static_cast<int32_t>(deviceId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%lu].", deviceId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(static_cast<int32_t>(deviceId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
+        "Current Context is null, drv devId[%lu].", deviceId);
     std::array<mmTimeval, 2U> tv = {};
     mmGetTimeOfDay(&tv[0U], nullptr);
     const rtError_t error = NpuDriver::MemUceRepair(deviceId, memUceInfo);
@@ -5774,20 +6024,21 @@ rtError_t ApiImpl::MemUceRepair(const uint32_t deviceId, rtMemUceInfo *memUceInf
         GlobalContainer::UceMutexUnlock();
     }
     mmGetTimeOfDay(&tv[1U], nullptr);
-    RT_LOG(RT_LOG_EVENT, "drv devId %u: time cost: %llu us", deviceId,
+    RT_LOG(
+        RT_LOG_EVENT, "drv devId %u: time cost: %llu us", deviceId,
         (static_cast<uint64_t>(tv[1U].tv_sec) - static_cast<uint64_t>(tv[0U].tv_sec)) * 1000000ULL +
-        static_cast<uint64_t>(tv[1U].tv_usec) - static_cast<uint64_t>(tv[0U].tv_usec));
-    Device * const dev = Runtime::Instance()->GetDevice(deviceId, 0U, false);
+            static_cast<uint64_t>(tv[1U].tv_usec) - static_cast<uint64_t>(tv[0U].tv_usec));
+    Device* const dev = Runtime::Instance()->GetDevice(deviceId, 0U, false);
     if (dev != nullptr) {
         dev->SetBaseTime();
     }
     return error;
 }
 
-rtError_t ApiImpl::GetC2cCtrlAddr(uint64_t * const addr, uint32_t * const len)
+rtError_t ApiImpl::GetC2cCtrlAddr(uint64_t* const addr, uint32_t* const len)
 {
     RT_LOG(RT_LOG_DEBUG, "get c2c ctrl addr.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const uint64_t addrTmp = curCtx->Device_()->GetC2cCtrlAddr();
     const uint32_t lenTmp = curCtx->Device_()->GetC2cCtrlAddrLen();
@@ -5798,7 +6049,7 @@ rtError_t ApiImpl::GetC2cCtrlAddr(uint64_t * const addr, uint32_t * const len)
     }
 
     const int32_t drvDeviceId = static_cast<int32_t>(curCtx->Device_()->Id_());
-    Driver * const curDrv = curCtx->Device_()->Driver_();
+    Driver* const curDrv = curCtx->Device_()->Driver_();
     const rtError_t error = curDrv->GetC2cCtrlAddr(drvDeviceId, addr, len);
     if (error == RT_ERROR_NONE) {
         curCtx->Device_()->SetC2cCtrlAddr(*addr, *len);
@@ -5807,12 +6058,12 @@ rtError_t ApiImpl::GetC2cCtrlAddr(uint64_t * const addr, uint32_t * const len)
     return error;
 }
 
-rtError_t ApiImpl::NpuClearFloatStatus(const uint32_t checkMode, Stream * const stm)
+rtError_t ApiImpl::NpuClearFloatStatus(const uint32_t checkMode, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -5822,13 +6073,13 @@ rtError_t ApiImpl::NpuClearFloatStatus(const uint32_t checkMode, Stream * const 
     return curCtx->NpuClearFloatStatus(checkMode, curStm, false);
 }
 
-rtError_t ApiImpl::NpuGetFloatStatus(void * const outputAddrPtr, const uint64_t outputSize, const uint32_t checkMode,
-    Stream * const stm)
+rtError_t ApiImpl::NpuGetFloatStatus(
+    void* const outputAddrPtr, const uint64_t outputSize, const uint32_t checkMode, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -5838,17 +6089,18 @@ rtError_t ApiImpl::NpuGetFloatStatus(void * const outputAddrPtr, const uint64_t 
     return curCtx->NpuGetFloatStatus(outputAddrPtr, outputSize, checkMode, curStm, false);
 }
 
-rtError_t ApiImpl::NpuClearFloatDebugStatus(const uint32_t checkMode, Stream * const stm)
+rtError_t ApiImpl::NpuClearFloatDebugStatus(const uint32_t checkMode, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     const rtChipType_t chipType = rtInstance->GetChipType();
     rtError_t ret = RT_ERROR_NONE;
     if (curCtx->Device_()->GetDevProperties().tsOverflowHandling == TsOverflowHandling::TS_OVER_FLOW_HANDING_INVALID) {
         COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
         Device* device = stm->Device_();
-        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(device, RT_ERROR_INVALID_VALUE, "Clearing the Float debugging status flag of the NPU");
+        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+            device, RT_ERROR_INVALID_VALUE, "Clearing the Float debugging status flag of the NPU");
         RT_LOG(RT_LOG_INFO, "device_id=%u, tschversion=%u", device->Id_(), device->GetTschVersion());
         if (!(device->CheckFeatureSupport(TS_FEATURE_OVER_FLOW_DEBUG))) {
             RT_LOG(RT_LOG_WARNING, "The current ts version does not support NpuClearFloatDebugStatus");
@@ -5856,15 +6108,16 @@ rtError_t ApiImpl::NpuClearFloatDebugStatus(const uint32_t checkMode, Stream * c
         }
 
         return curCtx->NpuClearFloatStatus(checkMode, stm, true);
-    } else if (curCtx->Device_()->GetDevProperties().tsOverflowHandling == TsOverflowHandling::TS_OVER_FLOW_HANDING_FROM_MEM) {
+    } else if (
+        curCtx->Device_()->GetDevProperties().tsOverflowHandling == TsOverflowHandling::TS_OVER_FLOW_HANDING_FROM_MEM) {
         uint8_t hostTmp = 0;
         uint8_t* tmpDeviceAddr = ((uint8_t*)curCtx->CtxGetOverflowAddr());
-        ret = curCtx->Device_()->Driver_()->MemCopySync(&hostTmp, sizeof(hostTmp), (void*)tmpDeviceAddr,
-            sizeof(hostTmp), RT_MEMCPY_DEVICE_TO_HOST);
+        ret = curCtx->Device_()->Driver_()->MemCopySync(
+            &hostTmp, sizeof(hostTmp), (void*)tmpDeviceAddr, sizeof(hostTmp), RT_MEMCPY_DEVICE_TO_HOST);
         ERROR_RETURN(ret, "Failed to Memcpy from device to host");
         hostTmp &= 0xFD;
-        ret = curCtx->Device_()->Driver_()->MemCopySync((void*)tmpDeviceAddr,
-            sizeof(hostTmp), &hostTmp, sizeof(hostTmp), RT_MEMCPY_HOST_TO_DEVICE);
+        ret = curCtx->Device_()->Driver_()->MemCopySync(
+            (void*)tmpDeviceAddr, sizeof(hostTmp), &hostTmp, sizeof(hostTmp), RT_MEMCPY_HOST_TO_DEVICE);
         ERROR_RETURN(ret, "Failed to Memcpy from host to device");
     } else {
         RT_LOG(RT_LOG_WARNING, "Current chipType=%d is not supported.", chipType);
@@ -5873,34 +6126,36 @@ rtError_t ApiImpl::NpuClearFloatDebugStatus(const uint32_t checkMode, Stream * c
     return ret;
 }
 
-rtError_t ApiImpl::NpuGetFloatDebugStatus(void * const outputAddrPtr, const uint64_t outputSize,
-    const uint32_t checkMode, Stream * const stm)
+rtError_t ApiImpl::NpuGetFloatDebugStatus(
+    void* const outputAddrPtr, const uint64_t outputSize, const uint32_t checkMode, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     const rtChipType_t chipType = rtInstance->GetChipType();
     rtError_t ret = RT_ERROR_NONE;
     if (curCtx->Device_()->GetDevProperties().tsOverflowHandling == TsOverflowHandling::TS_OVER_FLOW_HANDING_INVALID) {
         COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
         Device* device = stm->Device_();
-        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(device, RT_ERROR_INVALID_VALUE, "Obtaining the Float exception debugging status of the NPU");
+        NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+            device, RT_ERROR_INVALID_VALUE, "Obtaining the Float exception debugging status of the NPU");
         RT_LOG(RT_LOG_INFO, "device_id=%u, tschversion=%u", device->Id_(), device->GetTschVersion());
         if (!device->CheckFeatureSupport(TS_FEATURE_OVER_FLOW_DEBUG)) {
             RT_LOG(RT_LOG_WARNING, "The current ts version does not support NpuGetFloatDebugStatus");
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
         return curCtx->NpuGetFloatStatus(outputAddrPtr, outputSize, checkMode, stm, true);
-    } else if (curCtx->Device_()->GetDevProperties().tsOverflowHandling == TsOverflowHandling::TS_OVER_FLOW_HANDING_FROM_MEM) {
+    } else if (
+        curCtx->Device_()->GetDevProperties().tsOverflowHandling == TsOverflowHandling::TS_OVER_FLOW_HANDING_FROM_MEM) {
         uint8_t hostTmp = 0;
         uint8_t* tmpDeviceAddr = ((uint8_t*)curCtx->CtxGetOverflowAddr());
-        ret = curCtx->Device_()->Driver_()->MemCopySync(&hostTmp, sizeof(hostTmp), (void*)tmpDeviceAddr,
-            sizeof(hostTmp), RT_MEMCPY_DEVICE_TO_HOST);
+        ret = curCtx->Device_()->Driver_()->MemCopySync(
+            &hostTmp, sizeof(hostTmp), (void*)tmpDeviceAddr, sizeof(hostTmp), RT_MEMCPY_DEVICE_TO_HOST);
         ERROR_RETURN(ret, "Failed to Memcpy from device to host");
         hostTmp &= 0x2; // 2 means only get 1 bit
-        hostTmp >>= 1; // write in 0 bit for input addr
-        ret = curCtx->Device_()->Driver_()->MemCopySync(outputAddrPtr, outputSize, &hostTmp,
-            sizeof(hostTmp), RT_MEMCPY_HOST_TO_DEVICE);
+        hostTmp >>= 1;  // write in 0 bit for input addr
+        ret = curCtx->Device_()->Driver_()->MemCopySync(
+            outputAddrPtr, outputSize, &hostTmp, sizeof(hostTmp), RT_MEMCPY_HOST_TO_DEVICE);
         ERROR_RETURN(ret, "Failed to Memcpy from host to device");
     } else {
         RT_LOG(RT_LOG_WARNING, "Current chip type=%d is not supported.", chipType);
@@ -5923,17 +6178,17 @@ rtError_t ApiImpl::SetOpWaitTimeOut(const uint32_t timeout)
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
     if (eventWaitTimeoutProp == EventWaitTimeoutType::SET_OP_WAIT_TIMEOUT_NEED_TS_VERSION) {
-        Context * const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-        Device * const dev = curCtx->Device_();
+        Device* const dev = curCtx->Device_();
         if (dev->GetTschVersion() < static_cast<uint32_t>(TS_VERSION_WAIT_TIMEOUT_DC)) {
             RT_LOG(RT_LOG_WARNING, "Unsupported ver:%u", dev->GetTschVersion());
             return RT_ERROR_FEATURE_NOT_SUPPORT;
         }
     }
-    ret  = AiCpuTaskSupportCheck();
+    ret = AiCpuTaskSupportCheck();
     COND_RETURN_WITH_NOLOG(ret != RT_ERROR_NONE, ret);
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     COND_RETURN_ERROR(rtInstance == nullptr, RT_ERROR_INSTANCE_NULL, "Runtime instance is null.");
     if (prop.isStars || eventWaitTimeoutProp == EventWaitTimeoutType::SET_OP_WAIT_TIMEOUT_NEED_TS_VERSION) {
         RT_LOG(RT_LOG_INFO, "set OP wait timeout=%us.", timeout);
@@ -5945,10 +6200,11 @@ rtError_t ApiImpl::SetOpWaitTimeOut(const uint32_t timeout)
 
 rtError_t ApiImpl::SetOpExecuteTimeOut(const uint32_t timeout, const RtTaskTimeUnitType timeUnitType)
 {
-    RT_LOG(RT_LOG_DEBUG, "set op execute timeout, timeout=%us, timeUnitType=%d.",
-        timeout, static_cast<int32_t>(timeUnitType));
+    RT_LOG(
+        RT_LOG_DEBUG, "set op execute timeout, timeout=%us, timeUnitType=%d.", timeout,
+        static_cast<int32_t>(timeUnitType));
     rtError_t ret = RT_ERROR_NONE;
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     NULL_PTR_RETURN_MSG(rtInstance, RT_ERROR_INSTANCE_NULL);
 
     uint32_t timeoutTmp = timeout;
@@ -5959,15 +6215,16 @@ rtError_t ApiImpl::SetOpExecuteTimeOut(const uint32_t timeout, const RtTaskTimeU
     return ret;
 }
 
-rtError_t ApiImpl::GetOpExecuteTimeOut(uint32_t * const timeout)
+rtError_t ApiImpl::GetOpExecuteTimeOut(uint32_t* const timeout)
 {
     *timeout = static_cast<uint32_t>(RT_STARS_TASK_KERNEL_CREDIT_SCALE);
-    const RtTimeoutConfig &timeoutCfg = Runtime::Instance()->GetTimeoutConfig();
+    const RtTimeoutConfig& timeoutCfg = Runtime::Instance()->GetTimeoutConfig();
     const auto chipType = Runtime::Instance()->GetChipType();
     if (timeoutCfg.isCfgOpExcTaskTimeout) {
-        if (IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_TASK_OP_EXE_TIMEOUT_CONFIG)) { // ms // ms
+        if (IS_SUPPORT_CHIP_FEATURE(
+                chipType, RtOptionalFeatureType::RT_FEATURE_TASK_OP_EXE_TIMEOUT_CONFIG)) { // ms // ms
             *timeout = static_cast<uint32_t>(timeoutCfg.opExcTaskTimeout / RT_TIMEOUT_MS_TO_US);
-        } else { // s
+        } else {                                                                           // s
             *timeout = static_cast<uint32_t>(timeoutCfg.opExcTaskTimeout / RT_TIMEOUT_S_TO_US);
         }
     } else {
@@ -5981,24 +6238,25 @@ rtError_t ApiImpl::GetOpExecuteTimeOut(uint32_t * const timeout)
     return 0;
 }
 
-rtError_t ApiImpl::GetOpExecuteTimeoutV2(uint32_t *const timeout)
-{
-    return GetOpExecuteMsTimeout(timeout);
-}
+rtError_t ApiImpl::GetOpExecuteTimeoutV2(uint32_t* const timeout) { return GetOpExecuteMsTimeout(timeout); }
 
-rtError_t ApiImpl::CheckArchCompatibility(const char_t *socVersion, const char_t *omSocVersion, int32_t *canCompatible)
+rtError_t ApiImpl::CheckArchCompatibility(const char_t* socVersion, const char_t* omSocVersion, int32_t* canCompatible)
 {
     // Get the NpuArch to the omSocVersion
     int32_t inputNpuArch;
     rtError_t ret = GetNpuArchByName(omSocVersion, &inputNpuArch);
-    COND_RETURN_AND_MSG_OUTER((ret != RT_ERROR_NONE), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
-        "Checking operator instruction compatibility based on the SoC version", omSocVersion, "omSocVersion", "SoC version " + std::string(omSocVersion) + " is invalid");
+    COND_RETURN_AND_MSG_OUTER(
+        (ret != RT_ERROR_NONE), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+        "Checking operator instruction compatibility based on the SoC version", omSocVersion, "omSocVersion",
+        "SoC version " + std::string(omSocVersion) + " is invalid");
 
     // Get the NpuArch to the hardwareSocVersion
     int32_t hardwareNpuArch;
     ret = GetNpuArchByName(socVersion, &hardwareNpuArch);
-    COND_RETURN_AND_MSG_OUTER((ret != RT_ERROR_NONE), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
-        "Checking operator instruction compatibility based on the SoC version", socVersion, "socVersion", "SoC version " + std::string(socVersion) + " is invalid");
+    COND_RETURN_AND_MSG_OUTER(
+        (ret != RT_ERROR_NONE), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+        "Checking operator instruction compatibility based on the SoC version", socVersion, "socVersion",
+        "SoC version " + std::string(socVersion) + " is invalid");
 
     if (inputNpuArch != hardwareNpuArch) {
         constexpr int32_t archVerInCompatible = 0U;
@@ -6007,62 +6265,62 @@ rtError_t ApiImpl::CheckArchCompatibility(const char_t *socVersion, const char_t
         constexpr int32_t archVerCompatible = 1U;
         *canCompatible = archVerCompatible;
     }
-    RT_LOG(RT_LOG_INFO,
-        "Arch compatibility check result: canCompatible=%d, socVersion=%s.",
-        *canCompatible,
-        omSocVersion);
+    RT_LOG(
+        RT_LOG_INFO, "Arch compatibility check result: canCompatible=%d, socVersion=%s.", *canCompatible, omSocVersion);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetOpTimeOutInterval(uint64_t *interval)
+rtError_t ApiImpl::GetOpTimeOutInterval(uint64_t* interval)
 {
-    Context * const curCtx = CurrentContext(); // 隐式set device
+    Context* const curCtx = CurrentContext(); // 隐式set device
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_PTR_RETURN_MSG(rtInstance, RT_ERROR_INSTANCE_NULL);
-    const RtTimeoutConfig &timeoutCfg = rtInstance->GetTimeoutConfig();
-    COND_RETURN_AND_MSG_OUTER((timeoutCfg.isInit == false), RT_ERROR_DEVICE_RETAIN, ErrorCode::EE1018,
-        "Obtaining the minimum interval supported by the hardware for operator timeout configuration", "Device is not initialized, call rtSetDevice API first");
+    const RtTimeoutConfig& timeoutCfg = rtInstance->GetTimeoutConfig();
+    COND_RETURN_AND_MSG_OUTER(
+        (timeoutCfg.isInit == false), RT_ERROR_DEVICE_RETAIN, ErrorCode::EE1018,
+        "Obtaining the minimum interval supported by the hardware for operator timeout configuration",
+        "Device is not initialized, call rtSetDevice API first");
 
     *interval = static_cast<uint64_t>(timeoutCfg.interval);
     RT_LOG(RT_LOG_INFO, "Get op timeout interval successfully, interval=%" PRIu64 "us.", *interval);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::SetOpExecuteTimeOutV2(uint64_t timeout, uint64_t *actualTimeout)
+rtError_t ApiImpl::SetOpExecuteTimeOutV2(uint64_t timeout, uint64_t* actualTimeout)
 {
-    Context * const curCtx = CurrentContext(); // 隐式set device
+    Context* const curCtx = CurrentContext(); // 隐式set device
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     NULL_PTR_RETURN_MSG(rtInstance, RT_ERROR_INSTANCE_NULL);
-    const RtTimeoutConfig &timeoutCfg = rtInstance->GetTimeoutConfig();
-    COND_RETURN_AND_MSG_OUTER((timeoutCfg.isInit == false), RT_ERROR_DEVICE_RETAIN, ErrorCode::EE1018,
+    const RtTimeoutConfig& timeoutCfg = rtInstance->GetTimeoutConfig();
+    COND_RETURN_AND_MSG_OUTER(
+        (timeoutCfg.isInit == false), RT_ERROR_DEVICE_RETAIN, ErrorCode::EE1018,
         "Setting the timeout interval for operator execution", "Device is not initialized, call rtSetDevice API first");
 
     const rtError_t error = rtInstance->SetTimeoutConfig(RT_TIMEOUT_TYPE_OP_EXECUTE, timeout, RT_TIME_UNIT_TYPE_US);
     ERROR_RETURN_MSG_INNER(error, "Failed to set op execute timeout, retCode=%#x.", static_cast<uint32_t>(error));
 
-    if ((timeoutCfg.isOpTimeoutMs) && (timeoutCfg.isCfgOpExcTaskTimeout) &&
-        (timeoutCfg.opExcTaskTimeout == 0UL)) {
+    if ((timeoutCfg.isOpTimeoutMs) && (timeoutCfg.isCfgOpExcTaskTimeout) && (timeoutCfg.opExcTaskTimeout == 0UL)) {
         *actualTimeout = MAX_UINT64_NUM; // never timeout
     } else {
         uint16_t credit = 0U;
         TransExeTimeoutCfgToKernelCredit(timeout, credit);
-        *actualTimeout =  static_cast<uint64_t>(static_cast<double>(credit) * timeoutCfg.interval);
+        *actualTimeout = static_cast<uint64_t>(static_cast<double>(credit) * timeoutCfg.interval);
     }
-    RT_LOG(RT_LOG_INFO, "set op execute timeout, timeout=%" PRIu64 "us, actualTimeout=%" PRIu64 "us.",
-        timeout, *actualTimeout);
+    RT_LOG(
+        RT_LOG_INFO, "set op execute timeout, timeout=%" PRIu64 "us, actualTimeout=%" PRIu64 "us.", timeout,
+        *actualTimeout);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::StarsTaskLaunch(const void * const sqe, const uint32_t sqeLen, Stream * const stm,
-    const uint32_t flag)
+rtError_t ApiImpl::StarsTaskLaunch(const void* const sqe, const uint32_t sqeLen, Stream* const stm, const uint32_t flag)
 {
     RT_LOG(RT_LOG_DEBUG, "Stars launch, sqeLen=%u, flag=%u.", sqeLen, flag);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -6072,14 +6330,14 @@ rtError_t ApiImpl::StarsTaskLaunch(const void * const sqe, const uint32_t sqeLen
     return StarsLaunch(sqe, sqeLen, curStm, flag);
 }
 
-rtError_t ApiImpl::GetModelTaskUpdateIsSupport(const int32_t deviceId, int32_t * const val)
+rtError_t ApiImpl::GetModelTaskUpdateIsSupport(const int32_t deviceId, int32_t* const val)
 {
     UNUSED(deviceId);
-    Context * const curCtx = CurrentContext(true, deviceId);
+    Context* const curCtx = CurrentContext(true, deviceId);
 
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     *val = static_cast<int32_t>(RT_DEV_CAP_NOT_SUPPORT);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     const rtChipType_t chipType = dev->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_KERNEL_TILING_KEY_SINK)) {
         RT_LOG(RT_LOG_INFO, "chipType = %u", static_cast<uint32_t>(chipType));
@@ -6087,22 +6345,21 @@ rtError_t ApiImpl::GetModelTaskUpdateIsSupport(const int32_t deviceId, int32_t *
     }
 
     const uint32_t tschVersion = dev->GetTschVersion();
-    const bool isSupport =  dev->CheckFeatureSupport(TS_FEATURE_TILING_KEY_SINK);
+    const bool isSupport = dev->CheckFeatureSupport(TS_FEATURE_TILING_KEY_SINK);
     if (isSupport) {
         *val = RT_DEV_CAP_SUPPORT;
     }
 
-    RT_LOG(RT_LOG_INFO, "chipType = %u,TsVersion=%u,*val=%d",
-           static_cast<uint32_t>(chipType), tschVersion, *val);
+    RT_LOG(RT_LOG_INFO, "chipType = %u,TsVersion=%u,*val=%d", static_cast<uint32_t>(chipType), tschVersion, *val);
     return RT_ERROR_NONE;
 }
 
 rtError_t ApiImpl::GetStreamTimeoutSnapshotMsg()
 {
     rtError_t error;
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     NULL_PTR_RETURN_MSG(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     NULL_PTR_RETURN(dev, RT_ERROR_DEVICE_NULL);
 
     if (!dev->IsPrintStreamTimeoutSnapshot()) {
@@ -6118,173 +6375,189 @@ rtError_t ApiImpl::GetStreamTimeoutSnapshotMsg()
 #endif
         return RT_ERROR_NONE;
     }
-    error = SyncGetDeviceMsg(dev, devStreamSnapshotHandler.GetDevMemAddr(),
-        devStreamSnapshotHandler.GetDevMemSize(), RT_GET_DEV_PID_SNAPSHOT_MSG);
+    error = SyncGetDeviceMsg(
+        dev, devStreamSnapshotHandler.GetDevMemAddr(), devStreamSnapshotHandler.GetDevMemSize(),
+        RT_GET_DEV_PID_SNAPSHOT_MSG);
     ERROR_RETURN(error, "Sync get device msg failed, retCode=%#x.", static_cast<uint32_t>(error));
     return dev->PrintStreamTimeoutSnapshotInfo();
 }
 
-rtError_t ApiImpl::MemQueueInitQS(const int32_t devId, const char_t * const grpName)
+rtError_t ApiImpl::MemQueueInitQS(const int32_t devId, const char_t* const grpName)
 {
     RT_LOG(RT_LOG_INFO, "Start to init queue schedule on drv devId %d.", devId);
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     return rtInstance->InitAicpuQS(static_cast<uint32_t>(devId), grpName);
 }
 
-rtError_t ApiImpl::MemQueueInitFlowGw(const int32_t devId, const rtInitFlowGwInfo_t * const initInfo)
+rtError_t ApiImpl::MemQueueInitFlowGw(const int32_t devId, const rtInitFlowGwInfo_t* const initInfo)
 {
     RT_LOG(RT_LOG_INFO, "Start to init FlowGw on drv devId %d.", devId);
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     return rtInstance->InitAicpuFlowGw(static_cast<uint32_t>(devId), initInfo);
 }
 
-rtError_t ApiImpl::MemQueueCreate(const int32_t devId, const rtMemQueueAttr_t * const queAttr, uint32_t * const qid)
+rtError_t ApiImpl::MemQueueCreate(const int32_t devId, const rtMemQueueAttr_t* const queAttr, uint32_t* const qid)
 {
     RT_LOG(RT_LOG_INFO, "Start to create queue on drv devId %d.", devId);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueCreate(devId, queAttr, qid);
 }
 
-rtError_t ApiImpl::MemQueueExport(const int32_t devId, const uint32_t qid, const int32_t peerDevId,
-        const char * const shareName)
+rtError_t ApiImpl::MemQueueExport(
+    const int32_t devId, const uint32_t qid, const int32_t peerDevId, const char* const shareName)
 {
-    RT_LOG(RT_LOG_INFO, "Start to Export queue on drv devId [%d], qid [%u], peerDevId [%d].",
-        devId, qid, peerDevId);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    RT_LOG(RT_LOG_INFO, "Start to Export queue on drv devId [%d], qid [%u], peerDevId [%d].", devId, qid, peerDevId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueExport(devId, qid, peerDevId, shareName);
 }
-rtError_t ApiImpl::MemQueueUnExport(const int32_t devId, const uint32_t qid, const int32_t peerDevId,
-        const char * const shareName)
+rtError_t ApiImpl::MemQueueUnExport(
+    const int32_t devId, const uint32_t qid, const int32_t peerDevId, const char* const shareName)
 {
-    RT_LOG(RT_LOG_INFO, "Start to UnExport queue on drv devId [%d], qid [%u], peerDevId [%d].",
-        devId, qid, peerDevId);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    RT_LOG(RT_LOG_INFO, "Start to UnExport queue on drv devId [%d], qid [%u], peerDevId [%d].", devId, qid, peerDevId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueUnExport(devId, qid, peerDevId, shareName);
 }
 
-rtError_t ApiImpl::MemQueueImport(const int32_t devId, const int32_t peerDevId, const char * const shareName,
-        uint32_t * const qid)
+rtError_t ApiImpl::MemQueueImport(
+    const int32_t devId, const int32_t peerDevId, const char* const shareName, uint32_t* const qid)
 {
-    RT_LOG(RT_LOG_INFO, "Start to Import queue on drv devId [%d], peerDevId [%d].", 
-        devId, peerDevId);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    RT_LOG(RT_LOG_INFO, "Start to Import queue on drv devId [%d], peerDevId [%d].", devId, peerDevId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueImport(devId, peerDevId, shareName, qid);
 }
 
-rtError_t ApiImpl::MemQueueUnImport(const int32_t devId, const uint32_t qid, const int32_t peerDevId, 
-        const char * const shareName)
+rtError_t ApiImpl::MemQueueUnImport(
+    const int32_t devId, const uint32_t qid, const int32_t peerDevId, const char* const shareName)
 {
-    RT_LOG(RT_LOG_INFO, "Start to UnImport queue on drv devId [%d], qid [%u], peerDevId [%d].",
-        devId, qid, peerDevId);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    RT_LOG(RT_LOG_INFO, "Start to UnImport queue on drv devId [%d], qid [%u], peerDevId [%d].", devId, qid, peerDevId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueUnImport(devId, qid, peerDevId, shareName);
 }
 
-rtError_t ApiImpl::MemQueueSet(const int32_t devId, const rtMemQueueSetCmdType cmd,
-    const rtMemQueueSetInputPara * const input)
+rtError_t ApiImpl::MemQueueSet(
+    const int32_t devId, const rtMemQueueSetCmdType cmd, const rtMemQueueSetInputPara* const input)
 {
     RT_LOG(RT_LOG_INFO, "Start to queue set on drv devId %d.", devId);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueSet(devId, cmd, input);
 }
 
 rtError_t ApiImpl::MemQueueDestroy(const int32_t devId, const uint32_t qid)
 {
     RT_LOG(RT_LOG_INFO, "Start to destroy queue on drv devId %d, qid is %u.", devId, qid);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueDestroy(devId, qid);
 }
 
 rtError_t ApiImpl::MemQueueInit(const int32_t devId)
 {
     RT_LOG(RT_LOG_INFO, "Start to init queue on drv devId %d.", devId);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueInit(devId);
 }
 
 rtError_t ApiImpl::MemQueueReset(const int32_t devId, const uint32_t qid)
 {
     RT_LOG(RT_LOG_INFO, "Start to reset queue on drv devId %d.", devId);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueReset(devId, qid);
 }
 
-rtError_t ApiImpl::MemQueueEnQueue(const int32_t devId, const uint32_t qid, void * const enQBuf)
+rtError_t ApiImpl::MemQueueEnQueue(const int32_t devId, const uint32_t qid, void* const enQBuf)
 {
     RT_LOG(RT_LOG_INFO, "Start to enqueue on drv devId %d, qid is %u.", devId, qid);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueEnQueue(devId, qid, enQBuf);
 }
 
-rtError_t ApiImpl::MemQueueDeQueue(const int32_t devId, const uint32_t qid, void ** const deQBuf)
+rtError_t ApiImpl::MemQueueDeQueue(const int32_t devId, const uint32_t qid, void** const deQBuf)
 {
     RT_LOG(RT_LOG_INFO, "Start to dequeue on drv devId %d, qid is %u.", devId, qid);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueDeQueue(devId, qid, deQBuf);
 }
 
-rtError_t ApiImpl::MemQueuePeek(const int32_t devId, const uint32_t qid, size_t * const bufLen, const int32_t timeout)
+rtError_t ApiImpl::MemQueuePeek(const int32_t devId, const uint32_t qid, size_t* const bufLen, const int32_t timeout)
 {
     RT_LOG(RT_LOG_INFO, "Start to peek queue on drv devId %d, qid is %u.", devId, qid);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueuePeek(devId, qid, bufLen, timeout);
 }
 
-rtError_t ApiImpl::MemQueueEnQueueBuff(const int32_t devId, const uint32_t qid, rtMemQueueBuff_t * const inBuf,
-    const int32_t timeout)
+rtError_t ApiImpl::MemQueueEnQueueBuff(
+    const int32_t devId, const uint32_t qid, rtMemQueueBuff_t* const inBuf, const int32_t timeout)
 {
     RT_LOG(RT_LOG_DEBUG, "Start to enqueue buf on drv devId %d, qid is %u, timeout=%dms.", devId, qid, timeout);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueEnQueueBuff(devId, qid, inBuf, timeout);
 }
 
-rtError_t ApiImpl::MemQueueDeQueueBuff(const int32_t devId, const uint32_t qid, rtMemQueueBuff_t * const outBuf,
-    const int32_t timeout)
+rtError_t ApiImpl::MemQueueDeQueueBuff(
+    const int32_t devId, const uint32_t qid, rtMemQueueBuff_t* const outBuf, const int32_t timeout)
 {
     RT_LOG(RT_LOG_INFO, "Start to dequeue buf on drv devId %d, qid is %u, timeout=%dms.", devId, qid, timeout);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueDeQueueBuff(devId, qid, outBuf, timeout);
 }
 
-rtError_t ApiImpl::MemQueueQueryInfo(const int32_t devId, const uint32_t qid, rtMemQueueInfo_t * const queryQueueInfo)
+rtError_t ApiImpl::MemQueueQueryInfo(const int32_t devId, const uint32_t qid, rtMemQueueInfo_t* const queryQueueInfo)
 {
     RT_LOG(RT_LOG_DEBUG, "Start to query queue info on drv devId %d, qid is %u.", devId, qid);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueQueryInfo(devId, qid, queryQueueInfo);
 }
 
-static rtError_t QueryQueueInfo(const int32_t devId, const void * const inBuff,
-    const uint32_t inLen, void * const outBuff, uint32_t * const outLen)
+static rtError_t QueryQueueInfo(
+    const int32_t devId, const void* const inBuff, const uint32_t inLen, void* const outBuff, uint32_t* const outLen)
 {
     RT_LOG(RT_LOG_INFO, "query mem queue info start, drv devId=%d", devId);
-    COND_RETURN_AND_MSG_OUTER(static_cast<size_t>(inLen) < sizeof(uint32_t), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Querying queue information",
-            static_cast<size_t>(inLen), "inLen", "The value of parameter of inLen must be greater than or equal to " + std::to_string(sizeof(uint32_t)));
-    COND_RETURN_AND_MSG_OUTER(static_cast<size_t>(*outLen) < sizeof(uint32_t), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Querying queue information",
-            static_cast<size_t>(*outLen), "outLen", "The value of parameter of outLen must be greater than or equal to " + std::to_string(sizeof(uint32_t)));
+    COND_RETURN_AND_MSG_OUTER(
+        static_cast<size_t>(inLen) < sizeof(uint32_t), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+        "Querying queue information", static_cast<size_t>(inLen), "inLen",
+        "The value of parameter of inLen must be greater than or equal to " + std::to_string(sizeof(uint32_t)));
+    COND_RETURN_AND_MSG_OUTER(
+        static_cast<size_t>(*outLen) < sizeof(uint32_t), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+        "Querying queue information", static_cast<size_t>(*outLen), "outLen",
+        "The value of parameter of outLen must be greater than or equal to " + std::to_string(sizeof(uint32_t)));
 
-    const uint32_t * const qidPtr = RtPtrToPtr<const uint32_t * const>(inBuff);
+    const uint32_t* const qidPtr = RtPtrToPtr<const uint32_t* const>(inBuff);
     QueueInfo memQueInfo = {};
     const uint32_t qid = *qidPtr;
     const rtError_t ret = NpuDriver::MemQueueQueryInfoV2(devId, qid, &memQueInfo);
     ERROR_RETURN(ret, "query queque info failed. ret=%#x", static_cast<uint32_t>(ret));
 
     *outLen = static_cast<uint32_t>(sizeof(uint32_t));
-    uint32_t *entityType = RtPtrToPtr<uint32_t *>(outBuff);
+    uint32_t* entityType = RtPtrToPtr<uint32_t*>(outBuff);
     *entityType = memQueInfo.entity_type;
 
     RT_LOG(RT_LOG_INFO, "query mem queue info end, drv devId=%d, qid=%u", devId, qid);
@@ -6292,71 +6565,76 @@ static rtError_t QueryQueueInfo(const int32_t devId, const void * const inBuff,
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::MemQueueQuery(const int32_t devId, const rtMemQueueQueryCmd_t cmd, const void * const inBuff,
-    const uint32_t inLen, void * const outBuff, uint32_t * const outLen)
+rtError_t ApiImpl::MemQueueQuery(
+    const int32_t devId, const rtMemQueueQueryCmd_t cmd, const void* const inBuff, const uint32_t inLen,
+    void* const outBuff, uint32_t* const outLen)
 {
     RT_LOG(RT_LOG_INFO, "Start to query queue on drv devId %d, cmd is %d.", devId, cmd);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
 
     COND_PROC(cmd == RT_MQ_QUERY_QUES_ATTR_ENTITY_TYPE, return QueryQueueInfo(devId, inBuff, inLen, outBuff, outLen));
 
     return NpuDriver::MemQueueQuery(devId, cmd, inBuff, inLen, outBuff, outLen);
 }
 
-rtError_t ApiImpl::MemQueueGrant(const int32_t devId, const uint32_t qid, const int32_t pid,
-    rtMemQueueShareAttr_t * const attr)
+rtError_t ApiImpl::MemQueueGrant(
+    const int32_t devId, const uint32_t qid, const int32_t pid, rtMemQueueShareAttr_t* const attr)
 {
     RT_LOG(RT_LOG_INFO, "Start to grant queue on drv devId %d, qid is %u, pid is %d", devId, qid, pid);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueGrant(devId, qid, pid, attr);
 }
 
 rtError_t ApiImpl::MemQueueAttach(const int32_t devId, const uint32_t qid, const int32_t timeOut)
 {
     RT_LOG(RT_LOG_INFO, "Start to attach queue on drv devId %d, qid is %u, timeout=%dms.", devId, qid, timeOut);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueAttach(devId, qid, timeOut);
 }
 
-rtError_t ApiImpl::MemQueueGetQidByName(const int32_t devId, const char_t * const name, uint32_t * const qId)
+rtError_t ApiImpl::MemQueueGetQidByName(const int32_t devId, const char_t* const name, uint32_t* const qId)
 {
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemQueueGetQidByName(devId, name, qId);
 }
 
 rtError_t ApiImpl::QueueSubF2NFEvent(const int32_t devId, const uint32_t qId, const uint32_t groupId)
 {
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::QueueSubF2NFEvent(devId, qId, groupId);
 }
 
 rtError_t ApiImpl::QueueSubscribe(const int32_t devId, const uint32_t qId, const uint32_t groupId, const int32_t type)
 {
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::QueueSubscribe(devId, qId, groupId, type);
 }
 
-rtError_t ApiImpl::BufEventTrigger(const char_t * const name)
-{
-    return NpuDriver::BufEventTrigger(name);
-}
+rtError_t ApiImpl::BufEventTrigger(const char_t* const name) { return NpuDriver::BufEventTrigger(name); }
 
-rtError_t ApiImpl::EschedSubmitEventSync(const int32_t devId, rtEschedEventSummary_t * const evt,
-    rtEschedEventReply_t * const ack)
+rtError_t ApiImpl::EschedSubmitEventSync(
+    const int32_t devId, rtEschedEventSummary_t* const evt, rtEschedEventReply_t* const ack)
 {
     RT_LOG(RT_LOG_INFO, "Start to submit event on drv devId %d.", devId);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::EschedSubmitEventSync(devId, evt, ack);
 }
 
-rtError_t ApiImpl::QueryDevPid(rtBindHostpidInfo_t * const info, int32_t * const devPid)
+rtError_t ApiImpl::QueryDevPid(rtBindHostpidInfo_t* const info, int32_t* const devPid)
 {
     RT_LOG(RT_LOG_INFO, "Start to query device pid.");
     return NpuDriver::QueryDevPid(info, devPid);
@@ -6364,153 +6642,167 @@ rtError_t ApiImpl::QueryDevPid(rtBindHostpidInfo_t * const info, int32_t * const
 
 rtError_t ApiImpl::EschedAttachDevice(const uint32_t devId)
 {
-    COND_RETURN_ERROR(CheckCurCtxValid(static_cast<int32_t>(devId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%lu].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(static_cast<int32_t>(devId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
+        "Current Context is null, drv devId[%lu].", devId);
     return NpuDriver::EschedAttachDevice(devId);
 }
 
 rtError_t ApiImpl::EschedDettachDevice(const uint32_t devId)
 {
-    COND_RETURN_ERROR(CheckCurCtxValid(static_cast<int32_t>(devId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%lu].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(static_cast<int32_t>(devId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
+        "Current Context is null, drv devId[%lu].", devId);
     return NpuDriver::EschedDettachDevice(devId);
 }
 
-rtError_t ApiImpl::EschedWaitEvent(const int32_t devId, const uint32_t grpId, const uint32_t threadId,
-    const int32_t timeout, rtEschedEventSummary_t * const evt)
+rtError_t ApiImpl::EschedWaitEvent(
+    const int32_t devId, const uint32_t grpId, const uint32_t threadId, const int32_t timeout,
+    rtEschedEventSummary_t* const evt)
 {
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::EschedWaitEvent(devId, grpId, threadId, timeout, evt);
 }
 
 rtError_t ApiImpl::EschedCreateGrp(const int32_t devId, const uint32_t grpId, const rtGroupType_t type)
 {
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::EschedCreateGrp(devId, grpId, type);
 }
 
-rtError_t ApiImpl::EschedSubmitEvent(const int32_t devId, rtEschedEventSummary_t * const evt)
+rtError_t ApiImpl::EschedSubmitEvent(const int32_t devId, rtEschedEventSummary_t* const evt)
 {
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::EschedSubmitEvent(devId, evt);
 }
 
-rtError_t ApiImpl::EschedSubscribeEvent(const int32_t devId, const uint32_t grpId, const uint32_t threadId,
-    const uint64_t eventBitmap)
+rtError_t ApiImpl::EschedSubscribeEvent(
+    const int32_t devId, const uint32_t grpId, const uint32_t threadId, const uint64_t eventBitmap)
 {
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::EschedSubscribeEvent(devId, grpId, threadId, eventBitmap);
 }
 
-rtError_t ApiImpl::EschedAckEvent(const int32_t devId, const rtEventIdType_t evtId,
-    const uint32_t subeventId, char_t * const msg, const uint32_t len)
+rtError_t ApiImpl::EschedAckEvent(
+    const int32_t devId, const rtEventIdType_t evtId, const uint32_t subeventId, char_t* const msg, const uint32_t len)
 {
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::EschedAckEvent(devId, evtId, subeventId, msg, len);
 }
 
-rtError_t ApiImpl::BuffAlloc(const uint64_t size, void **buff)
+rtError_t ApiImpl::BuffAlloc(const uint64_t size, void** buff)
 {
     RT_LOG(RT_LOG_INFO, "Start to alloc buff, size is %" PRIu64, size);
     return NpuDriver::BuffAlloc(size, buff);
 }
 
-rtError_t ApiImpl::BuffConfirm(void * const buff, const uint64_t size)
+rtError_t ApiImpl::BuffConfirm(void* const buff, const uint64_t size)
 {
     RT_LOG(RT_LOG_INFO, "Start to determine whether buff is shared memory.");
     return NpuDriver::BuffConfirm(buff, size);
 }
 
-rtError_t ApiImpl::BuffFree(void * const buff)
+rtError_t ApiImpl::BuffFree(void* const buff)
 {
     RT_LOG(RT_LOG_INFO, "Start to free buff.");
     return NpuDriver::BuffFree(buff);
 }
 
-rtError_t ApiImpl::MemGrpCreate(const char_t * const name, const rtMemGrpConfig_t * const cfg)
+rtError_t ApiImpl::MemGrpCreate(const char_t* const name, const rtMemGrpConfig_t* const cfg)
 {
     RT_LOG(RT_LOG_INFO, "Start to create group %s.", name);
     return NpuDriver::MemGrpCreate(name, cfg);
 }
 
-rtError_t  ApiImpl::BuffGetInfo(const rtBuffGetCmdType type, const void * const inBuff, const uint32_t inLen,
-    void * const outBuff, uint32_t * const outLen)
+rtError_t ApiImpl::BuffGetInfo(
+    const rtBuffGetCmdType type, const void* const inBuff, const uint32_t inLen, void* const outBuff,
+    uint32_t* const outLen)
 {
     RT_LOG(RT_LOG_INFO, "Start to buff get info, type is %d.", static_cast<int32_t>(type));
 
     return NpuDriver::BuffGetInfo(type, inBuff, inLen, outBuff, outLen);
 }
 
-rtError_t  ApiImpl::MemGrpCacheAlloc(const char_t *const name, const int32_t devId,
-    const rtMemGrpCacheAllocPara *const para)
+rtError_t ApiImpl::MemGrpCacheAlloc(
+    const char_t* const name, const int32_t devId, const rtMemGrpCacheAllocPara* const para)
 {
     RT_LOG(RT_LOG_INFO, "Start to pre alloc group %s memory.", name);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::MemGrpCacheAlloc(name, devId, para);
 }
 
-rtError_t ApiImpl::MemGrpAddProc(const char_t * const name, const int32_t pid, const rtMemGrpShareAttr_t * const attr)
+rtError_t ApiImpl::MemGrpAddProc(const char_t* const name, const int32_t pid, const rtMemGrpShareAttr_t* const attr)
 {
     RT_LOG(RT_LOG_INFO, "Start to add process %d in group %s.", pid, name);
     return NpuDriver::MemGrpAddProc(name, pid, attr);
 }
 
-rtError_t ApiImpl::MemGrpAttach(const char_t * const name, const int32_t timeout)
+rtError_t ApiImpl::MemGrpAttach(const char_t* const name, const int32_t timeout)
 {
     RT_LOG(RT_LOG_INFO, "Start to attach group %s, timeout=%dms.", name, timeout);
     return NpuDriver::MemGrpAttach(name, timeout);
 }
 
-rtError_t ApiImpl::MemGrpQuery(rtMemGrpQueryInput_t * const input, rtMemGrpQueryOutput_t * const output)
+rtError_t ApiImpl::MemGrpQuery(rtMemGrpQueryInput_t* const input, rtMemGrpQueryOutput_t* const output)
 {
     RT_LOG(RT_LOG_INFO, "Start to query group, cmd is %d.", input->cmd);
 
     return NpuDriver::MemGrpQuery(input, output);
 }
 
-rtError_t ApiImpl::MemCopy2DSync(void * const dst, const uint64_t dstPitch, const void * const src,
-    const uint64_t srcPitch, const uint64_t width, const uint64_t height,
-    const rtMemcpyKind_t kind, const rtMemcpyKind newKind)
+rtError_t ApiImpl::MemCopy2DSync(
+    void* const dst, const uint64_t dstPitch, const void* const src, const uint64_t srcPitch, const uint64_t width,
+    const uint64_t height, const rtMemcpyKind_t kind, const rtMemcpyKind newKind)
 {
     (void)newKind;
-    RT_LOG(RT_LOG_DEBUG, "sync memcpy2d, dstPitch=%" PRIu64 ", srcPitch=%" PRIu64 ", width=%" PRIu64
-           ", height=%" PRIu64 ", kind=%d.", dstPitch, srcPitch, width, height, kind);
-    Context * const curCtx = CurrentContext();
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "sync memcpy2d, dstPitch=%" PRIu64 ", srcPitch=%" PRIu64 ", width=%" PRIu64 ", height=%" PRIu64 ", kind=%d.",
+        dstPitch, srcPitch, width, height, kind);
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN_WITH_DESC(curCtx, "Synchronous 2D memory copy");
 
     TIMESTAMP_BEGIN(MemCopy2D);
-    const rtError_t ret = curCtx->Device_()->Driver_()->MemCopy2D(dst, dstPitch, src, srcPitch, width, height, kind,
-        static_cast<uint32_t>(DEVMM_MEMCPY2D_SYNC), 0UL, nullptr);
+    const rtError_t ret = curCtx->Device_()->Driver_()->MemCopy2D(
+        dst, dstPitch, src, srcPitch, width, height, kind, static_cast<uint32_t>(DEVMM_MEMCPY2D_SYNC), 0UL, nullptr);
     TIMESTAMP_END(MemCopy2D);
 
     return ret;
 }
 
-rtError_t ApiImpl::MemCopy2DAsync(void * const dst, const uint64_t dstPitch, const void * const src,
-    const uint64_t srcPitch, const uint64_t width, const uint64_t height, Stream * const stm,
-    const rtMemcpyKind_t kind, const rtMemcpyKind newKind)
+rtError_t ApiImpl::MemCopy2DAsync(
+    void* const dst, const uint64_t dstPitch, const void* const src, const uint64_t srcPitch, const uint64_t width,
+    const uint64_t height, Stream* const stm, const rtMemcpyKind_t kind, const rtMemcpyKind newKind)
 {
     (void)newKind;
-    RT_LOG(RT_LOG_DEBUG, "sync memcpy2d, dstPitch=%" PRIu64 ", srcPitch=%" PRIu64 ", width=%" PRIu64
-           ", height=%" PRIu64 ", kind=%d.", dstPitch, srcPitch, width, height, kind);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "sync memcpy2d, dstPitch=%" PRIu64 ", srcPitch=%" PRIu64 ", width=%" PRIu64 ", height=%" PRIu64 ", kind=%d.",
+        dstPitch, srcPitch, width, height, kind);
     rtError_t error = RT_ERROR_NONE;
     uint64_t remainSize = width * height;
     uint64_t realSize = 0UL;
     uint64_t fixedSize = 0UL;
     uint64_t srcoffset = 0UL;
     uint64_t dstoffset = 0UL;
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -6519,9 +6811,9 @@ rtError_t ApiImpl::MemCopy2DAsync(void * const dst, const uint64_t dstPitch, con
 
     while (remainSize > 0UL) {
         if (kind == RT_MEMCPY_DEVICE_TO_DEVICE) {
-            error = Memcpy2DAsync((static_cast<char_t *>(dst)) + dstoffset, dstPitch,
-                (static_cast<const char_t *>(src)) + srcoffset, srcPitch, width, height, kind,
-                &realSize, curStm, fixedSize);
+            error = Memcpy2DAsync(
+                (static_cast<char_t*>(dst)) + dstoffset, dstPitch, (static_cast<const char_t*>(src)) + srcoffset,
+                srcPitch, width, height, kind, &realSize, curStm, fixedSize);
             dstoffset += dstPitch;
             srcoffset += srcPitch;
         } else {
@@ -6536,32 +6828,33 @@ rtError_t ApiImpl::MemCopy2DAsync(void * const dst, const uint64_t dstPitch, con
     return error;
 }
 
-rtError_t ApiImpl::MemcpyHostTask(void * const dst, const uint64_t destMax, const void * const src, const uint64_t cnt,
-    const rtMemcpyKind_t kind, Stream * const stm)
+rtError_t ApiImpl::MemcpyHostTask(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind_t kind,
+    Stream* const stm)
 {
     RT_LOG(RT_LOG_INFO, "memCopy for host task, kind=%d.", kind);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     CHECK_CAPTURE_MODE_SUPPORT_AND_RETURN_WITH_DESC(curCtx, "Delivering a memory copy task on the host");
 
     if (Runtime::Instance()->ChipIsHaveStars()) {
         return curCtx->Device_()->Driver_()->MemCopySync(dst, destMax, src, cnt, kind);
     }
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     } else {
         if ((curStm->Flags() & RT_STREAM_FORBIDDEN_DEFAULT) != 0) {
-            Stream * const onlineStream = curCtx->OnlineStream_();
-            Stream * const defaultStream = curCtx->DefaultStream_();
+            Stream* const onlineStream = curCtx->OnlineStream_();
+            Stream* const defaultStream = curCtx->DefaultStream_();
             curStm = (onlineStream != nullptr) ? onlineStream : defaultStream;
             NULL_STREAM_PTR_RETURN_MSG(curStm);
         }
     }
-    HostTaskMemCpy *hostTask = new (std::nothrow) HostTaskMemCpy(curCtx->Device_(), dst, destMax, src, cnt, kind);
-    COND_RETURN_AND_MSG_OUTER((hostTask == nullptr), RT_ERROR_INVALID_VALUE, ErrorCode::EE1013,
-        sizeof(HostTaskMemCpy), "new");
+    HostTaskMemCpy* hostTask = new (std::nothrow) HostTaskMemCpy(curCtx->Device_(), dst, destMax, src, cnt, kind);
+    COND_RETURN_AND_MSG_OUTER(
+        (hostTask == nullptr), RT_ERROR_INVALID_VALUE, ErrorCode::EE1013, sizeof(HostTaskMemCpy), "new");
     const rtError_t error = hostTask->AsyncCall();
     if (error != RT_ERROR_NONE) {
         DELETE_O(hostTask);
@@ -6571,13 +6864,13 @@ rtError_t ApiImpl::MemcpyHostTask(void * const dst, const uint64_t destMax, cons
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::CmoTaskLaunch(const rtCmoTaskInfo_t * const taskInfo, Stream * const stm, const uint32_t flag)
+rtError_t ApiImpl::CmoTaskLaunch(const rtCmoTaskInfo_t* const taskInfo, Stream* const stm, const uint32_t flag)
 {
     RT_LOG(RT_LOG_DEBUG, "Cmo task launch. opCode=%u, lengthInner=%u", taskInfo->opCode, taskInfo->lengthInner);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -6587,30 +6880,29 @@ rtError_t ApiImpl::CmoTaskLaunch(const rtCmoTaskInfo_t * const taskInfo, Stream 
     return cce::runtime::CmoTaskLaunch(taskInfo, curStm, flag);
 }
 
-rtError_t ApiImpl::CmoAddrTaskLaunch(void *cmoAddrInfo, const uint64_t destMax,
-    const rtCmoOpCode_t cmoOpCode, Stream * const stm, const uint32_t flag)
+rtError_t ApiImpl::CmoAddrTaskLaunch(
+    void* cmoAddrInfo, const uint64_t destMax, const rtCmoOpCode_t cmoOpCode, Stream* const stm, const uint32_t flag)
 {
-    RT_LOG(RT_LOG_DEBUG, "CmoAddr Task launch. opCode=%d, destMax is %" PRIu64"(bytes)", cmoOpCode, destMax);
-    Context * const curCtx = CurrentContext();
+    RT_LOG(RT_LOG_DEBUG, "CmoAddr Task launch. opCode=%d, destMax is %" PRIu64 "(bytes)", cmoOpCode, destMax);
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
     }
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
-    return curCtx->CmoAddrTaskLaunch(static_cast<rtCmoAddrInfo *>(cmoAddrInfo), destMax, cmoOpCode, curStm, flag);
+    return curCtx->CmoAddrTaskLaunch(static_cast<rtCmoAddrInfo*>(cmoAddrInfo), destMax, cmoOpCode, curStm, flag);
 }
 
-rtError_t ApiImpl::BarrierTaskLaunch(const rtBarrierTaskInfo_t * const taskInfo, Stream * const stm,
-    const uint32_t flag)
+rtError_t ApiImpl::BarrierTaskLaunch(const rtBarrierTaskInfo_t* const taskInfo, Stream* const stm, const uint32_t flag)
 {
     RT_LOG(RT_LOG_DEBUG, "Barrier Task launch.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -6622,7 +6914,7 @@ rtError_t ApiImpl::BarrierTaskLaunch(const rtBarrierTaskInfo_t * const taskInfo,
 
 rtError_t ApiImpl::SetDeviceSatMode(const rtFloatOverflowMode_t floatOverflowMode)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     const bool isValidFlag = ContextManage::CheckContextIsValid((curCtx));
     if (isValidFlag) {
         curCtx->Device_()->SetSatMode(floatOverflowMode);
@@ -6633,17 +6925,17 @@ rtError_t ApiImpl::SetDeviceSatMode(const rtFloatOverflowMode_t floatOverflowMod
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetDeviceSatMode(rtFloatOverflowMode_t * const floatOverflowMode)
+rtError_t ApiImpl::GetDeviceSatMode(rtFloatOverflowMode_t* const floatOverflowMode)
 {
     *floatOverflowMode = Runtime::Instance()->GetSatMode();
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetDeviceSatModeForStream(Stream * const stm, rtFloatOverflowMode_t * const floatOverflowMode)
+rtError_t ApiImpl::GetDeviceSatModeForStream(Stream* const stm, rtFloatOverflowMode_t* const floatOverflowMode)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -6653,22 +6945,22 @@ rtError_t ApiImpl::GetDeviceSatModeForStream(Stream * const stm, rtFloatOverflow
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::SetStreamOverflowSwitch(Stream * const stm, const uint32_t flags)
+rtError_t ApiImpl::SetStreamOverflowSwitch(Stream* const stm, const uint32_t flags)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream * const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(targetStm);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(targetStm, curCtx, RT_ERROR_STREAM_CONTEXT);
     return curCtx->SetStreamOverflowSwitch(targetStm, flags);
 }
 
-rtError_t ApiImpl::GetStreamOverflowSwitch(Stream * const stm, uint32_t * const flags)
+rtError_t ApiImpl::GetStreamOverflowSwitch(Stream* const stm, uint32_t* const flags)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Stream * const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(targetStm);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(targetStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
@@ -6676,66 +6968,66 @@ rtError_t ApiImpl::GetStreamOverflowSwitch(Stream * const stm, uint32_t * const 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::SetStreamPriorityValue(Stream * const stm, const uint32_t streamPriority)
+rtError_t ApiImpl::SetStreamPriorityValue(Stream* const stm, const uint32_t streamPriority)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream * const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(targetStm);
     return targetStm->Device_()->Driver_()->SetStreamPriorityValue(targetStm, streamPriority);
 }
 
-rtError_t ApiImpl::GetStreamPriorityValue(Stream * const stm, uint32_t * const streamPriority)
+rtError_t ApiImpl::GetStreamPriorityValue(Stream* const stm, uint32_t* const streamPriority)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream * const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(targetStm);
     return targetStm->Device_()->Driver_()->GetStreamPriorityValue(targetStm, streamPriority);
 }
 
-rtError_t ApiImpl::DvppGroupCreate(DvppGrp **grp, const uint32_t flags)
+rtError_t ApiImpl::DvppGroupCreate(DvppGrp** grp, const uint32_t flags)
 {
     RT_LOG(RT_LOG_DEBUG, "flags=%#x.", flags);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     return curCtx->DvppGroupCreate(grp, flags);
 }
 
-rtError_t ApiImpl::DvppGroupDestory(DvppGrp *grp)
+rtError_t ApiImpl::DvppGroupDestory(DvppGrp* grp)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     return curCtx->DvppGroupDestory(grp);
 }
 
-rtError_t ApiImpl::DvppWaitGroupReport(DvppGrp * const grp, const rtDvppGrpCallback callBackFunc, const int32_t timeout)
+rtError_t ApiImpl::DvppWaitGroupReport(DvppGrp* const grp, const rtDvppGrpCallback callBackFunc, const int32_t timeout)
 {
     RT_LOG(RT_LOG_DEBUG, "dvpp wait grp report timeout=%dms.", timeout);
-    Context * const curCtx = grp->getContext();
+    Context* const curCtx = grp->getContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     return curCtx->DvppWaitGroupReport(grp, callBackFunc, timeout);
 }
 
-rtError_t ApiImpl::SetStreamTag(Stream * const stm, const uint32_t geOpTag)
+rtError_t ApiImpl::SetStreamTag(Stream* const stm, const uint32_t geOpTag)
 {
     RT_LOG(RT_LOG_DEBUG, "geOpTag=%#x.", geOpTag);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream * const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(targetStm);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(targetStm, curCtx, RT_ERROR_STREAM_CONTEXT);
     return curCtx->SetStreamTag(targetStm, geOpTag);
 }
 
-rtError_t ApiImpl::GetStreamTag(Stream * const stm, uint32_t * const geOpTag)
+rtError_t ApiImpl::GetStreamTag(Stream* const stm, uint32_t* const geOpTag)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Stream * const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* const targetStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(targetStm);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(targetStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
@@ -6743,12 +7035,12 @@ rtError_t ApiImpl::GetStreamTag(Stream * const stm, uint32_t * const geOpTag)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetVisibleDeviceIdByLogicDeviceId(const int32_t logicDeviceId, int32_t * const visibleDeviceId)
+rtError_t ApiImpl::GetVisibleDeviceIdByLogicDeviceId(const int32_t logicDeviceId, int32_t* const visibleDeviceId)
 {
-    const rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(static_cast<uint32_t>(logicDeviceId),
-        reinterpret_cast<uint32_t *>(visibleDeviceId));
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, 
-        "Failed to convert the user device ID %d to driver device ID.", logicDeviceId);
+    const rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(
+        static_cast<uint32_t>(logicDeviceId), reinterpret_cast<uint32_t*>(visibleDeviceId));
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, "Failed to convert the user device ID %d to driver device ID.", logicDeviceId);
     return RT_ERROR_NONE;
 }
 
@@ -6756,7 +7048,7 @@ rtError_t ApiImpl::CtxSetSysParamOpt(const rtSysParamOpt configOpt, const int64_
 {
     rtError_t error = RT_ERROR_NONE;
     RT_LOG(RT_LOG_DEBUG, "Start to set sys param opt, opt=%d.", configOpt);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     RT_LOG(RT_LOG_INFO, "curCtx = %p, configOpt=%d, configVal=%lld.", curCtx, configOpt, configVal);
 
@@ -6766,32 +7058,32 @@ rtError_t ApiImpl::CtxSetSysParamOpt(const rtSysParamOpt configOpt, const int64_
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::CtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t * const configVal)
+rtError_t ApiImpl::CtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t* const configVal)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const rtError_t ret = curCtx->CtxGetSysParamOpt(configOpt, configVal);
     RT_LOG(RT_LOG_INFO, "ret=%#x, curCtx = %p, configOpt=%d, *configVal=%lld.", ret, curCtx, configOpt, (*configVal));
     return ret;
 }
 
-rtError_t ApiImpl::CtxGetOverflowAddr(void ** const overflowAddr)
+rtError_t ApiImpl::CtxGetOverflowAddr(void** const overflowAddr)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     *overflowAddr = curCtx->CtxGetOverflowAddr();
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetDeviceSatStatus(void * const outputAddrPtr, const uint64_t outputSize, Stream * const stm)
+rtError_t ApiImpl::GetDeviceSatStatus(void* const outputAddrPtr, const uint64_t outputSize, Stream* const stm)
 {
     RT_LOG(RT_LOG_DEBUG, "Start to get sat status.");
     uint64_t realSize = 0U;
     rtError_t error = RT_ERROR_NONE;
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -6814,39 +7106,40 @@ rtError_t ApiImpl::GetDeviceSatStatus(void * const outputAddrPtr, const uint64_t
     return error;
 }
 
-rtError_t ApiImpl::CleanDeviceSatStatus(Stream * const stm)
+rtError_t ApiImpl::CleanDeviceSatStatus(Stream* const stm)
 {
     RT_LOG(RT_LOG_DEBUG, "Start to clean sat status.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
-    const rtError_t error = MemSetAsync(curStm, curCtx->CtxGetOverflowAddr(), OVERFLOW_ADDR_MAX_SIZE,
-     	0U, OVERFLOW_ADDR_MAX_SIZE);
+    const rtError_t error =
+        MemSetAsync(curStm, curCtx->CtxGetOverflowAddr(), OVERFLOW_ADDR_MAX_SIZE, 0U, OVERFLOW_ADDR_MAX_SIZE);
     return error;
 }
 
-rtError_t ApiImpl::GetAllUtilizations(const int32_t devId, const rtTypeUtil_t kind, uint8_t * const util)
+rtError_t ApiImpl::GetAllUtilizations(const int32_t devId, const rtTypeUtil_t kind, uint8_t* const util)
 {
     RT_LOG(RT_LOG_INFO, "drv devId=%d, util type=%d.", devId, kind);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%d].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
+        devId);
     return NpuDriver::GetAllUtilizations(devId, kind, util);
 }
 
-rtError_t ApiImpl::GetTaskBufferLen(const rtTaskBuffType_t type, uint32_t *const bufferLen)
+rtError_t ApiImpl::GetTaskBufferLen(const rtTaskBuffType_t type, uint32_t* const bufferLen)
 {
     RT_LOG(RT_LOG_INFO, "Start to get task buffer len.");
-    constexpr uint32_t dynamicBuffSize = 5U;  // Dynamic Task: 8B + 3 * 4B(tiling_data)
+    constexpr uint32_t dynamicBuffSize = 5U; // Dynamic Task: 8B + 3 * 4B(tiling_data)
 
     switch (type) {
         case HWTS_STATIC_TASK_DESC:
-            *bufferLen = sizeof(uint64_t);  // Static Task: 8B
+            *bufferLen = sizeof(uint64_t); // Static Task: 8B
             break;
         case HWTS_DYNAMIC_TASK_DESC:
             *bufferLen = dynamicBuffSize * sizeof(uint32_t);
@@ -6856,41 +7149,42 @@ rtError_t ApiImpl::GetTaskBufferLen(const rtTaskBuffType_t type, uint32_t *const
             *bufferLen = PRELOAD_PARAM_BUFFER_MAX_N * 20U;
             break;
         default:
-            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Obtaining the task buffer length",
-                type, "[0, " + std::to_string(MAX_TASK) + ")");
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(
+                "Obtaining the task buffer length", type, "[0, " + std::to_string(MAX_TASK) + ")");
             return RT_ERROR_INVALID_VALUE;
     }
     RT_LOG(RT_LOG_INFO, "Get Task Buffer Len success. bufferLen=%zu, task type=%d.", *bufferLen, type);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::TaskSqeBuild(const rtTaskInput_t * const taskInput, uint32_t * const taskLen)
+rtError_t ApiImpl::TaskSqeBuild(const rtTaskInput_t* const taskInput, uint32_t* const taskLen)
 {
-    RT_LOG(RT_LOG_INFO, "Start to build task sqe, stream_id=%hu, taskType=%u.",
-        taskInput->compilerInfo.streamId, taskInput->compilerInfo.taskType);
-    return ConstructSqeByTaskInput(taskInput,taskLen);
+    RT_LOG(
+        RT_LOG_INFO, "Start to build task sqe, stream_id=%hu, taskType=%u.", taskInput->compilerInfo.streamId,
+        taskInput->compilerInfo.taskType);
+    return ConstructSqeByTaskInput(taskInput, taskLen);
 }
 
-rtError_t ApiImpl::GetKernelBin(const char_t *const binFileName, char_t **const buffer, uint32_t *length)
+rtError_t ApiImpl::GetKernelBin(const char_t* const binFileName, char_t** const buffer, uint32_t* length)
 {
     RT_LOG(RT_LOG_INFO, "Start to get condition kernel bin binFileName = %s", binFileName);
     const rtError_t error = Runtime::Instance()->GetKernelBin(binFileName, buffer, length);
     return error;
 }
 
-rtError_t ApiImpl::GetBinBuffer(const rtBinHandle binHandle, const rtBinBufferType_t type, void **bin,
-                                uint32_t *binSize)
+rtError_t ApiImpl::GetBinBuffer(
+    const rtBinHandle binHandle, const rtBinBufferType_t type, void** bin, uint32_t* binSize)
 {
     return Runtime::Instance()->GetBinBuffer(binHandle, type, bin, binSize);
 }
 
-rtError_t ApiImpl::BinaryGetGlobal(const Program * const binHandle, const char *name, void **dptr, size_t *size)
+rtError_t ApiImpl::BinaryGetGlobal(const Program* const binHandle, const char* name, void** dptr, size_t* size)
 {
     RT_LOG(RT_LOG_INFO, "Start to BinaryGetGlobal, name=%s", name);
-    Context *curCtx = Runtime::Instance()->CurrentContext();
+    Context* curCtx = Runtime::Instance()->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    ElfProgram *prog = const_cast<ElfProgram *>(dynamic_cast<const ElfProgram *>(binHandle));
+    ElfProgram* prog = const_cast<ElfProgram*>(dynamic_cast<const ElfProgram*>(binHandle));
     COND_RETURN_ERROR_MSG_INNER(prog == nullptr, RT_ERROR_INVALID_VALUE, "can't dynamic_cast program.");
 
     rtError_t ret = prog->Load2Device();
@@ -6901,12 +7195,13 @@ rtError_t ApiImpl::BinaryGetGlobal(const Program * const binHandle, const char *
     ret = prog->GetGlobalSymbol(name, &offset, &symbolSize);
     ERROR_RETURN(ret, "get global symbol %s failed, retCode=%#x", name, ret);
 
-    const void *baseAddr = prog->GetBinAlignBaseAddr(curCtx->Device_()->Id_());
-    COND_RETURN_ERROR_MSG_INNER(baseAddr == nullptr, RT_ERROR_INVALID_VALUE,
-                                "binary not loaded to device, device_id=%u", curCtx->Device_()->Id_());
+    const void* baseAddr = prog->GetBinAlignBaseAddr(curCtx->Device_()->Id_());
+    COND_RETURN_ERROR_MSG_INNER(
+        baseAddr == nullptr, RT_ERROR_INVALID_VALUE, "binary not loaded to device, device_id=%u",
+        curCtx->Device_()->Id_());
 
     if (dptr != nullptr) {
-        *dptr = RtValueToPtr<void *>(RtPtrToValue(baseAddr) + offset);
+        *dptr = RtValueToPtr<void*>(RtPtrToValue(baseAddr) + offset);
     }
     if (size != nullptr) {
         *size = static_cast<size_t>(symbolSize);
@@ -6915,46 +7210,50 @@ rtError_t ApiImpl::BinaryGetGlobal(const Program * const binHandle, const char *
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::FreeKernelBin(char_t * const buffer)
+rtError_t ApiImpl::FreeKernelBin(char_t* const buffer)
 {
     RT_LOG(RT_LOG_INFO, "FreeKernelBin");
     const rtError_t error = Runtime::Instance()->FreeKernelBin(buffer);
     return error;
 }
 
-rtError_t ApiImpl::EschedQueryInfo(const uint32_t devId, const rtEschedQueryType type,
-    rtEschedInputInfo *inPut, rtEschedOutputInfo *outPut)
+rtError_t ApiImpl::EschedQueryInfo(
+    const uint32_t devId, const rtEschedQueryType type, rtEschedInputInfo* inPut, rtEschedOutputInfo* outPut)
 {
     RT_LOG(RT_LOG_INFO, "Start to Query Esched Info");
-    COND_RETURN_ERROR(CheckCurCtxValid(static_cast<int32_t>(devId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
-                      "Current Context is null, drv devId[%lu].", devId);
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(static_cast<int32_t>(devId)) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL,
+        "Current Context is null, drv devId[%lu].", devId);
     return NpuDriver::EschedQueryInfo(devId, type, inPut, outPut);
 }
 
-rtError_t ApiImpl::GetDevArgsAddr(Stream * const stm, rtArgsEx_t * const argsInfo,
-    void **devArgsAddr, void **argsHandle)
+rtError_t ApiImpl::GetDevArgsAddr(Stream* const stm, rtArgsEx_t* const argsInfo, void** devArgsAddr, void** argsHandle)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     return curCtx->GetDevArgsAddr(stm, argsInfo, devArgsAddr, argsHandle);
 }
 
-rtError_t ApiImpl::ModelCheckArchVersion(const char_t *omsocVersion)
+rtError_t ApiImpl::ModelCheckArchVersion(const char_t* omsocVersion)
 {
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     const std::string socVersion = rtInstance->GetSocVersion();
     RT_LOG(RT_LOG_INFO, "Start to check omArchVersion=%s, socVersion=%s", omsocVersion, socVersion.c_str());
     // Get the NpuArch to the omSocVersion
     int32_t inputNpuArch;
     rtError_t ret = GetNpuArchByName(omsocVersion, &inputNpuArch);
-    COND_RETURN_AND_MSG_OUTER((ret != RT_ERROR_NONE), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
-        "Checking the compatibility between the model SoC version and the device SoC version", omsocVersion, "omsocVersion", "SoC version " + std::string(omsocVersion) + " is invalid");
+    COND_RETURN_AND_MSG_OUTER(
+        (ret != RT_ERROR_NONE), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+        "Checking the compatibility between the model SoC version and the device SoC version", omsocVersion,
+        "omsocVersion", "SoC version " + std::string(omsocVersion) + " is invalid");
 
     // Get the NpuArch to the hardwareSocVersion
     int32_t hardwareNpuArch;
     ret = GetNpuArchByName(socVersion.c_str(), &hardwareNpuArch);
-    COND_RETURN_AND_MSG_OUTER((ret != RT_ERROR_NONE), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
-        "Checking the compatibility between the model SoC version and the device SoC version", socVersion.c_str(), "socVersion", "SoC version " + socVersion + " is invalid");
+    COND_RETURN_AND_MSG_OUTER(
+        (ret != RT_ERROR_NONE), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+        "Checking the compatibility between the model SoC version and the device SoC version", socVersion.c_str(),
+        "socVersion", "SoC version " + socVersion + " is invalid");
 
     if (inputNpuArch != hardwareNpuArch) {
         RT_LOG(
@@ -6967,17 +7266,18 @@ rtError_t ApiImpl::ModelCheckArchVersion(const char_t *omsocVersion)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ReserveMemAddress(void** devPtr, size_t size, size_t alignment, void *devAddr, uint64_t flags)
+rtError_t ApiImpl::ReserveMemAddress(void** devPtr, size_t size, size_t alignment, void* devAddr, uint64_t flags)
 {
     const rtError_t error = NpuDriver::ReserveMemAddress(devPtr, size, alignment, devAddr, flags);
-    RT_LOG(RT_LOG_INFO, "device malloc Succ, size=%" PRIu64 ", start ptr=%p, end ptr=%p",
-        size, *devPtr, RtPtrToPtr<void *>(RtPtrToPtr<uint8_t *>(*devPtr) + size));
+    RT_LOG(
+        RT_LOG_INFO, "device malloc Succ, size=%" PRIu64 ", start ptr=%p, end ptr=%p", size, *devPtr,
+        RtPtrToPtr<void*>(RtPtrToPtr<uint8_t*>(*devPtr) + size));
     return error;
 }
 
 rtError_t ApiImpl::ReleaseMemAddress(void* devPtr)
 {
-    RT_LOG(RT_LOG_INFO, "device free mem=0x%llx", reinterpret_cast<uint64_t *>(devPtr));
+    RT_LOG(RT_LOG_INFO, "device free mem=0x%llx", reinterpret_cast<uint64_t*>(devPtr));
     const rtError_t error = NpuDriver::ReleaseMemAddress(devPtr);
     return error;
 }
@@ -6999,8 +7299,9 @@ rtError_t ApiImpl::MapMem(void* devPtr, size_t size, size_t offset, rtDrvMemHand
 {
     const rtError_t error = NpuDriver::MapMem(devPtr, size, offset, handle, flags);
     ERROR_RETURN(error, "failed, size=%" PRIu64 ", ptr=%p.", size, devPtr);
-    RT_LOG(RT_LOG_INFO, "device malloc Succ, size=%" PRIu64 ", start ptr=%p, end ptr=%p",
-        size, devPtr, RtPtrToPtr<void *>(RtPtrToPtr<uint8_t *>(devPtr) + size));
+    RT_LOG(
+        RT_LOG_INFO, "device malloc Succ, size=%" PRIu64 ", start ptr=%p, end ptr=%p", size, devPtr,
+        RtPtrToPtr<void*>(RtPtrToPtr<uint8_t*>(devPtr) + size));
     return error;
 }
 
@@ -7012,34 +7313,34 @@ rtError_t ApiImpl::UnmapMem(void* devPtr)
     return error;
 }
 
-rtError_t ApiImpl::MemMapNoAccess(
-    void *virPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags)
+rtError_t ApiImpl::MemMapNoAccess(void* virPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags)
 {
     const rtError_t error = NpuDriver::MemMapNoAccess(virPtr, size, offset, handle, flags);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, error);
-    ERROR_RETURN(error, "failed, ptr=%p, size=%zu, offset=%zu, handle=%p, flags=%" PRIu64,
-        virPtr, size, offset, handle, flags);
+    ERROR_RETURN(
+        error, "failed, ptr=%p, size=%zu, offset=%zu, handle=%p, flags=%" PRIu64, virPtr, size, offset, handle, flags);
     return error;
 }
 
-rtError_t ApiImpl::MemSetAccess(void *virPtr, size_t size, rtMemAccessDesc *desc, size_t count)
+rtError_t ApiImpl::MemSetAccess(void* virPtr, size_t size, rtMemAccessDesc* desc, size_t count)
 {
     const rtError_t error = NpuDriver::MemSetAccess(virPtr, size, desc, count);
-    COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
         "failed, ptr=0x%llx, size=%" PRIu64 ", count=%" PRIu64, RtPtrToValue(virPtr), size, count);
     ERROR_RETURN(error, "failed, ptr=0x%llx, size=%" PRIu64 ", count=%" PRIu64, RtPtrToValue(virPtr), size, count);
     return error;
 }
 
-rtError_t ApiImpl::MemGetAccess(void *virPtr, rtMemLocation *location, uint64_t *flags)
+rtError_t ApiImpl::MemGetAccess(void* virPtr, rtMemLocation* location, uint64_t* flags)
 {
     const rtError_t error = NpuDriver::MemGetAccess(virPtr, location, flags);
     ERROR_RETURN(error, "failed, ptr=%p, location=%d, flags=%#" PRIu64 ".", virPtr, *location, *flags);
     return error;
 }
 
-rtError_t ApiImpl::ExportToShareableHandle(rtDrvMemHandle handle, rtDrvMemHandleType handleType,
-    uint64_t flags, uint64_t *shareableHandle)
+rtError_t ApiImpl::ExportToShareableHandle(
+    rtDrvMemHandle handle, rtDrvMemHandleType handleType, uint64_t flags, uint64_t* shareableHandle)
 {
     uint64_t drvFlags = 0UL;
     rtError_t error = NpuDriver::ExportToShareableHandle(handle, handleType, drvFlags, shareableHandle);
@@ -7047,31 +7348,27 @@ rtError_t ApiImpl::ExportToShareableHandle(rtDrvMemHandle handle, rtDrvMemHandle
     if ((flags & RT_VMM_EXPORT_FLAG_DISABLE_PID_VALIDATION) != 0UL) {
         error = NpuDriver::SetMemShareHandleDisablePidVerify(*shareableHandle);
     }
-    RT_LOG(RT_LOG_INFO,
-        "handleType=%d, flags=%#" PRIx64 ", shareableHandle=%" PRIu64 ".",
-        handleType,
-        flags,
+    RT_LOG(
+        RT_LOG_INFO, "handleType=%d, flags=%#" PRIx64 ", shareableHandle=%" PRIu64 ".", handleType, flags,
         *shareableHandle);
     return error;
 }
 
 rtError_t ApiImpl::ExportToShareableHandleV2(
-    rtDrvMemHandle handle, rtMemSharedHandleType handleType, uint64_t flags, void *shareableHandle)
+    rtDrvMemHandle handle, rtMemSharedHandleType handleType, uint64_t flags, void* shareableHandle)
 {
     rtError_t error = RT_ERROR_NONE;
     if (handleType == RT_MEM_SHARE_HANDLE_TYPE_FABRIC) {
-        Context *curCtx = Runtime::Instance()->CurrentContext();
+        Context* curCtx = Runtime::Instance()->CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
         NULL_PTR_RETURN_MSG(curCtx->Device_(), RT_ERROR_DEVICE_NULL);
         const uint32_t devId = static_cast<uint32_t>(curCtx->Device_()->Id_());
         int64_t localServerId = 0;
         error = NpuDriver::GetServerId(devId, &localServerId);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE,
-            error,
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error,
             "This device does not support cross-server communication drv devId=%u localServerId=%" PRId64 "err:%#x",
-            devId,
-            localServerId,
-            static_cast<uint32_t>(error));
+            devId, localServerId, static_cast<uint32_t>(error));
     }
     uint64_t drvFlags = 0UL;
     error = NpuDriver::ExportToShareableHandleV2(handle, handleType, drvFlags, shareableHandle);
@@ -7087,13 +7384,12 @@ rtError_t ApiImpl::ExportToShareableHandleV2(
     return error;
 }
 
-rtError_t ApiImpl::ImportFromShareableHandle(uint64_t shareableHandle, int32_t devId, rtDrvMemHandle *handle)
+rtError_t ApiImpl::ImportFromShareableHandle(uint64_t shareableHandle, int32_t devId, rtDrvMemHandle* handle)
 {
     /* 输出参数handle在上下文中作为一个整体使用, 内部的devid不用进行转换 */
     RT_LOG(RT_LOG_INFO, "Start to ImportFromShareableHandle, drv devId=%d", devId);
-    COND_RETURN_ERROR(CheckCurCtxValid(devId) != RT_ERROR_NONE,
-        RT_ERROR_CONTEXT_NULL,
-        "Current Context is null, drv devId[%d].",
+    COND_RETURN_ERROR(
+        CheckCurCtxValid(devId) != RT_ERROR_NONE, RT_ERROR_CONTEXT_NULL, "Current Context is null, drv devId[%d].",
         devId);
 
     uint32_t peerPhyDeviceId = 0U;
@@ -7103,17 +7399,18 @@ rtError_t ApiImpl::ImportFromShareableHandle(uint64_t shareableHandle, int32_t d
     }
 
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
-    Context *const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device *const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     error = dev->EnableP2PWithOtherDevice(peerPhyDeviceId);
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
     return NpuDriver::ImportFromShareableHandle(shareableHandle, devId, handle);
 }
 
-rtError_t ApiImpl::ImportFromShareableHandleV2(const void *shareableHandle, rtMemSharedHandleType handleType,
-    uint64_t flags, int32_t devId, rtDrvMemHandle *handle)
+rtError_t ApiImpl::ImportFromShareableHandleV2(
+    const void* shareableHandle, rtMemSharedHandleType handleType, uint64_t flags, int32_t devId,
+    rtDrvMemHandle* handle)
 {
     UNUSED(flags);
     /* 输出参数handle在上下文中作为一个整体使用, 内部的devid不用进行转换 */
@@ -7122,12 +7419,10 @@ rtError_t ApiImpl::ImportFromShareableHandleV2(const void *shareableHandle, rtMe
     int64_t localServerId = 0;
     if (handleType == RT_MEM_SHARE_HANDLE_TYPE_FABRIC) {
         error = NpuDriver::GetServerId(devId, &localServerId);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE,
-            error,
-            "This device does not support cross-server communication devId:%d ServerId:%" PRId64 " err:%#x",
-            devId,
-            localServerId,
-            static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error,
+            "This device does not support cross-server communication devId:%d ServerId:%" PRId64 " err:%#x", devId,
+            localServerId, static_cast<uint32_t>(error));
     }
     uint32_t peerServerId = 0U;
     uint64_t shareableHandleU64 = 0UL;
@@ -7138,9 +7433,9 @@ rtError_t ApiImpl::ImportFromShareableHandleV2(const void *shareableHandle, rtMe
         uint32_t peerPhyDeviceId = 0U;
         error = NpuDriver::GetPhyDevIdByMemShareHandle(shareableHandleU64, &peerPhyDeviceId);
         COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
-        Context *const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-        Device *const dev = curCtx->Device_();
+        Device* const dev = curCtx->Device_();
         NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
         uint32_t hostId = 0U;
         error = NpuDriver::GetHostID(&hostId);
@@ -7160,7 +7455,7 @@ rtError_t ApiImpl::SetPidToShareableHandle(uint64_t shareableHandle, int32_t pid
 }
 
 rtError_t ApiImpl::SetPidToShareableHandleV2(
-    const void *shareableHandle, rtMemSharedHandleType handleType, int32_t pid[], uint32_t pidNum)
+    const void* shareableHandle, rtMemSharedHandleType handleType, int32_t pid[], uint32_t pidNum)
 {
     rtError_t error = RT_ERROR_NONE;
     uint32_t serverId = 0U;
@@ -7172,14 +7467,14 @@ rtError_t ApiImpl::SetPidToShareableHandleV2(
     return error;
 }
 
-rtError_t ApiImpl::GetAllocationGranularity(rtDrvMemProp_t *prop, rtDrvMemGranularityOptions option,
-    size_t *granularity)
+rtError_t ApiImpl::GetAllocationGranularity(
+    rtDrvMemProp_t* prop, rtDrvMemGranularityOptions option, size_t* granularity)
 {
     RT_LOG(RT_LOG_INFO, "Start to GetAllocationGranularity");
     return NpuDriver::GetAllocationGranularity(prop, option, granularity);
 }
 
-rtError_t ApiImpl::DeviceStatusQuery(const uint32_t devId, rtDeviceStatus *deviceStatus)
+rtError_t ApiImpl::DeviceStatusQuery(const uint32_t devId, rtDeviceStatus* deviceStatus)
 {
     return Runtime::Instance()->GetWatchDogDevStatus(devId, deviceStatus);
 }
@@ -7196,8 +7491,8 @@ rtError_t ApiImpl::UnbindHostPid(rtBindHostpidInfo info)
     return NpuDriver::UnbindHostPid(info);
 }
 
-rtError_t ApiImpl::QueryProcessHostPid(int32_t pid, uint32_t *chipId, uint32_t *vfId,
-    uint32_t *hostPid, uint32_t *cpType)
+rtError_t ApiImpl::QueryProcessHostPid(
+    int32_t pid, uint32_t* chipId, uint32_t* vfId, uint32_t* hostPid, uint32_t* cpType)
 {
     RT_LOG(RT_LOG_INFO, "Start to QueryProcessHostPid");
     return NpuDriver::QueryProcessHostPid(pid, chipId, vfId, hostPid, cpType);
@@ -7205,45 +7500,47 @@ rtError_t ApiImpl::QueryProcessHostPid(int32_t pid, uint32_t *chipId, uint32_t *
 
 rtError_t ApiImpl::AiCpuTaskSupportCheck()
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_PTR_RETURN_MSG(rtInstance, RT_ERROR_INSTANCE_NULL);
-    COND_RETURN_WITH_NOLOG(!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(),
-        RtOptionalFeatureType::RT_FEATURE_TASK_AICPU_DOT_SUPPORT_CHECK), RT_ERROR_NONE);
-    COND_RETURN_ERROR_MSG_INNER(rtInstance->GetAicpuCnt() == 0,
-        RT_ERROR_FEATURE_NOT_SUPPORT, "AICPU tasks are not supported!");
+    COND_RETURN_WITH_NOLOG(
+        !IS_SUPPORT_CHIP_FEATURE(
+            rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_TASK_AICPU_DOT_SUPPORT_CHECK),
+        RT_ERROR_NONE);
+    COND_RETURN_ERROR_MSG_INNER(
+        rtInstance->GetAicpuCnt() == 0, RT_ERROR_FEATURE_NOT_SUPPORT, "AICPU tasks are not supported!");
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::SetStreamSqLockUnlock(Stream * const stm, const bool isLock)
+rtError_t ApiImpl::SetStreamSqLockUnlock(Stream* const stm, const bool isLock)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device *const device = curCtx->Device_();
+    Device* const device = curCtx->Device_();
     NULL_PTR_RETURN_MSG(device, RT_ERROR_DEVICE_NULL);
-    COND_RETURN_WITH_NOLOG(!(device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_LOCKABLE)),
-        RT_ERROR_NONE);
+    COND_RETURN_WITH_NOLOG(
+        !(device->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_LOCKABLE)), RT_ERROR_NONE);
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
     return curCtx->SetStreamSqLockUnlock(stm, isLock);
 }
 
-rtError_t ApiImpl::ShrIdSetPodPid(const char *name, uint32_t sdid, int32_t pid)
+rtError_t ApiImpl::ShrIdSetPodPid(const char* name, uint32_t sdid, int32_t pid)
 {
     RT_LOG(RT_LOG_INFO, "Start to ShrIdSetPodPid name=%s, sdid=%d, pid=%d", name, sdid, pid);
     return NpuDriver::ShrIdSetPodPid(name, sdid, pid);
 }
 
-rtError_t ApiImpl::ShmemSetPodPid(const char *name, uint32_t sdid, int32_t pid[], int32_t num)
+rtError_t ApiImpl::ShmemSetPodPid(const char* name, uint32_t sdid, int32_t pid[], int32_t num)
 {
     RT_LOG(RT_LOG_INFO, "Start to ShmemSetPodPid name=%s, sdid=%u, pid=%d", name, sdid, pid[0]);
     return NpuDriver::ShmemSetPodPid(name, sdid, pid, num);
 }
 
-rtError_t ApiImpl::DevVA2PA(uint64_t devAddr, uint64_t len, Stream *stm, bool isAsync)
+rtError_t ApiImpl::DevVA2PA(uint64_t devAddr, uint64_t len, Stream* stm, bool isAsync)
 {
     RT_LOG(RT_LOG_INFO, "isAsync:%d", isAsync);
     if (isAsync) {
-        Context * const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
         NULL_STREAM_PTR_RETURN_MSG(stm); // need stream
         COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
@@ -7252,11 +7549,11 @@ rtError_t ApiImpl::DevVA2PA(uint64_t devAddr, uint64_t len, Stream *stm, bool is
     return NpuDriver::UpdateAddrVA2PA(devAddr, len);
 }
 
-rtError_t ApiImpl::StreamClear(Stream * const stm, rtClearStep_t step)
+rtError_t ApiImpl::StreamClear(Stream* const stm, rtClearStep_t step)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     if (!dev->IsStarsPlatform()) {
         RT_LOG(RT_LOG_ERROR, "Failed to clear stream because StreamClear is only supported on stars platform.");
         RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1005, "Clearing tasks in a stream");
@@ -7273,87 +7570,86 @@ rtError_t ApiImpl::StreamClear(Stream * const stm, rtClearStep_t step)
     return curCtx->StreamClear(stm, step);
 }
 
-rtError_t ApiImpl::StreamStop(Stream * const stm)
-{
-    return StreamClear(stm, RT_STREAM_STOP);
-}
+rtError_t ApiImpl::StreamStop(Stream* const stm) { return StreamClear(stm, RT_STREAM_STOP); }
 
-rtError_t ApiImpl::StreamAbort(Stream * const stm)
+rtError_t ApiImpl::StreamAbort(Stream* const stm)
 {
     RT_LOG(RT_LOG_INFO, "stream abort start");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
     return curCtx->StreamAbort(stm);
 }
 
-rtError_t ApiImpl::GetStackBuffer(const rtBinHandle binHandle, uint32_t deviceId, const uint32_t stackType, const uint32_t coreType, const uint32_t coreId,
-                                  const void **stack, uint32_t *stackSize)
+rtError_t ApiImpl::GetStackBuffer(
+    const rtBinHandle binHandle, uint32_t deviceId, const uint32_t stackType, const uint32_t coreType,
+    const uint32_t coreId, const void** stack, uint32_t* stackSize)
 {
     UNUSED(deviceId);
     RT_LOG(RT_LOG_INFO, "Get stack buffer, bin handle %p, coreType %u, coreId %u", binHandle, coreType, coreId);
-    Context *const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     if (stackType == RT_STACK_TYPE_SIMT) {
         RT_LOG(RT_LOG_WARNING, "stackType=%u is not supported.", stackType);
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(((stackType > RT_STACK_TYPE_SIMT)), RT_ERROR_INVALID_VALUE,
-        "Obtaining the stack buffer", stackType, "[0, " + std::to_string(RT_STACK_TYPE_SIMT) + "]");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        ((stackType > RT_STACK_TYPE_SIMT)), RT_ERROR_INVALID_VALUE, "Obtaining the stack buffer", stackType,
+        "[0, " + std::to_string(RT_STACK_TYPE_SIMT) + "]");
     return curCtx->GetStackBuffer(binHandle, coreType, coreId, stack, stackSize);
 }
 
 rtError_t ApiImpl::DebugSetDumpMode(const uint64_t mode)
 {
     RT_LOG(RT_LOG_INFO, "set debug mode %llu start", mode);
-    Context *const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     return curCtx->DebugSetDumpMode(mode);
 }
 
-rtError_t ApiImpl::DebugGetStalledCore(rtDbgCoreInfo_t *const coreInfo)
+rtError_t ApiImpl::DebugGetStalledCore(rtDbgCoreInfo_t* const coreInfo)
 {
-    Context *const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     return curCtx->DebugGetStalledCore(coreInfo);
 }
 
-rtError_t ApiImpl::DebugReadAICore(rtDebugMemoryParam_t *const param)
+rtError_t ApiImpl::DebugReadAICore(rtDebugMemoryParam_t* const param)
 {
-    Context *const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     return curCtx->DebugReadAICore(param);
 }
 
-rtError_t ApiImpl::GetExceptionRegInfo(const rtExceptionInfo_t * const exceptionInfo,
-    rtExceptionErrRegInfo_t **exceptionErrRegInfo, uint32_t *num)
+rtError_t ApiImpl::GetExceptionRegInfo(
+    const rtExceptionInfo_t* const exceptionInfo, rtExceptionErrRegInfo_t** exceptionErrRegInfo, uint32_t* num)
 {
-    Context *const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     return curCtx->GetExceptionRegInfo(exceptionInfo, exceptionErrRegInfo, num);
 }
 
-rtError_t ApiImpl::GetServerIDBySDID(uint32_t sdid, uint32_t *srvId)
+rtError_t ApiImpl::GetServerIDBySDID(uint32_t sdid, uint32_t* srvId)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(srvId, RT_ERROR_INVALID_VALUE, "Obtaining the server ID");
     uint32_t chipId = 0U;
     uint32_t dieId = 0U;
     uint32_t pyhId = 0U;
-    Context *const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device *device = curCtx->Device_();
+    Device* device = curCtx->Device_();
     NULL_PTR_RETURN_MSG(device, RT_ERROR_DEVICE_NULL);
-    Driver *driver = device->Driver_();
+    Driver* driver = device->Driver_();
     NULL_PTR_RETURN_MSG(driver, RT_ERROR_DRV_NULL);
     const auto ret = driver->ParseSDID(sdid, srvId, &chipId, &dieId, &pyhId);
     return ret;
 }
 
-rtError_t ApiImpl::ModelNameSet(Model * const mdl, const char_t * const name)
+rtError_t ApiImpl::ModelNameSet(Model* const mdl, const char_t* const name)
 {
     RT_LOG(RT_LOG_INFO, "model name set, mode_id=%u, name=%s", mdl->Id_(), name);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
     return curCtx->ModelNameSet(mdl, name);
@@ -7362,37 +7658,33 @@ rtError_t ApiImpl::ModelNameSet(Model * const mdl, const char_t * const name)
 rtError_t ApiImpl::SetDefaultDeviceId(const int32_t deviceId)
 {
     RT_LOG(RT_LOG_INFO, "set default drv devId=%d.", deviceId);
-    Runtime *rtInstance = Runtime::Instance();
+    Runtime* rtInstance = Runtime::Instance();
     NULL_PTR_RETURN_MSG(rtInstance, RT_ERROR_INSTANCE_NULL);
     rtInstance->SetDefaultDeviceId(deviceId);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::CtxGetCurrentDefaultStream(Stream ** const stm)
+rtError_t ApiImpl::CtxGetCurrentDefaultStream(Stream** const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     *stm = curCtx->DefaultStream_();
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetPrimaryCtxState(const int32_t devId, uint32_t *flags, int32_t *active)
+rtError_t ApiImpl::GetPrimaryCtxState(const int32_t devId, uint32_t* flags, int32_t* active)
 {
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     return rt->GetPrimaryCtxState(devId, flags, active);
 }
 
-rtError_t ApiImpl::RegStreamStateCallback(const char_t *regName, void *callback, void *args,
-    StreamStateCallback type)
+rtError_t ApiImpl::RegStreamStateCallback(const char_t* regName, void* callback, void* args, StreamStateCallback type)
 {
     RT_LOG(RT_LOG_INFO, "Reg stream state callback, regName=%s.", regName);
     return StreamStateCallbackManager::Instance().RegStreamStateCallback(regName, callback, args, type);
 }
 
-rtError_t ApiImpl::ResetDeviceForce(const int32_t devId)
-{
-    return DeviceReset(devId, true);
-}
+rtError_t ApiImpl::ResetDeviceForce(const int32_t devId) { return DeviceReset(devId, true); }
 
 rtError_t ApiImpl::DeviceResetForce(const int32_t devId)
 {
@@ -7406,7 +7698,7 @@ rtError_t ApiImpl::GetLastErr(rtLastErrLevel_t level)
     if (level == RT_THREAD_LEVEL) {
         ret = InnerThreadLocalContainer::GetGlobalErr();
     } else if (level == RT_CONTEXT_LEVEL) {
-        Context * const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, ACL_ERROR_RT_CONTEXT_NULL);
         ret = curCtx->GetContextLastErr();
     } else {
@@ -7422,7 +7714,7 @@ rtError_t ApiImpl::PeekLastErr(rtLastErrLevel_t level)
     if (level == RT_THREAD_LEVEL) {
         ret = InnerThreadLocalContainer::PeekGlobalErr();
     } else if (level == RT_CONTEXT_LEVEL) {
-        Context * const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, ACL_ERROR_RT_CONTEXT_NULL);
         ret = curCtx->PeekContextLastErr();
     } else {
@@ -7432,16 +7724,17 @@ rtError_t ApiImpl::PeekLastErr(rtLastErrLevel_t level)
     return ret;
 }
 
-rtError_t ApiImpl::GetDeviceStatus(const int32_t devId, rtDevStatus_t * const status)
+rtError_t ApiImpl::GetDeviceStatus(const int32_t devId, rtDevStatus_t* const status)
 {
     RT_LOG(RT_LOG_DEBUG, "Get device status, drv devId=%d.", devId);
     Driver* const npuDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     NULL_PTR_RETURN_MSG(npuDrv, RT_ERROR_DRV_NULL);
 
-    return npuDrv->GetDeviceStatus(static_cast<uint32_t>(devId), reinterpret_cast<drvStatus_t *>(status));
+    return npuDrv->GetDeviceStatus(static_cast<uint32_t>(devId), reinterpret_cast<drvStatus_t*>(status));
 }
 
-static rtError_t UpdatePlatformRes(fe::PlatFormInfos &platformInfos, const rtDevResLimitType_t type, const uint32_t value)
+static rtError_t UpdatePlatformRes(
+    fe::PlatFormInfos& platformInfos, const rtDevResLimitType_t type, const uint32_t value)
 {
     const std::string socInfoKey = "SoCInfo";
     std::map<std::string, std::string> res;
@@ -7469,24 +7762,21 @@ static rtError_t UpdatePlatformRes(fe::PlatFormInfos &platformInfos, const rtDev
 
 static rtError_t SetDeviceResLimitByFe(const uint32_t devId, const rtDevResLimitType_t type, const uint32_t value)
 {
-    Runtime *const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     const std::string socVersion = rt->GetSocVersion();
     uint32_t platformRet = fe::PlatformInfoManager::GeInstance().InitRuntimePlatformInfos(socVersion);
     if (platformRet != 0U) {
-        RT_LOG(RT_LOG_ERROR,
-            "InitRuntime PlatformInfos failed, drv devId=%u, socVersion=%s, platformRet=%u",
-            devId,
-            socVersion.c_str(),
-            platformRet);
+        RT_LOG(
+            RT_LOG_ERROR, "InitRuntime PlatformInfos failed, drv devId=%u, socVersion=%s, platformRet=%u", devId,
+            socVersion.c_str(), platformRet);
         return RT_ERROR_INVALID_VALUE;
     }
 
     fe::PlatFormInfos platformInfos;
     platformRet = fe::PlatformInfoManager::GeInstance().GetRuntimePlatformInfosByDevice(devId, platformInfos);
     if (platformRet != 0U) {
-        RT_LOG(RT_LOG_ERROR,
-            "get runtime platformInfos by device failed, drv devId=%u, platformRet=%u",
-            devId,
+        RT_LOG(
+            RT_LOG_ERROR, "get runtime platformInfos by device failed, drv devId=%u, platformRet=%u", devId,
             platformRet);
         return RT_ERROR_INVALID_VALUE;
     }
@@ -7508,15 +7798,19 @@ static rtError_t SetDeviceResLimitByFe(const uint32_t devId, const rtDevResLimit
 rtError_t ApiImpl::SetDeviceResLimit(const uint32_t devId, const rtDevResLimitType_t type, uint32_t value)
 {
     RT_LOG(RT_LOG_INFO, "drv devId=%u, type=%d, value=%u.", devId, type, value);
-    Runtime *const rt = Runtime::Instance();
-    Device *const dev = rt->GetDevice(devId, static_cast<uint32_t>(RT_TSC_ID));
+    Runtime* const rt = Runtime::Instance();
+    Device* const dev = rt->GetDevice(devId, static_cast<uint32_t>(RT_TSC_ID));
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     const uint32_t initValue = dev->GetResInitValue(type);
-    COND_PROC_RETURN_AND_MSG_OUTER(value > initValue, RT_ERROR_INVALID_VALUE, ErrorCode::EE1003,
-        RT_LOG(RT_LOG_ERROR, "The value exceeds the total number of cores."
-            " drv devId=%u, type=%d, value=%u, total number of cores=%u.", devId, type, value, initValue),
+    COND_PROC_RETURN_AND_MSG_OUTER(
+        value > initValue, RT_ERROR_INVALID_VALUE, ErrorCode::EE1003,
+        RT_LOG(
+            RT_LOG_ERROR,
+            "The value exceeds the total number of cores."
+            " drv devId=%u, type=%d, value=%u, total number of cores=%u.",
+            devId, type, value, initValue),
         __func__, value, "value", RtFmtMsg("must be less than or equal to %u", initValue));
-    
+
     const auto error = SetDeviceResLimitByFe(devId, type, value);
     COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
 
@@ -7527,8 +7821,8 @@ rtError_t ApiImpl::SetDeviceResLimit(const uint32_t devId, const rtDevResLimitTy
 rtError_t ApiImpl::ResetDeviceResLimit(const uint32_t devId)
 {
     RT_LOG(RT_LOG_INFO, "drv devId=%u.", devId);
-    Runtime *const rt = Runtime::Instance();
-    Device *const dev = rt->GetDevice(devId, static_cast<uint32_t>(RT_TSC_ID));
+    Runtime* const rt = Runtime::Instance();
+    Device* const dev = rt->GetDevice(devId, static_cast<uint32_t>(RT_TSC_ID));
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     dev->ResetResLimit();
 
@@ -7540,32 +7834,36 @@ rtError_t ApiImpl::ResetDeviceResLimit(const uint32_t devId)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetDeviceResLimit(const uint32_t devId, const rtDevResLimitType_t type, uint32_t *value)
+rtError_t ApiImpl::GetDeviceResLimit(const uint32_t devId, const rtDevResLimitType_t type, uint32_t* value)
 {
-    Runtime *const rt = Runtime::Instance();
-    Device *const dev = rt->GetDevice(devId, static_cast<uint32_t>(RT_TSC_ID));
+    Runtime* const rt = Runtime::Instance();
+    Device* const dev = rt->GetDevice(devId, static_cast<uint32_t>(RT_TSC_ID));
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     *value = dev->GetResValue(type);
     RT_LOG(RT_LOG_INFO, "type=%d, value=%u.", type, *value);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetDeviceUuid(const int32_t devId, rtUuid_t *uuid)
+rtError_t ApiImpl::GetDeviceUuid(const int32_t devId, rtUuid_t* uuid)
 {
     RT_LOG(RT_LOG_DEBUG, "Get device uuid, drv devId=%d.", devId);
     int32_t drvRetUuidSize = RT_NPU_UUID_LENGTH;
-    return NpuDriver::GetDeviceInfoByBuff(static_cast<uint32_t>(devId), MODULE_TYPE_SYSTEM, INFO_TYPE_UUID,
-        uuid->bytes, &drvRetUuidSize);
+    return NpuDriver::GetDeviceInfoByBuff(
+        static_cast<uint32_t>(devId), MODULE_TYPE_SYSTEM, INFO_TYPE_UUID, uuid->bytes, &drvRetUuidSize);
 }
 
-static rtError_t SetStreamResLimitByType(Stream *const stm, const rtDevResLimitType_t type, const uint32_t value)
+static rtError_t SetStreamResLimitByType(Stream* const stm, const rtDevResLimitType_t type, const uint32_t value)
 {
-    const Device *dev = stm->Device_();
+    const Device* dev = stm->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     const uint32_t initValue = dev->GetResInitValue(type);
-    COND_PROC_RETURN_AND_MSG_OUTER(value > initValue, RT_ERROR_INVALID_VALUE, ErrorCode::EE1003,
-        RT_LOG(RT_LOG_ERROR, "The value exceeds the total number of cores."
-            " drv devId=%u, type=%d, value=%u, total number of cores=%u.", dev->Id_(), type, value, initValue),
+    COND_PROC_RETURN_AND_MSG_OUTER(
+        value > initValue, RT_ERROR_INVALID_VALUE, ErrorCode::EE1003,
+        RT_LOG(
+            RT_LOG_ERROR,
+            "The value exceeds the total number of cores."
+            " drv devId=%u, type=%d, value=%u, total number of cores=%u.",
+            dev->Id_(), type, value, initValue),
         __func__, value, "value", RtFmtMsg("must be less than or equal to %u", initValue));
 
     // There is no restriction that it must be less than the SetDeviceResLimit setting
@@ -7574,13 +7872,13 @@ static rtError_t SetStreamResLimitByType(Stream *const stm, const rtDevResLimitT
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::SetStreamResLimit(Stream *const stm, const rtDevResLimitType_t type, const uint32_t value)
+rtError_t ApiImpl::SetStreamResLimit(Stream* const stm, const rtDevResLimitType_t type, const uint32_t value)
 {
     rtError_t ret = RT_ERROR_NONE;
     if (stm == nullptr) {
-        Context *const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-        Stream *const defaultStream = curCtx->DefaultStream_();
+        Stream* const defaultStream = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(defaultStream);
         ret = SetStreamResLimitByType(defaultStream, type, value);
     } else {
@@ -7589,12 +7887,12 @@ rtError_t ApiImpl::SetStreamResLimit(Stream *const stm, const rtDevResLimitType_
     return ret;
 }
 
-rtError_t ApiImpl::ResetStreamResLimit(Stream *const stm)
+rtError_t ApiImpl::ResetStreamResLimit(Stream* const stm)
 {
     if (stm == nullptr) {
-        Context *const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-        Stream *const defaultStream = curCtx->DefaultStream_();
+        Stream* const defaultStream = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(defaultStream);
         defaultStream->ResetResLimit();
         RT_LOG(RT_LOG_INFO, "default stream_id=%d.", defaultStream->Id_());
@@ -7605,13 +7903,13 @@ rtError_t ApiImpl::ResetStreamResLimit(Stream *const stm)
     return RT_ERROR_NONE;
 }
 
-static rtError_t GetStreamResLimitByType(const Stream *const stm, const rtDevResLimitType_t type, uint32_t *const value)
+static rtError_t GetStreamResLimitByType(const Stream* const stm, const rtDevResLimitType_t type, uint32_t* const value)
 {
     const bool resLimitFlag = stm->GetResLimitFlag(type);
     if (resLimitFlag) {
         *value = stm->GetResValue(type);
     } else {
-        const Device *dev = stm->Device_();
+        const Device* dev = stm->Device_();
         NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
         *value = dev->GetResValue(type);
     }
@@ -7619,13 +7917,13 @@ static rtError_t GetStreamResLimitByType(const Stream *const stm, const rtDevRes
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetStreamResLimit(const Stream *const stm, const rtDevResLimitType_t type, uint32_t *const value)
+rtError_t ApiImpl::GetStreamResLimit(const Stream* const stm, const rtDevResLimitType_t type, uint32_t* const value)
 {
     rtError_t ret = RT_ERROR_NONE;
     if (stm == nullptr) {
-        Context *const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-        Stream *const defaultStream = curCtx->DefaultStream_();
+        Stream* const defaultStream = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(defaultStream);
         ret = GetStreamResLimitByType(defaultStream, type, value);
     } else {
@@ -7634,11 +7932,11 @@ rtError_t ApiImpl::GetStreamResLimit(const Stream *const stm, const rtDevResLimi
     return ret;
 }
 
-rtError_t ApiImpl::UseStreamResInCurrentThread(const Stream *const stm)
+rtError_t ApiImpl::UseStreamResInCurrentThread(const Stream* const stm)
 {
-    const Stream *curStm = stm;
+    const Stream* curStm = stm;
     if (curStm == nullptr) {
-        Context *const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -7647,17 +7945,17 @@ rtError_t ApiImpl::UseStreamResInCurrentThread(const Stream *const stm)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::NotUseStreamResInCurrentThread(const Stream *const stm)
+rtError_t ApiImpl::NotUseStreamResInCurrentThread(const Stream* const stm)
 {
-    const Stream *curStm = stm;
+    const Stream* curStm = stm;
     if (curStm == nullptr) {
-        Context *const curCtx = CurrentContext();
+        Context* const curCtx = CurrentContext();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
 
-    const Stream *curResLimitStream = InnerThreadLocalContainer::GetCurrentResLimitStream();
+    const Stream* curResLimitStream = InnerThreadLocalContainer::GetCurrentResLimitStream();
     if (curResLimitStream == curStm) {
         InnerThreadLocalContainer::SetCurrentResLimitStream(nullptr);
     } else {
@@ -7666,7 +7964,7 @@ rtError_t ApiImpl::NotUseStreamResInCurrentThread(const Stream *const stm)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetResInCurrentThread(const rtDevResLimitType_t type, uint32_t *const value)
+rtError_t ApiImpl::GetResInCurrentThread(const rtDevResLimitType_t type, uint32_t* const value)
 {
     const auto curResLimitStream = InnerThreadLocalContainer::GetCurrentResLimitStream();
     if (curResLimitStream != nullptr && curResLimitStream->GetResLimitFlag(type)) {
@@ -7675,10 +7973,10 @@ rtError_t ApiImpl::GetResInCurrentThread(const rtDevResLimitType_t type, uint32_
     } else {
         Device* dev = InnerThreadLocalContainer::GetDevice();
         if (dev == nullptr) {
-            Context *const curCtx = CurrentContext();
+            Context* const curCtx = CurrentContext();
             CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
             dev = curCtx->Device_();
-	        NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
+            NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
         }
         *value = dev->GetResValue(type);
         RT_LOG(RT_LOG_INFO, "drv devId=%u, type=%d, value=%u.", dev->Id_(), type, *value);
@@ -7686,7 +7984,7 @@ rtError_t ApiImpl::GetResInCurrentThread(const rtDevResLimitType_t type, uint32_
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::HdcServerCreate(const int32_t devId, const rtHdcServiceType_t type, rtHdcServer_t * const server)
+rtError_t ApiImpl::HdcServerCreate(const int32_t devId, const rtHdcServiceType_t type, rtHdcServer_t* const server)
 {
     RT_LOG(RT_LOG_DEBUG, "HdcServerCreate, drv devId=%d, type = %d.", devId, type);
     return NpuDriver::HdcServerCreate(devId, type, server);
@@ -7698,8 +7996,8 @@ rtError_t ApiImpl::HdcServerDestroy(rtHdcServer_t const server)
     return NpuDriver::HdcServerDestroy(server);
 }
 
-rtError_t ApiImpl::HdcSessionConnect(const int32_t peerNode, const int32_t peerDevId, rtHdcClient_t const client,
-    rtHdcSession_t * const session)
+rtError_t ApiImpl::HdcSessionConnect(
+    const int32_t peerNode, const int32_t peerDevId, rtHdcClient_t const client, rtHdcSession_t* const session)
 {
     RT_LOG(RT_LOG_DEBUG, "HdcSessionConnect, peerNode=%d, peerDevId = %d.", peerNode, peerDevId);
     return NpuDriver::HdcSessionConnect(peerNode, peerDevId, client, session);
@@ -7711,51 +8009,55 @@ rtError_t ApiImpl::HdcSessionClose(rtHdcSession_t const session)
     return NpuDriver::HdcSessionClose(session);
 }
 
-rtError_t ApiImpl::GetHostCpuDevId(int32_t * const devId)
+rtError_t ApiImpl::GetHostCpuDevId(int32_t* const devId)
 {
     *devId = DEFAULT_HOSTCPU_USER_DEVICE_ID;
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetLogicDevIdByUserDevId(const int32_t userDevId, int32_t * const logicDevId)
+rtError_t ApiImpl::GetLogicDevIdByUserDevId(const int32_t userDevId, int32_t* const logicDevId)
 {
     int32_t realDeviceId = 0;
     const rtError_t error = Runtime::Instance()->ChgUserDevIdToDeviceId(
-        static_cast<uint32_t>(userDevId), reinterpret_cast<uint32_t *>(&realDeviceId));
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to convert the user device ID %d to driver device ID.", userDevId);
+        static_cast<uint32_t>(userDevId), reinterpret_cast<uint32_t*>(&realDeviceId));
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, "Failed to convert the user device ID %d to driver device ID.", userDevId);
     *logicDevId = realDeviceId;
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t * const userDevId)
+rtError_t ApiImpl::GetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t* const userDevId)
 {
     int32_t realDeviceId = 0;
     const rtError_t error = Runtime::Instance()->GetUserDevIdByDeviceId(
-        static_cast<uint32_t>(logicDevId), reinterpret_cast<uint32_t *>(&realDeviceId));
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Failed to convert the driver device ID %u to user device ID, retCode=%#x",
+        static_cast<uint32_t>(logicDevId), reinterpret_cast<uint32_t*>(&realDeviceId));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Failed to convert the driver device ID %u to user device ID, retCode=%#x",
         logicDevId, static_cast<uint32_t>(error));
     *userDevId = realDeviceId;
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::SetStreamCacheOpInfoSwitch(const Stream * const stm, uint32_t cacheOpInfoSwitch)
+rtError_t ApiImpl::SetStreamCacheOpInfoSwitch(const Stream* const stm, uint32_t cacheOpInfoSwitch)
 {
     // The ctx is not checked for performance.
     stm->SetStreamCacheOpInfoOriginSwitch(cacheOpInfoSwitch);
-    RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%u, cacheOpInfoSwitch=%u.", stm->Device_()->Id_(), stm->Id_(),
+    RT_LOG(
+        RT_LOG_DEBUG, "device_id=%u, stream_id=%u, cacheOpInfoSwitch=%u.", stm->Device_()->Id_(), stm->Id_(),
         cacheOpInfoSwitch);
 
     if (stm->IsCapturing() && stm->GetCaptureStream() != nullptr && stm->GetCaptureStream()->IsOrigCaptureStream()) {
-        CaptureModel *mdl = dynamic_cast<CaptureModel *>(stm->GetCaptureStream()->Model_());
-        RT_LOG(RT_LOG_INFO, "set cache op info switch status, model_id = %u, steam_id=%u, status=%u.",
-            mdl->Id_(), stm->Id_(), cacheOpInfoSwitch);
+        CaptureModel* mdl = dynamic_cast<CaptureModel*>(stm->GetCaptureStream()->Model_());
+        RT_LOG(
+            RT_LOG_INFO, "set cache op info switch status, model_id = %u, steam_id=%u, status=%u.", mdl->Id_(),
+            stm->Id_(), cacheOpInfoSwitch);
         mdl->SetModelCacheOpInfoSwitch(cacheOpInfoSwitch);
     }
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetStreamCacheOpInfoSwitch(const Stream * const stm, uint32_t * const cacheOpInfoSwitch)
+rtError_t ApiImpl::GetStreamCacheOpInfoSwitch(const Stream* const stm, uint32_t* const cacheOpInfoSwitch)
 {
     // The ctx is not checked for performance.
     // main stream is not closed & this stream is opened
@@ -7764,17 +8066,17 @@ rtError_t ApiImpl::GetStreamCacheOpInfoSwitch(const Stream * const stm, uint32_t
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ModelDestroyRegisterCallback(Model * const mdl, const rtCallback_t fn, void* ptr)
+rtError_t ApiImpl::ModelDestroyRegisterCallback(Model* const mdl, const rtCallback_t fn, void* ptr)
 {
     return mdl->ModelDestroyRegisterCallback(fn, ptr);
 }
 
-rtError_t ApiImpl::ModelDestroyUnregisterCallback(Model * const mdl, rtCallback_t const fn)
+rtError_t ApiImpl::ModelDestroyUnregisterCallback(Model* const mdl, rtCallback_t const fn)
 {
     return mdl->ModelDestroyUnregisterCallback(fn);
 }
 
-rtError_t ApiImpl::ParseMallocCfg(const rtMallocConfig_t * const cfg, rtConfigValue_t *cfgVal) const
+rtError_t ApiImpl::ParseMallocCfg(const rtMallocConfig_t* const cfg, rtConfigValue_t* cfgVal) const
 {
     // 如果有多个重复的属性取最后一个
     for (size_t i = 0U; i < cfg->numAttrs; ++i) {
@@ -7789,18 +8091,20 @@ rtError_t ApiImpl::ParseMallocCfg(const rtMallocConfig_t * const cfg, rtConfigVa
                 break;
             default:
                 RT_LOG(RT_LOG_ERROR, "invalid attribute %d", cfg->attrs[i].attr);
-                RT_LOG_OUTER_MSG_INVALID_PARAM(cfg->attrs[i].attr, "[" + std::to_string(RT_MEM_MALLOC_ATTR_RSV) 
-                    + ", " + std::to_string(RT_MEM_MALLOC_ATTR_DEVICE_ID) + "]");
+                RT_LOG_OUTER_MSG_INVALID_PARAM(
+                    cfg->attrs[i].attr, "[" + std::to_string(RT_MEM_MALLOC_ATTR_RSV) + ", " +
+                                            std::to_string(RT_MEM_MALLOC_ATTR_DEVICE_ID) + "]");
                 return RT_ERROR_INVALID_VALUE;
         }
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::DevMalloc(void ** const devPtr, const uint64_t size, rtMallocPolicy policy, rtMallocAdvise advise,
-                            const rtMallocConfig_t * const cfg)
+rtError_t ApiImpl::DevMalloc(
+    void** const devPtr, const uint64_t size, rtMallocPolicy policy, rtMallocAdvise advise,
+    const rtMallocConfig_t* const cfg)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     rtMemType_t type = RT_MEMORY_DEFAULT;
     rtConfigValue_t cfgVal;
@@ -7814,7 +8118,8 @@ rtError_t ApiImpl::DevMalloc(void ** const devPtr, const uint64_t size, rtMalloc
         // default
     }
 
-    if (static_cast<uint32_t>(static_cast<uint32_t>(policy) & static_cast<uint32_t>(RT_MEM_ACCESS_USER_SPACE_READONLY)) != 0U) {
+    if (static_cast<uint32_t>(
+            static_cast<uint32_t>(policy) & static_cast<uint32_t>(RT_MEM_ACCESS_USER_SPACE_READONLY)) != 0U) {
         type |= RT_MEMORY_ATTRIBUTE_READONLY; // use for dvpp,  ddr | policy | readonly
     }
     policy = static_cast<rtMallocPolicy>(static_cast<uint32_t>(policy) & MEM_POLICY_MASK);
@@ -7842,14 +8147,16 @@ rtError_t ApiImpl::DevMalloc(void ** const devPtr, const uint64_t size, rtMalloc
         RT_LOG(RT_LOG_INFO, "cfg is nullptr use default cfg");
     } else {
         error = ParseMallocCfg(cfg, &cfgVal);
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE,
-            "Parse rtMallocConfig failed, error=%#x.", static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE, "Parse rtMallocConfig failed, error=%#x.",
+            static_cast<uint32_t>(error));
     }
-    Runtime *rtInstance = Runtime::Instance();
+    Runtime* rtInstance = Runtime::Instance();
     uint32_t realDeviceId = cfgVal.deviceId;
     if (cfgVal.deviceId != curCtx->Device_()->Id_()) {
         error = rtInstance->ChgUserDevIdToDeviceId(cfgVal.deviceId, &realDeviceId);
-        COND_RETURN_ERROR(error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE,
+        COND_RETURN_ERROR(
+            error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE,
             "Failed to convert the user device ID %u to driver device ID.", cfgVal.deviceId);
         if (realDeviceId != curCtx->Device_()->Id_()) {
             RT_LOG(RT_LOG_ERROR, "invalid drv devId=%u, should be %u", realDeviceId, curCtx->Device_()->Id_());
@@ -7861,19 +8168,19 @@ rtError_t ApiImpl::DevMalloc(void ** const devPtr, const uint64_t size, rtMalloc
     RT_LOG(RT_LOG_INFO, "size=%" PRIu64 ", advise=%u,type=%#x,moduleId=%hu.", size, advise, type, cfgVal.moduleId);
     const uint64_t tmpSize = (((size + 0x1FU) >> 5U) << 5U); // 32 byte align
     if (advise == RT_MEM_ADVISE_TS) {
-        type |= RT_MEMORY_TS; // 申请TS内存 4G内;
+        type |= RT_MEMORY_TS;                                // 申请TS内存 4G内;
     } else if (advise == RT_MEM_ADVISE_DVPP) {
-        return curCtx->Device_()->Driver_()
-            ->DevDvppMemAlloc(devPtr, tmpSize, realDeviceId, type, cfgVal.moduleId);
+        return curCtx->Device_()->Driver_()->DevDvppMemAlloc(devPtr, tmpSize, realDeviceId, type, cfgVal.moduleId);
     } else {
         // no operation
     }
-    RT_LOG(RT_LOG_INFO,"type=%#x.", type);
+    RT_LOG(RT_LOG_INFO, "type=%#x.", type);
     return (curCtx->Device_()->Driver_())
         ->DevMemAlloc(devPtr, tmpSize, type, realDeviceId, cfgVal.moduleId, true, false, false, true);
 }
 
-rtError_t ApiImpl::MemReserveAddress(void** virPtr, size_t size, rtMallocPolicy policy, void *expectAddr, rtMallocConfig_t *cfg)
+rtError_t ApiImpl::MemReserveAddress(
+    void** virPtr, size_t size, rtMallocPolicy policy, void* expectAddr, rtMallocConfig_t* cfg)
 {
     UNUSED(cfg);
     rtError_t error;
@@ -7895,17 +8202,17 @@ rtError_t ApiImpl::MemReserveAddress(void** virPtr, size_t size, rtMallocPolicy 
         return error;
     }
 
-    RT_LOG(RT_LOG_INFO, "device malloc Succ, size=%" PRIu64 ", start ptr=0x%llx, end ptr=0x%llx",
-        size, reinterpret_cast<uint64_t *>(*virPtr),
-        reinterpret_cast<uint64_t *>(reinterpret_cast<uint8_t *>(*virPtr) + size));
+    RT_LOG(
+        RT_LOG_INFO, "device malloc Succ, size=%" PRIu64 ", start ptr=0x%llx, end ptr=0x%llx", size,
+        reinterpret_cast<uint64_t*>(*virPtr), reinterpret_cast<uint64_t*>(reinterpret_cast<uint8_t*>(*virPtr) + size));
     return error;
 }
 
-rtError_t ApiImpl::MemMallocPhysical(rtMemHandle* handle, size_t size, rtMallocPolicy policy, rtMallocConfig_t *cfg)
+rtError_t ApiImpl::MemMallocPhysical(rtMemHandle* handle, size_t size, rtMallocPolicy policy, rtMallocConfig_t* cfg)
 {
     /* 输出参数handle在上下文中作为一个整体使用, 内部的devid不用进行转换 */
     RT_LOG(RT_LOG_INFO, "Start to malloc physical mem.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
     rtDrvMemProp_t prop = {};
@@ -7916,10 +8223,13 @@ rtError_t ApiImpl::MemMallocPhysical(rtMemHandle* handle, size_t size, rtMallocP
     uint32_t pgType = 0UL;
     constexpr uint64_t flags = 0ULL; // drv flag, must be zero.
 
-    if (static_cast<uint64_t>(policy) == static_cast<uint64_t>(RT_MEM_MALLOC_HUGE_ONLY | RT_MEM_TYPE_HIGH_BAND_WIDTH)) { // ACL_HBM_MEM_HUGE
+    if (static_cast<uint64_t>(policy) ==
+        static_cast<uint64_t>(RT_MEM_MALLOC_HUGE_ONLY | RT_MEM_TYPE_HIGH_BAND_WIDTH)) { // ACL_HBM_MEM_HUGE
         type = 0UL;
         pgType = 1UL;
-    } else if (static_cast<uint64_t>(policy) == static_cast<uint64_t>(RT_MEM_MALLOC_NORMAL_ONLY | RT_MEM_TYPE_HIGH_BAND_WIDTH)) { // ACL_HBM_MEM_NORMAL
+    } else if (
+        static_cast<uint64_t>(policy) ==
+        static_cast<uint64_t>(RT_MEM_MALLOC_NORMAL_ONLY | RT_MEM_TYPE_HIGH_BAND_WIDTH)) { // ACL_HBM_MEM_NORMAL
         type = 0UL;
         pgType = 0UL;
     } else {
@@ -7938,50 +8248,53 @@ rtError_t ApiImpl::MemMallocPhysical(rtMemHandle* handle, size_t size, rtMallocP
     }
 
     const rtError_t error = ParseMallocCfg(cfg, &cfgVal);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE,
-            "Parse rtMallocConfig failed, error=%#x.", static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE, "Parse rtMallocConfig failed, error=%#x.",
+        static_cast<uint32_t>(error));
 
     prop.module_id = cfgVal.moduleId > DEFAULT_MODULEID ? static_cast<uint16_t>(APP) : cfgVal.moduleId;
     prop.devid = cfgVal.deviceId;
-    RT_LOG(RT_LOG_INFO, "size=%" PRIu64 ", type=%#x, pgType=%#x, moduleId=%hu, deviceId=%d.", size, type, prop.pg_type, prop.module_id, prop.devid);
+    RT_LOG(
+        RT_LOG_INFO, "size=%" PRIu64 ", type=%#x, pgType=%#x, moduleId=%hu, deviceId=%d.", size, type, prop.pg_type,
+        prop.module_id, prop.devid);
     return NpuDriver::MallocPhysical(reinterpret_cast<rtDrvMemHandle*>(handle), size, &prop, flags);
 }
 
-rtError_t ApiImpl::GetThreadLastTaskId(uint32_t * const taskId)
+rtError_t ApiImpl::GetThreadLastTaskId(uint32_t* const taskId)
 {
     const uint32_t lastTaskId = InnerThreadLocalContainer::GetLastTaskId();
     *taskId = lastTaskId;
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::LaunchDvppTask(const void * const sqe, const uint32_t sqeLen, Stream * const stm, rtDvppCfg_t *cfg)
+rtError_t ApiImpl::LaunchDvppTask(const void* const sqe, const uint32_t sqeLen, Stream* const stm, rtDvppCfg_t* cfg)
 {
     RT_LOG(RT_LOG_INFO, "Start to launch dvpp task.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(curStm);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
-    bool isCmdListNotFree = false; 
-    rtError_t error = GetIsCmdListNotFreeValByDvppCfg(cfg, isCmdListNotFree); 
-    ERROR_RETURN_MSG_INNER(error, "Failed to get dvpp cmdlist not free flag, streamId=%u, retCode=%#x", 
-        curStm->Id_(), error); 
-    const uint32_t flag = isCmdListNotFree ? RT_KERNEL_CMDLIST_NOT_FREE : RT_KERNEL_DEFAULT; 
-    error = StarsLaunch(sqe, sqeLen, curStm, flag); 
-    ERROR_RETURN_MSG_INNER(error, "Failed to launch dvpp task, streamId=%u, retCode=%#x", curStm->Id_(), error); 
+    bool isCmdListNotFree = false;
+    rtError_t error = GetIsCmdListNotFreeValByDvppCfg(cfg, isCmdListNotFree);
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to get dvpp cmdlist not free flag, streamId=%u, retCode=%#x", curStm->Id_(), error);
+    const uint32_t flag = isCmdListNotFree ? RT_KERNEL_CMDLIST_NOT_FREE : RT_KERNEL_DEFAULT;
+    error = StarsLaunch(sqe, sqeLen, curStm, flag);
+    ERROR_RETURN_MSG_INNER(error, "Failed to launch dvpp task, streamId=%u, retCode=%#x", curStm->Id_(), error);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::LaunchRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo, Stream * const stm, void *reserve)
+rtError_t ApiImpl::LaunchRandomNumTask(const rtRandomNumTaskInfo_t* taskInfo, Stream* const stm, void* reserve)
 {
     RT_LOG(RT_LOG_INFO, "Start to launch random num task.");
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(curStm);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
@@ -7991,7 +8304,7 @@ rtError_t ApiImpl::LaunchRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo, St
     return error;
 }
 
-uint16_t ApiImpl::GetToBeCalSystemParaNum(const Kernel * const kernel) const
+uint16_t ApiImpl::GetToBeCalSystemParaNum(const Kernel* const kernel) const
 {
     // 获取系统参数大小，如果有overflow需要特殊处理
     const uint16_t sysParaNum = kernel->GetSystemParaNum();
@@ -8002,21 +8315,25 @@ uint16_t ApiImpl::GetToBeCalSystemParaNum(const Kernel * const kernel) const
     // 需要根据Kernel句柄获取到系统参数大小，如果有overflow需要特殊处理，不算在开头系统参数内
     // 如果有系统参数，需要计算是否有overflow
     uint16_t toBeCalSysParaNum = kernel->IsSupportOverFlow() ? (sysParaNum - 1U) : sysParaNum;
-    Runtime *rtInstance = Runtime::Instance();
+    Runtime* rtInstance = Runtime::Instance();
     const rtChipType_t chipType = rtInstance->GetChipType();
-    toBeCalSysParaNum = (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_KERNEL_INTER_CORE_SYNC_ADDR)) &&
-        (kernel->IsNeedSetFftsAddrInArg() && (toBeCalSysParaNum > 1U)) ? toBeCalSysParaNum - 1U: toBeCalSysParaNum; // 1代表系统参数个数
+    toBeCalSysParaNum =
+        (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_KERNEL_INTER_CORE_SYNC_ADDR)) &&
+                (kernel->IsNeedSetFftsAddrInArg() && (toBeCalSysParaNum > 1U)) ?
+            toBeCalSysParaNum - 1U :
+            toBeCalSysParaNum; // 1代表系统参数个数
 
-    RT_LOG(RT_LOG_DEBUG, "sysParaNum=%u,toBeCalSysParaNum=%u,isSupportOverFlow=%u,IsNeedSetFftsAddrInArg=%u,chipType=%u.",
+    RT_LOG(
+        RT_LOG_DEBUG, "sysParaNum=%u,toBeCalSysParaNum=%u,isSupportOverFlow=%u,IsNeedSetFftsAddrInArg=%u,chipType=%u.",
         sysParaNum, toBeCalSysParaNum, static_cast<uint8_t>(kernel->IsSupportOverFlow()),
         static_cast<uint8_t>(kernel->IsNeedSetFftsAddrInArg()), chipType);
 
     return toBeCalSysParaNum;
 }
 
-rtError_t ApiImpl::ProcessOverFlowArgs(RtArgsHandle *argsHandle)
+rtError_t ApiImpl::ProcessOverFlowArgs(RtArgsHandle* argsHandle)
 {
-    Kernel *kernel = reinterpret_cast<Kernel *>(argsHandle->funcHandle);
+    Kernel* kernel = reinterpret_cast<Kernel*>(argsHandle->funcHandle);
     // cpu kernel无需处理直接返回
     COND_RETURN_WITH_NOLOG(kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU, RT_ERROR_NONE);
     // 需要判断是否做overflow隐藏参数处理
@@ -8025,23 +8342,25 @@ rtError_t ApiImpl::ProcessOverFlowArgs(RtArgsHandle *argsHandle)
     COND_RETURN_WITH_NOLOG(!kernel->IsSupportOverFlow(), RT_ERROR_NONE);
 
     // CPU Kernel是紧密排布， 所以做1字节对齐，非CPU Kernel（AIC/AIC）仍然是8字节对齐
-    const size_t alignSize = (kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU)
-        ? CPU_KERNEL_ARGS_ALIGN_SIZE : NON_CPU_KERNEL_ARGS_ALIGN_SIZE;
+    const size_t alignSize = (kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU) ?
+                                 CPU_KERNEL_ARGS_ALIGN_SIZE :
+                                 NON_CPU_KERNEL_ARGS_ALIGN_SIZE;
     const size_t padding =
         ((argsHandle->argsSize % alignSize) == 0U) ? 0U : (alignSize - (argsHandle->argsSize % alignSize));
     const size_t realParaOffset = argsHandle->argsSize + padding;
     const size_t needOccupyOffset = realParaOffset + sizeof(uint64_t); // overflowAddr占8哥字节
 
     // 内存占用不能超过最大内存偏移
-    COND_RETURN_ERROR_MSG_INNER((needOccupyOffset > argsHandle->bufferSize),
-        RT_ERROR_INVALID_VALUE, "process overflow args failed, para size overflow, needOccupyOffset=%zu,total=%zu",
-        needOccupyOffset, argsHandle->bufferSize);
+    COND_RETURN_ERROR_MSG_INNER(
+        (needOccupyOffset > argsHandle->bufferSize), RT_ERROR_INVALID_VALUE,
+        "process overflow args failed, para size overflow, needOccupyOffset=%zu,total=%zu", needOccupyOffset,
+        argsHandle->bufferSize);
 
-    Context *const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const uint64_t overflowAddr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(curCtx->CtxGetOverflowAddr()));
-    uint64_t *overflowParaAddr =
-        reinterpret_cast<uint64_t *>(reinterpret_cast<uint8_t *>(argsHandle->buffer) + realParaOffset);
+    uint64_t* overflowParaAddr =
+        reinterpret_cast<uint64_t*>(reinterpret_cast<uint8_t*>(argsHandle->buffer) + realParaOffset);
     *overflowParaAddr = overflowAddr;
     argsHandle->argsSize = needOccupyOffset;
     argsHandle->isProcessedOverflow = true;
@@ -8049,31 +8368,33 @@ rtError_t ApiImpl::ProcessOverFlowArgs(RtArgsHandle *argsHandle)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::KernelArgsGetHandleMemSize(Kernel * const funcHandle, size_t *memSize)
+rtError_t ApiImpl::KernelArgsGetHandleMemSize(Kernel* const funcHandle, size_t* memSize)
 {
-    const uint32_t maxUserParamNum = (funcHandle->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU)
-        ? MAX_PARAM_CNT : static_cast<uint32_t>(funcHandle->GetUserParaNum());
+    const uint32_t maxUserParamNum = (funcHandle->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU) ?
+                                         MAX_PARAM_CNT :
+                                         static_cast<uint32_t>(funcHandle->GetUserParaNum());
 
     // 需要依赖kernel句柄信息获取用户参数和系统参数
     *memSize = sizeof(RtArgsHandle) + (maxUserParamNum * sizeof(ParaDetail));
 
-    RT_LOG(RT_LOG_DEBUG, "memSize=%zu,maxUserParamNum=%u,RtArgsHandle=%zu,rtParaDetail=%zu",
-        *memSize, maxUserParamNum, sizeof(RtArgsHandle), sizeof(ParaDetail));
+    RT_LOG(
+        RT_LOG_DEBUG, "memSize=%zu,maxUserParamNum=%u,RtArgsHandle=%zu,rtParaDetail=%zu", *memSize, maxUserParamNum,
+        sizeof(RtArgsHandle), sizeof(ParaDetail));
 
-    return  RT_ERROR_NONE;
+    return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::KernelArgsFinalize(RtArgsHandle *argsHandle)
+rtError_t ApiImpl::KernelArgsFinalize(RtArgsHandle* argsHandle)
 {
     // 需要判断是否做overflow隐藏参数处理, 如果在GetPlaceHolderBuffer处理过，不再处理
     rtError_t error = ProcessOverFlowArgs(argsHandle);
     ERROR_RETURN(error, "process over flow args failed,retCode=%#x.", error);
 
-    Kernel *kernel = reinterpret_cast<Kernel *>(argsHandle->funcHandle);
+    Kernel* kernel = reinterpret_cast<Kernel*>(argsHandle->funcHandle);
     const KernelRegisterType regType = kernel->GetKernelRegisterType();
-    Runtime *rtInstance = Runtime::Instance();
+    Runtime* rtInstance = Runtime::Instance();
     NULL_PTR_RETURN_MSG(rtInstance, RT_ERROR_INSTANCE_NULL);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     // ffts plus inter core sync只支持CHIP_910_B_93和非CPU算子
     if ((regType == RT_KERNEL_REG_TYPE_CPU) ||
@@ -8089,21 +8410,22 @@ rtError_t ApiImpl::KernelArgsFinalize(RtArgsHandle *argsHandle)
     uint32_t len = 0U;
     error = GetC2cCtrlAddr(&interCoreAddr, &len);
     ERROR_RETURN(error, "get inter core addr failed, retCode=%#x", static_cast<uint32_t>(error));
-    uint64_t *interCoreSyncAddr = reinterpret_cast<uint64_t *>(argsHandle->buffer);
+    uint64_t* interCoreSyncAddr = reinterpret_cast<uint64_t*>(argsHandle->buffer);
     *interCoreSyncAddr = interCoreAddr;
     argsHandle->isFinalized = 1U;
     argsHandle->isParamUpdating = 0U;
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::KernelArgsInitByUserMem(Kernel * const funcHandle, RtArgsHandle *argsHandle, void *userHostMem,
-        size_t actualArgsSize)
+rtError_t ApiImpl::KernelArgsInitByUserMem(
+    Kernel* const funcHandle, RtArgsHandle* argsHandle, void* userHostMem, size_t actualArgsSize)
 {
-    const uint32_t maxUserParamNum = (funcHandle->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU)
-        ? MAX_PARAM_CNT : static_cast<uint32_t>(funcHandle->GetUserParaNum());
-    new (argsHandle) RtArgsHandle {};
+    const uint32_t maxUserParamNum = (funcHandle->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU) ?
+                                         MAX_PARAM_CNT :
+                                         static_cast<uint32_t>(funcHandle->GetUserParaNum());
+    new (argsHandle) RtArgsHandle{};
     for (uint32_t i = 0U; i < maxUserParamNum; ++i) {
-        new (&(argsHandle->para[i])) ParaDetail {};
+        new (&(argsHandle->para[i])) ParaDetail{};
     }
     ReinitKernelArgsEmbeddedHandle(argsHandle, maxUserParamNum);
     argsHandle->buffer = userHostMem;
@@ -8128,20 +8450,22 @@ rtError_t ApiImpl::KernelArgsInitByUserMem(Kernel * const funcHandle, RtArgsHand
         argsHandle->maxUserParamNum = MAX_PARAM_CNT;
     }
 
-    return  RT_ERROR_NONE;
+    return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::KernelArgsGetMemSize(Kernel * const funcHandle, size_t userArgsSize, size_t *actualArgsSize)
+rtError_t ApiImpl::KernelArgsGetMemSize(Kernel* const funcHandle, size_t userArgsSize, size_t* actualArgsSize)
 {
     // CPU Kernel是紧密排布， 所以做1字节对齐，非CPU Kernel（AIC/AIC）仍然是8字节对齐
     if (funcHandle->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_NON_CPU) {
         const uint16_t userParaNum = funcHandle->GetUserParaNum();
         // 因有padding要预留，按照最大8字节
         *actualArgsSize = userArgsSize + (MAX_SYSTEM_PARAM_CNT * SINGLE_NON_CPU_SYS_PARAM_SIZE) +
-            (userParaNum * NON_CPU_KERNEL_ARGS_ALIGN_SIZE);
+                          (userParaNum * NON_CPU_KERNEL_ARGS_ALIGN_SIZE);
 
-        RT_LOG(RT_LOG_DEBUG, "actualArgsSize=%zu,userArgsSize=%zu,userParaNum=%u", *actualArgsSize, userArgsSize, userParaNum);
-            return RT_ERROR_NONE;
+        RT_LOG(
+            RT_LOG_DEBUG, "actualArgsSize=%zu,userArgsSize=%zu,userParaNum=%u", *actualArgsSize, userArgsSize,
+            userParaNum);
+        return RT_ERROR_NONE;
     }
 
     *actualArgsSize = userArgsSize; // CPU Kernel：soName和KernelName不需要排入Args，runtime已优化
@@ -8150,12 +8474,12 @@ rtError_t ApiImpl::KernelArgsGetMemSize(Kernel * const funcHandle, size_t userAr
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::KernelArgsInit(Kernel * const funcHandle, RtArgsHandle **argsHandle)
+rtError_t ApiImpl::KernelArgsInit(Kernel* const funcHandle, RtArgsHandle** argsHandle)
 {
     static thread_local ArgsHandleAllocator threadArgsHandle;
     NULL_PTR_RETURN_MSG(threadArgsHandle.localArgsHandle_, RT_ERROR_MEMORY_ALLOCATION);
 
-    RtArgsHandle *localArgsHandle = threadArgsHandle.localArgsHandle_;
+    RtArgsHandle* localArgsHandle = threadArgsHandle.localArgsHandle_;
     ReinitKernelArgsEmbeddedHandle(localArgsHandle, MAX_PARAM_CNT);
     localArgsHandle->argsSize = 0U;
     localArgsHandle->realUserParamNum = 0U;
@@ -8169,7 +8493,8 @@ rtError_t ApiImpl::KernelArgsInit(Kernel * const funcHandle, RtArgsHandle **args
     localArgsHandle->maxUserParamNum = MAX_PARAM_CNT;
     localArgsHandle->isFinalized = 0U;
     localArgsHandle->isParamUpdating = 0U;
-    (void)memset_s(&localArgsHandle->cpuKernelSysArgsInfo, sizeof(CpuKernelSysArgsInfo), 0, sizeof(CpuKernelSysArgsInfo));
+    (void)memset_s(
+        &localArgsHandle->cpuKernelSysArgsInfo, sizeof(CpuKernelSysArgsInfo), 0, sizeof(CpuKernelSysArgsInfo));
 
     if (funcHandle->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_NON_CPU) {
         RT_LOG(RT_LOG_DEBUG, "non cpu kernel branch");
@@ -8183,38 +8508,44 @@ rtError_t ApiImpl::KernelArgsInit(Kernel * const funcHandle, RtArgsHandle **args
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::KernelArgsAppendPlaceHolder(RtArgsHandle *argsHandle, ParaDetail **paraHandle)
+rtError_t ApiImpl::KernelArgsAppendPlaceHolder(RtArgsHandle* argsHandle, ParaDetail** paraHandle)
 {
     RT_LOG(RT_LOG_DEBUG, "enter append place holder");
     // 开始排布数据区之后不允许再排布参数区
-    COND_RETURN_AND_MSG_OUTER(argsHandle->isGotPhBuff, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016, "Adding placeholder parameters to the kernel parameter handle", 
+    COND_RETURN_AND_MSG_OUTER(
+        argsHandle->isGotPhBuff, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016,
+        "Adding placeholder parameters to the kernel parameter handle",
         "Appending placeholder or common parameter after getting placeholder buffer is not supported");
 
     // 开始排布数据区之后不允许再排布参数区
-    COND_RETURN_AND_MSG_OUTER(argsHandle->isFinalized == 1U, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016, "Adding placeholder parameters to the kernel parameter handle", 
+    COND_RETURN_AND_MSG_OUTER(
+        argsHandle->isFinalized == 1U, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016,
+        "Adding placeholder parameters to the kernel parameter handle",
         "Appending and getting placeholder buffer after finalization is not supported");
 
     // 用户参数数量不能超过最大参数数量
-    COND_RETURN_ERROR_MSG_INNER(((argsHandle->realUserParamNum + 1U) > argsHandle->maxUserParamNum),
-        RT_ERROR_INVALID_VALUE,
+    COND_RETURN_ERROR_MSG_INNER(
+        ((argsHandle->realUserParamNum + 1U) > argsHandle->maxUserParamNum), RT_ERROR_INVALID_VALUE,
         "para num exceed max num,current real user para num is %u,max user para num is %u",
         argsHandle->realUserParamNum, argsHandle->maxUserParamNum);
 
     const uint32_t idx = argsHandle->realUserParamNum;
     argsHandle->para[idx].type = 1U; // 0 is common param, 1 is place holder param
 
-    const Kernel * const kernel = RtPtrToPtr<Kernel *>(argsHandle->funcHandle);
+    const Kernel* const kernel = RtPtrToPtr<Kernel*>(argsHandle->funcHandle);
     // CPU Kernel是紧密排布， 所以做1字节对齐，非CPU Kernel（AIC/AIC）仍然是8字节对齐
-    const size_t alignSize = (kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU)
-        ? CPU_KERNEL_ARGS_ALIGN_SIZE : NON_CPU_KERNEL_ARGS_ALIGN_SIZE;
+    const size_t alignSize = (kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU) ?
+                                 CPU_KERNEL_ARGS_ALIGN_SIZE :
+                                 NON_CPU_KERNEL_ARGS_ALIGN_SIZE;
     const size_t padding =
         ((argsHandle->argsSize % alignSize) == 0U) ? 0U : (alignSize - (argsHandle->argsSize % alignSize));
     const size_t realParaOffset = argsHandle->argsSize + padding;
     constexpr size_t phParamSize = sizeof(uint64_t); // placeholder内部放的是指针为8字节
     const size_t needOccupyOffset = realParaOffset + phParamSize;
-    COND_RETURN_ERROR_MSG_INNER((needOccupyOffset > argsHandle->bufferSize),
-        RT_ERROR_INVALID_VALUE, "args append failed,para size overflow,needOccupyOffset=%zu,total=%zu",
-        needOccupyOffset, argsHandle->bufferSize);
+    COND_RETURN_ERROR_MSG_INNER(
+        (needOccupyOffset > argsHandle->bufferSize), RT_ERROR_INVALID_VALUE,
+        "args append failed,para size overflow,needOccupyOffset=%zu,total=%zu", needOccupyOffset,
+        argsHandle->bufferSize);
 
     argsHandle->para[idx].paraOffset = realParaOffset;
     argsHandle->para[idx].paraSize = static_cast<uint32_t>(sizeof(uint64_t));
@@ -8229,89 +8560,101 @@ rtError_t ApiImpl::KernelArgsAppendPlaceHolder(RtArgsHandle *argsHandle, ParaDet
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::KernelArgsGetPlaceHolderBuffer(RtArgsHandle *argsHandle, ParaDetail *paraHandle, size_t dataSize, void **bufferAddr)
+rtError_t ApiImpl::KernelArgsGetPlaceHolderBuffer(
+    RtArgsHandle* argsHandle, ParaDetail* paraHandle, size_t dataSize, void** bufferAddr)
 {
     RT_LOG(RT_LOG_DEBUG, "get placeholder start, dataSize=%zu", dataSize);
     // 对非place holder的参数如果获取Buffer做拦截
-    COND_RETURN_ERROR_MSG_INNER(paraHandle->type == 0U,
-        RT_ERROR_INVALID_VALUE, "param type=0 does not support getting the placeholder buffer");
+    COND_RETURN_ERROR_MSG_INNER(
+        paraHandle->type == 0U, RT_ERROR_INVALID_VALUE, "param type=0 does not support getting the placeholder buffer");
 
     // 开始排布数据区之后不允许再排布参数区
-    COND_RETURN_AND_MSG_OUTER(argsHandle->isFinalized == 1U, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016, "Obtaining the memory address pointed to by the paramHandle placeholder", 
+    COND_RETURN_AND_MSG_OUTER(
+        argsHandle->isFinalized == 1U, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016,
+        "Obtaining the memory address pointed to by the paramHandle placeholder",
         "Appending and getting placeholder buffer after finalization is not supported");
 
     // 需要判断是否做overflow隐藏参数处理
     const rtError_t error = ProcessOverFlowArgs(argsHandle);
     ERROR_RETURN(error, "process over flow args failed,retCode=%#x.", error);
 
-    const Kernel * const kernel = RtPtrToPtr<Kernel *>(argsHandle->funcHandle);
+    const Kernel* const kernel = RtPtrToPtr<Kernel*>(argsHandle->funcHandle);
     // CPU Kernel是紧密排布， 所以做1字节对齐，非CPU Kernel（AIC/AIC）仍然是8字节对齐
     const size_t alignSize = (kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU) ?
-        CPU_KERNEL_ARGS_ALIGN_SIZE : NON_CPU_KERNEL_ARGS_ALIGN_SIZE;
+                                 CPU_KERNEL_ARGS_ALIGN_SIZE :
+                                 NON_CPU_KERNEL_ARGS_ALIGN_SIZE;
     const size_t argsSize = argsHandle->argsSize;
     const size_t padding = ((argsSize % alignSize) == 0U) ? 0U : (alignSize - (argsSize % alignSize));
     const size_t realParaOffset = argsSize + padding;
 
     // 内存占用不能超过最大内存偏移
     const size_t needOccupyOffset = realParaOffset + dataSize;
-    COND_RETURN_ERROR_MSG_INNER((needOccupyOffset > argsHandle->bufferSize),
-        RT_ERROR_INVALID_VALUE, "get placeholder buffer failed, size overflow, needOccupyOffset=%zu, total=%zu",
-        needOccupyOffset, argsHandle->bufferSize);
+    COND_RETURN_ERROR_MSG_INNER(
+        (needOccupyOffset > argsHandle->bufferSize), RT_ERROR_INVALID_VALUE,
+        "get placeholder buffer failed, size overflow, needOccupyOffset=%zu, total=%zu", needOccupyOffset,
+        argsHandle->bufferSize);
     argsHandle->isGotPhBuff = true;
     paraHandle->dataOffset = realParaOffset;
-    *bufferAddr = RtPtrToPtr<void *>(RtPtrToPtr<uint8_t *>(argsHandle->buffer) + paraHandle->dataOffset);
+    *bufferAddr = RtPtrToPtr<void*>(RtPtrToPtr<uint8_t*>(argsHandle->buffer) + paraHandle->dataOffset);
     argsHandle->argsSize = needOccupyOffset;
 
-    RT_LOG(RT_LOG_DEBUG, "get placeholder end, dataSize=%zu, dataOffset=%zu, needOccupyOffset=%zu",
-        dataSize, realParaOffset, needOccupyOffset);
+    RT_LOG(
+        RT_LOG_DEBUG, "get placeholder end, dataSize=%zu, dataOffset=%zu, needOccupyOffset=%zu", dataSize,
+        realParaOffset, needOccupyOffset);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::KernelArgsAppend(RtArgsHandle *argsHandle, void *para, size_t paraSize, ParaDetail **paraHandle)
+rtError_t ApiImpl::KernelArgsAppend(RtArgsHandle* argsHandle, void* para, size_t paraSize, ParaDetail** paraHandle)
 {
     RT_LOG(RT_LOG_DEBUG, "args append start, paraSize=%zu", paraSize);
     // 开始排布数据区之后不允许再排布参数区
-    COND_RETURN_AND_MSG_OUTER(argsHandle->isFinalized == 1U, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016, "Adding parameters to the kernel parameter handle", 
+    COND_RETURN_AND_MSG_OUTER(
+        argsHandle->isFinalized == 1U, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016,
+        "Adding parameters to the kernel parameter handle",
         "Appending and getting placeholder buffer after finalization is not supported");
 
     // 开始排布数据区之后不允许再排布参数区
-    COND_RETURN_AND_MSG_OUTER(argsHandle->isGotPhBuff, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016, "Adding parameters to the kernel parameter handle", 
+    COND_RETURN_AND_MSG_OUTER(
+        argsHandle->isGotPhBuff, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016,
+        "Adding parameters to the kernel parameter handle",
         "Appending placeholder or common parameter after getting placeholder buffer is not supported");
 
     // 用户参数数量不能超过最大参数数量
-    COND_RETURN_ERROR_MSG_INNER(((argsHandle->realUserParamNum + 1U) > argsHandle->maxUserParamNum),
-        RT_ERROR_INVALID_VALUE,
+    COND_RETURN_ERROR_MSG_INNER(
+        ((argsHandle->realUserParamNum + 1U) > argsHandle->maxUserParamNum), RT_ERROR_INVALID_VALUE,
         "para num exceed max num,current real user para num is %u,max user para num is %u",
         argsHandle->realUserParamNum, argsHandle->maxUserParamNum);
-    const Kernel * const kernel = RtPtrToPtr<Kernel *>(argsHandle->funcHandle);
+    const Kernel* const kernel = RtPtrToPtr<Kernel*>(argsHandle->funcHandle);
     // CPU Kernel是紧密排布， 所以做1字节对齐，非CPU Kernel（AIC/AIC）仍然是8字节对齐
-    const size_t alignSize = (kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU)
-        ? CPU_KERNEL_ARGS_ALIGN_SIZE : NON_CPU_KERNEL_ARGS_ALIGN_SIZE;
+    const size_t alignSize = (kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_CPU) ?
+                                 CPU_KERNEL_ARGS_ALIGN_SIZE :
+                                 NON_CPU_KERNEL_ARGS_ALIGN_SIZE;
     const size_t padding =
         ((argsHandle->argsSize % alignSize) == 0U) ? 0U : (alignSize - (argsHandle->argsSize % alignSize));
     const size_t realParaOffset = argsHandle->argsSize + padding;
     const size_t needOccupyOffset = realParaOffset + paraSize;
 
     // 内存占用不能超过最大内存偏移
-    COND_RETURN_ERROR_MSG_INNER((needOccupyOffset > argsHandle->bufferSize),
-        RT_ERROR_INVALID_VALUE, "args append failed, para size overflow, needOccupyOffset=%zu,total=%zu",
-        needOccupyOffset, argsHandle->bufferSize);
+    COND_RETURN_ERROR_MSG_INNER(
+        (needOccupyOffset > argsHandle->bufferSize), RT_ERROR_INVALID_VALUE,
+        "args append failed, para size overflow, needOccupyOffset=%zu,total=%zu", needOccupyOffset,
+        argsHandle->bufferSize);
 
     const uint8_t index = argsHandle->realUserParamNum;
     *paraHandle = &(argsHandle->para[index]);
-    argsHandle->para[index].type = 0U; // 0 is Common param, 1 is place holder param
+    argsHandle->para[index].type = 0U;                   // 0 is Common param, 1 is place holder param
     argsHandle->para[index].paraOffset = realParaOffset; // 参数在整个内存中的偏移
     argsHandle->para[index].paraSize = paraSize;
     argsHandle->para[index].dataOffset = 0U;
     const uintptr_t offset = reinterpret_cast<uintptr_t>(argsHandle->buffer) + static_cast<uint64_t>(realParaOffset);
-    const errno_t ret = memcpy_s(reinterpret_cast<void *>(offset), paraSize, para, paraSize);
+    const errno_t ret = memcpy_s(reinterpret_cast<void*>(offset), paraSize, para, paraSize);
     if (ret != EOK) {
         std::stringstream ss;
-        ss << std::hex << "dest=0x" << offset << ", para=0x" << RtPtrToValue(para)
-           << std::dec << ", destMax=" << paraSize << ", paraSize=" << paraSize << ".";
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, __func__,
-            "memcpy_s", std::to_string(ret).c_str(), strerror(ret), ss.str().c_str());
+        ss << std::hex << "dest=0x" << offset << ", para=0x" << RtPtrToValue(para) << std::dec
+           << ", destMax=" << paraSize << ", paraSize=" << paraSize << ".";
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE1020, __func__, "memcpy_s", std::to_string(ret).c_str(), strerror(ret), ss.str().c_str());
         return RT_ERROR_INVALID_VALUE;
     }
     InitEmbeddedInnerHandle<ParaDetail>(*paraHandle);
@@ -8321,8 +8664,9 @@ rtError_t ApiImpl::KernelArgsAppend(RtArgsHandle *argsHandle, void *para, size_t
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::MemcpyBatch(void **dsts, void **srcs, size_t *sizes, size_t count,
-    rtMemcpyBatchAttr *attrs, size_t *attrsIdxs, size_t numAttrs, size_t *failIdx)
+rtError_t ApiImpl::MemcpyBatch(
+    void** dsts, void** srcs, size_t* sizes, size_t count, rtMemcpyBatchAttr* attrs, size_t* attrsIdxs, size_t numAttrs,
+    size_t* failIdx)
 {
     RT_LOG(RT_LOG_DEBUG, "Start to batch memcpy, count=%zd, numAttrs=%zd.", count, numAttrs);
     rtError_t error;
@@ -8340,75 +8684,94 @@ rtError_t ApiImpl::MemcpyBatch(void **dsts, void **srcs, size_t *sizes, size_t c
         error = CheckMemCpyAttr(dsts[i], srcs[i], memAttr, dstAttr, srcAttr);
         realDstLoc = (dstAttr.location.type == RT_MEMORY_LOC_UNREGISTERED) ? RT_MEMORY_LOC_HOST : dstAttr.location.type;
         realSrcLoc = (srcAttr.location.type == RT_MEMORY_LOC_UNREGISTERED) ? RT_MEMORY_LOC_HOST : srcAttr.location.type;
-        ERROR_PROC_RETURN_MSG_INNER(error, SetFailIndex(failIdx, i),
-            "Failed to verify %zuth memory pair attributes. retCode=%#x.", i, static_cast<uint32_t>(error));
-        COND_PROC_RETURN_AND_MSG_OUTER((realDstLoc == realSrcLoc), RT_ERROR_INVALID_VALUE, ErrorCode::EE1016, SetFailIndex(failIdx, i),
-            __func__, RtFmtMsg("Only H2D and D2H copy directions are supported. The destination location type is %s(%d),"
-                " and the source location type is %s(%d)", MemLocationTypeToStr(realDstLoc), realDstLoc,
-                MemLocationTypeToStr(realSrcLoc), realSrcLoc));
+        ERROR_PROC_RETURN_MSG_INNER(
+            error, SetFailIndex(failIdx, i), "Failed to verify %zuth memory pair attributes. retCode=%#x.", i,
+            static_cast<uint32_t>(error));
+        COND_PROC_RETURN_AND_MSG_OUTER(
+            (realDstLoc == realSrcLoc), RT_ERROR_INVALID_VALUE, ErrorCode::EE1016, SetFailIndex(failIdx, i), __func__,
+            RtFmtMsg(
+                "Only H2D and D2H copy directions are supported. The destination location type is %s(%d),"
+                " and the source location type is %s(%d)",
+                MemLocationTypeToStr(realDstLoc), realDstLoc, MemLocationTypeToStr(realSrcLoc), realSrcLoc));
     }
-    return NpuDriver::MemcpyBatch(reinterpret_cast<uint64_t *>(dsts), reinterpret_cast<uint64_t *>(srcs), sizes, count);
+    return NpuDriver::MemcpyBatch(reinterpret_cast<uint64_t*>(dsts), reinterpret_cast<uint64_t*>(srcs), sizes, count);
 }
 
-rtError_t ApiImpl::CheckMemCpyAttr(const void * const dst, const void * const src, const rtMemcpyBatchAttr &memAttr,
-    rtPtrAttributes_t &dstAttr, rtPtrAttributes_t &srcAttr)
+rtError_t ApiImpl::CheckMemCpyAttr(
+    const void* const dst, const void* const src, const rtMemcpyBatchAttr& memAttr, rtPtrAttributes_t& dstAttr,
+    rtPtrAttributes_t& srcAttr)
 {
     rtMemLocationType memType;
     rtError_t error = PtrGetAttributes(dst, &dstAttr);
     ERROR_RETURN(error, "get dst attribute failed, error=%#x", error);
     memType = (dstAttr.location.type == RT_MEMORY_LOC_UNREGISTERED) ? RT_MEMORY_LOC_HOST : dstAttr.location.type;
-    const rtMemLocationType inputDstType = (memAttr.dstLoc.type == RT_MEMORY_LOC_HOST_NUMA) ? RT_MEMORY_LOC_HOST : memAttr.dstLoc.type;
-    COND_RETURN_AND_MSG_OUTER(((memType != inputDstType) ||
-        ((memType == RT_MEMORY_LOC_DEVICE) && (dstAttr.location.id != memAttr.dstLoc.id))), RT_ERROR_INVALID_VALUE,
-        ErrorCode::EE1017, "Checking memory copy attributes", "dst", RtFmtMsg("The input memory type %s(%d) and the actual memory type %s(%d) do not match,"
-            " or the input device ID (device_id=%d) and the actual device ID (device_id=%d) do not match", MemLocationTypeToStr(memAttr.dstLoc.type),
-            memAttr.dstLoc.type, MemLocationTypeToStr(dstAttr.location.type), dstAttr.location.type, memAttr.dstLoc.id, dstAttr.location.id));
+    const rtMemLocationType inputDstType =
+        (memAttr.dstLoc.type == RT_MEMORY_LOC_HOST_NUMA) ? RT_MEMORY_LOC_HOST : memAttr.dstLoc.type;
+    COND_RETURN_AND_MSG_OUTER(
+        ((memType != inputDstType) ||
+         ((memType == RT_MEMORY_LOC_DEVICE) && (dstAttr.location.id != memAttr.dstLoc.id))),
+        RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Checking memory copy attributes", "dst",
+        RtFmtMsg(
+            "The input memory type %s(%d) and the actual memory type %s(%d) do not match,"
+            " or the input device ID (device_id=%d) and the actual device ID (device_id=%d) do not match",
+            MemLocationTypeToStr(memAttr.dstLoc.type), memAttr.dstLoc.type, MemLocationTypeToStr(dstAttr.location.type),
+            dstAttr.location.type, memAttr.dstLoc.id, dstAttr.location.id));
 
     error = PtrGetAttributes(src, &srcAttr);
     ERROR_RETURN(error, "get src attribute failed, error=%#x.", error);
     memType = (srcAttr.location.type == RT_MEMORY_LOC_UNREGISTERED) ? RT_MEMORY_LOC_HOST : srcAttr.location.type;
-    const rtMemLocationType inputSrcType = (memAttr.srcLoc.type == RT_MEMORY_LOC_HOST_NUMA) ? RT_MEMORY_LOC_HOST : memAttr.srcLoc.type;
-    COND_RETURN_AND_MSG_OUTER(((memType != inputSrcType) ||
-        ((memType == RT_MEMORY_LOC_DEVICE) && (srcAttr.location.id != memAttr.srcLoc.id))), RT_ERROR_INVALID_VALUE,
-        ErrorCode::EE1017, "Checking memory copy attributes", "src", RtFmtMsg("The input memory type %s(%d) and the actual memory type %s(%d) do not match,"
-            " or the input device ID (device_id=%d) and the actual device ID (device_id=%d) do not match", MemLocationTypeToStr(memAttr.srcLoc.type),
-            memAttr.srcLoc.type, MemLocationTypeToStr(srcAttr.location.type), srcAttr.location.type, memAttr.srcLoc.id, srcAttr.location.id));
+    const rtMemLocationType inputSrcType =
+        (memAttr.srcLoc.type == RT_MEMORY_LOC_HOST_NUMA) ? RT_MEMORY_LOC_HOST : memAttr.srcLoc.type;
+    COND_RETURN_AND_MSG_OUTER(
+        ((memType != inputSrcType) ||
+         ((memType == RT_MEMORY_LOC_DEVICE) && (srcAttr.location.id != memAttr.srcLoc.id))),
+        RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Checking memory copy attributes", "src",
+        RtFmtMsg(
+            "The input memory type %s(%d) and the actual memory type %s(%d) do not match,"
+            " or the input device ID (device_id=%d) and the actual device ID (device_id=%d) do not match",
+            MemLocationTypeToStr(memAttr.srcLoc.type), memAttr.srcLoc.type, MemLocationTypeToStr(srcAttr.location.type),
+            srcAttr.location.type, memAttr.srcLoc.id, srcAttr.location.id));
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ValidateMemCpyParamsAndAttributes(void* dst, size_t destMax, void* src, size_t size, const rtMemcpyBatchAttr& memAttr,
-    rtPtrAttributes_t& dstAttr, rtPtrAttributes_t& srcAttr)
+rtError_t ApiImpl::ValidateMemCpyParamsAndAttributes(
+    void* dst, size_t destMax, void* src, size_t size, const rtMemcpyBatchAttr& memAttr, rtPtrAttributes_t& dstAttr,
+    rtPtrAttributes_t& srcAttr)
 {
     rtError_t error = RT_ERROR_NONE;
     rtMemLocationType realDstLoc = RT_MEMORY_LOC_MAX;
     rtMemLocationType realSrcLoc = RT_MEMORY_LOC_MAX;
 
-    COND_RETURN_ERROR_MSG_INNER((size > destMax), RT_ERROR_INVALID_VALUE, 
+    COND_RETURN_ERROR_MSG_INNER(
+        (size > destMax), RT_ERROR_INVALID_VALUE,
         "Invalid size, current size=%zu(bytes), valid size range is (0, %zu]!", size, destMax);
     COND_RETURN_ERROR_MSG_INNER((size == 0U), RT_ERROR_INVALID_VALUE, "sizes's value cannot be 0.");
-    COND_RETURN_ERROR_MSG_INNER(((dst == nullptr) || (src == nullptr)),
-        RT_ERROR_INVALID_VALUE, "dst's value or src's value is nullptr.");    
+    COND_RETURN_ERROR_MSG_INNER(
+        ((dst == nullptr) || (src == nullptr)), RT_ERROR_INVALID_VALUE, "dst's value or src's value is nullptr.");
 
     error = CheckMemCpyAttr(dst, src, memAttr, dstAttr, srcAttr);
     realDstLoc = (dstAttr.location.type == RT_MEMORY_LOC_UNREGISTERED) ? RT_MEMORY_LOC_HOST : dstAttr.location.type;
     realSrcLoc = (srcAttr.location.type == RT_MEMORY_LOC_UNREGISTERED) ? RT_MEMORY_LOC_HOST : srcAttr.location.type;
     COND_RETURN_ERROR_MSG_INNER(
-        error != RT_ERROR_NONE, error, "check attributes failed, attributes of src locationType=%d, dst locationType=%d, "
+        error != RT_ERROR_NONE, error,
+        "check attributes failed, attributes of src locationType=%d, dst locationType=%d, "
         "actually dst locationType=%d(%s), src locationType=%d(%s).",
-        memAttr.srcLoc.type, memAttr.dstLoc.type, realDstLoc, MemLocationTypeToStr(realDstLoc),
-        realSrcLoc, MemLocationTypeToStr(realSrcLoc));
-
-    COND_RETURN_ERROR_MSG_INNER((realDstLoc == realSrcLoc),
-        RT_ERROR_INVALID_VALUE, "Only H2D and D2H copy directions are supported, dstLoc type=%d(%s), "
-        "srcLoc type=%d(%s).", realDstLoc, MemLocationTypeToStr(realDstLoc), realSrcLoc,
+        memAttr.srcLoc.type, memAttr.dstLoc.type, realDstLoc, MemLocationTypeToStr(realDstLoc), realSrcLoc,
         MemLocationTypeToStr(realSrcLoc));
+
+    COND_RETURN_ERROR_MSG_INNER(
+        (realDstLoc == realSrcLoc), RT_ERROR_INVALID_VALUE,
+        "Only H2D and D2H copy directions are supported, dstLoc type=%d(%s), "
+        "srcLoc type=%d(%s).",
+        realDstLoc, MemLocationTypeToStr(realDstLoc), realSrcLoc, MemLocationTypeToStr(realSrcLoc));
 
     return error;
 }
 
-rtError_t ApiImpl::ValidateAndCheckMemCpyBatchAsync(void* dst, size_t destMax, void* src, size_t size, const rtMemcpyBatchAttr& memAttr,
-    rtPtrAttributes_t& dstAttr, rtPtrAttributes_t& srcAttr, rtMemcpyKind_t& kind)
+rtError_t ApiImpl::ValidateAndCheckMemCpyBatchAsync(
+    void* dst, size_t destMax, void* src, size_t size, const rtMemcpyBatchAttr& memAttr, rtPtrAttributes_t& dstAttr,
+    rtPtrAttributes_t& srcAttr, rtMemcpyKind_t& kind)
 {
     rtError_t error = RT_ERROR_NONE;
     error = ValidateMemCpyParamsAndAttributes(dst, destMax, src, size, memAttr, dstAttr, srcAttr);
@@ -8425,9 +8788,10 @@ rtError_t ApiImpl::ValidateAndCheckMemCpyBatchAsync(void* dst, size_t destMax, v
     return error;
 }
 
-rtError_t ApiImpl::LoopMemcpyAsync(void** const dsts, const size_t* const destMaxs, void** const srcs, const size_t* const sizes,
-    const size_t count, const rtMemcpyBatchAttr* const attrs, const size_t* const attrsIdxs, const size_t numAttrs,
-    size_t* const failIdx, Stream* const stm)
+rtError_t ApiImpl::LoopMemcpyAsync(
+    void** const dsts, const size_t* const destMaxs, void** const srcs, const size_t* const sizes, const size_t count,
+    const rtMemcpyBatchAttr* const attrs, const size_t* const attrsIdxs, const size_t numAttrs, size_t* const failIdx,
+    Stream* const stm)
 {
     rtError_t error = RT_ERROR_NONE;
     rtMemcpyBatchAttr memAttr = attrs[0];
@@ -8442,22 +8806,26 @@ rtError_t ApiImpl::LoopMemcpyAsync(void** const dsts, const size_t* const destMa
             memAttr = attrs[attrIdx];
         }
 
-        error = ValidateAndCheckMemCpyBatchAsync(dsts[i], destMaxs[i], srcs[i], sizes[i], memAttr, dstAttr, srcAttr, kind);
+        error =
+            ValidateAndCheckMemCpyBatchAsync(dsts[i], destMaxs[i], srcs[i], sizes[i], memAttr, dstAttr, srcAttr, kind);
         if (error != RT_ERROR_NONE) {
             SetFailIndex(failIdx, i);
             return error;
         }
 
-        if (dstAttr.location.type == RT_MEMORY_LOC_UNREGISTERED || srcAttr.location.type == RT_MEMORY_LOC_UNREGISTERED) {
-            Context * const curCtx = CurrentContext();
+        if (dstAttr.location.type == RT_MEMORY_LOC_UNREGISTERED ||
+            srcAttr.location.type == RT_MEMORY_LOC_UNREGISTERED) {
+            Context* const curCtx = CurrentContext();
             CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-            Stream *curStm = stm;
+            Stream* curStm = stm;
             curStm = (curStm == nullptr) ? curCtx->DefaultStream_() : curStm;
             NULL_STREAM_PTR_RETURN_MSG(curStm);
 
             error = StreamSynchronize(curStm, -1); // timeout 设置为默认值
-            ERROR_RETURN_MSG_INNER(error, "Failed to synchronize stream for unregistered memory copy, stream_id=%d, retCode=%#x.", curStm->Id_(), static_cast<uint32_t>(error));
+            ERROR_RETURN_MSG_INNER(
+                error, "Failed to synchronize stream for unregistered memory copy, stream_id=%d, retCode=%#x.",
+                curStm->Id_(), static_cast<uint32_t>(error));
             RT_LOG(RT_LOG_DEBUG, "Stream Synchronize success, stream_id=%d.", curStm->Id_());
 
             error = MemCopySync(dsts[i], destMaxs[i], srcs[i], sizes[i], kind);
@@ -8465,18 +8833,21 @@ rtError_t ApiImpl::LoopMemcpyAsync(void** const dsts, const size_t* const destMa
             error = MemcpyAsync(dsts[i], destMaxs[i], srcs[i], sizes[i], kind, stm, nullptr, nullptr, false, nullptr);
         }
 
-        COND_RETURN_AND_MSG_INNER((error != RT_ERROR_NONE) && (error != RT_ERROR_DRV_NOT_SUPPORT), error,
-            "Failed to copy memory asynchronously, count=%zu, kind=%d, retCode=%#x.", sizes[i], kind, static_cast<uint32_t>(error));
+        COND_RETURN_AND_MSG_INNER(
+            (error != RT_ERROR_NONE) && (error != RT_ERROR_DRV_NOT_SUPPORT), error,
+            "Failed to copy memory asynchronously, count=%zu, kind=%d, retCode=%#x.", sizes[i], kind,
+            static_cast<uint32_t>(error));
     }
 
     return error;
 }
 
-rtError_t ApiImpl::MemcpyBatchAsync(void** const dsts, const size_t* const destMaxs, void** const srcs, const size_t* const sizes,
-    const size_t count, const rtMemcpyBatchAttr* const attrs, const size_t* const attrsIdxs, const size_t numAttrs, size_t* const failIdx,
+rtError_t ApiImpl::MemcpyBatchAsync(
+    void** const dsts, const size_t* const destMaxs, void** const srcs, const size_t* const sizes, const size_t count,
+    const rtMemcpyBatchAttr* const attrs, const size_t* const attrsIdxs, const size_t numAttrs, size_t* const failIdx,
     Stream* const stm)
 {
-    Context *curCtx = Runtime::Instance()->CurrentContext();
+    Context* curCtx = Runtime::Instance()->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     NULL_PTR_RETURN_MSG(curCtx->Device_(), RT_ERROR_DEVICE_NULL);
 
@@ -8486,7 +8857,7 @@ rtError_t ApiImpl::MemcpyBatchAsync(void** const dsts, const size_t* const destM
     return RT_ERROR_DRV_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetCmoDescSize(size_t *size)
+rtError_t ApiImpl::GetCmoDescSize(size_t* size)
 {
     DevProperties properties;
     (void)GET_DEV_PROPERTIES(Runtime::Instance()->GetChipType(), properties);
@@ -8495,7 +8866,7 @@ rtError_t ApiImpl::GetCmoDescSize(size_t *size)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::SetCmoDesc(rtCmoDesc_t cmoDesc, void *srcAddr, size_t srcLen)
+rtError_t ApiImpl::SetCmoDesc(rtCmoDesc_t cmoDesc, void* srcAddr, size_t srcLen)
 {
     DevProperties properties;
     (void)GET_DEV_PROPERTIES(Runtime::Instance()->GetChipType(), properties);
@@ -8503,23 +8874,24 @@ rtError_t ApiImpl::SetCmoDesc(rtCmoDesc_t cmoDesc, void *srcAddr, size_t srcLen)
         rtDavidCmoAddrInfo davidCmoAddrInfo = {};
         davidCmoAddrInfo.src = reinterpret_cast<uint64_t>(srcAddr);
         davidCmoAddrInfo.len_inner = srcLen;
-        return MemCopySync(cmoDesc, sizeof(rtDavidCmoAddrInfo), &davidCmoAddrInfo,
-            sizeof(rtDavidCmoAddrInfo), RT_MEMCPY_HOST_TO_DEVICE);
+        return MemCopySync(
+            cmoDesc, sizeof(rtDavidCmoAddrInfo), &davidCmoAddrInfo, sizeof(rtDavidCmoAddrInfo),
+            RT_MEMCPY_HOST_TO_DEVICE);
     }
 
     rtCmoAddrInfo cmoAddrInfo = {};
     cmoAddrInfo.src = reinterpret_cast<uint64_t>(srcAddr);
     cmoAddrInfo.len_inner = srcLen;
-    return MemCopySync(cmoDesc, sizeof(rtCmoAddrInfo), &cmoAddrInfo,
-        sizeof(rtCmoAddrInfo), RT_MEMCPY_HOST_TO_DEVICE);
+    return MemCopySync(cmoDesc, sizeof(rtCmoAddrInfo), &cmoAddrInfo, sizeof(rtCmoAddrInfo), RT_MEMCPY_HOST_TO_DEVICE);
 }
 
-rtError_t ApiImpl::MemWriteValue(const void * const devAddr, const uint64_t value, const uint32_t flag, Stream * const stm)
+rtError_t ApiImpl::MemWriteValue(
+    const void* const devAddr, const uint64_t value, const uint32_t flag, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -8530,12 +8902,12 @@ rtError_t ApiImpl::MemWriteValue(const void * const devAddr, const uint64_t valu
     return cce::runtime::MemWriteValue(devAddr, value, flag, curStm);
 }
 
-rtError_t ApiImpl::MemWaitValue(const void * const devAddr, const uint64_t value, const uint32_t flag, Stream * const stm)
+rtError_t ApiImpl::MemWaitValue(const void* const devAddr, const uint64_t value, const uint32_t flag, Stream* const stm)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
@@ -8546,33 +8918,34 @@ rtError_t ApiImpl::MemWaitValue(const void * const devAddr, const uint64_t value
     return cce::runtime::MemWaitValue(devAddr, value, flag, curStm);
 }
 
-rtError_t ApiImpl::ModelGetName(Model * const mdl, const uint32_t maxLen, char_t * const mdlName)
+rtError_t ApiImpl::ModelGetName(Model* const mdl, const uint32_t maxLen, char_t* const mdlName)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
     return curCtx->ModelGetName(mdl, maxLen, mdlName);
 }
 
-rtError_t ApiImpl::FuncGetName(const Kernel * const kernel, const uint32_t maxLen, char_t * const name)
+rtError_t ApiImpl::FuncGetName(const Kernel* const kernel, const uint32_t maxLen, char_t* const name)
 {
-    const errno_t error = memcpy_s(name, static_cast<size_t>(maxLen), kernel->Name_().c_str(), kernel->Name_().length() + 1U);
+    const errno_t error =
+        memcpy_s(name, static_cast<size_t>(maxLen), kernel->Name_().c_str(), kernel->Name_().length() + 1U);
     if (error != EOK) {
         std::stringstream ss;
         ss << std::hex << "name=0x" << RtPtrToValue(name) << ", kernelName=0x" << RtPtrToValue(kernel->Name_().c_str())
            << std::dec << ", maxLen=" << maxLen << ", actualLen=" << kernel->Name_().length() + 1U << ".";
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, __func__,
-            "memcpy_s", std::to_string(error).c_str(), strerror(error), ss.str().c_str());
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE1020, __func__, "memcpy_s", std::to_string(error).c_str(), strerror(error), ss.str().c_str());
         return RT_ERROR_SEC_HANDLE;
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetErrorVerbose(const uint32_t deviceId, rtErrorInfo * const errorInfo)
+rtError_t ApiImpl::GetErrorVerbose(const uint32_t deviceId, rtErrorInfo* const errorInfo)
 {
     rtError_t error = RT_ERROR_NONE;
     const uint32_t tsId = InnerThreadLocalContainer::GetTsId();
-    Context * const ctx = Runtime::Instance()->GetPriCtxByDeviceId(deviceId, tsId);
+    Context* const ctx = Runtime::Instance()->GetPriCtxByDeviceId(deviceId, tsId);
     if (ctx == nullptr) {
         errorInfo->hasDetail = 0U;
         errorInfo->tryRepair = 0U;
@@ -8580,7 +8953,7 @@ rtError_t ApiImpl::GetErrorVerbose(const uint32_t deviceId, rtErrorInfo * const 
         RT_LOG(RT_LOG_DEBUG, "Device[%u] has no fault.", deviceId);
         return RT_ERROR_NONE;
     }
-    Device * const dev = ctx->Device_();
+    Device* const dev = ctx->Device_();
     NULL_PTR_RETURN(dev, RT_ERROR_DEVICE_NULL);
 
     const DeviceFaultType faultType = dev->GetDeviceFaultType();
@@ -8602,15 +8975,15 @@ rtError_t ApiImpl::GetErrorVerbose(const uint32_t deviceId, rtErrorInfo * const 
     return error;
 }
 
-rtError_t ApiImpl::RepairError(const uint32_t deviceId, const rtErrorInfo * const errorInfo)
+rtError_t ApiImpl::RepairError(const uint32_t deviceId, const rtErrorInfo* const errorInfo)
 {
     rtError_t error = RT_ERROR_NONE;
-    Runtime * const rtInstance = Runtime::Instance();
-    Device * const dev = rtInstance->GetDevice(static_cast<uint32_t>(deviceId), static_cast<uint32_t>(RT_TSC_ID));
+    Runtime* const rtInstance = Runtime::Instance();
+    Device* const dev = rtInstance->GetDevice(static_cast<uint32_t>(deviceId), static_cast<uint32_t>(RT_TSC_ID));
     NULL_PTR_RETURN(dev, RT_ERROR_DEVICE_NULL);
     switch (errorInfo->errorType) {
         case RT_NO_ERROR:
-            RT_LOG(RT_LOG_DEBUG ,"No device fault error exists.");
+            RT_LOG(RT_LOG_DEBUG, "No device fault error exists.");
             dev->SetDeviceFaultType(DeviceFaultType::NO_ERROR);
             break;
         case RT_ERROR_MEMORY:
@@ -8618,19 +8991,21 @@ rtError_t ApiImpl::RepairError(const uint32_t deviceId, const rtErrorInfo * cons
             break;
         default:
             error = RT_ERROR_INVALID_VALUE;
-            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Rectifying the device faults",
-                errorInfo->errorType,
-                "{" + std::to_string(RT_NO_ERROR) + ", " + std::to_string(RT_ERROR_MEMORY) + ", " + std::to_string(RT_ERROR_LINK) + "}");
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(
+                "Rectifying the device faults", errorInfo->errorType,
+                "{" + std::to_string(RT_NO_ERROR) + ", " + std::to_string(RT_ERROR_MEMORY) + ", " +
+                    std::to_string(RT_ERROR_LINK) + "}");
             break;
     }
     dev->SetBaseTime();
     return error;
 }
 
-rtError_t ApiImpl::StarsLaunchEventProc(Stream * const stm, const rtCallback_t callBackFunc, void * const fnData, const uint64_t threadId)
+rtError_t ApiImpl::StarsLaunchEventProc(
+    Stream* const stm, const rtCallback_t callBackFunc, void* const fnData, const uint64_t threadId)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Event *curEvent = nullptr;
+    Event* curEvent = nullptr;
     ret = CallbackLaunchWithEvent(callBackFunc, fnData, stm, true, &curEvent, threadId);
     ERROR_RETURN(ret, "Call CallbackLaunch failed for block callback, ret=%#x.", ret);
     curEvent->SetEventOwner(EventOwner::EVENT_INNER);
@@ -8641,16 +9016,17 @@ rtError_t ApiImpl::StarsLaunchEventProc(Stream * const stm, const rtCallback_t c
     return ret;
 }
 
-rtError_t ApiImpl::StarsLaunchSubscribeProc(Stream * const stm, const rtCallback_t callBackFunc,
-    void * const fnData, const bool needSubscribe, const uint64_t threadId)
+rtError_t ApiImpl::StarsLaunchSubscribeProc(
+    Stream* const stm, const rtCallback_t callBackFunc, void* const fnData, const bool needSubscribe,
+    const uint64_t threadId)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     if (needSubscribe && !(stm->IsCapturing())) {
-        Event *curEvent = nullptr;
+        Event* curEvent = nullptr;
         ret = EventCreate(&curEvent, RT_EVENT_DDSYNC_NS);
         ERROR_RETURN(ret, "Call EventCreate failed for callback, ret=%#x.", ret);
-        ret = rtInstance->SubscribeCallback(threadId, stm, static_cast<void *>(curEvent));
+        ret = rtInstance->SubscribeCallback(threadId, stm, static_cast<void*>(curEvent));
         if (ret != RT_ERROR_NONE) {
             (void)EventDestroy(curEvent);
         }
@@ -8658,25 +9034,27 @@ rtError_t ApiImpl::StarsLaunchSubscribeProc(Stream * const stm, const rtCallback
     return StarsLaunchEventProc(stm, callBackFunc, fnData, threadId);
 }
 
-rtError_t ApiImpl::LaunchHostFunc(Stream * const stm, const rtCallback_t callBackFunc, void * const fnData)
+rtError_t ApiImpl::LaunchHostFunc(Stream* const stm, const rtCallback_t callBackFunc, void* const fnData)
 {
     rtError_t ret = RT_ERROR_NONE;
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Stream *curStm = stm;
+    Stream* curStm = stm;
     if (curStm == nullptr) {
         curStm = curCtx->DefaultStream_();
         NULL_STREAM_PTR_RETURN_MSG(curStm);
     }
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(curStm, curCtx, RT_ERROR_STREAM_CONTEXT);
-    Runtime * const rtInstance = Runtime::Instance();
-    Device * const dev = curCtx->Device_();
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(dev, RT_ERROR_INVALID_VALUE, "Adding a host callback function to the stream task queue");
+    Runtime* const rtInstance = Runtime::Instance();
+    Device* const dev = curCtx->Device_();
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        dev, RT_ERROR_INVALID_VALUE, "Adding a host callback function to the stream task queue");
     // lock first Check whether the thread exists. If the thread does not exist, create a thread in context level.
     curCtx->callbackTheadMutex_.lock();
     if (!curCtx->GetCallBackThreadExistFlag()) {
-        COND_PROC_RETURN_ERROR_MSG_INNER((curCtx->CreateContextCallBackThread() != RT_ERROR_NONE),
-            RT_ERROR_MEMORY_ALLOCATION, curCtx->callbackTheadMutex_.unlock(), "create callback thread failed.");
+        COND_PROC_RETURN_ERROR_MSG_INNER(
+            (curCtx->CreateContextCallBackThread() != RT_ERROR_NONE), RT_ERROR_MEMORY_ALLOCATION,
+            curCtx->callbackTheadMutex_.unlock(), "create callback thread failed.");
         curCtx->SetCallBackThreadExistFlag();
     }
     curCtx->callbackTheadMutex_.unlock();
@@ -8693,7 +9071,7 @@ rtError_t ApiImpl::LaunchHostFunc(Stream * const stm, const rtCallback_t callBac
     }
 }
 
-rtError_t ApiImpl::LaunchHostFuncV2(Stream * const stm, const rtHostCpuFunc callBackFunc, void * const fnData)
+rtError_t ApiImpl::LaunchHostFuncV2(Stream* const stm, const rtHostCpuFunc callBackFunc, void* const fnData)
 {
     NULL_PTR_RETURN_MSG_OUTER(callBackFunc, RT_ERROR_INVALID_VALUE);
 
@@ -8705,10 +9083,10 @@ rtError_t ApiImpl::LaunchHostFuncV2(Stream * const stm, const rtHostCpuFunc call
     return LaunchHostFunc(stm, legacyView, fnData);
 }
 
-void ApiImpl::ProcessHostFunc(const uint64_t funcAddr, const uint64_t fnDataAddr, Device * const dev,
-    const uint16_t streamId) const
+void ApiImpl::ProcessHostFunc(
+    const uint64_t funcAddr, const uint64_t fnDataAddr, Device* const dev, const uint16_t streamId) const
 {
-    void * const fnData = RtValueToPtr<void *>(fnDataAddr);
+    void* const fnData = RtValueToPtr<void*>(fnDataAddr);
     if (!GlobalContainer::IsHostCpuFunc(funcAddr)) {
         const rtCallback_t hostFunc = RtValueToPtr<rtCallback_t>(funcAddr);
         hostFunc(fnData);
@@ -8722,69 +9100,84 @@ void ApiImpl::ProcessHostFunc(const uint64_t funcAddr, const uint64_t fnDataAddr
     }
 }
 
-void ApiImpl::SetHostFuncStreamError(const Device * const dev, const uint16_t streamId, const int32_t callbackRet)
+void ApiImpl::SetHostFuncStreamError(const Device* const dev, const uint16_t streamId, const int32_t callbackRet)
 {
-    StreamSqCqManage * const streamManage = dev->GetStreamSqCqManage();
+    StreamSqCqManage* const streamManage = dev->GetStreamSqCqManage();
     if (streamManage == nullptr) {
-        RT_LOG(RT_LOG_ERROR, "Set host function stream error failed, stream manager is null, "
-            "report_stream_id=%hu, callback retCode=%#x.", streamId, static_cast<uint32_t>(callbackRet));
-        return;
-    }
-
-    Stream *reportStream = nullptr;
-    const rtError_t ret = streamManage->GetStreamById(static_cast<uint32_t>(streamId), &reportStream);
-    if ((ret != RT_ERROR_NONE) || (reportStream == nullptr)) {
-        RT_LOG(RT_LOG_ERROR, "Get report stream failed, report_stream_id=%hu, retCode=%#x, "
-            "callback retCode=%#x.", streamId, static_cast<uint32_t>(ret), static_cast<uint32_t>(callbackRet));
-        return;
-    }
-
-    Stream * const errorStream = GetReportStream(reportStream);
-    if (errorStream == nullptr) {
-        RT_LOG(RT_LOG_ERROR, "Get error stream failed, report_stream_id=%hu, callback retCode=%#x.",
+        RT_LOG(
+            RT_LOG_ERROR,
+            "Set host function stream error failed, stream manager is null, "
+            "report_stream_id=%hu, callback retCode=%#x.",
             streamId, static_cast<uint32_t>(callbackRet));
         return;
     }
 
-    RT_LOG(RT_LOG_ERROR, "Host function execute failed, report_stream_id=%hu, error_stream_id=%d, "
-        "callback retCode=%#x.", streamId, errorStream->Id_(), static_cast<uint32_t>(callbackRet));
+    Stream* reportStream = nullptr;
+    const rtError_t ret = streamManage->GetStreamById(static_cast<uint32_t>(streamId), &reportStream);
+    if ((ret != RT_ERROR_NONE) || (reportStream == nullptr)) {
+        RT_LOG(
+            RT_LOG_ERROR,
+            "Get report stream failed, report_stream_id=%hu, retCode=%#x, "
+            "callback retCode=%#x.",
+            streamId, static_cast<uint32_t>(ret), static_cast<uint32_t>(callbackRet));
+        return;
+    }
+
+    Stream* const errorStream = GetReportStream(reportStream);
+    if (errorStream == nullptr) {
+        RT_LOG(
+            RT_LOG_ERROR, "Get error stream failed, report_stream_id=%hu, callback retCode=%#x.", streamId,
+            static_cast<uint32_t>(callbackRet));
+        return;
+    }
+
+    RT_LOG(
+        RT_LOG_ERROR,
+        "Host function execute failed, report_stream_id=%hu, error_stream_id=%d, "
+        "callback retCode=%#x.",
+        streamId, errorStream->Id_(), static_cast<uint32_t>(callbackRet));
     errorStream->SetErrCode(static_cast<uint32_t>(RT_ERROR_HOST_FUNC_EXE_FAILED));
 }
 
-rtError_t ApiImpl::CacheLastTaskOpInfo(const void * const infoPtr, const size_t infoSize)
+rtError_t ApiImpl::CacheLastTaskOpInfo(const void* const infoPtr, const size_t infoSize)
 {
     const uint32_t lastStreamId = InnerThreadLocalContainer::GetLastStreamId();
     RT_LOG(RT_LOG_INFO, "Received data: infoSize=%u, stream_id=%u", infoSize, lastStreamId);
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
 
-    Device * const dev = curCtx->Device_();
-    StreamSqCqManage * const streamSqCqManagePtr = dev->GetStreamSqCqManage();
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(streamSqCqManagePtr, RT_ERROR_INVALID_VALUE, "Caching the operator information of the latest task");
+    Device* const dev = curCtx->Device_();
+    StreamSqCqManage* const streamSqCqManagePtr = dev->GetStreamSqCqManage();
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        streamSqCqManagePtr, RT_ERROR_INVALID_VALUE, "Caching the operator information of the latest task");
 
-    Stream *stm = nullptr;
+    Stream* stm = nullptr;
     rtError_t error = streamSqCqManagePtr->GetStreamById(lastStreamId, &stm);
-    COND_RETURN_ERROR_MSG_INNER(((error != RT_ERROR_NONE) || (stm == nullptr)), error,
-        "Query stream failed, dev_id=%u, stream_id=%u, retCode=%#x.",
-        dev->Id_(), lastStreamId, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        ((error != RT_ERROR_NONE) || (stm == nullptr)), error,
+        "Query stream failed, dev_id=%u, stream_id=%u, retCode=%#x.", dev->Id_(), lastStreamId,
+        static_cast<uint32_t>(error));
 
     COND_RETURN_AND_MSG_INVALID_CONTEXT_STREAM(stm, curCtx, RT_ERROR_STREAM_CONTEXT);
 
     Model* mdl = stm->Model_();
-    COND_RETURN_ERROR_MSG_INNER(mdl == nullptr || mdl->GetModelType() != RT_MODEL_CAPTURE_MODEL,
-        RT_ERROR_MODEL_NULL, "Stream (stream_id=%u) is not bound to a model or the bound model is not a CAPTURE model", lastStreamId);
+    COND_RETURN_ERROR_MSG_INNER(
+        mdl == nullptr || mdl->GetModelType() != RT_MODEL_CAPTURE_MODEL, RT_ERROR_MODEL_NULL,
+        "Stream (stream_id=%u) is not bound to a model or the bound model is not a CAPTURE model", lastStreamId);
 
-    CaptureModel *captureMdl = dynamic_cast<CaptureModel *>(mdl);
+    CaptureModel* captureMdl = dynamic_cast<CaptureModel*>(mdl);
     return captureMdl->CacheLastTaskOpInfo(infoPtr, infoSize, stm);
 }
 
-rtError_t ApiImpl::FunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrType, int64_t *attrValue)
+rtError_t ApiImpl::FunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrType, int64_t* attrValue)
 {
-    const Kernel *const kernel = RtPtrToPtr<Kernel *>(funcHandle);
+    const Kernel* const kernel = RtPtrToPtr<Kernel*>(funcHandle);
     switch (attrType) {
         case RT_FUNCTION_ATTR_KERNEL_TYPE: {
             *attrValue = static_cast<int64_t>(kernel->GetKernelAttrType());
-            COND_RETURN_ERROR_MSG_INNER(*attrValue == static_cast<int64_t>(RT_KERNEL_ATTR_TYPE_INVALID), RT_ERROR_INVALID_VALUE, "Invalid kernel type.");
+            COND_RETURN_ERROR_MSG_INNER(
+                *attrValue == static_cast<int64_t>(RT_KERNEL_ATTR_TYPE_INVALID), RT_ERROR_INVALID_VALUE,
+                "Invalid kernel type.");
             break;
         }
         case RT_FUNCTION_ATTR_KERNEL_RATIO: {
@@ -8793,8 +9186,8 @@ rtError_t ApiImpl::FunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute
             uint16_t ratio[2];
             ComputeRatio(ratio, mixType, taskRatio);
             uint16_t* ratioArr = reinterpret_cast<uint16_t*>(attrValue);
-            ratioArr[1] = ratio[0]; //aicratio
-            ratioArr[0] = ratio[1]; //aivratio
+            ratioArr[1] = ratio[0]; // aicratio
+            ratioArr[0] = ratio[1]; // aivratio
             RT_LOG(RT_LOG_DEBUG, "mixType=%u, ratio[0]=%u, ratio[1]=%u.", mixType, ratio[0], ratio[1]);
             break;
         }
@@ -8810,26 +9203,25 @@ rtError_t ApiImpl::FunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::FunctionGetBinary(const Kernel *const funcHandle, Program **const binHandle)
+rtError_t ApiImpl::FunctionGetBinary(const Kernel* const funcHandle, Program** const binHandle)
 {
-    Program * const prog = funcHandle->Program_();
+    Program* const prog = funcHandle->Program_();
     *binHandle = prog;
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::FunctionGetParamCount(const Kernel *funcHandle, size_t *paramCount)
+rtError_t ApiImpl::FunctionGetParamCount(const Kernel* funcHandle, size_t* paramCount)
 {
     *paramCount = static_cast<size_t>(funcHandle->GetParamCount());
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::FunctionGetParamInfo(const Kernel *funcHandle, size_t paramIndex,
-                                        size_t *paramOffset, size_t *paramSize)
+rtError_t ApiImpl::FunctionGetParamInfo(
+    const Kernel* funcHandle, size_t paramIndex, size_t* paramOffset, size_t* paramSize)
 {
     uint32_t offset = 0U;
     uint32_t size = 0U;
-    const rtError_t ret = funcHandle->GetParamInfo(static_cast<uint32_t>(paramIndex),
-                                                   &offset, &size);
+    const rtError_t ret = funcHandle->GetParamInfo(static_cast<uint32_t>(paramIndex), &offset, &size);
     ERROR_RETURN(ret, "GetParamInfo failed, paramIndex=%zu.", paramIndex);
     if (paramOffset != nullptr) {
         *paramOffset = static_cast<size_t>(offset);
@@ -8840,25 +9232,26 @@ rtError_t ApiImpl::FunctionGetParamInfo(const Kernel *funcHandle, size_t paramIn
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::FunctionGetAvailDynUbufPerBlock(Kernel *funcHandle, uint32_t flags, size_t *dynamicUbufSize)
+rtError_t ApiImpl::FunctionGetAvailDynUbufPerBlock(Kernel* funcHandle, uint32_t flags, size_t* dynamicUbufSize)
 {
     UNUSED(flags);
     const uint32_t kernelVfType = funcHandle->KernelVfType_();
     const bool simtFlag = (kernelVfType == static_cast<uint32_t>(AivTypeFlag::AIV_TYPE_SIMT_VF_ONLY)) ||
-        (kernelVfType == static_cast<uint32_t>(AivTypeFlag::AIV_TYPE_SIMD_SIMT_MIX_VF));
+                          (kernelVfType == static_cast<uint32_t>(AivTypeFlag::AIV_TYPE_SIMD_SIMT_MIX_VF));
     if (!simtFlag) {
         *dynamicUbufSize = 0U;
         return RT_ERROR_NONE;
     }
 
-    COND_RETURN_ERROR_MSG_INNER(funcHandle->ShareMemSize_() > RT_SIMT_REMAIN_UB_SIZE, RT_ERROR_INVALID_VALUE,
-        "Compiler alloc ub size %u exceeds the maximum simt ub limit %u.",
-        funcHandle->ShareMemSize_(), RT_SIMT_REMAIN_UB_SIZE);
+    COND_RETURN_ERROR_MSG_INNER(
+        funcHandle->ShareMemSize_() > RT_SIMT_REMAIN_UB_SIZE, RT_ERROR_INVALID_VALUE,
+        "Compiler alloc ub size %u exceeds the maximum simt ub limit %u.", funcHandle->ShareMemSize_(),
+        RT_SIMT_REMAIN_UB_SIZE);
     *dynamicUbufSize = static_cast<size_t>(RT_SIMT_REMAIN_UB_SIZE - funcHandle->ShareMemSize_());
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::MemRetainAllocationHandle(void* virPtr, rtDrvMemHandle *handle)
+rtError_t ApiImpl::MemRetainAllocationHandle(void* virPtr, rtDrvMemHandle* handle)
 {
     const rtError_t error = NpuDriver::MemRetainAllocationHandle(virPtr, handle);
     ERROR_RETURN(error, "Failed to obtain the handle from virtual pointer, ptr=%p, handle=%p.", virPtr, handle);
@@ -8871,7 +9264,7 @@ rtError_t ApiImpl::MemGetAllocationPropertiesFromHandle(rtDrvMemHandle handle, r
     return NpuDriver::MemGetAllocationPropertiesFromHandle(handle, prop);
 }
 
-rtError_t ApiImpl:: MemGetAddressRange(void *ptr, void **pbase, size_t *psize)
+rtError_t ApiImpl::MemGetAddressRange(void* ptr, void** pbase, size_t* psize)
 {
     RT_LOG(RT_LOG_INFO, "Start to MemGetAddressRange");
     rtError_t error = NpuDriver::MemGetAddressRange(ptr, pbase, psize);
@@ -8879,41 +9272,49 @@ rtError_t ApiImpl:: MemGetAddressRange(void *ptr, void **pbase, size_t *psize)
     return error;
 }
 
-rtError_t ApiImpl::MemMapSelectedLink(void *virPtrDst, size_t size, void *virPtrSrc, uint32_t linkIdx)
+rtError_t ApiImpl::MemMapSelectedLink(void* virPtrDst, size_t size, void* virPtrSrc, uint32_t linkIdx)
 {
     size_t totalSize = 0U;
-    void *base = nullptr;
+    void* base = nullptr;
     size_t baseSize = 0U;
     rtDrvMemHandle handle = nullptr;
     rtError_t error = RT_ERROR_NONE;
-    void *virPtrOld = virPtrSrc;
-    void *virPtrNew = virPtrDst;
+    void* virPtrOld = virPtrSrc;
+    void* virPtrNew = virPtrDst;
     while (totalSize < size) {
-        Runtime *rt = Runtime::Instance();
+        Runtime* rt = Runtime::Instance();
         std::unique_lock<std::mutex> lock(rt->GetMemMapSelectedLinkMutex_());
         error = MemGetAddressRange(virPtrOld, &base, &baseSize);
         ERROR_RETURN(error, "Call MemGetAddressRange failed, virPtrOld=%p", virPtrOld);
-        COND_RETURN_ERROR(virPtrOld != base, RT_ERROR_INVALID_VALUE,
-            "The address virPtrOld is not the starting address of its corresponding memory block. virPtrOld=%p, base=%p", virPtrOld, base);
-        error = MemRetainAllocationHandle(base, &handle); 
+        COND_RETURN_ERROR(
+            virPtrOld != base, RT_ERROR_INVALID_VALUE,
+            "The address virPtrOld is not the starting address of its corresponding memory block. virPtrOld=%p, "
+            "base=%p",
+            virPtrOld, base);
+        error = MemRetainAllocationHandle(base, &handle);
         ERROR_RETURN(error, "Failed to obtain the handle from virtual pointer, ptr=%p, handle=%p.", base, handle);
-        COND_RETURN_ERROR(handle == nullptr, RT_ERROR_INVALID_VALUE, "virPtrSrc cannot get handle, virPtrSrc=%p", virPtrSrc);
+        COND_RETURN_ERROR(
+            handle == nullptr, RT_ERROR_INVALID_VALUE, "virPtrSrc cannot get handle, virPtrSrc=%p", virPtrSrc);
 
         rtHandleAttr attrOrg;
         rtHandleAttr attrNew;
         error = NpuDriver::MemHandleGetAttribute(handle, HANDLE_ATTR_MEM_MAP_ROUTE, &attrOrg);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
+        COND_PROC_RETURN_ERROR(
+            error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
             "Call MemHandleGetAttribute failed, handle=%p, type=%d.", handle, HANDLE_ATTR_MEM_MAP_ROUTE);
         attrNew.memMapRoute = linkIdx;
         error = NpuDriver::MemHandleSetAttribute(handle, HANDLE_ATTR_MEM_MAP_ROUTE, attrNew);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
-            "Call MemHandleSetAttribute failed, handle=%p, type=%d, linkIdx=%u, attrNew.memMapRoute=%u.",
-            handle, HANDLE_ATTR_MEM_MAP_ROUTE, linkIdx, attrNew.memMapRoute);
+        COND_PROC_RETURN_ERROR(
+            error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
+            "Call MemHandleSetAttribute failed, handle=%p, type=%d, linkIdx=%u, attrNew.memMapRoute=%u.", handle,
+            HANDLE_ATTR_MEM_MAP_ROUTE, linkIdx, attrNew.memMapRoute);
         error = MapMem(virPtrNew, baseSize, 0, handle, 0);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
+        COND_PROC_RETURN_ERROR(
+            error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
             "Call MapMem failed, baseSize=%" PRIu64 ", ptr=%p.", baseSize, virPtrNew);
         error = NpuDriver::MemHandleSetAttribute(handle, HANDLE_ATTR_MEM_MAP_ROUTE, attrOrg);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
+        COND_PROC_RETURN_ERROR(
+            error != RT_ERROR_NONE, error, (void)FreePhysical(handle),
             "Call MemHandleGetAttribute failed, handle=%p, type=%d.", handle, HANDLE_ATTR_MEM_MAP_ROUTE);
 
         error = FreePhysical(handle);
@@ -8925,12 +9326,12 @@ rtError_t ApiImpl::MemMapSelectedLink(void *virPtrDst, size_t size, void *virPtr
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::BinarySetExceptionCallback(Program *binHandle, void *callback, void *userData)
+rtError_t ApiImpl::BinarySetExceptionCallback(Program* binHandle, void* callback, void* userData)
 {
     return OpTaskFailCallbackReg(binHandle, callback, userData);
 }
 
-static rtError_t GetAicpuFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info, Kernel ** const funcHandle)
+static rtError_t GetAicpuFuncHandleFromExceptionInfo(const rtExceptionInfo_t* info, Kernel** const funcHandle)
 {
     const rtFuncHandle rawFuncHandle = info->expandInfo.u.aicpuInfo.funcHandle;
     if (rawFuncHandle == nullptr) {
@@ -8938,14 +9339,14 @@ static rtError_t GetAicpuFuncHandleFromExceptionInfo(const rtExceptionInfo_t *in
         return RT_ERROR_INVALID_VALUE;
     }
 
-    Kernel *kernelTmp = nullptr;
+    Kernel* kernelTmp = nullptr;
     const rtError_t handleRet = GetValidatedObject<Kernel>(rawFuncHandle, kernelTmp);
     ERROR_RETURN(handleRet, "Get kernel from AICPU exception info failed, ret=%#x", handleRet);
     *funcHandle = kernelTmp;
     return RT_ERROR_NONE;
 }
 
-static std::string GetAdjustedMixKernelName(const char_t *kernelName)
+static std::string GetAdjustedMixKernelName(const char_t* kernelName)
 {
     std::string adjustedName(kernelName);
     const std::string mixAicName = "_mix_aic";
@@ -8961,8 +9362,8 @@ static std::string GetAdjustedMixKernelName(const char_t *kernelName)
     return adjustedName;
 }
 
-static rtError_t BinaryGetFunctionByExceptionKernelName(Program *binHandle, const char_t *kernelName,
-    Kernel ** const funcHandle)
+static rtError_t BinaryGetFunctionByExceptionKernelName(
+    Program* binHandle, const char_t* kernelName, Kernel** const funcHandle)
 {
     rtError_t error = Runtime::Instance()->BinaryGetFunctionByName(binHandle, kernelName, funcHandle);
     if (error != RT_ERROR_KERNEL_NULL) {
@@ -8976,13 +9377,13 @@ static rtError_t BinaryGetFunctionByExceptionKernelName(Program *binHandle, cons
     return error;
 }
 
-rtError_t ApiImpl::GetFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info, Kernel ** const funcHandle)
+rtError_t ApiImpl::GetFuncHandleFromExceptionInfo(const rtExceptionInfo_t* info, Kernel** const funcHandle)
 {
-    Kernel *kernelTmp = nullptr;
+    Kernel* kernelTmp = nullptr;
     *funcHandle = nullptr;
     rtBinHandle rawBinHandle = nullptr;
-    Program *binHandle = nullptr;
-    const char_t *kernelName = nullptr;
+    Program* binHandle = nullptr;
+    const char_t* kernelName = nullptr;
 
     if (info->expandInfo.type == RT_EXCEPTION_AICPU) {
         return GetAicpuFuncHandleFromExceptionInfo(info, funcHandle);
@@ -8991,14 +9392,16 @@ rtError_t ApiImpl::GetFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info,
     if (info->expandInfo.type == RT_EXCEPTION_AICORE) {
         rawBinHandle = info->expandInfo.u.aicoreInfo.exceptionArgs.exceptionKernelInfo.bin;
         kernelName = info->expandInfo.u.aicoreInfo.exceptionArgs.exceptionKernelInfo.kernelName;
-    } else if (info->expandInfo.type == RT_EXCEPTION_FUSION && info->expandInfo.u.fusionInfo.type == RT_FUSION_AICORE_CCU) {
+    } else if (
+        info->expandInfo.type == RT_EXCEPTION_FUSION && info->expandInfo.u.fusionInfo.type == RT_FUSION_AICORE_CCU) {
         rawBinHandle = info->expandInfo.u.fusionInfo.u.aicoreCcuInfo.exceptionArgs.exceptionKernelInfo.bin;
         kernelName = info->expandInfo.u.fusionInfo.u.aicoreCcuInfo.exceptionArgs.exceptionKernelInfo.kernelName;
     }
 
     if (rawBinHandle == nullptr || kernelName == nullptr) {
-        RT_LOG(RT_LOG_ERROR, "Get func handle from exception info failed, binHandle=%p, kernelName=%p",
-            rawBinHandle, kernelName);
+        RT_LOG(
+            RT_LOG_ERROR, "Get func handle from exception info failed, binHandle=%p, kernelName=%p", rawBinHandle,
+            kernelName);
         return RT_ERROR_INVALID_VALUE;
     }
     const rtError_t handleRet = GetValidatedObject<Program>(rawBinHandle, binHandle);
@@ -9006,7 +9409,8 @@ rtError_t ApiImpl::GetFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info,
 
     const rtError_t error = BinaryGetFunctionByExceptionKernelName(binHandle, kernelName, &kernelTmp);
     ERROR_RETURN(error, "Get func handle from exception info failed, ret=%#x", error);
-    RT_LOG(RT_LOG_INFO, "Get func handle from exception info success, binHandle=%p, binHandle_id=%u, kernelName=%p",
+    RT_LOG(
+        RT_LOG_INFO, "Get func handle from exception info success, binHandle=%p, binHandle_id=%u, kernelName=%p",
         binHandle, binHandle->Id_(), kernelName);
     *funcHandle = kernelTmp;
     return RT_ERROR_NONE;
@@ -9014,30 +9418,34 @@ rtError_t ApiImpl::GetFuncHandleFromExceptionInfo(const rtExceptionInfo_t *info,
 
 rtError_t ApiImpl::TaskGetParams(rtTask_t task, rtTaskParams* const params)
 {
-    const TaskInfo* const taskInfo = RtPtrToPtr<const TaskInfo *>(task);
+    const TaskInfo* const taskInfo = RtPtrToPtr<const TaskInfo*>(task);
     const Stream* stm = taskInfo->stream;
     NULL_PTR_RETURN(stm, RT_ERROR_STREAM_NULL);
     Model* const mdl = stm->Model_();
     if ((mdl != nullptr) && (mdl->GetModelType() == RT_MODEL_CAPTURE_MODEL)) {
-        CaptureModel *captureModel = dynamic_cast<CaptureModel *>(mdl);
-        COND_RETURN_WARN(((captureModel != nullptr) && captureModel->IsSubCaptureModel()),
-            RT_ERROR_FEATURE_NOT_SUPPORT, "task belongs to sub ACL Graph, does not support getting task parameters");
+        CaptureModel* captureModel = dynamic_cast<CaptureModel*>(mdl);
+        COND_RETURN_WARN(
+            ((captureModel != nullptr) && captureModel->IsSubCaptureModel()), RT_ERROR_FEATURE_NOT_SUPPORT,
+            "task belongs to sub ACL Graph, does not support getting task parameters");
     }
     rtError_t error = CheckCaptureModelSupportSoftwareSq(stm->Device_());
     COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
 
     if (taskInfo->taskOwner == static_cast<uint8_t>(TaskOwner::RT_TASK_INNER)) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1017, __func__, "task->type",
-                "The current task type RT_TASK_DEFAULT does not support obtaining of parameters."
-                " Only task types other than RT_TASK_DEFAULT supports obtaining of parameters");
-        RT_LOG(RT_LOG_ERROR,
-            "streamId=%d, taskId=%u, alloc taskType=%d, taskName=%s, taskOwner=%d.",
-            taskInfo->stream->Id_(), taskInfo->id, taskInfo->type, taskInfo->typeName, static_cast<int32_t>(taskInfo->taskOwner));
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE1017, __func__, "task->type",
+            "The current task type RT_TASK_DEFAULT does not support obtaining of parameters."
+            " Only task types other than RT_TASK_DEFAULT supports obtaining of parameters");
+        RT_LOG(
+            RT_LOG_ERROR, "streamId=%d, taskId=%u, alloc taskType=%d, taskName=%s, taskOwner=%d.",
+            taskInfo->stream->Id_(), taskInfo->id, taskInfo->type, taskInfo->typeName,
+            static_cast<int32_t>(taskInfo->taskOwner));
         return RT_ERROR_INVALID_VALUE;
     }
 
-    COND_RETURN_WARN(IsTaskBelongToSubCaptureMdl(taskInfo),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "task belongs to sub ACL Graph, does not support querying task type");
+    COND_RETURN_WARN(
+        IsTaskBelongToSubCaptureMdl(taskInfo), RT_ERROR_FEATURE_NOT_SUPPORT,
+        "task belongs to sub ACL Graph, does not support querying task type");
 
     (void)memset_s(params, sizeof(rtTaskParams), 0, sizeof(rtTaskParams));
     error = ConvertTaskType(taskInfo, &params->type);
@@ -9084,7 +9492,8 @@ rtError_t ApiImpl::TaskGetParams(rtTask_t task, rtTaskParams* const params)
             error = GetWaitValueTaskParams(taskInfo, params);
             break;
         default:
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1017, __func__, "task->type",
+            RT_LOG_OUTER_MSG_IMPL(
+                ErrorCode::EE1017, __func__, "task->type",
                 "The current task type RT_TASK_DEFAULT does not support obtaining of parameters."
                 " Only task types other than RT_TASK_DEFAULT supports obtaining of parameters");
             RT_LOG(
@@ -9099,7 +9508,7 @@ rtError_t ApiImpl::TaskGetParams(rtTask_t task, rtTaskParams* const params)
 
 rtError_t ApiImpl::TaskSetParams(rtTask_t task, rtTaskParams* const params)
 {
-    TaskInfo* const taskInfo = static_cast<TaskInfo *>(task);
+    TaskInfo* const taskInfo = static_cast<TaskInfo*>(task);
     rtError_t error = CheckCaptureModelForUpdate(taskInfo->stream);
     COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
 
@@ -9115,8 +9524,8 @@ rtError_t ApiImpl::TaskSetParams(rtTask_t task, rtTaskParams* const params)
         case RT_TASK_EVENT_RECORD:
         case RT_TASK_EVENT_WAIT:
         case RT_TASK_EVENT_RESET:
-            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Setting task parameters",
-                params->type, "RT_TASK_KERNEL or RT_TASK_VALUE_WRITE or RT_TASK_VALUE_WAIT");
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(
+                "Setting task parameters", params->type, "RT_TASK_KERNEL or RT_TASK_VALUE_WRITE or RT_TASK_VALUE_WAIT");
             error = RT_ERROR_INVALID_VALUE;
             break;
         case RT_TASK_VALUE_WRITE:
@@ -9126,13 +9535,13 @@ rtError_t ApiImpl::TaskSetParams(rtTask_t task, rtTaskParams* const params)
             error = UpdateWaitValueTaskParams(taskInfo, params);
             break;
         default:
-            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Setting task parameters",
-                params->type, "[1, " + std::to_string(RT_TASK_VALUE_WAIT) + "]");
+            RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(
+                "Setting task parameters", params->type, "[1, " + std::to_string(RT_TASK_VALUE_WAIT) + "]");
             error = RT_ERROR_INVALID_VALUE;
             break;
     }
-    ERROR_PROC_RETURN_MSG_INNER(error, captureModel->SetCaptureModelStatus(RtCaptureModelStatus::FAULT);,
-        "task set params failed");
+    ERROR_PROC_RETURN_MSG_INNER(error, captureModel->SetCaptureModelStatus(RtCaptureModelStatus::FAULT);
+                                , "task set params failed");
     taskInfo->updateFlag = static_cast<uint8_t>(TaskUpdateFlag::RT_TASK_UPDATE);
     RT_LOG(
         RT_LOG_INFO, "stream_id=%d, task_id=%hu, typeName=%s, task type=%d, target type=%d", taskInfo->stream->Id_(),
@@ -9140,9 +9549,10 @@ rtError_t ApiImpl::TaskSetParams(rtTask_t task, rtTaskParams* const params)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::KernelTaskGetAttribute(rtTask_t task, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t *attrValue)
+rtError_t ApiImpl::KernelTaskGetAttribute(
+    rtTask_t task, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t* attrValue)
 {
-    const TaskInfo* const taskInfo = static_cast<const TaskInfo *>(task);
+    const TaskInfo* const taskInfo = static_cast<const TaskInfo*>(task);
     return GetKernelAttribute(taskInfo, attrId, attrValue);
 }
 
@@ -9176,7 +9586,7 @@ rtError_t ApiImpl::ModelUpdate(Model* mdl)
 
 rtError_t ApiImpl::SetKernelDfxInfoCallback(rtKernelDfxInfoType type, rtKernelDfxInfoProFunc func)
 {
-    KernelDfxInfo *kernelDfxInfoInstance = KernelDfxInfo::Instance();
+    KernelDfxInfo* kernelDfxInfoInstance = KernelDfxInfo::Instance();
     NULL_PTR_RETURN(kernelDfxInfoInstance, RT_ERROR_INSTANCE_NULL);
     const rtError_t error = kernelDfxInfoInstance->SetKernelDfxInfoCallback(type, func);
     if (error != RT_ERROR_NONE) {
@@ -9186,9 +9596,9 @@ rtError_t ApiImpl::SetKernelDfxInfoCallback(rtKernelDfxInfoType type, rtKernelDf
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::ModelGetStreams(const Model * const mdl, Stream **streams, uint32_t *numStreams)
+rtError_t ApiImpl::ModelGetStreams(const Model* const mdl, Stream** streams, uint32_t* numStreams)
 {
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     COND_RETURN_AND_MSG_INVALID_CONTEXT_MODEL(mdl, curCtx, RT_ERROR_MODEL_CONTEXT);
 
@@ -9196,27 +9606,31 @@ rtError_t ApiImpl::ModelGetStreams(const Model * const mdl, Stream **streams, ui
     return mdl->ModelGetStreams(streams, numStreams);
 }
 
-rtError_t ApiImpl::StreamGetTasks(Stream * const stm, void **tasks, uint32_t *numTasks)
+rtError_t ApiImpl::StreamGetTasks(Stream* const stm, void** tasks, uint32_t* numTasks)
 {
-    COND_RETURN_AND_MSG_OUTER(stm->GetModelNum() == 0, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Obtaining all tasks in a stream",
-        0, "stm->modelNum", RtFmtMsg("The stream (stream_id=%d) is not bound to a model", stm->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        stm->GetModelNum() == 0, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Obtaining all tasks in a stream", 0,
+        "stm->modelNum", RtFmtMsg("The stream (stream_id=%d) is not bound to a model", stm->Id_()));
     Model* const mdl = stm->Model_();
     NULL_PTR_RETURN(mdl, RT_ERROR_MODEL_NULL);
-    COND_RETURN_WARN(IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT, "stream belongs to sub ACL Graph, does not support getting tasks");
+    COND_RETURN_WARN(
+        IsStreamBindWithSubModel(stm), RT_ERROR_FEATURE_NOT_SUPPORT,
+        "stream belongs to sub ACL Graph, does not support getting tasks");
     return stm->StreamGetTasks(tasks, numTasks);
 }
 
-rtError_t ApiImpl::TaskGetType(rtTask_t task, rtTaskType *type)
+rtError_t ApiImpl::TaskGetType(rtTask_t task, rtTaskType* type)
 {
-    const TaskInfo* const taskInfo = static_cast<const TaskInfo *>(task);
-    COND_RETURN_WARN(IsTaskBelongToSubCaptureMdl(taskInfo),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "task belongs to sub ACL Graph, does not support querying task type");
+    const TaskInfo* const taskInfo = static_cast<const TaskInfo*>(task);
+    COND_RETURN_WARN(
+        IsTaskBelongToSubCaptureMdl(taskInfo), RT_ERROR_FEATURE_NOT_SUPPORT,
+        "task belongs to sub ACL Graph, does not support querying task type");
     return ConvertTaskType(taskInfo, type);
 }
 
 rtError_t ApiImpl::ModelTaskDisable(rtTask_t task)
 {
-    TaskInfo* const taskInfo = static_cast<TaskInfo *>(task);
+    TaskInfo* const taskInfo = static_cast<TaskInfo*>(task);
     rtError_t error = CheckCaptureModelForUpdate(taskInfo->stream);
     COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
 
@@ -9227,12 +9641,13 @@ rtError_t ApiImpl::ModelTaskDisable(rtTask_t task)
 
     rtTaskType taskType = RT_TASK_DEFAULT;
     error = ConvertTaskType(taskInfo, &taskType);
-    ERROR_PROC_RETURN_MSG_INNER(error,
-        captureModel->SetCaptureModelStatus(RtCaptureModelStatus::FAULT);,
-        "get task type failed, retCode=%#x.", error);
+    ERROR_PROC_RETURN_MSG_INNER(error, captureModel->SetCaptureModelStatus(RtCaptureModelStatus::FAULT);
+                                , "get task type failed, retCode=%#x.", error);
     COND_PROC(taskType == RT_TASK_DEFAULT, captureModel->SetCaptureModelStatus(RtCaptureModelStatus::FAULT));
-    COND_RETURN_AND_MSG_OUTER((taskType == RT_TASK_DEFAULT), RT_ERROR_INVALID_VALUE,
-        ErrorCode::EE1017, "Setting the status of a specified task to disabled", "taskType", "Current task type is RT_TASK_DEFAULT which cannot be reset");
+    COND_RETURN_AND_MSG_OUTER(
+        (taskType == RT_TASK_DEFAULT), RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
+        "Setting the status of a specified task to disabled", "taskType",
+        "Current task type is RT_TASK_DEFAULT which cannot be reset");
 
     captureModel->ClearShapeInfo(taskInfo->stream->Id_(), GetTaskId(taskInfo));
     captureModel->ClearTaskExtendInfo(taskInfo->stream->Id_(), GetTaskId(taskInfo));
@@ -9254,8 +9669,8 @@ rtError_t ApiImpl::GetAtomicDevProperties(uint32_t* capabilities, uint32_t count
     return RT_ERROR_NONE;
 }
 
-void ApiImpl::FillAtomicCapabilities(uint32_t* capabilities, const rtAtomicOperation* operations, uint32_t count,
-                                     const uint32_t* sourceCapabilities)
+void ApiImpl::FillAtomicCapabilities(
+    uint32_t* capabilities, const rtAtomicOperation* operations, uint32_t count, const uint32_t* sourceCapabilities)
 {
     for (uint32_t i = 0U; i < count; ++i) {
         if (operations[i] >= 0 && operations[i] < RT_ATOMIC_OPERATION_MAX_VAL) {
@@ -9264,7 +9679,7 @@ void ApiImpl::FillAtomicCapabilities(uint32_t* capabilities, const rtAtomicOpera
     }
 }
 
-rtError_t ApiImpl::CheckHostAtomicSupport(int32_t deviceId, bool &supported)
+rtError_t ApiImpl::CheckHostAtomicSupport(int32_t deviceId, bool& supported)
 {
     supported = false;
     Runtime* const rt = Runtime::Instance();
@@ -9295,7 +9710,7 @@ rtError_t ApiImpl::CheckHostAtomicSupport(int32_t deviceId, bool &supported)
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::CheckP2PAtomicSupport(int32_t srcDeviceId, int32_t dstDeviceId, bool &supported)
+rtError_t ApiImpl::CheckP2PAtomicSupport(int32_t srcDeviceId, int32_t dstDeviceId, bool& supported)
 {
     supported = false;
     Runtime* const rtInstance = Runtime::Instance();
@@ -9313,8 +9728,8 @@ rtError_t ApiImpl::CheckP2PAtomicSupport(int32_t srcDeviceId, int32_t dstDeviceI
 
     RT_LOG(RT_LOG_INFO, "the topoType=%ld", topoType);
 
-    if (topoType != TOPOLOGY_HCCS && topoType != TOPOLOGY_SIO &&
-        topoType != TOPOLOGY_HCCS_SW && topoType != TOPOLOGY_UB) {
+    if (topoType != TOPOLOGY_HCCS && topoType != TOPOLOGY_SIO && topoType != TOPOLOGY_HCCS_SW &&
+        topoType != TOPOLOGY_UB) {
         RT_LOG(RT_LOG_INFO, "Atomic operations are not supported for topoType=%ld", topoType);
         return RT_ERROR_NONE;
     }
@@ -9368,24 +9783,26 @@ rtError_t ApiImpl::GetP2PAtomicCapabilities(
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::TaskGetSeqId(rtTask_t task, uint32_t *id)
+rtError_t ApiImpl::TaskGetSeqId(rtTask_t task, uint32_t* id)
 {
-    const TaskInfo* const taskInfo = static_cast<const TaskInfo *>(task);
+    const TaskInfo* const taskInfo = static_cast<const TaskInfo*>(task);
     const Stream* stm = taskInfo->stream;
     NULL_PTR_RETURN(stm, RT_ERROR_STREAM_NULL);
     const Model* mdl = stm->Model_();
     NULL_PTR_RETURN(mdl, RT_ERROR_MODEL_NULL);
-    COND_RETURN_AND_MSG_OUTER(mdl->GetModelType() != RT_MODEL_CAPTURE_MODEL, RT_ERROR_FEATURE_NOT_SUPPORT, 
-        ErrorCode::EE1016, "Obtaining the Submission Queue Entry (SQE) ID of a task", "Non ACL Graph mode is not supported");
-    const CaptureModel *captureModel = dynamic_cast<const CaptureModel *>(mdl);
-    COND_RETURN_WARN(((captureModel != nullptr) && captureModel->IsSubCaptureModel()),
-        RT_ERROR_FEATURE_NOT_SUPPORT, "task belongs to sub ACL Graph, does not support querying task sequence ID");
+    COND_RETURN_AND_MSG_OUTER(
+        mdl->GetModelType() != RT_MODEL_CAPTURE_MODEL, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016,
+        "Obtaining the Submission Queue Entry (SQE) ID of a task", "Non ACL Graph mode is not supported");
+    const CaptureModel* captureModel = dynamic_cast<const CaptureModel*>(mdl);
+    COND_RETURN_WARN(
+        ((captureModel != nullptr) && captureModel->IsSubCaptureModel()), RT_ERROR_FEATURE_NOT_SUPPORT,
+        "task belongs to sub ACL Graph, does not support querying task sequence ID");
     *id = taskInfo->modelSeqId;
     RT_LOG(RT_LOG_INFO, "Get task sequence id=%u, streamId=%d, taskId=%u.", *id, stm->Id_(), taskInfo->id);
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImpl::GetDeviceInfoByAttrMisc(uint32_t deviceId, rtDevAttr attr, int64_t *val)
+rtError_t ApiImpl::GetDeviceInfoByAttrMisc(uint32_t deviceId, rtDevAttr attr, int64_t* val)
 {
     size_t freeSize = 0UL;
     size_t totalSize = 0UL;
@@ -9395,10 +9812,11 @@ rtError_t ApiImpl::GetDeviceInfoByAttrMisc(uint32_t deviceId, rtDevAttr attr, in
     uint32_t userDeviceId = 0U;
     rtError_t error = Runtime::Instance()->GetUserDevIdByDeviceId(static_cast<uint32_t>(deviceId), &userDeviceId);
     COND_RETURN_ERROR_MSG_INNER(
-        error != RT_ERROR_NONE, error, "Failed to convert the driver device ID %u to user device ID, retCode=%#x", deviceId, static_cast<uint32_t>(error));
+        error != RT_ERROR_NONE, error, "Failed to convert the driver device ID %u to user device ID, retCode=%#x",
+        deviceId, static_cast<uint32_t>(error));
 
     /* 当attr无法转化为(moduleType, infoType)时，在此增加case */
-    switch(attr) {
+    switch (attr) {
         case RT_DEV_ATTR_CUBE_CORE_NUM:
             error = GetDeviceInfoFromPlatformInfo(userDeviceId, "SoCInfo", "cube_core_cnt", val);
             break;
@@ -9439,12 +9857,17 @@ rtError_t ApiImpl::GetDeviceInfoByAttrMisc(uint32_t deviceId, rtDevAttr attr, in
             error = GetDeviceVirtualInfo(deviceId, val);
             break;
         default:
-            RT_LOG_OUTER_MSG_INVALID_PARAM(attr, "RT_DEV_ATTR_CUBE_CORE_NUM(102), RT_DEV_ATTR_WARP_SIZE(202),"
-                " RT_DEV_ATTR_MAX_THREAD_PER_VECTOR_CORE(203), RT_DEV_ATTR_UBUF_PER_VECTOR_CORE(204), RT_DEV_ATTR_MAX_GRID_DIM_X(205),"
-                " RT_DEV_ATTR_MAX_GRID_DIM_Y(206), RT_DEV_ATTR_MAX_GRID_DIM_Z(207), RT_DEV_ATTR_MAX_BLOCK_PER_GRID(208),"
-                " RT_DEV_ATTR_MAX_THREADS_PER_BLOCK(209), RT_DEV_ATTR_MAX_BLOCK_DIM_X(210), RT_DEV_ATTR_MAX_BLOCK_DIM_Y(211),"
-                " RT_DEV_ATTR_MAX_BLOCK_DIM_Z(212), RT_DEV_ATTR_TOTAL_GLOBAL_MEM_SIZE(301), RT_DEV_ATTR_L2_CACHE_SIZE(302),"
-                " RT_DEV_ATTR_NPU_ARCH(601), or RT_DEV_ATTR_IS_VIRTUAL(501)");
+            RT_LOG_OUTER_MSG_INVALID_PARAM(
+                attr, "RT_DEV_ATTR_CUBE_CORE_NUM(102), RT_DEV_ATTR_WARP_SIZE(202),"
+                      " RT_DEV_ATTR_MAX_THREAD_PER_VECTOR_CORE(203), RT_DEV_ATTR_UBUF_PER_VECTOR_CORE(204), "
+                      "RT_DEV_ATTR_MAX_GRID_DIM_X(205),"
+                      " RT_DEV_ATTR_MAX_GRID_DIM_Y(206), RT_DEV_ATTR_MAX_GRID_DIM_Z(207), "
+                      "RT_DEV_ATTR_MAX_BLOCK_PER_GRID(208),"
+                      " RT_DEV_ATTR_MAX_THREADS_PER_BLOCK(209), RT_DEV_ATTR_MAX_BLOCK_DIM_X(210), "
+                      "RT_DEV_ATTR_MAX_BLOCK_DIM_Y(211),"
+                      " RT_DEV_ATTR_MAX_BLOCK_DIM_Z(212), RT_DEV_ATTR_TOTAL_GLOBAL_MEM_SIZE(301), "
+                      "RT_DEV_ATTR_L2_CACHE_SIZE(302),"
+                      " RT_DEV_ATTR_NPU_ARCH(601), or RT_DEV_ATTR_IS_VIRTUAL(501)");
             error = RT_ERROR_INVALID_VALUE;
             break;
     }
@@ -9452,7 +9875,7 @@ rtError_t ApiImpl::GetDeviceInfoByAttrMisc(uint32_t deviceId, rtDevAttr attr, in
     return error;
 }
 
-rtError_t ApiImpl::GetDeviceInfoByAttr(uint32_t deviceId, rtDevAttr attr, int64_t *val)
+rtError_t ApiImpl::GetDeviceInfoByAttr(uint32_t deviceId, rtDevAttr attr, int64_t* val)
 {
     static const std::map<rtDevAttr, DevInfo> devInfoMap = {
         {RT_DEV_ATTR_AICPU_CORE_NUM, {MODULE_TYPE_AICPU, INFO_TYPE_CORE_NUM}},
@@ -9468,7 +9891,7 @@ rtError_t ApiImpl::GetDeviceInfoByAttr(uint32_t deviceId, rtDevAttr attr, int64_
         {RT_DEV_ATTR_HD_CONNECT_TYPE, {MODULE_TYPE_SYSTEM, INFO_TYPE_HD_CONNECT_TYPE}},
         {RT_DEV_ATTR_DEVICE_FORM_FACTOR, {MODULE_TYPE_SYSTEM, INFO_TYPE_PRODUCT_TYPE}},
     };
- 
+
     const auto it = devInfoMap.find(attr);
     if (it != devInfoMap.end()) {
         const DevInfo& devInfo = it->second;
@@ -9479,5 +9902,5 @@ rtError_t ApiImpl::GetDeviceInfoByAttr(uint32_t deviceId, rtDevAttr attr, int64_
 
     return GetDeviceInfoByAttrMisc(deviceId, attr, val);
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -17,34 +17,37 @@
 
 namespace cce {
 namespace runtime {
-rtError_t CreateStreamTaskInit(TaskInfo * const taskInfo, const uint32_t flag);
-void ToCommandBodyForCreateStreamTask(TaskInfo * const taskInfo, rtCommand_t *const command);
+rtError_t CreateStreamTaskInit(TaskInfo* const taskInfo, const uint32_t flag);
+void ToCommandBodyForCreateStreamTask(TaskInfo* const taskInfo, rtCommand_t* const command);
 rtError_t SqLockUnlockTaskInit(TaskInfo* taskInfo, const bool isLock);
 
-rtError_t InitFuncCallParaForStreamActiveTask(TaskInfo* taskInfo, rtStarsStreamActiveFcPara_t &fcPara,
-    const rtChipType_t chipType);
-rtError_t StreamActiveTaskInit(TaskInfo* taskInfo, const Stream * const stm);
+rtError_t InitFuncCallParaForStreamActiveTask(
+    TaskInfo* taskInfo, rtStarsStreamActiveFcPara_t& fcPara, const rtChipType_t chipType);
+rtError_t StreamActiveTaskInit(TaskInfo* taskInfo, const Stream* const stm);
 rtError_t ReConstructStreamActiveTaskFc(TaskInfo* taskInfo);
-void ToCommandBodyForStreamActiveTask(TaskInfo* taskInfo, rtCommand_t * const command);
-void StreamActiveTaskUnInit(TaskInfo * const taskInfo);
+void ToCommandBodyForStreamActiveTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void StreamActiveTaskUnInit(TaskInfo* const taskInfo);
 void PrintErrorInfoForStreamActiveTask(TaskInfo* taskInfo, const uint32_t devId);
-rtError_t ActiveAicpuStreamTaskInit(TaskInfo* taskInfo, const uint64_t argsParam, const uint32_t argsSizeLen,
-                                    const uint64_t func, const uint32_t kernelTypeId);
-void ToCmdBodyForActiveAicpuStreamTask(TaskInfo* const taskInfo, rtCommand_t *const command);
+rtError_t ActiveAicpuStreamTaskInit(
+    TaskInfo* taskInfo, const uint64_t argsParam, const uint32_t argsSizeLen, const uint64_t func,
+    const uint32_t kernelTypeId);
+void ToCmdBodyForActiveAicpuStreamTask(TaskInfo* const taskInfo, rtCommand_t* const command);
 
-rtError_t OverflowSwitchSetTaskInit(TaskInfo *taskInfo, Stream * const stm, const uint32_t flags);
-rtError_t StreamTagSetTaskInit(TaskInfo *taskInfo, Stream * const stm, const uint32_t geOpTag);
+rtError_t OverflowSwitchSetTaskInit(TaskInfo* taskInfo, Stream* const stm, const uint32_t flags);
+rtError_t StreamTagSetTaskInit(TaskInfo* taskInfo, Stream* const stm, const uint32_t geOpTag);
 
-rtError_t SetStreamModeTaskInit(TaskInfo *taskInfo, const uint64_t mode);
-void ToCmdBodyForSetStreamModeTask(TaskInfo* taskInfo, rtCommand_t *const command);
-rtError_t CallbackLaunchTaskInit(TaskInfo* taskInfo, const rtCallback_t callBackFunction, void *const functionData,
-                                 const bool isBlockFlag, const int32_t evtId);
-void ToCmdBodyForCallbackLaunchTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void FlipTaskInit(TaskInfo* taskInfo, const uint16_t flipNum, const uint16_t streamId = 0U, const uint16_t subType = 0U);
-void ToCmdBodyForFlipTask(TaskInfo *const taskInfo, rtCommand_t *const command);
-rtError_t SqeUpdateTaskInit(TaskInfo* taskInfo, TaskInfo * const updateTask, void * const updateArgHandle = nullptr);
-void ToCommandBodyForSqeUpdateTask(TaskInfo* taskInfo, rtCommand_t *const command);
-rtError_t SendFlipTaskWithStreamId(Stream *stream);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_STREAM_TASK_H
+rtError_t SetStreamModeTaskInit(TaskInfo* taskInfo, const uint64_t mode);
+void ToCmdBodyForSetStreamModeTask(TaskInfo* taskInfo, rtCommand_t* const command);
+rtError_t CallbackLaunchTaskInit(
+    TaskInfo* taskInfo, const rtCallback_t callBackFunction, void* const functionData, const bool isBlockFlag,
+    const int32_t evtId);
+void ToCmdBodyForCallbackLaunchTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void FlipTaskInit(
+    TaskInfo* taskInfo, const uint16_t flipNum, const uint16_t streamId = 0U, const uint16_t subType = 0U);
+void ToCmdBodyForFlipTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+rtError_t SqeUpdateTaskInit(TaskInfo* taskInfo, TaskInfo* const updateTask, void* const updateArgHandle = nullptr);
+void ToCommandBodyForSqeUpdateTask(TaskInfo* taskInfo, rtCommand_t* const command);
+rtError_t SendFlipTaskWithStreamId(Stream* stream);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_STREAM_TASK_H

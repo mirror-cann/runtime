@@ -21,9 +21,9 @@ struct EventResource;
 rtError_t NtyWait(
     Notify* const inNotify, Stream* const streamIn, const uint32_t timeOut, const bool isEndGraphNotify = false,
     Model* const captureModel = nullptr, std::vector<EventResource>* externalWaitRetainedResources = nullptr);
-    rtError_t NtyRecord(Notify * const inNotify, Stream * const streamIn);
-    rtError_t NtyReset(Notify * const inNotify, Stream * const streamIn);
-}  // namespace runtime
-}  // namespace cce
+rtError_t NtyRecord(Notify* const inNotify, Stream* const streamIn);
+rtError_t NtyReset(Notify* const inNotify, Stream* const streamIn);
+} // namespace runtime
+} // namespace cce
 
 #endif

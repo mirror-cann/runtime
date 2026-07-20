@@ -15,12 +15,12 @@
 namespace cce {
 namespace runtime {
 class Stream;
-    rtError_t StarsLaunchDvppRRProcess(Stream * const stm);
-    rtError_t StarsLaunch(const void * const sqe, const uint32_t sqeLen, Stream * const stm, const uint32_t flag);
-    rtError_t LaunchMultipleTaskInfo(const rtMultipleTaskInfo_t * const multipleTaskInfo, Stream * const stm,
-                                     const uint32_t flag);
+rtError_t StarsLaunchDvppRRProcess(Stream* const stm);
+rtError_t StarsLaunch(const void* const sqe, const uint32_t sqeLen, Stream* const stm, const uint32_t flag);
+rtError_t LaunchMultipleTaskInfo(
+    const rtMultipleTaskInfo_t* const multipleTaskInfo, Stream* const stm, const uint32_t flag);
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_DVPP_C_HPP__

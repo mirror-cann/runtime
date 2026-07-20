@@ -24,24 +24,30 @@ enum class AixErrClass : int32_t {
     AIX_S_ERROR = 4,
     AIX_LINK_ERROR = 8,
     AIX_ERROR_END
-};  // 与TS侧ts_aix_err_class_t对应
+}; // 与TS侧ts_aix_err_class_t对应
 
 rtError_t ProcRingBufferTaskDavid(
-    const Device *const dev, const void *const devMem, const bool delFlag, const uint32_t len);
-void GetExceptionArgsForFusionKernelTask(const TaskInfo * const taskInfo, rtExceptionArgsInfo_t * const argsInfo);
-rtError_t ProcessDavidStarsFusionKernelErrorInfo(const StarsDeviceErrorInfo *const info, const uint64_t errorNumber,
-    const Device *const dev, const DeviceErrorProc *const insPtr);
-rtError_t ProcessDavidStarsWaitTimeoutErrorInfo(const StarsDeviceErrorInfo * const info,
-    const uint64_t errorNumber, const Device * const dev, const DeviceErrorProc * const insPtr);
-rtError_t ProcessDavidStarsCoreErrorInfo(const StarsDeviceErrorInfo * const info,
-    const uint64_t errorNumber, const Device * const dev, const DeviceErrorProc * const insPtr);
-rtError_t ProcessDavidStarsCcuErrorInfo(const StarsDeviceErrorInfo * const info,
-    const uint64_t errorNumber, const Device * const dev, const DeviceErrorProc * const insPtr);
-rtError_t ProcessStarsSdmaErrorInfo(const StarsDeviceErrorInfo * const info,
-    const uint64_t errorNumber, const Device * const dev, const DeviceErrorProc * const insPtr);
-rtError_t ProcessStarsV2CoreTimeoutDfxInfo(const StarsDeviceErrorInfo * const info,
-    const uint64_t errorNumber, const Device * const dev, const DeviceErrorProc * const insPtr);
-}  // namespace runtime
-}  // namespace cce
+    const Device* const dev, const void* const devMem, const bool delFlag, const uint32_t len);
+void GetExceptionArgsForFusionKernelTask(const TaskInfo* const taskInfo, rtExceptionArgsInfo_t* const argsInfo);
+rtError_t ProcessDavidStarsFusionKernelErrorInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr);
+rtError_t ProcessDavidStarsWaitTimeoutErrorInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr);
+rtError_t ProcessDavidStarsCoreErrorInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr);
+rtError_t ProcessDavidStarsCcuErrorInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr);
+rtError_t ProcessStarsSdmaErrorInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr);
+rtError_t ProcessStarsV2CoreTimeoutDfxInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr);
+} // namespace runtime
+} // namespace cce
 
 #endif

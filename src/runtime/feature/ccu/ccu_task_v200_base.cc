@@ -29,7 +29,7 @@ static bool CcuLaunchTaskRegister()
         .setStarsResultFunc = &SetResultForCcuLaunchTask,
     };
 
-    const auto &chips = GetDavidChips();
+    const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_CCU_LAUNCH, funcs);
     }
@@ -40,5 +40,5 @@ static bool CcuLaunchTaskRegister()
 
 static bool g_ccuLaunchTaskRegister = CcuLaunchTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -38,19 +38,15 @@
 #include "model_c.hpp"
 
 namespace {
-constexpr uint16_t TASK_RECLAIM_MAX_NUM = 64U;     // Max reclaim num per query.
-constexpr uint16_t TASK_QUERY_INTERVAL_NUM = 64U;     // Shared memory query interval.
-constexpr uint16_t TASK_WAIT_EXECUTE_MAX_NUM = 512U;     // Max number of tasks waiting to be executed on device.
-}
+constexpr uint16_t TASK_RECLAIM_MAX_NUM = 64U;       // Max reclaim num per query.
+constexpr uint16_t TASK_QUERY_INTERVAL_NUM = 64U;    // Shared memory query interval.
+constexpr uint16_t TASK_WAIT_EXECUTE_MAX_NUM = 512U; // Max number of tasks waiting to be executed on device.
+} // namespace
 
 namespace cce {
 namespace runtime {
-StarsEngine::StarsEngine(Device * const dev,
-                         Thread * const monitor,
-                         Thread * const recycle)
-    : Engine(dev),
-      monitorThread_(monitor),
-      recycleThread_(recycle)
+StarsEngine::StarsEngine(Device* const dev, Thread* const monitor, Thread* const recycle)
+    : Engine(dev), monitorThread_(monitor), recycleThread_(recycle)
 {
     RT_LOG(RT_LOG_EVENT, "Constructor.");
 }
@@ -64,14 +60,14 @@ StarsEngine::~StarsEngine() noexcept
 
 rtError_t StarsEngine::Init()
 {
-    Device * const dev = GetDevice();
+    Device* const dev = GetDevice();
     NULL_PTR_RETURN(dev, RT_ERROR_DEVICE_NULL);
     uint16_t cqeWaitTimeout = dev->GetDevProperties().cqeWaitTimeout;
     SetWaitTimeout(cqeWaitTimeout);
     return RT_ERROR_NONE;
 }
 
-void StarsEngine::Run(const void * const param)
+void StarsEngine::Run(const void* const param)
 {
     switch (static_cast<ThreadType>(RtPtrToValue(param))) {
         case THREAD_RECYCLE: {
@@ -99,9 +95,9 @@ rtError_t StarsEngine::CreateMonitorThread()
 #ifndef CFG_DEV_PLATFORM_PC
     errorContext_ = ErrorManager::GetInstance().GetErrorManagerContext();
 #endif
-    void * const monitor = RtValueToPtr<void *>(THREAD_MONITOR);
-    const char_t * const threadName = (GetDevice()->DevGetTsId() == static_cast<uint32_t>(RT_TSC_ID)) ?
-                                       "MONITOR_0" : "MONITOR_1";
+    void* const monitor = RtValueToPtr<void*>(THREAD_MONITOR);
+    const char_t* const threadName =
+        (GetDevice()->DevGetTsId() == static_cast<uint32_t>(RT_TSC_ID)) ? "MONITOR_0" : "MONITOR_1";
     monitorThread_ = OsalFactory::CreateThread(threadName, this, monitor);
     if (monitorThread_ == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Failed to create monitor thread.");
@@ -121,17 +117,19 @@ rtError_t StarsEngine::CreateMonitorThread()
 
 rtError_t StarsEngine::Start()
 {
-    COND_RETURN_ERROR_MSG_INNER((monitorThread_ != nullptr), RT_ERROR_ENGINE_THREAD,
-                                "Failed to start StarsEngine. Reason: engine had been started.");
+    COND_RETURN_ERROR_MSG_INNER(
+        (monitorThread_ != nullptr), RT_ERROR_ENGINE_THREAD,
+        "Failed to start StarsEngine. Reason: engine had been started.");
 
-    COND_RETURN_ERROR_MSG_INNER(CreateMonitorThread() != RT_ERROR_NONE, RT_ERROR_MEMORY_ALLOCATION,
-                                "Failed to create monitor thread.");
+    COND_RETURN_ERROR_MSG_INNER(
+        CreateMonitorThread() != RT_ERROR_NONE, RT_ERROR_MEMORY_ALLOCATION, "Failed to create monitor thread.");
 #ifndef CFG_DEV_PLATFORM_PC
-    COND_RETURN_ERROR_MSG_INNER(Runtime::Instance()->CreateReportRasThread() != RT_ERROR_NONE, RT_ERROR_MEMORY_ALLOCATION,
-                                "Failed to create report RAS thread.");
+    COND_RETURN_ERROR_MSG_INNER(
+        Runtime::Instance()->CreateReportRasThread() != RT_ERROR_NONE, RT_ERROR_MEMORY_ALLOCATION,
+        "Failed to create report RAS thread.");
 #endif
 
-    Device * const dev = GetDevice();
+    Device* const dev = GetDevice();
     if (dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_RECYCLE_THREAD)) {
         if ((GetDevice()->Driver_()->GetRunMode() == RT_RUN_MODE_ONLINE)) {
             GetDevice()->SetIsChipSupportRecycleThread(true);
@@ -164,7 +162,7 @@ rtError_t StarsEngine::Stop()
 
 rtError_t StarsEngine::CreateRecycleThread(void)
 {
-    void * const recycle = RtValueToPtr<void *>(THREAD_RECYCLE);
+    void* const recycle = RtValueToPtr<void*>(THREAD_RECYCLE);
     recycleThreadName_ = "RT_RECYCLE_" + std::to_string(device_->Id_());
     recycleThread_ = OsalFactory::CreateThread(recycleThreadName_.c_str(), this, recycle);
     if (recycleThread_ == nullptr) {
@@ -250,7 +248,7 @@ bool StarsEngine::CheckMonitorThreadAlive()
     return false;
 }
 
-void StarsEngine::StarsCqeReceive(const rtLogicCqReport_t &logicCq, TaskInfo * const runTask) const
+void StarsEngine::StarsCqeReceive(const rtLogicCqReport_t& logicCq, TaskInfo* const runTask) const
 {
     runTask->pkgStat[RT_PACKAGE_TYPE_TASK_REPORT].receivePackage++;
     SetStarsResult(runTask, logicCq);
@@ -273,44 +271,44 @@ void StarsEngine::StarsCqeReceive(const rtLogicCqReport_t &logicCq, TaskInfo * c
     }
 
     if (runTask->errorCode != 0U && runTask->type == TS_TASK_TYPE_FFTS_PLUS) {
-        FftsPlusTaskInfo *fftsPlusTask = static_cast<FftsPlusTaskInfo *>(&runTask->u.fftsPlusTask);
+        FftsPlusTaskInfo* fftsPlusTask = static_cast<FftsPlusTaskInfo*>(&runTask->u.fftsPlusTask);
         if ((fftsPlusTask->kernelFlag & RT_KERNEL_FFTSPLUS_DYNAMIC_SHAPE_DUMPFLAG) != 0U) {
             runTask->stream->SetErrCode(runTask->errorCode);
         }
     }
 }
 
-rtError_t StarsEngine::AddTaskToStream(TaskInfo * const workTask, const uint32_t sendSqeNum)
+rtError_t StarsEngine::AddTaskToStream(TaskInfo* const workTask, const uint32_t sendSqeNum)
 {
     uint64_t beginCnt = 0ULL;
     uint64_t endCnt = 0ULL;
     uint16_t checkCount = 0U;
     uint64_t tryCnt = 0ULL;
 
-    Stream * const stm = workTask->stream;
+    Stream* const stm = workTask->stream;
     rtError_t error = stm->StarsAddTaskToStream(workTask, sendSqeNum);
     COND_RETURN_WITH_NOLOG(stm->GetBindFlag(), error);
 
     while (unlikely(error != RT_ERROR_NONE)) {
         stm->StarsStmDfxCheck(beginCnt, endCnt, checkCount);
         if (stm->GetBeingAbortedFlag()) {
-            RT_LOG(RT_LOG_ERROR,
-                "stream status is stream abort, device_id=%u, stream_id=%d.",
-                stm->Device_()->Id_(),
+            RT_LOG(
+                RT_LOG_ERROR, "stream status is stream abort, device_id=%u, stream_id=%d.", stm->Device_()->Id_(),
                 stm->Id_());
             return RT_ERROR_STREAM_ABORT_SEND_TASK_FAIL;
         }
         error = stm->CheckContextTaskSend(workTask);
-        COND_RETURN_ERROR((error == RT_ERROR_DEVICE_TASK_ABORT),
-                          RT_ERROR_DEVICE_ABORT_SEND_TASK_FAIL,
-                          "Failed to send task. Reason: device task abort, device_id=%u, stream_id=%d.",
-                          stm->Device_()->Id_(),
-                          stm->Id_());
+        COND_RETURN_ERROR(
+            (error == RT_ERROR_DEVICE_TASK_ABORT), RT_ERROR_DEVICE_ABORT_SEND_TASK_FAIL,
+            "Failed to send task. Reason: device task abort, device_id=%u, stream_id=%d.", stm->Device_()->Id_(),
+            stm->Id_());
         ERROR_RETURN(error, "Failed to send task. Reason: context is abort, status=%#x.", static_cast<int32_t>(error));
         SendingWaitProc(stm);
         error = stm->StarsAddTaskToStream(workTask, sendSqeNum);
         if ((!stm->GetBindFlag()) && (error == RT_ERROR_STREAM_FULL) && (tryCnt == 0U)) {
-            RT_LOG(RT_LOG_WARNING, "single-operator flow stream task public buff full, "
+            RT_LOG(
+                RT_LOG_WARNING,
+                "single-operator flow stream task public buff full, "
                 "device_id=%u, stream_id=%d, task_id=%u, sendSqeNum=%u",
                 stm->Device_()->Id_(), stm->Id_(), workTask->id, sendSqeNum);
             tryCnt++;
@@ -321,8 +319,8 @@ rtError_t StarsEngine::AddTaskToStream(TaskInfo * const workTask, const uint32_t
 }
 
 // In order not to affect the sending, at most 64 tasks can be reclaim once time
-void StarsEngine::GetRecycleHead(const uint16_t taskHead, const uint16_t sqHead,
-        uint32_t const rtsqDepth, uint16_t &recycleHead) const
+void StarsEngine::GetRecycleHead(
+    const uint16_t taskHead, const uint16_t sqHead, uint32_t const rtsqDepth, uint16_t& recycleHead) const
 {
     if (sqHead >= taskHead) {
         if ((TASK_ID_SUB(sqHead, taskHead)) > TASK_RECLAIM_MAX_NUM) {
@@ -338,7 +336,7 @@ void StarsEngine::GetRecycleHead(const uint16_t taskHead, const uint16_t sqHead,
 }
 
 // recycle task and sleep when device execute slowly
-void StarsEngine::SendingWaitProc(Stream * const stm)
+void StarsEngine::SendingWaitProc(Stream* const stm)
 {
     if (stm->IsBindDvppGrp()) {
         // dvpp task recycled by rtDvppWaitGroupReport
@@ -362,7 +360,7 @@ void StarsEngine::SendingWaitProc(Stream * const stm)
     stm->SetRecycleFlag(true);
 
     // get device rtsq head by drv interface
-    Device *dev = GetDevice();
+    Device* dev = GetDevice();
     const uint32_t devId = dev->Id_();
     const uint32_t sqId = stm->GetSqId();
     const uint32_t tsId = dev->DevGetTsId();
@@ -373,9 +371,9 @@ void StarsEngine::SendingWaitProc(Stream * const stm)
     error = SendingProcReport(stm, false, sqHead, taskId);
     RT_LOG(RT_LOG_DEBUG, "Process finish task resource, sqHead=%hu, taskId=%u, error=%#x.", sqHead, taskId, error);
     if (IsExeTaskSame(stm, taskId)) {
-        AtraceParams param = { stm->Device_()->Id_(), static_cast<uint32_t>(stm->Id_()), 0, GetCurrentTid(),
-            GetDevice()->GetAtraceHandle(), {}};
-        param.u.taskRecycleParams = { stm->GetLastTaskId(), taskId, TYPE_SENDINGWAIT };
+        AtraceParams param = {stm->Device_()->Id_(), static_cast<uint32_t>(stm->Id_()), 0,
+                              GetCurrentTid(),       GetDevice()->GetAtraceHandle(),    {}};
+        param.u.taskRecycleParams = {stm->GetLastTaskId(), taskId, TYPE_SENDINGWAIT};
         AtraceSubmitLog(TYPE_TASK_RECYCLE, param);
     }
     stm->SetRecycleFlag(false);
@@ -387,7 +385,7 @@ void StarsEngine::SendingWaitProc(Stream * const stm)
     return;
 }
 
-rtError_t StarsEngine::AdjustRecycleTaskID(Stream * const stm, uint32_t &endTaskId, uint16_t pos) const
+rtError_t StarsEngine::AdjustRecycleTaskID(Stream* const stm, uint32_t& endTaskId, uint16_t pos) const
 {
     const uint32_t rtsqDepth = stm->GetSqDepth();
     uint32_t nextTaskId = UINT16_MAX;
@@ -397,15 +395,15 @@ rtError_t StarsEngine::AdjustRecycleTaskID(Stream * const stm, uint32_t &endTask
 
     // last task or task finish)
     const bool taskIsFinished = ((stm->GetTaskPosTail() == nextPos) || (nextTaskId != endTaskId));
-    COND_RETURN_INFO(taskIsFinished == false,
-        RT_ERROR_INVALID_VALUE, "stream_id=%d, endTaskId=%u, pos=%u nextTaskId=%u",
-        stm->Id_(), endTaskId, pos, nextTaskId);
+    COND_RETURN_INFO(
+        taskIsFinished == false, RT_ERROR_INVALID_VALUE, "stream_id=%d, endTaskId=%u, pos=%u nextTaskId=%u", stm->Id_(),
+        endTaskId, pos, nextTaskId);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t StarsEngine::FinishedTaskReclaim(Stream * const stm, const bool limited, uint16_t taskHead,
-    uint16_t sqHead, uint32_t &taskId)
+rtError_t StarsEngine::FinishedTaskReclaim(
+    Stream* const stm, const bool limited, uint16_t taskHead, uint16_t sqHead, uint32_t& taskId)
 {
     uint16_t recycleHead = sqHead;
     if (limited) {
@@ -414,7 +412,7 @@ rtError_t StarsEngine::FinishedTaskReclaim(Stream * const stm, const bool limite
 
     // get taskId by position, recycleHead is executing Currently, pos has been executed.
     uint16_t pos = 0;
-    Device * const dev = GetDevice();
+    Device* const dev = GetDevice();
     NULL_PTR_RETURN(dev, RT_ERROR_DEVICE_NULL);
     uint16_t rtsqPosition = dev->GetDevProperties().getRtsqPosition;
     if (rtsqPosition != UINT16_MAX) {
@@ -429,7 +427,7 @@ rtError_t StarsEngine::FinishedTaskReclaim(Stream * const stm, const bool limite
 
     uint32_t endTaskId = UINT16_MAX;
     const rtError_t error = stm->GetTaskIdByPos(pos, endTaskId);
-    if (taskHead == recycleHead) {     // no new task.
+    if (taskHead == recycleHead) { // no new task.
         taskId = stm->GetRecycleEndTaskId();
         return RT_ERROR_NONE;
     }
@@ -449,7 +447,8 @@ rtError_t StarsEngine::FinishedTaskReclaim(Stream * const stm, const bool limite
 
     if (error != RT_ERROR_NONE) {
         if (errorLogFlag) {
-            COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Failed to get task id by position, pos=%#x.", pos);
+            COND_RETURN_ERROR_MSG_INNER(
+                error != RT_ERROR_NONE, error, "Failed to get task id by position, pos=%#x.", pos);
         } else {
             return error;
         }
@@ -464,20 +463,23 @@ rtError_t StarsEngine::FinishedTaskReclaim(Stream * const stm, const bool limite
         taskId = stm->GetRecycleEndTaskId();
     }
 
-    RT_LOG(RT_LOG_INFO, "recycle task, stream_id=%d, limited=%d, taskHead=%hu, sqHead=%hu, endTaskId=%u, "
-        "recycleTaskId=%u.", stm->Id_(), limited, taskHead, sqHead, endTaskId, taskId);
+    RT_LOG(
+        RT_LOG_INFO,
+        "recycle task, stream_id=%d, limited=%d, taskHead=%hu, sqHead=%hu, endTaskId=%u, "
+        "recycleTaskId=%u.",
+        stm->Id_(), limited, taskHead, sqHead, endTaskId, taskId);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t StarsEngine::TaskReclaimByStm(Stream * const stm, const bool limited, uint32_t &taskId)
+rtError_t StarsEngine::TaskReclaimByStm(Stream* const stm, const bool limited, uint32_t& taskId)
 {
     if (stm->GetTsSqAllocType() != SQ_ALLOC_TYPE_RT_DEFAULT) {
         RT_LOG(RT_LOG_DEBUG, "ts SQ no need to do task reclaim, streamId=%d.", stm->Id_());
         return RT_ERROR_NONE;
     }
 
-    Device * const dev = GetDevice();
+    Device* const dev = GetDevice();
     const uint32_t devId = dev->Id_();
     const uint32_t tsId = dev->DevGetTsId();
     const uint32_t sqId = stm->GetSqId();
@@ -486,29 +488,32 @@ rtError_t StarsEngine::TaskReclaimByStm(Stream * const stm, const bool limited, 
     rtError_t error;
     if (unlikely(stm->GetFailureMode() == ABORT_ON_FAILURE) || stm->isForceRecycle_) {
         error = SendingProcReport(stm, false, static_cast<uint16_t>(stm->GetTaskPosTail()), taskId);
-        RT_LOG(RT_LOG_INFO, "stream is in failure abort or isForceRecycle and need to reclaim all, streamId=%d,"
-                             " posHead=%u, posTail=%u, taskId=%u, failuremode=%" PRIu64 ", isForceRecycle=%u",
-                             stm->Id_(), stm->GetTaskPosHead(), stm->GetTaskPosTail(), taskId, stm->GetFailureMode(),
-                             static_cast<uint32_t>(stm->isForceRecycle_));
+        RT_LOG(
+            RT_LOG_INFO,
+            "stream is in failure abort or isForceRecycle and need to reclaim all, streamId=%d,"
+            " posHead=%u, posTail=%u, taskId=%u, failuremode=%" PRIu64 ", isForceRecycle=%u",
+            stm->Id_(), stm->GetTaskPosHead(), stm->GetTaskPosTail(), taskId, stm->GetFailureMode(),
+            static_cast<uint32_t>(stm->isForceRecycle_));
         return error;
     }
 
     error = dev->Driver_()->GetSqHead(devId, tsId, sqId, sqHead);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to query SQ head, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, "Failed to query SQ head, retCode=%#x.", static_cast<uint32_t>(error));
 
     error = SendingProcReport(stm, limited, sqHead, taskId);
     return error;
 }
 
-rtError_t StarsEngine::TaskReclaimByStreamId(const uint32_t streamId, const bool limited, uint32_t &taskId)
+rtError_t StarsEngine::TaskReclaimByStreamId(const uint32_t streamId, const bool limited, uint32_t& taskId)
 {
-    Stream *stm = nullptr;
-    Device *dev = GetDevice();
+    Stream* stm = nullptr;
+    Device* dev = GetDevice();
 
     const rtError_t error = dev->GetStreamSqCqManage()->GetStreamById(streamId, &stm);
-    COND_RETURN_ERROR_MSG_INNER(((error != RT_ERROR_NONE) || (stm == nullptr)), error,
-        "Failed to get stream by id, streamId=%u, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        ((error != RT_ERROR_NONE) || (stm == nullptr)), error, "Failed to get stream by id, streamId=%u, retCode=%#x.",
+        streamId, static_cast<uint32_t>(error));
     if (stm->IsSeparateSendAndRecycle()) {
         if (!stm->Device_()->GetIsDoingRecycling()) {
             WakeUpRecycleThread();
@@ -518,7 +523,7 @@ rtError_t StarsEngine::TaskReclaimByStreamId(const uint32_t streamId, const bool
     return TaskReclaimByStm(stm, limited, taskId);
 }
 
-rtError_t StarsEngine::TaskReclaimForSeparatedStm(Stream *const stm)
+rtError_t StarsEngine::TaskReclaimForSeparatedStm(Stream* const stm)
 {
     rtError_t error = RT_ERROR_NONE;
     error = TaskReclaimByCqeForSeparatedStm(stm);
@@ -530,11 +535,12 @@ rtError_t StarsEngine::TaskReclaimForSeparatedStm(Stream *const stm)
 
 rtError_t StarsEngine::ProcessHeadTaskByStreamId(const uint16_t streamId)
 {
-    Stream *stm = nullptr;
+    Stream* stm = nullptr;
     uint32_t taskId = 0U;
     rtError_t error = GetDevice()->GetStreamSqCqManage()->GetStreamById(streamId, &stm);
-    COND_RETURN_ERROR_MSG_INNER(((error != RT_ERROR_NONE) || (stm == nullptr)), error,
-        "Failed to get stream by id, streamId=%hu, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        ((error != RT_ERROR_NONE) || (stm == nullptr)), error, "Failed to get stream by id, streamId=%hu, retCode=%#x.",
+        streamId, static_cast<uint32_t>(error));
 
     const uint32_t taskHead = stm->GetTaskPosHead();
     error = stm->GetTaskIdByPos(static_cast<uint16_t>(taskHead), taskId);
@@ -543,7 +549,7 @@ rtError_t StarsEngine::ProcessHeadTaskByStreamId(const uint16_t streamId)
         return error;
     }
     taskId = taskId & 0xFFFFU;
-    TaskInfo * const reportTask =
+    TaskInfo* const reportTask =
         GetDevice()->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), static_cast<uint16_t>(taskId));
     if (unlikely(reportTask == nullptr)) {
         RT_LOG(RT_LOG_WARNING, "task or task stream is null, stream_id=%hu, task_id=%u,", streamId, taskId);
@@ -557,14 +563,14 @@ rtError_t StarsEngine::ProcessHeadTaskByStreamId(const uint16_t streamId)
     return RT_ERROR_NONE;
 }
 
-rtError_t StarsEngine::TaskReclaim(const uint32_t streamId, const bool limited, uint32_t &taskId)
+rtError_t StarsEngine::TaskReclaim(const uint32_t streamId, const bool limited, uint32_t& taskId)
 {
     if (streamId != UINT32_MAX) {
         return TaskReclaimByStreamId(streamId, limited, taskId);
     }
 
     std::vector<uint32_t> allStreams;
-    const Device * const dev = GetDevice();
+    const Device* const dev = GetDevice();
     dev->GetStreamSqCqManage()->GetAllStreamId(allStreams);
     RT_LOG(RT_LOG_INFO, "Travel all streams, num=%zu.", allStreams.size());
     for (const uint32_t streamLoop : allStreams) {
@@ -575,18 +581,20 @@ rtError_t StarsEngine::TaskReclaim(const uint32_t streamId, const bool limited, 
     return RT_ERROR_NONE;
 }
 
-rtError_t StarsEngine::TaskReclaimAllForNoRes(const bool limited, uint32_t &taskId)
+rtError_t StarsEngine::TaskReclaimAllForNoRes(const bool limited, uint32_t& taskId)
 {
     std::vector<uint32_t> allStreams;
-    const Device * const dev = GetDevice();
+    const Device* const dev = GetDevice();
     dev->GetStreamSqCqManage()->GetAllStreamId(allStreams);
     RT_LOG(RT_LOG_INFO, "Travel all streams, num=%zu.", allStreams.size());
     rtError_t error = RT_ERROR_NONE;
     for (const auto streamLoop : allStreams) {
         std::shared_ptr<Stream> stm = nullptr;
         error = dev->GetStreamSqCqManage()->GetStreamSharedPtrById(static_cast<uint32_t>(streamLoop), stm);
-        COND_RETURN_ERROR_MSG_INNER(((error != RT_ERROR_NONE) || (stm == nullptr)), error,
-            "Failed to query stream shared pointer by id, streamId=%u, retCode=%#x.", streamLoop, static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            ((error != RT_ERROR_NONE) || (stm == nullptr)), error,
+            "Failed to query stream shared pointer by id, streamId=%u, retCode=%#x.", streamLoop,
+            static_cast<uint32_t>(error));
         stm->StreamSyncLock();
         if (dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_ALLOC_FROM_STREAM_POOL)) {
             error = TaskReclaimByStream(stm.get(), limited);
@@ -607,7 +615,7 @@ rtError_t StarsEngine::TaskReclaimAllForNoRes(const bool limited, uint32_t &task
 rtError_t StarsEngine::MonitorTaskReclaim(uint16_t errorStreamId)
 {
     uint32_t taskId = MAX_UINT16_NUM;
-    Device * const dev = GetDevice();
+    Device* const dev = GetDevice();
     if (dev->GetMonitorExitFlag()) {
         return RT_ERROR_TASK_MONITOR;
     }
@@ -646,12 +654,12 @@ rtError_t StarsEngine::MonitorTaskReclaim(uint16_t errorStreamId)
     return RT_ERROR_NONE;
 }
 
-rtError_t StarsEngine::ProcLogicCqUntilEmpty(const Stream * const stm, uint32_t &taskId)
+rtError_t StarsEngine::ProcLogicCqUntilEmpty(const Stream* const stm, uint32_t& taskId)
 {
-    Device * const dev = GetDevice();
-    Driver * const devDrv = dev->Driver_();
+    Device* const dev = GetDevice();
+    Driver* const devDrv = dev->Driver_();
     constexpr bool isFastCq = false;
-    constexpr uint32_t allocCnt = RT_MILAN_MAX_QUERY_CQE_NUM;     // want get cqe num
+    constexpr uint32_t allocCnt = RT_MILAN_MAX_QUERY_CQE_NUM; // want get cqe num
     const uint32_t logicCqId = stm->GetLogicalCqId();
     const uint32_t streamId = static_cast<uint32_t>(stm->Id_());
     uint32_t times = 0U;
@@ -661,22 +669,23 @@ rtError_t StarsEngine::ProcLogicCqUntilEmpty(const Stream * const stm, uint32_t 
     waitInfo.tsId = dev->DevGetTsId();
     waitInfo.cqId = logicCqId;
     waitInfo.isFastCq = isFastCq;
-    waitInfo.timeout = RT_REPORT_WITHOUT_TIMEOUT;  // get logic report without timeout
-    waitInfo.streamId = streamId;  // for v2
-    waitInfo.taskId = MAX_UINT16_NUM;  // get any logic report without specifying the task
+    waitInfo.timeout = RT_REPORT_WITHOUT_TIMEOUT; // get logic report without timeout
+    waitInfo.streamId = streamId;                 // for v2
+    waitInfo.taskId = MAX_UINT16_NUM;             // get any logic report without specifying the task
 
     while (true) {
         uint32_t cnt = 0U;
         rtLogicCqReport_t reportInfo[RT_MILAN_MAX_QUERY_CQE_NUM] = {};
 
-        const rtError_t error = devDrv->LogicCqReportV2(waitInfo, RtPtrToPtr<uint8_t *>(reportInfo),
-            allocCnt, cnt);
+        const rtError_t error = devDrv->LogicCqReportV2(waitInfo, RtPtrToPtr<uint8_t*>(reportInfo), allocCnt, cnt);
         const rtError_t ret = ReportHeartBreakProcV2();
-        COND_PROC_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, ret == RT_ERROR_LOST_HEARTBEAT, RT_ERROR_LOST_HEARTBEAT,
-            RT_LOG_INNER_DETAIL_MSG(RT_DRV_INNER_ERROR, {"device_id"}, {std::to_string(dev->Id_())});,
-            "Device[%u] lost heartbeat.", dev->Id_());
+        COND_PROC_RETURN_ERROR_MSG_CALL(
+            ERR_MODULE_DRV, ret == RT_ERROR_LOST_HEARTBEAT, RT_ERROR_LOST_HEARTBEAT,
+            RT_LOG_INNER_DETAIL_MSG(RT_DRV_INNER_ERROR, {"device_id"}, {std::to_string(dev->Id_())});
+            , "Device[%u] lost heartbeat.", dev->Id_());
         if (unlikely(((error != RT_ERROR_NONE) && (error != RT_ERROR_SOCKET_CLOSE)) || (cnt == 0U))) {
-            RT_LOG(RT_LOG_INFO, "Task Wait: stream_id=%u, logicCqId=%u, retCode=%#x", streamId, logicCqId,
+            RT_LOG(
+                RT_LOG_INFO, "Task Wait: stream_id=%u, logicCqId=%u, retCode=%#x", streamId, logicCqId,
                 static_cast<uint32_t>(error));
 
             if (times == 0U) {
@@ -688,17 +697,17 @@ rtError_t StarsEngine::ProcLogicCqUntilEmpty(const Stream * const stm, uint32_t 
         times++;
 
         for (uint32_t idx = 0U; idx < cnt; ++idx) {
-            rtLogicCqReport_t &report = reportInfo[idx];
+            rtLogicCqReport_t& report = reportInfo[idx];
             taskId = report.taskId;
             const uint8_t sqeType = report.sqeType;
-            AtraceParams param = { GetDevice()->Id_(), static_cast<uint32_t>(report.streamId), report.taskId,
-                GetCurrentTid(), GetDevice()->GetAtraceHandle(), {}};
-            param.u.cqReportParams = { logicCqId, report.errorCode, report.sqeType };
+            AtraceParams param = {GetDevice()->Id_(), static_cast<uint32_t>(report.streamId), report.taskId,
+                                  GetCurrentTid(),    GetDevice()->GetAtraceHandle(),         {}};
+            param.u.cqReportParams = {logicCqId, report.errorCode, report.sqeType};
             AtraceSubmitLog(TYPE_CQ_REPORT, param);
-            RT_LOG(RT_LOG_INFO,
-                "Notify: cnt=%u, idx=%u, stream_id=%hu, task_id=%u, sqeType=%u, retCode=%#x, errType=%#x.",
+            RT_LOG(
+                RT_LOG_INFO, "Notify: cnt=%u, idx=%u, stream_id=%hu, task_id=%u, sqeType=%u, retCode=%#x, errType=%#x.",
                 cnt, idx, report.streamId, taskId, static_cast<uint32_t>(sqeType), report.errorCode, report.errorType);
-            TaskInfo * const reportTask =
+            TaskInfo* const reportTask =
                 GetDevice()->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), static_cast<uint16_t>(taskId));
             if (reportTask == nullptr) {
                 RT_LOG(RT_LOG_WARNING, "reportTask == nullptr");
@@ -718,18 +727,18 @@ rtError_t StarsEngine::ProcLogicCqUntilEmpty(const Stream * const stm, uint32_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t StarsEngine::SendingProcReport(Stream * const stm, const bool limited, uint16_t sqHead, uint32_t &taskId)
+rtError_t StarsEngine::SendingProcReport(Stream* const stm, const bool limited, uint16_t sqHead, uint32_t& taskId)
 {
     if (!stm->GetNeedRecvCqeFlag()) {
         if (!stm->IsExistCqe()) {
-            const uint32_t taskHead = stm->GetTaskPosHead();   // head of not release task
+            const uint32_t taskHead = stm->GetTaskPosHead(); // head of not release task
             return FinishedTaskReclaim(stm, limited, static_cast<uint16_t>(taskHead), sqHead, taskId);
         }
     }
 
     if (ProcLogicCqUntilEmpty(stm, taskId) != RT_ERROR_NONE) {
         // process finish task by sqHead when can not get logic CQ report
-        const uint32_t taskHead = stm->GetTaskPosHead();   // head of not release task
+        const uint32_t taskHead = stm->GetTaskPosHead(); // head of not release task
         return FinishedTaskReclaim(stm, limited, static_cast<uint16_t>(taskHead), sqHead, taskId);
     }
 
@@ -737,13 +746,13 @@ rtError_t StarsEngine::SendingProcReport(Stream * const stm, const bool limited,
 }
 
 // Do task recycling every 64 tasks send
-rtError_t StarsEngine::TryRecycleTask(Stream * const stm)
+rtError_t StarsEngine::TryRecycleTask(Stream* const stm)
 {
     rtError_t error = RT_ERROR_NONE;
-    const uint32_t taskTail = stm->GetTaskPosTail();   // tail sqe position of not release task
+    const uint32_t taskTail = stm->GetTaskPosTail(); // tail sqe position of not release task
     stm->SetLimitFlag(false);
     if (stm->IsSeparateSendAndRecycle()) {
-        constexpr uint16_t ASNC_THREAD_TASK_RECLAIM_MAX_NUM = 64U;    // Task reclaim num in async reclaim thread.
+        constexpr uint16_t ASNC_THREAD_TASK_RECLAIM_MAX_NUM = 64U; // Task reclaim num in async reclaim thread.
         if ((stm->GetPendingNum() != 0U) && (taskTail % ASNC_THREAD_TASK_RECLAIM_MAX_NUM == 0U)) {
             WakeUpRecycleThread();
         }
@@ -754,7 +763,7 @@ rtError_t StarsEngine::TryRecycleTask(Stream * const stm)
         return RT_ERROR_NONE;
     }
 
-    Device *dev = GetDevice();
+    Device* dev = GetDevice();
     const uint32_t devId = dev->Id_();
     const uint32_t sqId = stm->GetSqId();
     const uint32_t tsId = dev->DevGetTsId();
@@ -766,36 +775,36 @@ rtError_t StarsEngine::TryRecycleTask(Stream * const stm)
     const rtError_t status = stm->abortStatus_;
     if (status == RT_ERROR_STREAM_ABORT || status == RT_ERROR_DEVICE_TASK_ABORT) {
         stm->StreamSyncUnLock();
-        RT_LOG(RT_LOG_ERROR,
-            "Failed to recycle task. Reason: stream is in abort status, device_id=%u, stream_id=%d, pendingNum=%hu, status=%u.",
-            devId,
-            stm->Id_(),
-            stm->GetPendingNum(),
-            status);
+        RT_LOG(
+            RT_LOG_ERROR,
+            "Failed to recycle task. Reason: stream is in abort status, device_id=%u, stream_id=%d, pendingNum=%hu, "
+            "status=%u.",
+            devId, stm->Id_(), stm->GetPendingNum(), status);
         return status;
     }
 
     error = dev->Driver_()->GetSqHead(devId, tsId, sqId, sqHead);
-    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, stm->StreamSyncUnLock();,
-        "Failed to query SQ head, retCode=%#x.", static_cast<uint32_t>(error));
+    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, stm->StreamSyncUnLock();
+                           , "Failed to query SQ head, retCode=%#x.", static_cast<uint32_t>(error));
 
     const uint32_t rtsqDepth = stm->GetSqDepth();
     // pendingMax is rtsqDepth * 3U / 4U; recycle task if rtsq space used more than 3/4
     sqeNum = (((taskTail + rtsqDepth) - sqHead) % rtsqDepth);
 
     // device execute slowly
-    if ((!stm->IsBindDvppGrp()) && ((sqeNum > TASK_WAIT_EXECUTE_MAX_NUM) ||
-       (stm->GetPendingNum() >  Runtime::starsPendingMax_))) {
+    if ((!stm->IsBindDvppGrp()) &&
+        ((sqeNum > TASK_WAIT_EXECUTE_MAX_NUM) || (stm->GetPendingNum() > Runtime::starsPendingMax_))) {
         uint32_t reclaimTaskId = 0U;
-        (void) SendingProcReport(stm, true, sqHead, reclaimTaskId);
+        (void)SendingProcReport(stm, true, sqHead, reclaimTaskId);
         if (IsExeTaskSame(stm, reclaimTaskId)) {
-            AtraceParams param = { stm->Device_()->Id_(), static_cast<uint32_t>(stm->Id_()), 0, GetCurrentTid(),
-                GetDevice()->GetAtraceHandle(), {}};
-            param.u.taskRecycleParams = { stm->GetLastTaskId(), reclaimTaskId, TYPE_TRYRECYCLETASK };
+            AtraceParams param = {stm->Device_()->Id_(), static_cast<uint32_t>(stm->Id_()), 0,
+                                  GetCurrentTid(),       GetDevice()->GetAtraceHandle(),    {}};
+            param.u.taskRecycleParams = {stm->GetLastTaskId(), reclaimTaskId, TYPE_TRYRECYCLETASK};
             AtraceSubmitLog(TYPE_TASK_RECYCLE, param);
         }
-        RT_LOG(RT_LOG_DEBUG, "streamId=%d, taskTail=%u, sqHead=%hu, taskId=%u, sqeNum=%u, pendingNum=%u",
-            stm->Id_(), taskTail, sqHead, reclaimTaskId, sqeNum, stm->GetPendingNum());
+        RT_LOG(
+            RT_LOG_DEBUG, "streamId=%d, taskTail=%u, sqHead=%hu, taskId=%u, sqeNum=%u, pendingNum=%u", stm->Id_(),
+            taskTail, sqHead, reclaimTaskId, sqeNum, stm->GetPendingNum());
 
         // more than 2K task need to execute, set flow control flag
         const uint32_t flowControlNum = rtsqDepth * 3U / 4U;
@@ -811,18 +820,18 @@ TIMESTAMP_EXTERN(SqTaskSend);
 TIMESTAMP_EXTERN(TryRecycleTask);
 TIMESTAMP_EXTERN(TaskSendLimited);
 TIMESTAMP_EXTERN(ToCommand);
-rtError_t StarsEngine::SendTask(TaskInfo * const workTask, uint16_t &taskId, uint32_t * const flipTaskId)
+rtError_t StarsEngine::SendTask(TaskInfo* const workTask, uint16_t& taskId, uint32_t* const flipTaskId)
 {
-    Stream * const stm = workTask->stream;
+    Stream* const stm = workTask->stream;
     TIMESTAMP_BEGIN(TryRecycleTask);
     rtError_t error = TryRecycleTask(stm);
     if (error == RT_ERROR_STREAM_ABORT || error == RT_ERROR_DEVICE_TASK_ABORT) {
         error = (error == RT_ERROR_STREAM_ABORT) ? RT_ERROR_STREAM_ABORT_SEND_TASK_FAIL :
-            RT_ERROR_DEVICE_ABORT_SEND_TASK_FAIL;
+                                                   RT_ERROR_DEVICE_ABORT_SEND_TASK_FAIL;
     }
     TIMESTAMP_END(TryRecycleTask);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Failed to recycle task, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Failed to recycle task, retCode=%#x.", static_cast<uint32_t>(error));
 
     constexpr uint16_t perDetectTimes = 1000U;
     uint32_t tryCount = 0U;
@@ -832,7 +841,9 @@ rtError_t StarsEngine::SendTask(TaskInfo * const workTask, uint16_t &taskId, uin
         TIMESTAMP_END(TaskSendLimited);
         if ((tryCount % perDetectTimes) == 0) {
             error = stm->CheckContextTaskSend(workTask);
-            COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to send task. Reason: context is abort, status=%#x.", static_cast<uint32_t>(error));
+            COND_RETURN_ERROR(
+                error != RT_ERROR_NONE, error, "Failed to send task. Reason: context is abort, status=%#x.",
+                static_cast<uint32_t>(error));
         }
         tryCount++;
     }
@@ -840,13 +851,13 @@ rtError_t StarsEngine::SendTask(TaskInfo * const workTask, uint16_t &taskId, uin
 
     const uint32_t sendSqeNum = GetSendSqeNum(workTask);
     if (sendSqeNum > SQE_NUM_PER_STARS_TASK_MAX) {
-        RT_LOG(RT_LOG_ERROR, "sendSqeNum %u more than max num %d. task_id=%hu, task_type=%d(%s).",
-            sendSqeNum, SQE_NUM_PER_STARS_TASK_MAX, workTask->id, static_cast<int32_t>(workTask->type),
-            workTask->typeName);
+        RT_LOG(
+            RT_LOG_ERROR, "sendSqeNum %u more than max num %d. task_id=%hu, task_type=%d(%s).", sendSqeNum,
+            SQE_NUM_PER_STARS_TASK_MAX, workTask->id, static_cast<int32_t>(workTask->type), workTask->typeName);
         return error;
     }
-    Device *dev = GetDevice();
-    Driver * const devDrv = dev->Driver_();
+    Device* dev = GetDevice();
+    Driver* const devDrv = dev->Driver_();
     const uint32_t devId = dev->Id_();
     const uint32_t tsId = dev->DevGetTsId();
     const uint32_t sqId = stm->GetSqId();
@@ -857,22 +868,18 @@ rtError_t StarsEngine::SendTask(TaskInfo * const workTask, uint16_t &taskId, uin
     const rtError_t status = stm->abortStatus_;
     if ((status == RT_ERROR_STREAM_ABORT) || (status == RT_ERROR_DEVICE_TASK_ABORT)) {
         stm->StreamUnLock();
-        RT_LOG(RT_LOG_ERROR,
-            "Failed to send task. Reason: stream is in abort status, device_id=%u, stream_id=%d, task_id=%hu, task_type=%d(%s), status=%u.",
-            devId,
-            stm->Id_(),
-            workTask->id,
-            static_cast<int32_t>(workTask->type),
-            workTask->typeName,
-            status);
-        return (status == RT_ERROR_STREAM_ABORT) ? RT_ERROR_STREAM_ABORT_SEND_TASK_FAIL
-                                                 : RT_ERROR_DEVICE_ABORT_SEND_TASK_FAIL;
+        RT_LOG(
+            RT_LOG_ERROR,
+            "Failed to send task. Reason: stream is in abort status, device_id=%u, stream_id=%d, task_id=%hu, "
+            "task_type=%d(%s), status=%u.",
+            devId, stm->Id_(), workTask->id, static_cast<int32_t>(workTask->type), workTask->typeName, status);
+        return (status == RT_ERROR_STREAM_ABORT) ? RT_ERROR_STREAM_ABORT_SEND_TASK_FAIL :
+                                                   RT_ERROR_DEVICE_ABORT_SEND_TASK_FAIL;
     }
 
     dev->GetTaskFactory()->SetSerialId(stm, workTask);
     taskId = workTask->id;
-    COND_PROC(flipTaskId != nullptr,
-        *flipTaskId = GetFlipTaskId(workTask->id, workTask->flipNum););
+    COND_PROC(flipTaskId != nullptr, *flipTaskId = GetFlipTaskId(workTask->id, workTask->flipNum););
     if ((stm->Model_() != nullptr) && (workTask->type != TS_TASK_TYPE_MODEL_MAINTAINCE)) {
         stm->Model_()->SetKernelTaskId(static_cast<uint32_t>(workTask->id), static_cast<int32_t>(stm->Id_()));
     }
@@ -880,7 +887,7 @@ rtError_t StarsEngine::SendTask(TaskInfo * const workTask, uint16_t &taskId, uin
     ReportProfData(workTask);
 
     TIMESTAMP_BEGIN(ToCommand);
-    rtTsCommand_t  cmdLocal = {};
+    rtTsCommand_t cmdLocal = {};
     cmdLocal.cmdType = RT_TASK_COMMAND_TYPE_STARS_SQE;
     ToConstructSqe(workTask, cmdLocal.cmdBuf.u.starsSqe);
     TIMESTAMP_END(ToCommand);
@@ -898,9 +905,12 @@ rtError_t StarsEngine::SendTask(TaskInfo * const workTask, uint16_t &taskId, uin
 
     error = ProcessTaskWait(workTask);
     if (error != EOK) {
-        RT_LOG(RT_LOG_ERROR, "Failed to process task wait, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d, task_id=%hu, task_type=%d(%s), retCode=%d.",
-            devId, tsId, sqId, cqId, stm->Id_(), workTask->id, static_cast<int32_t>(workTask->type),
-            workTask->typeName, error);
+        RT_LOG(
+            RT_LOG_ERROR,
+            "Failed to process task wait, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d, task_id=%hu, "
+            "task_type=%d(%s), retCode=%d.",
+            devId, tsId, sqId, cqId, stm->Id_(), workTask->id, static_cast<int32_t>(workTask->type), workTask->typeName,
+            error);
         stm->StreamUnLock();
         return error;
     }
@@ -914,30 +924,36 @@ rtError_t StarsEngine::SendTask(TaskInfo * const workTask, uint16_t &taskId, uin
             error = devDrv->SqTaskSend(sqId, cmdLocal.cmdBuf.u.starsSqe, devId, tsId, sendSqeNum);
             TIMESTAMP_END(SqTaskSend);
         } else {
-            const auto ret = memcpy_s(RtPtrToPtr<void *>(stm->GetSqeBuffer() + sizeof(rtStarsSqe_t) * workTask->pos),
-                                      sendSqeNum * sizeof(rtStarsSqe_t),
-                                      RtPtrToPtr<void *, rtStarsSqe_t *>(cmdLocal.cmdBuf.u.starsSqe), 
-                                      sendSqeNum * sizeof(rtStarsSqe_t));
+            const auto ret = memcpy_s(
+                RtPtrToPtr<void*>(stm->GetSqeBuffer() + sizeof(rtStarsSqe_t) * workTask->pos),
+                sendSqeNum * sizeof(rtStarsSqe_t), RtPtrToPtr<void*, rtStarsSqe_t*>(cmdLocal.cmdBuf.u.starsSqe),
+                sendSqeNum * sizeof(rtStarsSqe_t));
             if (ret != EOK) {
-                RT_LOG(RT_LOG_ERROR, "SendTask failed. Reason: Standard function memcpy_s failed. [Errno %d] %s. destAddr=%p, srcAddr=%p, maxLen=%zu(bytes), actualLen=%zu(bytes).",
-                    ret, strerror(ret),
-                    RtPtrToPtr<void *>(stm->GetSqeBuffer() + sizeof(rtStarsSqe_t) * workTask->pos), RtPtrToPtr<void *, rtStarsSqe_t *>(cmdLocal.cmdBuf.u.starsSqe),
-                    sendSqeNum * sizeof(rtStarsSqe_t), sendSqeNum * sizeof(rtStarsSqe_t));
+                RT_LOG(
+                    RT_LOG_ERROR,
+                    "SendTask failed. Reason: Standard function memcpy_s failed. [Errno %d] %s. destAddr=%p, "
+                    "srcAddr=%p, maxLen=%zu(bytes), actualLen=%zu(bytes).",
+                    ret, strerror(ret), RtPtrToPtr<void*>(stm->GetSqeBuffer() + sizeof(rtStarsSqe_t) * workTask->pos),
+                    RtPtrToPtr<void*, rtStarsSqe_t*>(cmdLocal.cmdBuf.u.starsSqe), sendSqeNum * sizeof(rtStarsSqe_t),
+                    sendSqeNum * sizeof(rtStarsSqe_t));
                 error = RT_ERROR_TASK_BASE;
                 break;
             }
         }
 
         if (unlikely(error != RT_ERROR_NONE)) {
-            RT_LOG(RT_LOG_WARNING, "device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u,"
+            RT_LOG(
+                RT_LOG_WARNING,
+                "device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u,"
                 " stream_id=%d, task_id=%hu, task_type=%u(%s), error=%#x",
-                devId, tsId, sqId, cqId, stm->Id_(), workTask->id,
-                static_cast<uint32_t>(workTask->type), workTask->typeName, static_cast<uint32_t>(error));
+                devId, tsId, sqId, cqId, stm->Id_(), workTask->id, static_cast<uint32_t>(workTask->type),
+                workTask->typeName, static_cast<uint32_t>(error));
 
             tryCount++;
             if (stm->PrintStmDfxAndCheckDevice(beginCnt, endCnt, checkCount, tryCount) != RT_ERROR_NONE) {
                 stm->StreamUnLock();
-                RT_LOG(RT_LOG_ERROR, "Failed to send SQE task. Reason: device status error, device_id=%u, stream_id=%d.",
+                RT_LOG(
+                    RT_LOG_ERROR, "Failed to send SQE task. Reason: device status error, device_id=%u, stream_id=%d.",
                     devId, stm->Id_());
                 return error;
             }
@@ -950,30 +966,32 @@ rtError_t StarsEngine::SendTask(TaskInfo * const workTask, uint16_t &taskId, uin
 
     const uint32_t posTail = stm->GetBindFlag() ? stm->GetDelayRecycleTaskSqeNum() : stm->GetTaskPosTail();
     const uint32_t posHead = stm->GetBindFlag() ? stm->GetTaskPersistentHeadValue() : stm->GetTaskPosHead();
-    RT_LOG(RT_LOG_INFO, "Sq task send finished, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d, "
+    RT_LOG(
+        RT_LOG_INFO,
+        "Sq task send finished, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, stream_id=%d, "
         "task_id=%hu, task_type=%u(%s), isSupportASyncRecycle=%d, isNeedPostProc=%d, davincHead=%u, "
         "davincTail=%u, taskHead=%u, taskTail=%u, sendSqeNum=%u, tryCount=%u, "
         "bindFlag=%d, head=%u, tail=%u, delay recycle task num=%zu.",
         devId, tsId, sqId, cqId, stm->Id_(), workTask->id, workTask->type, workTask->typeName,
         stm->GetIsSupportASyncRecycle(), stm->IsNeedPostProc(workTask), stm->GetDavinciTaskHead(),
-        stm->GetDavinciTaskTail(), stm->GetTaskHead(), stm->GetTaskTail(), sendSqeNum, tryCount,
-        stm->GetBindFlag(), posHead, posTail, stm->GetDelayRecycleTaskSize());
+        stm->GetDavinciTaskTail(), stm->GetTaskHead(), stm->GetTaskTail(), sendSqeNum, tryCount, stm->GetBindFlag(),
+        posHead, posTail, stm->GetDelayRecycleTaskSize());
 
     return error;
 }
 
-rtError_t StarsEngine::RecycleTaskBySqHead(Stream * const stm, uint32_t &finishTaskId)
+rtError_t StarsEngine::RecycleTaskBySqHead(Stream* const stm, uint32_t& finishTaskId)
 {
     uint16_t sqHead = 0U;
 
-    Device *dev = GetDevice();
+    Device* dev = GetDevice();
     const uint32_t sqId = stm->GetSqId();
     const uint32_t tsId = dev->DevGetTsId();
     const rtError_t error = dev->Driver_()->GetSqHead(dev->Id_(), tsId, sqId, sqHead);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to query SQ head, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, "Failed to query SQ head, retCode=%#x.", static_cast<uint32_t>(error));
 
-    const uint32_t taskHead = stm->GetTaskPosHead();   // head of not release task
+    const uint32_t taskHead = stm->GetTaskPosHead(); // head of not release task
     return FinishedTaskReclaim(stm, false, static_cast<uint16_t>(taskHead), sqHead, finishTaskId);
 }
 
@@ -995,13 +1013,12 @@ bool StarsEngine::ProcReportIsVpcErrorAndRetry(const rtLogicCqReport_t& report)
         return false;
     }
 
-    auto reportTask = GetDevice()->GetTaskFactory()->GetTask(
-        static_cast<int32_t>(report.streamId), report.taskId);
+    auto reportTask = GetDevice()->GetTaskFactory()->GetTask(static_cast<int32_t>(report.streamId), report.taskId);
     if (unlikely(reportTask == nullptr)) {
         return false;
     }
 
-    if (reportTask->u.starsCommTask.errorTimes != 0U) {  // vpc retry error, return false
+    if (reportTask->u.starsCommTask.errorTimes != 0U) { // vpc retry error, return false
         RT_LOG(RT_LOG_ERROR, "Vpc task error, streamId=%hu, taskId=%hu", report.streamId, report.taskId);
         return false;
     }
@@ -1011,8 +1028,8 @@ bool StarsEngine::ProcReportIsVpcErrorAndRetry(const rtLogicCqReport_t& report)
     return true;
 }
 
-void StarsEngine::ProcCommonLogicCqReport(const rtLogicCqReport_t &report, const uint32_t taskId,
-                                          const bool isStreamSync, bool &isFinished)
+void StarsEngine::ProcCommonLogicCqReport(
+    const rtLogicCqReport_t& report, const uint32_t taskId, const bool isStreamSync, bool& isFinished)
 {
     if (ProcReportIsVpcErrorAndRetry(report)) {
         return;
@@ -1025,27 +1042,30 @@ void StarsEngine::ProcCommonLogicCqReport(const rtLogicCqReport_t &report, const
     return;
 }
 
-bool StarsEngine::CompleteProcMultipleTaskReport(TaskInfo * const workTask, const rtLogicCqReport_t &report) const
+bool StarsEngine::CompleteProcMultipleTaskReport(TaskInfo* const workTask, const rtLogicCqReport_t& report) const
 {
-    TaskInfo * const reportTask = workTask;
+    TaskInfo* const reportTask = workTask;
     const uint8_t mulTaskCqeNum = GetMultipleTaskCqeNum(reportTask);
     DecMultipleTaskCqeNum(reportTask);
 
     const uint8_t ret = GetStarsDefinedErrCode(report.errorType);
-    RT_LOG(RT_LOG_DEBUG, "Get stars defined error code ret=%hhu, sqeType=%hhu, streamId=%d, taskId=%u.",
-           ret, report.sqeType, static_cast<int32_t>(report.streamId), report.taskId);
+    RT_LOG(
+        RT_LOG_DEBUG, "Get stars defined error code ret=%hhu, sqeType=%hhu, streamId=%d, taskId=%u.", ret,
+        report.sqeType, static_cast<int32_t>(report.streamId), report.taskId);
     SetMultipleTaskCqeErrorInfo(reportTask, report.sqeType, report.errorType, report.errorCode);
 
     const uint8_t targetType = static_cast<uint8_t>(RT_STARS_SQE_TYPE_AICPU);
     /* Terminate the subsequent CQ execution when the aicpu task fails. */
     if ((GetMultipleTaskCqeNum(reportTask) > 0U) && (report.sqeType == targetType) && (ret != 0)) {
-        RT_LOG(RT_LOG_WARNING, "RT_STARS_SQE_TYPE_AICPU ERROR DecMultipleTaskCqeNum = %u",
+        RT_LOG(
+            RT_LOG_WARNING, "RT_STARS_SQE_TYPE_AICPU ERROR DecMultipleTaskCqeNum = %u",
             GetMultipleTaskCqeNum(reportTask));
         ClearMulTaskCqeNum(mulTaskCqeNum, workTask);
     }
 
     if (GetMultipleTaskCqeNum(reportTask) > 0U) {
-        RT_LOG(RT_LOG_WARNING, "GetMultipleTaskCqeNum = %u, then incRecvPkg",
+        RT_LOG(
+            RT_LOG_WARNING, "GetMultipleTaskCqeNum = %u, then incRecvPkg",
             static_cast<uint32_t>(GetMultipleTaskCqeNum(reportTask)));
         reportTask->pkgStat[RT_PACKAGE_TYPE_TASK_REPORT].receivePackage++;
         return false;
@@ -1054,8 +1074,8 @@ bool StarsEngine::CompleteProcMultipleTaskReport(TaskInfo * const workTask, cons
     return true;
 }
 
-bool StarsEngine::ProcMultipleTaskLogicCqReport(TaskInfo * const workTask, const rtLogicCqReport_t &report,
-                                                const bool isStreamSync)
+bool StarsEngine::ProcMultipleTaskLogicCqReport(
+    TaskInfo* const workTask, const rtLogicCqReport_t& report, const bool isStreamSync)
 {
     TaskInfo* const reportTask = workTask;
     if (!CompleteProcMultipleTaskReport(workTask, report)) {
@@ -1068,26 +1088,30 @@ bool StarsEngine::ProcMultipleTaskLogicCqReport(TaskInfo * const workTask, const
     return true;
 }
 
-void StarsEngine::ProcReport(const uint32_t taskId, const bool isStreamSync, const uint32_t cnt,
-    rtLogicCqReport_t * const logicReport, bool &isFinished, uint32_t cqId)
+void StarsEngine::ProcReport(
+    const uint32_t taskId, const bool isStreamSync, const uint32_t cnt, rtLogicCqReport_t* const logicReport,
+    bool& isFinished, uint32_t cqId)
 {
     for (uint32_t idx = 0U; idx < cnt; ++idx) {
-        rtLogicCqReport_t &report = logicReport[idx];
+        rtLogicCqReport_t& report = logicReport[idx];
         const uint32_t taskIdCur = report.taskId;
         const uint8_t sqeType = report.sqeType;
-        AtraceParams param = { GetDevice()->Id_(), static_cast<uint32_t>(report.streamId), report.taskId,
-            GetCurrentTid(), GetDevice()->GetAtraceHandle(), {}};
-        param.u.cqReportParams = { cqId, report.errorCode, report.sqeType };
+        AtraceParams param = {GetDevice()->Id_(), static_cast<uint32_t>(report.streamId), report.taskId,
+                              GetCurrentTid(),    GetDevice()->GetAtraceHandle(),         {}};
+        param.u.cqReportParams = {cqId, report.errorCode, report.sqeType};
         AtraceSubmitLog(TYPE_CQ_REPORT, param);
-        TaskInfo * const reportTask = GetDevice()->GetTaskFactory()->GetTask(
-            static_cast<int32_t>(report.streamId), report.taskId);
-        RT_LOG(RT_LOG_INFO, "Get logic report: cnt=%u, idx=%u, stream_id=%hu, report task_id=%u, sync task_id=%u,"
+        TaskInfo* const reportTask =
+            GetDevice()->GetTaskFactory()->GetTask(static_cast<int32_t>(report.streamId), report.taskId);
+        RT_LOG(
+            RT_LOG_INFO,
+            "Get logic report: cnt=%u, idx=%u, stream_id=%hu, report task_id=%u, sync task_id=%u,"
             " sqeType=%u, sqeHead=%u, retCode=%#x, errType=%#x, taskType=%d.",
-            cnt, idx, report.streamId, taskIdCur, taskId, static_cast<uint32_t>(sqeType),
-            report.sqHead, report.errorCode, report.errorType, (reportTask == nullptr) ? 0xFF:reportTask->type);
+            cnt, idx, report.streamId, taskIdCur, taskId, static_cast<uint32_t>(sqeType), report.sqHead,
+            report.errorCode, report.errorType, (reportTask == nullptr) ? 0xFF : reportTask->type);
         if (unlikely(reportTask == nullptr)) {
-            RT_LOG(RT_LOG_WARNING, "GetTask error, device_id=%u, stream_id=%hu, task_id=%hu",
-                GetDevice()->Id_(), report.streamId, report.taskId);
+            RT_LOG(
+                RT_LOG_WARNING, "GetTask error, device_id=%u, stream_id=%hu, task_id=%hu", GetDevice()->Id_(),
+                report.streamId, report.taskId);
             ProcCommonLogicCqReport(report, taskId, isStreamSync, isFinished);
             continue;
         }
@@ -1104,9 +1128,9 @@ void StarsEngine::ProcReport(const uint32_t taskId, const bool isStreamSync, con
     }
 }
 
-void StarsEngine::IsSyncTaskFinish(Stream * const stm, const uint32_t taskId) const
+void StarsEngine::IsSyncTaskFinish(Stream* const stm, const uint32_t taskId) const
 {
-    Device * const dev = GetDevice();
+    Device* const dev = GetDevice();
     const uint32_t devId = dev->Id_();
     const uint32_t tsId = dev->DevGetTsId();
     const uint32_t sqId = stm->GetSqId();
@@ -1139,13 +1163,13 @@ void StarsEngine::IsSyncTaskFinish(Stream * const stm, const uint32_t taskId) co
     }
 }
 
-void StarsEngine::SyncTaskCheckResult(const rtError_t error, const Stream * const stm, const uint16_t taskId) const
+void StarsEngine::SyncTaskCheckResult(const rtError_t error, const Stream* const stm, const uint16_t taskId) const
 {
     if (error != RT_ERROR_STREAM_SYNC_TIMEOUT) {
         return;
     }
 
-    TaskInfo * const procTask = GetDevice()->GetTaskFactory()->GetTask(stm->Id_(), taskId);
+    TaskInfo* const procTask = GetDevice()->GetTaskFactory()->GetTask(stm->Id_(), taskId);
     if (procTask != nullptr) {
         if (procTask->isCqeNeedConcern != 0U) {
             procTask->isCqeNeedConcern = false;
@@ -1155,8 +1179,8 @@ void StarsEngine::SyncTaskCheckResult(const rtError_t error, const Stream * cons
     return;
 }
 
-rtError_t StarsEngine::SyncTask(Stream * const stm, const uint32_t taskId, const bool isStreamSync, int32_t timeout,
-    bool isForce)
+rtError_t StarsEngine::SyncTask(
+    Stream* const stm, const uint32_t taskId, const bool isStreamSync, int32_t timeout, bool isForce)
 {
     if (stm->IsSeparateSendAndRecycle()) {
         rtError_t error = RT_ERROR_NONE;
@@ -1164,8 +1188,9 @@ rtError_t StarsEngine::SyncTask(Stream * const stm, const uint32_t taskId, const
         COND_PROC((error == RT_ERROR_STREAM_ABORT), return RT_ERROR_STREAM_ABORT_SYNC_TASK_FAIL);
         COND_PROC((error == RT_ERROR_DEVICE_TASK_ABORT), return RT_ERROR_DEVICE_ABORT_SYNC_TASK_FAIL);
         // ctx error, task already submit, return success.
-        Context * const ctx = stm->Context_();
-        const bool isReturnNoError = (error != RT_ERROR_NONE) && (ctx != nullptr) && (ctx->GetFailureError() != RT_ERROR_NONE);
+        Context* const ctx = stm->Context_();
+        const bool isReturnNoError =
+            (error != RT_ERROR_NONE) && (ctx != nullptr) && (ctx->GetFailureError() != RT_ERROR_NONE);
         return isReturnNoError ? RT_ERROR_NONE : error;
     }
     // isStreamSync check need or not
@@ -1177,60 +1202,68 @@ rtError_t StarsEngine::SyncTask(Stream * const stm, const uint32_t taskId, const
     const uint32_t logicCqId = stm->GetLogicalCqId();
     const uint32_t streamId = static_cast<uint32_t>(stm->Id_());
     const int32_t waitTimeout = Runtime::Instance()->IsSupportOpTimeoutMs() ?
-        RT_REPORT_STARS_TIMEOUT_TIME_OP_TIMEOUT_MS : GetWaitTimeout(); // 算子ms超时时，超时时间1ms，故障快速上报
+                                    RT_REPORT_STARS_TIMEOUT_TIME_OP_TIMEOUT_MS :
+                                    GetWaitTimeout(); // 算子ms超时时，超时时间1ms，故障快速上报
 
-    Device *dev = GetDevice();
-    Driver * const devDrv = dev->Driver_();
+    Device* dev = GetDevice();
+    Driver* const devDrv = dev->Driver_();
     LogicCqWaitInfo cqWaitInfo = {};
     cqWaitInfo.isFastCq = false;
     cqWaitInfo.devId = dev->Id_();
     cqWaitInfo.tsId = dev->DevGetTsId();
     cqWaitInfo.cqId = logicCqId;
-    cqWaitInfo.streamId = streamId;  // for v2
-    cqWaitInfo.taskId = taskId;  // for v2
+    cqWaitInfo.streamId = streamId; // for v2
+    cqWaitInfo.taskId = taskId;     // for v2
     cqWaitInfo.timeout = waitTimeout;
 
     int32_t remainTime = timeout;
     mmTimespec beginTimeSpec = mmGetTickCount();
-    const uint64_t beginCnt = ((static_cast<uint64_t>(beginTimeSpec.tv_sec) * RT_MS_PER_S) +
-                               (static_cast<uint64_t>(beginTimeSpec.tv_nsec) / RT_MS_TO_NS));
+    const uint64_t beginCnt =
+        ((static_cast<uint64_t>(beginTimeSpec.tv_sec) * RT_MS_PER_S) +
+         (static_cast<uint64_t>(beginTimeSpec.tv_nsec) / RT_MS_TO_NS));
 
-    RT_LOG(RT_LOG_INFO, "Task Wait: device_id=%u, stream_id=%u, task_id=%u, logicCqId=%u.",
-        dev->Id_(), streamId, taskId, logicCqId);
+    RT_LOG(
+        RT_LOG_INFO, "Task Wait: device_id=%u, stream_id=%u, task_id=%u, logicCqId=%u.", dev->Id_(), streamId, taskId,
+        logicCqId);
 
-    COND_RETURN_ERROR((devDrv == nullptr), RT_ERROR_NONE,
-        "Driver is nullptr. device_id=%u, stream_id=%u.", dev->Id_(), streamId);
+    COND_RETURN_ERROR(
+        (devDrv == nullptr), RT_ERROR_NONE, "Driver is nullptr. device_id=%u, stream_id=%u.", dev->Id_(), streamId);
 
     rtError_t status = RT_ERROR_NONE;
     rtLogicCqReport_t reportInfo = {};
     while (!isFinished) {
         constexpr uint32_t allocCnt = 1U;
         uint32_t cnt = 0U;
-        rtLogicCqReport_t *logicReport = &reportInfo;
+        rtLogicCqReport_t* logicReport = &reportInfo;
         int32_t irqWait = waitTimeout; // default
         uint32_t loopCnt = 0;
 
-        COND_PROC_RETURN_ERROR(stm->GetFailureMode() == ABORT_ON_FAILURE, RT_ERROR_NONE,
-            FinishedTaskReclaim(stm, false, static_cast<uint16_t>(stm->GetTaskPosHead()),
-            static_cast<uint16_t>(stm->GetTaskPosTail()), finishTaskId),
-            "Failed to sync task. Reason: stream is in failure abort mode, device_id=%u, stream_id=%u.", dev->Id_(), streamId);
+        COND_PROC_RETURN_ERROR(
+            stm->GetFailureMode() == ABORT_ON_FAILURE, RT_ERROR_NONE,
+            FinishedTaskReclaim(
+                stm, false, static_cast<uint16_t>(stm->GetTaskPosHead()), static_cast<uint16_t>(stm->GetTaskPosTail()),
+                finishTaskId),
+            "Failed to sync task. Reason: stream is in failure abort mode, device_id=%u, stream_id=%u.", dev->Id_(),
+            streamId);
 
         status = stm->GetAbortStatus();
-        COND_RETURN_ERROR((status == RT_ERROR_STREAM_ABORT),
-                          RT_ERROR_STREAM_ABORT_SYNC_TASK_FAIL,
-                          "Failed to sync task. Reason: stream is abort, device_id=%u, stream_id=%d.",
-                          stm->Device_()->Id_(),
-                          stm->Id_());
+        COND_RETURN_ERROR(
+            (status == RT_ERROR_STREAM_ABORT), RT_ERROR_STREAM_ABORT_SYNC_TASK_FAIL,
+            "Failed to sync task. Reason: stream is abort, device_id=%u, stream_id=%d.", stm->Device_()->Id_(),
+            stm->Id_());
         status = stm->CheckContextStatus(false);
-        COND_RETURN_ERROR((status == RT_ERROR_DEVICE_TASK_ABORT),
-                          RT_ERROR_DEVICE_ABORT_SYNC_TASK_FAIL,
-                          "Failed to sync task. Reason: device task is abort, device_id=%u, stream_id=%d.",
-                          stm->Device_()->Id_(),
-                          stm->Id_()); 
-        Context * const ctx = stm->Context_();
-        const bool isReturnNoError = (status != RT_ERROR_NONE) && (ctx != nullptr) && (ctx->GetFailureError() != RT_ERROR_NONE);
-        COND_RETURN_ERROR(isReturnNoError, RT_ERROR_NONE, "Failed to sync task. Reason: context is abort, status=%#x.", static_cast<int32_t>(status));  
-        ERROR_RETURN(status, "Failed to sync task. Reason: context is abort, status=%#x.", static_cast<int32_t>(status));
+        COND_RETURN_ERROR(
+            (status == RT_ERROR_DEVICE_TASK_ABORT), RT_ERROR_DEVICE_ABORT_SYNC_TASK_FAIL,
+            "Failed to sync task. Reason: device task is abort, device_id=%u, stream_id=%d.", stm->Device_()->Id_(),
+            stm->Id_());
+        Context* const ctx = stm->Context_();
+        const bool isReturnNoError =
+            (status != RT_ERROR_NONE) && (ctx != nullptr) && (ctx->GetFailureError() != RT_ERROR_NONE);
+        COND_RETURN_ERROR(
+            isReturnNoError, RT_ERROR_NONE, "Failed to sync task. Reason: context is abort, status=%#x.",
+            static_cast<int32_t>(status));
+        ERROR_RETURN(
+            status, "Failed to sync task. Reason: context is abort, status=%#x.", static_cast<int32_t>(status));
 
         // default = RT_REPORT_STARS_TIMEOUT_TIME(ms)
         if (unlikely(remainTime > 0)) {
@@ -1238,62 +1271,73 @@ rtError_t StarsEngine::SyncTask(Stream * const stm, const uint32_t taskId, const
         }
         cqWaitInfo.timeout = irqWait;
 
-        const rtError_t error =
-            devDrv->LogicCqReportV2(cqWaitInfo, RtPtrToPtr<uint8_t *>(logicReport), allocCnt, cnt);
+        const rtError_t error = devDrv->LogicCqReportV2(cqWaitInfo, RtPtrToPtr<uint8_t*>(logicReport), allocCnt, cnt);
         ReportTimeoutProc(error, rptTimeoutCnt, streamId, taskId);
         if (timeout > 0) {
             mmTimespec endTimeSpec = mmGetTickCount();
-            const uint64_t endCnt = ((static_cast<uint64_t>(endTimeSpec.tv_sec) * RT_MS_PER_S) +
-                                     (static_cast<uint64_t>(endTimeSpec.tv_nsec) / RT_MS_TO_NS));
+            const uint64_t endCnt =
+                ((static_cast<uint64_t>(endTimeSpec.tv_sec) * RT_MS_PER_S) +
+                 (static_cast<uint64_t>(endTimeSpec.tv_nsec) / RT_MS_TO_NS));
             const uint64_t count = endCnt > beginCnt ? (endCnt - beginCnt) : 0UL;
             const int32_t spendTime = static_cast<int32_t>(count);
             remainTime = timeout > spendTime ? (timeout - spendTime) : 0;
         }
-        RT_LOG(RT_LOG_DEBUG, "Task Wait: sync task judge, timeout=%dms, remainTime=%dms, cnt=%u, irqWait=%dms.", timeout,
+        RT_LOG(
+            RT_LOG_DEBUG, "Task Wait: sync task judge, timeout=%dms, remainTime=%dms, cnt=%u, irqWait=%dms.", timeout,
             remainTime, cnt, irqWait);
-        COND_RETURN_WARN((timeout > 0) && (remainTime == 0) && (cnt == 0U), RT_ERROR_STREAM_SYNC_TIMEOUT,
+        COND_RETURN_WARN(
+            (timeout > 0) && (remainTime == 0) && (cnt == 0U), RT_ERROR_STREAM_SYNC_TIMEOUT,
             "Task Wait: sync task timeout! timeout=%dms, remainTime=%dms, cnt=%u.", timeout, remainTime, cnt);
 
         if (((error != RT_ERROR_NONE) && (error != RT_ERROR_SOCKET_CLOSE)) || (logicReport == nullptr) || (cnt == 0U)) {
             // get sqHead to process finish task when can not get logic CQ report
             (void)RecycleTaskBySqHead(stm, finishTaskId);
-            RT_LOG(RT_LOG_INFO, "No logic report: stream_id=%u, task_id=%u, finished task_id=%u, logicCqId=%u, ret=%#x",
+            RT_LOG(
+                RT_LOG_INFO, "No logic report: stream_id=%u, task_id=%u, finished task_id=%u, logicCqId=%u, ret=%#x",
                 streamId, taskId, finishTaskId, logicCqId, static_cast<uint32_t>(error));
         }
 
         COND_RETURN_ERROR(
-            ((error != RT_ERROR_NONE) && (error != RT_ERROR_SOCKET_CLOSE) && (error != RT_ERROR_REPORT_TIMEOUT)),
-            error, "Failed to wait task, retCode=%u.", error);
+            ((error != RT_ERROR_NONE) && (error != RT_ERROR_SOCKET_CLOSE) && (error != RT_ERROR_REPORT_TIMEOUT)), error,
+            "Failed to wait task, retCode=%u.", error);
 
         IsSyncTaskFinish(stm, taskId);
         // proccess logic cq report
         isFinished = (stm->isForceRecycle_ && (error == RT_ERROR_REPORT_TIMEOUT)) ? true : false;
         ProcReport(taskId, isStreamSync, cnt, logicReport, isFinished, logicCqId);
-        COND_RETURN_WARN((stm->isForceRecycle_) && (error == RT_ERROR_REPORT_TIMEOUT) && (isFinished), RT_ERROR_NONE,
+        COND_RETURN_WARN(
+            (stm->isForceRecycle_) && (error == RT_ERROR_REPORT_TIMEOUT) && (isFinished), RT_ERROR_NONE,
             "The stream %d is forcibly reclaimed. Resources may not be completely reclaimed.", stm->Id_());
 
         loopCnt++;
         bool enable = true;
         (void)devDrv->GetSqEnable(dev->Id_(), dev->DevGetTsId(), stm->GetSqId(), enable);
-        COND_RETURN_ERROR((g_isAddrFlatDevice && enable != true && loopCnt > 50U), // SQ is disable for 50 times
-            RT_ERROR_STREAM_SYNC_TIMEOUT, "Failed to sync task. Reason: SQ is disabled for 50 times, device_id=%u, stream_id=%u, sq_id=%u.",
+        COND_RETURN_ERROR(
+            (g_isAddrFlatDevice && enable != true && loopCnt > 50U), // SQ is disable for 50 times
+            RT_ERROR_STREAM_SYNC_TIMEOUT,
+            "Failed to sync task. Reason: SQ is disabled for 50 times, device_id=%u, stream_id=%u, sq_id=%u.",
             dev->Id_(), streamId, stm->GetSqId());
     }
 
     return RT_ERROR_NONE;
 }
 
-rtError_t StarsEngine::SubmitSend(TaskInfo * const workTask, uint32_t * const flipTaskId)
+rtError_t StarsEngine::SubmitSend(TaskInfo* const workTask, uint32_t* const flipTaskId)
 {
     uint16_t taskId = 0U;
     bool isNeedStreamSync = false;
     int32_t timeout = -1; // -1:no limit
-    COND_RETURN_ERROR(workTask == nullptr, RT_ERROR_INVALID_VALUE, "Failed to submit send task. Reason: workTask cannot be a NULL pointer.");
-    Stream * const stm = workTask->stream;
-    COND_RETURN_ERROR(stm == nullptr, RT_ERROR_INVALID_VALUE, "Failed to submit send task. Reason: stream cannot be a NULL pointer.");
+    COND_RETURN_ERROR(
+        workTask == nullptr, RT_ERROR_INVALID_VALUE,
+        "Failed to submit send task. Reason: workTask cannot be a NULL pointer.");
+    Stream* const stm = workTask->stream;
+    COND_RETURN_ERROR(
+        stm == nullptr, RT_ERROR_INVALID_VALUE, "Failed to submit send task. Reason: stream cannot be a NULL pointer.");
     Device* device = stm->Device_();
 
-    COND_RETURN_ERROR(device == nullptr, RT_ERROR_INVALID_VALUE, "Failed to submit send task. Reason: device cannot be a NULL pointer.");
+    COND_RETURN_ERROR(
+        device == nullptr, RT_ERROR_INVALID_VALUE,
+        "Failed to submit send task. Reason: device cannot be a NULL pointer.");
 
     if (workTask->type == TS_TASK_TYPE_EVENT_RECORD) {
         if (workTask->u.eventRecordTaskInfo.waitCqflag) {
@@ -1302,16 +1346,16 @@ rtError_t StarsEngine::SubmitSend(TaskInfo * const workTask, uint32_t * const fl
         }
     }
 
-    if ((workTask->type == TS_TASK_TYPE_MAINTENANCE) ||
-        (workTask->type == TS_TASK_TYPE_GET_STARS_VERSION)) {
+    if ((workTask->type == TS_TASK_TYPE_MAINTENANCE) || (workTask->type == TS_TASK_TYPE_GET_STARS_VERSION)) {
         isNeedStreamSync = true;
     }
 
     const bool bindFlag = stm->GetBindFlag();
     rtError_t error = SendTask(workTask, taskId, flipTaskId);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "Failed to send task, streamId=%d, taskId=%hu, taskType=%u, retCode=%#x.",
-               stm->Id_(), workTask->id, workTask->type, error);
+        RT_LOG(
+            RT_LOG_ERROR, "Failed to send task, streamId=%d, taskId=%hu, taskType=%u, retCode=%#x.", stm->Id_(),
+            workTask->id, workTask->type, error);
         if (!(bindFlag && (error == RT_ERROR_STREAM_FULL))) {
             TaskFinished(device->Id_(), workTask);
         }
@@ -1334,25 +1378,26 @@ rtError_t StarsEngine::SubmitSend(TaskInfo * const workTask, uint32_t * const fl
         SyncTaskCheckResult(error, stm, taskId);
         stm->StreamSyncUnLock();
 
-        COND_RETURN_INFO(error != RT_ERROR_NONE, error, "SyncTask stream_id=%u, task_id=%u, result=%u",
-            stm->Id_(), taskId, error);
+        COND_RETURN_INFO(
+            error != RT_ERROR_NONE, error, "SyncTask stream_id=%u, task_id=%u, result=%u", stm->Id_(), taskId, error);
         error = SendFlipTask(taskId, stm);
-        COND_RETURN_INFO(error != RT_ERROR_NONE, error, "SendFlipTask stream sync stream_id=%u, task_id=%u, result=%u",
-            stm->Id_(), taskId, error);
+        COND_RETURN_INFO(
+            error != RT_ERROR_NONE, error, "SendFlipTask stream sync stream_id=%u, task_id=%u, result=%u", stm->Id_(),
+            taskId, error);
         return error;
     }
 
     error = SendFlipTask(taskId, stm);
-    COND_RETURN_INFO(error != RT_ERROR_NONE, error, "SendFlipTask stream_id=%u, task_id=%u, result=%u",
-        stm->Id_(), taskId, error);
+    COND_RETURN_INFO(
+        error != RT_ERROR_NONE, error, "SendFlipTask stream_id=%u, task_id=%u, result=%u", stm->Id_(), taskId, error);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t StarsEngine::StarsResumeRtsq(const rtLogicCqReport_t &logicCq, const uint16_t taskType,
-    Stream * const failStm) const
+rtError_t StarsEngine::StarsResumeRtsq(
+    const rtLogicCqReport_t& logicCq, const uint16_t taskType, Stream* const failStm) const
 {
-    uint32_t offset = 1U;   // skip the error sqe
+    uint32_t offset = 1U; // skip the error sqe
     uint32_t head = 0U;
 
     // No error exists.
@@ -1362,13 +1407,13 @@ rtError_t StarsEngine::StarsResumeRtsq(const rtLogicCqReport_t &logicCq, const u
 
     // Resume scheduling
     if (taskType == static_cast<uint16_t>(TS_TASK_TYPE_MODEL_EXECUTE)) {
-        offset = 2U;    // if model execute sqe, need skip model_execute and wait_end_graph sqe
+        offset = 2U; // if model execute sqe, need skip model_execute and wait_end_graph sqe
     }
 
     rtError_t error = RT_ERROR_NONE;
-    Device *dev = GetDevice();
+    Device* dev = GetDevice();
     const uint32_t devId = dev->Id_();
-    Driver * const devDrv = dev->Driver_();
+    Driver* const devDrv = dev->Driver_();
     const uint32_t tsId = dev->DevGetTsId();
     bool enable = true;
     uint64_t cnt = 0U;
@@ -1379,24 +1424,24 @@ rtError_t StarsEngine::StarsResumeRtsq(const rtLogicCqReport_t &logicCq, const u
                               static_cast<uint64_t>(beginTimeSpec.tv_nsec) / RT_MS_TO_NS;
     RT_LOG(RT_LOG_WARNING, "Begin to query SQ status, stream_id=%hu.", logicCq.streamId);
     const int32_t getSqTimeout = (failStm->GetSyncRemainTime() == -1) ? (RT_GET_SQ_STATUS_TIMEOUT_TIME * 2) :
-        (failStm->GetSyncRemainTime() * 1000);
+                                                                        (failStm->GetSyncRemainTime() * 1000);
     uint32_t pollingCycleCnt = dev->GetDevProperties().sqDisableStatPollingCycleNum;
     pollingCycleCnt = (pollingCycleCnt == 0U) ? SQ_DISABLE_POLLING_CYCLE_COMMON_CNT : pollingCycleCnt;
     while (true) {
-        COND_RETURN_ERROR_MSG_INNER((Runtime::Instance()->IsSupportOpTimeoutMs() &&
-            (failStm->GetFailureMode() == ABORT_ON_FAILURE)), RT_ERROR_NONE,
-            "Failed to resume RTSQ. Reason: stop scheduling in abort failure mode, stream_id=%hu, sq_id=%hu, sq_head=%hu, task_id=%hu, taskType=%hu.",
+        COND_RETURN_ERROR_MSG_INNER(
+            (Runtime::Instance()->IsSupportOpTimeoutMs() && (failStm->GetFailureMode() == ABORT_ON_FAILURE)),
+            RT_ERROR_NONE,
+            "Failed to resume RTSQ. Reason: stop scheduling in abort failure mode, stream_id=%hu, sq_id=%hu, "
+            "sq_head=%hu, task_id=%hu, taskType=%hu.",
             logicCq.streamId, logicCq.sqId, logicCq.sqHead, logicCq.taskId, taskType);
         if ((cnt++ % pollingCycleCnt) == 0U) {
             queryCnt++;
             error = devDrv->GetSqEnable(devId, tsId, static_cast<uint32_t>(logicCq.sqId), enable);
-            COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error,
-                failStm->SetStreamStatus(StreamStatus::ABNORMAL);,
-                "Failed to get SQ enable, device_id=%u, stream_id=%hu, retCode=%#x.",
-                dev->Id_(), logicCq.streamId, static_cast<uint32_t>(error));
+            COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, failStm->SetStreamStatus(StreamStatus::ABNORMAL);
+                                   , "Failed to get SQ enable, device_id=%u, stream_id=%hu, retCode=%#x.", dev->Id_(),
+                                   logicCq.streamId, static_cast<uint32_t>(error));
             if ((cnt % RT_QUERY_CNT_NUM) == 0U) {
-                RT_LOG(RT_LOG_EVENT, "dev_id=%u, ts_id=%u, stream_id=%d, enable=%u",
-                    devId, tsId, logicCq.sqId, enable);
+                RT_LOG(RT_LOG_EVENT, "dev_id=%u, ts_id=%u, stream_id=%d, enable=%u", devId, tsId, logicCq.sqId, enable);
             }
             if (!enable) {
                 RT_LOG(RT_LOG_WARNING, "sq already disable, stream_id=%hu, queryCnt=%u", logicCq.streamId, queryCnt);
@@ -1404,10 +1449,8 @@ rtError_t StarsEngine::StarsResumeRtsq(const rtLogicCqReport_t &logicCq, const u
             }
             abortStatus = failStm->GetAbortStatus();
             COND_RETURN_ERROR_MSG_INNER(
-                ((abortStatus == RT_ERROR_STREAM_ABORT) || (abortStatus == RT_ERROR_DEVICE_TASK_ABORT)),
-                abortStatus,
-                "Failed to resume RTSQ. Reason: stream is in abort status, status=%d.",
-                abortStatus);
+                ((abortStatus == RT_ERROR_STREAM_ABORT) || (abortStatus == RT_ERROR_DEVICE_TASK_ABORT)), abortStatus,
+                "Failed to resume RTSQ. Reason: stream is in abort status, status=%d.", abortStatus);
             mmTimespec endTimeSpec = mmGetTickCount();
             const uint64_t endCnt = static_cast<uint64_t>(endTimeSpec.tv_sec) * RT_MS_PER_S +
                                     static_cast<uint64_t>(endTimeSpec.tv_nsec) / RT_MS_TO_NS;
@@ -1415,19 +1458,20 @@ rtError_t StarsEngine::StarsResumeRtsq(const rtLogicCqReport_t &logicCq, const u
             const int32_t spendTime = static_cast<int32_t>(count);
             if (spendTime > getSqTimeout) {
                 failStm->SetStreamStatus(StreamStatus::ABNORMAL);
-                RT_LOG(RT_LOG_ERROR, "Failed to resume RTSQ. Reason: SQ disable timeout, stream_id=%hu, sync remain time=%dms.",
+                RT_LOG(
+                    RT_LOG_ERROR,
+                    "Failed to resume RTSQ. Reason: SQ disable timeout, stream_id=%hu, sync remain time=%dms.",
                     logicCq.streamId, failStm->GetSyncRemainTime());
                 return RT_ERROR_NONE;
             }
         }
     }
     abortStatus = failStm->GetAbortStatus();
-    COND_RETURN_ERROR_MSG_INNER(((abortStatus == RT_ERROR_STREAM_ABORT) || (abortStatus == RT_ERROR_DEVICE_TASK_ABORT)),
-        abortStatus,
-        "Failed to resume RTSQ. Reason: stream is in abort status, status=%d.",
-        abortStatus);
+    COND_RETURN_ERROR_MSG_INNER(
+        ((abortStatus == RT_ERROR_STREAM_ABORT) || (abortStatus == RT_ERROR_DEVICE_TASK_ABORT)), abortStatus,
+        "Failed to resume RTSQ. Reason: stream is in abort status, status=%d.", abortStatus);
     if (taskType == static_cast<uint16_t>(TS_TASK_TYPE_MULTIPLE_TASK)) {
-        head =  failStm->GetTaskPosHead();
+        head = failStm->GetTaskPosHead();
     } else {
         head = ((static_cast<uint32_t>(logicCq.sqHead) + offset) % failStm->GetSqDepth());
     }
@@ -1436,43 +1480,51 @@ rtError_t StarsEngine::StarsResumeRtsq(const rtLogicCqReport_t &logicCq, const u
     uint16_t sqTail = 0U;
 
     error = devDrv->GetSqHead(devId, tsId, static_cast<uint32_t>(logicCq.sqId), sqHead);
-    ERROR_RETURN(error, "Failed to get SQ head, stream_id=%hu, sq_id=%hu, device_id=%u, retCode=%#x.",
-        logicCq.streamId, logicCq.sqId, devId, static_cast<uint32_t>(error));
+    ERROR_RETURN(
+        error, "Failed to get SQ head, stream_id=%hu, sq_id=%hu, device_id=%u, retCode=%#x.", logicCq.streamId,
+        logicCq.sqId, devId, static_cast<uint32_t>(error));
 
     error = devDrv->GetSqTail(devId, tsId, static_cast<uint32_t>(logicCq.sqId), sqTail);
-    ERROR_RETURN(error, "Failed to get SQ tail, stream_id=%hu, sq_id=%hu, device_id=%u, retCode=%#x.",
-        logicCq.streamId, logicCq.sqId, devId, static_cast<uint32_t>(error));
+    ERROR_RETURN(
+        error, "Failed to get SQ tail, stream_id=%hu, sq_id=%hu, device_id=%u, retCode=%#x.", logicCq.streamId,
+        logicCq.sqId, devId, static_cast<uint32_t>(error));
 
     if (sqHead == sqTail) {
-        RT_LOG(RT_LOG_ERROR, "stop scheduling due to SQ is destroyed : stream_id=%hu, sq_id=%hu, logicCq sq_head=%hu"
+        RT_LOG(
+            RT_LOG_ERROR,
+            "stop scheduling due to SQ is destroyed : stream_id=%hu, sq_id=%hu, logicCq sq_head=%hu"
             ", task_id=%hu, taskType=%hu, sq_head=%hu, sq_tail=%hu.",
             logicCq.streamId, logicCq.sqId, logicCq.sqHead, logicCq.taskId, taskType, sqHead, sqTail);
         return RT_ERROR_NONE;
     }
 
     error = devDrv->SetSqHead(devId, tsId, static_cast<uint32_t>(logicCq.sqId), head);
-    ERROR_RETURN(error, "Failed to set SQ head, stream_id=%hu, sq_id=%hu, device_id=%u, retCode=%#x.",
-        logicCq.streamId, logicCq.sqId, devId, static_cast<uint32_t>(error));
+    ERROR_RETURN(
+        error, "Failed to set SQ head, stream_id=%hu, sq_id=%hu, device_id=%u, retCode=%#x.", logicCq.streamId,
+        logicCq.sqId, devId, static_cast<uint32_t>(error));
 
     if (failStm->GetFailureMode() == ABORT_ON_FAILURE) {
-        RT_LOG(RT_LOG_ERROR, "Failed to resume RTSQ. Reason: stop scheduling in abort failure mode, stream_id=%hu, sq_id=%hu, sq_head=%hu, task_id=%hu, taskType=%hu.",
+        RT_LOG(
+            RT_LOG_ERROR,
+            "Failed to resume RTSQ. Reason: stop scheduling in abort failure mode, stream_id=%hu, sq_id=%hu, "
+            "sq_head=%hu, task_id=%hu, taskType=%hu.",
             logicCq.streamId, logicCq.sqId, logicCq.sqHead, logicCq.taskId, taskType);
         return RT_ERROR_NONE;
     }
 
     error = devDrv->EnableSq(devId, tsId, static_cast<uint32_t>(logicCq.sqId));
-    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error,
-        failStm->SetStreamStatus(StreamStatus::ABNORMAL);,
-        "Failed to enable sq, stream_id=%hu, sq_id=%hu, device_id=%u, retCode=%#x.",
-        logicCq.streamId, logicCq.sqId, devId, static_cast<uint32_t>(error));
+    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, failStm->SetStreamStatus(StreamStatus::ABNORMAL);
+                           , "Failed to enable sq, stream_id=%hu, sq_id=%hu, device_id=%u, retCode=%#x.",
+                           logicCq.streamId, logicCq.sqId, devId, static_cast<uint32_t>(error));
 
-    RT_LOG(RT_LOG_WARNING, "Resume stream_id=%hu, sq_id=%hu, sq_head=%hu, task_id=%hu, taskType=%hu, head=%u.",
+    RT_LOG(
+        RT_LOG_WARNING, "Resume stream_id=%hu, sq_id=%hu, sq_head=%hu, task_id=%hu, taskType=%hu, head=%u.",
         logicCq.streamId, logicCq.sqId, logicCq.sqHead, logicCq.taskId, taskType, head);
 
     return RT_ERROR_NONE;
 }
 
-bool StarsEngine::ProcReportIsException(const rtLogicCqReport_t &logicCq, TaskInfo *reportTask) const
+bool StarsEngine::ProcReportIsException(const rtLogicCqReport_t& logicCq, TaskInfo* reportTask) const
 {
     if ((logicCq.errorType & RT_STARS_EXIST_ERROR) == 0U) {
         return false;
@@ -1508,10 +1560,10 @@ bool StarsEngine::ProcReportIsException(const rtLogicCqReport_t &logicCq, TaskIn
         }
     }
 
-    if ((logicCq.errorCode == static_cast<uint32_t>(TS_ERROR_AICORE_OVERFLOW))
-        || (logicCq.errorCode == static_cast<uint32_t>(TS_ERROR_AIVEC_OVERFLOW))
-        || (logicCq.errorCode == static_cast<uint32_t>(TS_ERROR_AICPU_OVERFLOW))
-        || (logicCq.errorCode == static_cast<uint32_t>(TS_ERROR_SDMA_OVERFLOW))) {
+    if ((logicCq.errorCode == static_cast<uint32_t>(TS_ERROR_AICORE_OVERFLOW)) ||
+        (logicCq.errorCode == static_cast<uint32_t>(TS_ERROR_AIVEC_OVERFLOW)) ||
+        (logicCq.errorCode == static_cast<uint32_t>(TS_ERROR_AICPU_OVERFLOW)) ||
+        (logicCq.errorCode == static_cast<uint32_t>(TS_ERROR_SDMA_OVERFLOW))) {
         return false;
     }
 
@@ -1519,16 +1571,10 @@ bool StarsEngine::ProcReportIsException(const rtLogicCqReport_t &logicCq, TaskIn
 }
 
 const std::vector<std::string> StarsEngine::StarsCqeErrorDesc_ = {
-    "task exception",
-    "task trap",
-    "task timeout",
-    "sqe error",
-    "resource conflict error",
-    "sq sw status error",
-    "warning"
-};
+    "task exception",          "task trap",          "task timeout", "sqe error",
+    "resource conflict error", "sq sw status error", "warning"};
 
-void StarsEngine::ClearMulTaskCqeNum(const uint8_t mulTaskCqeNum, TaskInfo * const repTask) const
+void StarsEngine::ClearMulTaskCqeNum(const uint8_t mulTaskCqeNum, TaskInfo* const repTask) const
 {
     TaskInfo* reportTask = repTask;
     if (mulTaskCqeNum == 0) {
@@ -1544,36 +1590,40 @@ void StarsEngine::ClearMulTaskCqeNum(const uint8_t mulTaskCqeNum, TaskInfo * con
     }
 }
 
-void StarsEngine::ProcLogicCqReport(const rtLogicCqReport_t &logicCq, const bool isStreamSync, TaskInfo * reportTask)
+void StarsEngine::ProcLogicCqReport(const rtLogicCqReport_t& logicCq, const bool isStreamSync, TaskInfo* reportTask)
 {
     UNUSED(isStreamSync);
-    const uint16_t streamId = (logicCq.streamId & 0x7FFFU);   // bit15 is the flag of sync task
+    const uint16_t streamId = (logicCq.streamId & 0x7FFFU); // bit15 is the flag of sync task
     const uint16_t taskId = logicCq.taskId;
     const uint16_t sqId = logicCq.sqId;
     const uint16_t sqHead = logicCq.sqHead;
     const uint8_t errType = logicCq.errorType;
     const uint32_t errBit = (errType == 0U) ? UINT32_BIT_NUM : static_cast<uint32_t>(CTZ(errType));
-    const char_t * const errMsg = static_cast<size_t>(errBit) < StarsCqeErrorDesc_.size() ?
-                                  StarsCqeErrorDesc_[static_cast<size_t>(errBit)].c_str() : "unknow";
+    const char_t* const errMsg = static_cast<size_t>(errBit) < StarsCqeErrorDesc_.size() ?
+                                     StarsCqeErrorDesc_[static_cast<size_t>(errBit)].c_str() :
+                                     "unknow";
     bool isExceptionFlag = false;
-    TaskInfo *faultTaskPtr = nullptr;
+    TaskInfo* faultTaskPtr = nullptr;
 
     if (reportTask == nullptr) {
         reportTask = GetDevice()->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), taskId);
     }
 
     if (ProcReportIsException(logicCq, reportTask)) {
-        RT_LOG(RT_LOG_ERROR, "Task run failed, device_id=%u, stream_id=%hu, task_id=%hu, sqe_type=%u(%s), "
-            "errType=%#x(%s), sqSwStatus=%#x", GetDevice()->Id_(), streamId, taskId,
-            static_cast<uint32_t>(logicCq.sqeType), GetSqeDescByType(logicCq.sqeType), errType,
-            errMsg, logicCq.errorCode);
+        RT_LOG(
+            RT_LOG_ERROR,
+            "Task run failed, device_id=%u, stream_id=%hu, task_id=%hu, sqe_type=%u(%s), "
+            "errType=%#x(%s), sqSwStatus=%#x",
+            GetDevice()->Id_(), streamId, taskId, static_cast<uint32_t>(logicCq.sqeType),
+            GetSqeDescByType(logicCq.sqeType), errType, errMsg, logicCq.errorCode);
         const uint32_t swStatus = logicCq.errorCode;
         isExceptionFlag = true;
         (void)GetDevice()->PrintStreamTimeoutSnapshotInfo();
         if (reportTask != nullptr) {
-            faultTaskPtr = GetRealReportFaultTask(reportTask, static_cast<const void *>(&swStatus));
+            faultTaskPtr = GetRealReportFaultTask(reportTask, static_cast<const void*>(&swStatus));
             (void)GetDevice()->ProcDeviceErrorInfo(faultTaskPtr);
-            if (faultTaskPtr != nullptr && (faultTaskPtr->isRingbufferGet == 0U) && faultTaskPtr->type != TS_TASK_TYPE_KERNEL_AICPU) { // Try to get ringbuffer for N-seconds fast recovery.
+            if (faultTaskPtr != nullptr && (faultTaskPtr->isRingbufferGet == 0U) &&
+                faultTaskPtr->type != TS_TASK_TYPE_KERNEL_AICPU) { // Try to get ringbuffer for N-seconds fast recovery.
                 (void)GetDevice()->ProcDeviceErrorInfo(faultTaskPtr);
             }
             if (!reportTask->stream->IsSeparateSendAndRecycle()) {
@@ -1584,7 +1634,8 @@ void StarsEngine::ProcLogicCqReport(const rtLogicCqReport_t &logicCq, const bool
         }
     } else if ((errType & (RT_STARS_EXIST_ERROR | RT_STARS_EXIST_WARNING)) != static_cast<uint8_t>(0U)) {
         // error bit indicates overflow of debug model or endofsquence here
-        RT_LOG(RT_LOG_WARNING,
+        RT_LOG(
+            RT_LOG_WARNING,
             "CQE warning, device_id=%u, stream_id=%hu, task_id=%hu, sqe_type=%u(%s), errType=%#x(%s), sqSwStatus=%#x",
             GetDevice()->Id_(), streamId, taskId, static_cast<uint32_t>(logicCq.sqeType),
             GetSqeDescByType(logicCq.sqeType), errType, errMsg, logicCq.errorCode);
@@ -1593,16 +1644,19 @@ void StarsEngine::ProcLogicCqReport(const rtLogicCqReport_t &logicCq, const bool
     }
 
     if (unlikely(reportTask == nullptr)) {
-        RT_LOG(RT_LOG_WARNING, "task or task stream is null, stream_id=%hu, task_id=%hu, sq_id=%hu, sqHead=%hu",
-            streamId, taskId, sqId, sqHead);
+        RT_LOG(
+            RT_LOG_WARNING, "task or task stream is null, stream_id=%hu, task_id=%hu, sq_id=%hu, sqHead=%hu", streamId,
+            taskId, sqId, sqHead);
         return;
     }
 
-    Stream * const stm = reportTask->stream; // save ptr before task recycle instead of re-lookup stream map
+    Stream* const stm = reportTask->stream; // save ptr before task recycle instead of re-lookup stream map
     stm->SetStreamAsyncRecycleFlag(false);
 
     const tsTaskType_t taskType = reportTask->type;
-    RT_LOG(RT_LOG_DEBUG, "RTS_DRIVER: report receive, stream_id=%hu, task_id=%hu, sq_id=%hu, sqHead=%hu, "
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "RTS_DRIVER: report receive, stream_id=%hu, task_id=%hu, sq_id=%hu, sqHead=%hu, "
         "task_type=%hu(%s).",
         streamId, taskId, sqId, sqHead, static_cast<uint16_t>(taskType), reportTask->typeName);
 
@@ -1640,13 +1694,13 @@ void StarsEngine::ProcLogicCqReport(const rtLogicCqReport_t &logicCq, const bool
     return;
 }
 
-void StarsEngine::StarsReportLogicCq(const rtLogicCqReport_t &report, rtDvppGrpCallback callBackFunc)
+void StarsEngine::StarsReportLogicCq(const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc)
 {
-    Device *dev = GetDevice();
+    Device* dev = GetDevice();
     uint32_t realDeviceId = 0U;
     const rtError_t error = Runtime::Instance()->GetUserDevIdByDeviceId(dev->Id_(), &realDeviceId);
-    COND_RETURN_VOID((error != RT_ERROR_NONE), "Convert drvDeviceId:%u is err:%#x",
-        dev->Id_(), static_cast<uint32_t>(error));
+    COND_RETURN_VOID(
+        (error != RT_ERROR_NONE), "Convert drvDeviceId:%u is err:%#x", dev->Id_(), static_cast<uint32_t>(error));
     rtDvppGrpRptInfo_t dvppReport = {};
     dvppReport.deviceId = realDeviceId;
     dvppReport.streamId = report.streamId;
@@ -1657,20 +1711,21 @@ void StarsEngine::StarsReportLogicCq(const rtLogicCqReport_t &report, rtDvppGrpC
 
     callBackFunc(&dvppReport);
     ProcLogicCqReport(report, false, nullptr);
-    RT_LOG(RT_LOG_DEBUG, "Report logic cq, streamId=%u, taskId=%u, sqeType=%hhu, cqeCode=%hhu.",
-        dvppReport.streamId, dvppReport.taskId, dvppReport.sqeType, dvppReport.cqeErrorCode);
+    RT_LOG(
+        RT_LOG_DEBUG, "Report logic cq, streamId=%u, taskId=%u, sqeType=%hhu, cqeCode=%hhu.", dvppReport.streamId,
+        dvppReport.taskId, dvppReport.sqeType, dvppReport.cqeErrorCode);
 
     return;
 }
 
-void StarsEngine::StarsReportLogicCq(const rtLogicCqReport_t &report, rtDvppGrpCallback callBackFunc,
-                                            uint8_t sqeType, uint8_t cqeErrorCode)
+void StarsEngine::StarsReportLogicCq(
+    const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc, uint8_t sqeType, uint8_t cqeErrorCode)
 {
-    Device *dev = GetDevice();
+    Device* dev = GetDevice();
     uint32_t realDeviceId = 0U;
     const rtError_t error = Runtime::Instance()->GetUserDevIdByDeviceId(dev->Id_(), &realDeviceId);
-    COND_RETURN_VOID((error != RT_ERROR_NONE), "Convert drvDeviceId:%u is err:%#x",
-        dev->Id_(), static_cast<uint32_t>(error));
+    COND_RETURN_VOID(
+        (error != RT_ERROR_NONE), "Convert drvDeviceId:%u is err:%#x", dev->Id_(), static_cast<uint32_t>(error));
     rtDvppGrpRptInfo_t dvppReport = {};
     dvppReport.deviceId = realDeviceId;
     dvppReport.streamId = report.streamId;
@@ -1682,30 +1737,33 @@ void StarsEngine::StarsReportLogicCq(const rtLogicCqReport_t &report, rtDvppGrpC
     callBackFunc(&dvppReport);
     ProcLogicCqReport(report, false, nullptr);
 
-    RT_LOG(RT_LOG_DEBUG, "Report stars logic cq, streamId=%u, taskId=%u, sqeType=%hhu, cqeCode=%hhu.",
-        dvppReport.streamId, dvppReport.taskId, dvppReport.sqeType, dvppReport.cqeErrorCode);
+    RT_LOG(
+        RT_LOG_DEBUG, "Report stars logic cq, streamId=%u, taskId=%u, sqeType=%hhu, cqeCode=%hhu.", dvppReport.streamId,
+        dvppReport.taskId, dvppReport.sqeType, dvppReport.cqeErrorCode);
 
     return;
 }
 
 // waitgroup get result
-rtError_t StarsEngine::MultipleTaskReportLogicCq(TaskInfo * const workTask, const rtLogicCqReport_t& report,
-                                                 rtDvppGrpCallback callBackFunc)
+rtError_t StarsEngine::MultipleTaskReportLogicCq(
+    TaskInfo* const workTask, const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc)
 {
     if (!CompleteProcMultipleTaskReport(workTask, report)) {
-        RT_LOG(RT_LOG_INFO, "MultipleTask not CompleteProc sqeType = %u, streamId = %u, taskId = %u",
-            report.sqeType, report.streamId, report.taskId);
+        RT_LOG(
+            RT_LOG_INFO, "MultipleTask not CompleteProc sqeType = %u, streamId = %u, taskId = %u", report.sqeType,
+            report.streamId, report.taskId);
         return RT_ERROR_STREAM_SYNC_TIMEOUT;
     }
 
     TaskInfo* reportTask = workTask;
-    StarsReportLogicCq(report, callBackFunc, static_cast<uint8_t>(RT_STARS_SQE_TYPE_VIR_TYPE),
+    StarsReportLogicCq(
+        report, callBackFunc, static_cast<uint8_t>(RT_STARS_SQE_TYPE_VIR_TYPE),
         GetStarsDefinedErrCode(reportTask->u.davinciMultiTaskInfo.errorType));
 
     return RT_ERROR_NONE;
 }
 
-rtError_t StarsEngine::CommonTaskReportLogicCq(const rtLogicCqReport_t &report, rtDvppGrpCallback callBackFunc)
+rtError_t StarsEngine::CommonTaskReportLogicCq(const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc)
 {
     // check if vpc error and retry
     if (ProcReportIsVpcErrorAndRetry(report)) {
@@ -1720,11 +1778,12 @@ rtError_t StarsEngine::CommonTaskReportLogicCq(const rtLogicCqReport_t &report, 
 
 rtError_t StarsEngine::ReportLogicCq(const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc)
 {
-    TaskInfo * const reportTask = GetDevice()->GetTaskFactory()->GetTask(
-        static_cast<int32_t>(report.streamId), report.taskId);
+    TaskInfo* const reportTask =
+        GetDevice()->GetTaskFactory()->GetTask(static_cast<int32_t>(report.streamId), report.taskId);
     if (unlikely(reportTask == nullptr)) {
-        RT_LOG(RT_LOG_WARNING, "GetTask error, device_id=%u, stream_id=%hu, task_id=%hu.",
-            GetDevice()->Id_(), report.streamId, report.taskId);
+        RT_LOG(
+            RT_LOG_WARNING, "GetTask error, device_id=%u, stream_id=%hu, task_id=%hu.", GetDevice()->Id_(),
+            report.streamId, report.taskId);
         StarsReportLogicCq(report, callBackFunc);
         return RT_ERROR_NONE;
     }
@@ -1738,11 +1797,11 @@ rtError_t StarsEngine::ReportLogicCq(const rtLogicCqReport_t& report, rtDvppGrpC
     return CommonTaskReportLogicCq(report, callBackFunc);
 }
 
-rtError_t StarsEngine::DvppWaitGroup(DvppGrp *grp, rtDvppGrpCallback callBackFunc, int32_t timeout)
+rtError_t StarsEngine::DvppWaitGroup(DvppGrp* grp, rtDvppGrpCallback callBackFunc, int32_t timeout)
 {
-    Device *dev = GetDevice();
+    Device* dev = GetDevice();
     rtLogicCqReport_t report = {};
-    Driver * const devDrv = dev->Driver_();
+    Driver* const devDrv = dev->Driver_();
     uint32_t cnt = 0U;
     const uint32_t logicCqid = grp->getLogicCqId();
 
@@ -1755,7 +1814,7 @@ rtError_t StarsEngine::DvppWaitGroup(DvppGrp *grp, rtDvppGrpCallback callBackFun
     waitInfo.streamId = UINT32_MAX;
     waitInfo.taskId = UINT32_MAX;
 
-    const rtError_t error = devDrv->LogicCqReportV2(waitInfo, RtPtrToPtr<uint8_t *>(&report), 1U, cnt);
+    const rtError_t error = devDrv->LogicCqReportV2(waitInfo, RtPtrToPtr<uint8_t*>(&report), 1U, cnt);
     RT_LOG(RT_LOG_DEBUG, "Logic cq=%u, timeout=%dms, ret=%#x, cnt=%u.", logicCqid, timeout, error, cnt);
     COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
 
@@ -1763,17 +1822,19 @@ rtError_t StarsEngine::DvppWaitGroup(DvppGrp *grp, rtDvppGrpCallback callBackFun
         return RT_ERROR_STREAM_SYNC_TIMEOUT;
     }
 
-    AtraceParams param = { GetDevice()->Id_(), static_cast<uint32_t>(report.streamId), report.taskId,
-        GetCurrentTid(), GetDevice()->GetAtraceHandle(), {}};
-    param.u.cqReportParams = { logicCqid, report.errorCode, report.sqeType };
+    AtraceParams param = {GetDevice()->Id_(), static_cast<uint32_t>(report.streamId), report.taskId,
+                          GetCurrentTid(),    GetDevice()->GetAtraceHandle(),         {}};
+    param.u.cqReportParams = {logicCqid, report.errorCode, report.sqeType};
     AtraceSubmitLog(TYPE_CQ_REPORT, param);
-    RT_LOG(RT_LOG_DEBUG, "Get report: logicCq=%u, streamId=%hu, taskId=%u, code=%#x, "
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "Get report: logicCq=%u, streamId=%hu, taskId=%u, code=%#x, "
         "type=%hhu, sqeType=%hhu.",
         logicCqid, report.streamId, report.taskId, report.errorCode, report.errorType, report.sqeType);
     return ReportLogicCq(report, callBackFunc);
 }
 
-void StarsEngine::MonitorForWatchDog(Device * const dev)
+void StarsEngine::MonitorForWatchDog(Device* const dev)
 {
     // 1. read ringbuffer
     uint16_t errorStreamId = 0xFFFFU;
@@ -1782,14 +1843,14 @@ void StarsEngine::MonitorForWatchDog(Device * const dev)
         return;
     }
 
-    COND_RETURN_NORMAL((dev->GetDeviceStatus() == RT_ERROR_DEVICE_TASK_ABORT),
-        "Device task abort, do not reclaim task.");
+    COND_RETURN_NORMAL(
+        (dev->GetDeviceStatus() == RT_ERROR_DEVICE_TASK_ABORT), "Device task abort, do not reclaim task.");
     if (!(device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DFX_WATCH_DOG))) {
         Runtime::Instance()->SetWatchDogDevStatus(dev, RT_DEVICE_STATUS_ABNORMAL);
         return;
     }
     // 2. 1971 Monitor taskReclaim
-    uint32_t cycleTimes = 10000U;    // Number of cyclic waiting for recycle cqe
+    uint32_t cycleTimes = 10000U; // Number of cyclic waiting for recycle cqe
     while ((cycleTimes != 0U) && Runtime::Instance()->GetThreadGuard()->GetMonitorStatus()) {
         ret = MonitorTaskReclaim(errorStreamId);
         if (ret == RT_ERROR_TASK_MONITOR) {
@@ -1799,15 +1860,15 @@ void StarsEngine::MonitorForWatchDog(Device * const dev)
     }
 }
 
-void StarsEngine::MonitorEndGraphNotify(Device * const dev) const
+void StarsEngine::MonitorEndGraphNotify(Device* const dev) const
 {
-    RawDevice* const rawDev = dynamic_cast<RawDevice *>(dev);
+    RawDevice* const rawDev = dynamic_cast<RawDevice*>(dev);
     rawDev->PollEndGraphNotifyInfo();
 }
 
 void StarsEngine::MonitoringRun()
 {
-    Device * const dev = GetDevice();
+    Device* const dev = GetDevice();
     NULL_PTR_RETURN_DIRECTLY(dev);
     const uint32_t tsId = dev->DevGetTsId();
 #ifndef CFG_DEV_PLATFORM_PC
@@ -1827,9 +1888,8 @@ void StarsEngine::MonitoringRun()
         ReportOomQueryProc();
         // TS Heartbeat Down
         ret = ReportHeartBreakProcV2();
-        LOST_HEARTBEAT_PROC_RETURN(ret,
-            std::to_string(GetDevice()->Id_()),
-            Runtime::Instance()->MonitorNumSub(1U),
+        LOST_HEARTBEAT_PROC_RETURN(
+            ret, std::to_string(GetDevice()->Id_()), Runtime::Instance()->MonitorNumSub(1U),
             GlobalStateManager::GetInstance().DecBackgroundThreadCount(__func__));
         if (GetDevRunningState() != static_cast<uint32_t>(DEV_RUNNING_DOWN)) {
             (void)MonitorForWatchDog(dev);
@@ -1866,13 +1926,15 @@ void StarsEngine::RecycleThreadDo()
     rtError_t ret = RT_ERROR_NONE;
     std::vector<uint32_t> streamIdList;
     std::shared_ptr<Stream> stream = nullptr;
-    (void) device_->GetStreamSqCqManage()->GetAllStreamId(streamIdList);
-    for (const auto &id: streamIdList) {
+    (void)device_->GetStreamSqCqManage()->GetAllStreamId(streamIdList);
+    for (const auto& id : streamIdList) {
         ret = device_->GetStreamSqCqManage()->GetStreamSharedPtrById(id, stream);
         COND_PROC(((ret != RT_ERROR_NONE) || (stream == nullptr)), continue);
         stream.get()->StreamRecycleLock();
-        COND_PROC(((stream->GetPendingNum() == 0U) || (stream->GetBindFlag()) || (stream->IsBindDvppGrp()) || (!stream->IsSeparateSendAndRecycle())),
-            stream.get()->StreamRecycleUnlock(); stream.reset(); continue);
+        COND_PROC(((stream->GetPendingNum() == 0U) || (stream->GetBindFlag()) || (stream->IsBindDvppGrp()) ||
+                   (!stream->IsSeparateSendAndRecycle())),
+                  stream.get()->StreamRecycleUnlock();
+                  stream.reset(); continue);
         ret = TaskReclaimForSeparatedStm(stream.get());
         stream.get()->StreamRecycleUnlock();
         stream.reset();
@@ -1880,11 +1942,11 @@ void StarsEngine::RecycleThreadDo()
     }
     device_->FreeFftsPlusArgHandleCache();
 }
-void StarsEngine::RecycleTaskProcessForSeparatedStm(TaskInfo * const recycleTask, const uint32_t devId)
+void StarsEngine::RecycleTaskProcessForSeparatedStm(TaskInfo* const recycleTask, const uint32_t devId)
 {
     COND_PROC(((recycleTask == nullptr)), return;);
     Engine::ProcessProfAndObserver(recycleTask, devId);
-    Stream *stm = recycleTask->stream;
+    Stream* stm = recycleTask->stream;
     if (stm->GetArgHandle() != nullptr) {
         (void)device_->ArgLoader_()->Release(stm->GetArgHandle());
         stm->SetArgHandle(nullptr);
@@ -1903,16 +1965,18 @@ void StarsEngine::RecycleTaskProcessForSeparatedStm(TaskInfo * const recycleTask
     stm->taskResMang_->RecycleResHead();
     (void)stm->latestConcernedTaskId.CompareExchange(excepted, MAX_UINT16_NUM);
     stm->SetRecycleEndTaskId(recycleTaskId);
-    RT_LOG(RT_LOG_INFO, "device_id=%u, stream_id=%d, recycle task_id=%hu, sqHead=%u, sqTail=%u, sqeNum=%u, resHead=%hu, resTail=%hu.",
-           stm->Device_()->Id_(), stm->Id_(), recycleTaskId, stm->GetTaskPosHead(), stm->GetTaskPosTail(), recycleTaskSqeNum,
-           stm->taskResMang_->taskResHead_, stm->taskResMang_->taskResTail_);
+    RT_LOG(
+        RT_LOG_INFO,
+        "device_id=%u, stream_id=%d, recycle task_id=%hu, sqHead=%u, sqTail=%u, sqeNum=%u, resHead=%hu, resTail=%hu.",
+        stm->Device_()->Id_(), stm->Id_(), recycleTaskId, stm->GetTaskPosHead(), stm->GetTaskPosTail(),
+        recycleTaskSqeNum, stm->taskResMang_->taskResHead_, stm->taskResMang_->taskResTail_);
     return;
 }
 
-rtError_t StarsEngine::RecycleSeparatedStmByFinishedId(Stream * const stm, const uint16_t endTaskId, bool isCqeProcess)
+rtError_t StarsEngine::RecycleSeparatedStmByFinishedId(Stream* const stm, const uint16_t endTaskId, bool isCqeProcess)
 {
     const uint16_t taskResDepth = stm->taskResMang_->GetTaskPoolNum();
-    TaskInfo *recycleTask = nullptr;
+    TaskInfo* recycleTask = nullptr;
     uint32_t recycleTaskId = 0U;
     const uint16_t endTaskPos = endTaskId % taskResDepth;
     const uint16_t recycleEndPos = (endTaskPos + 1) % taskResDepth;
@@ -1929,15 +1993,18 @@ rtError_t StarsEngine::RecycleSeparatedStmByFinishedId(Stream * const stm, const
         recycleTaskId = recycleTask->id;
         if (recycleTaskId == MAX_UINT16_NUM) {
             if (stm->taskResMang_->GetResHead() != 2047U) {
-                RT_LOG(RT_LOG_ERROR, "Failed to recycle task. Reason: task ID is invalid, stream_id=%u, pos=%u, tail=%u.",
-                       stm->Id_(), stm->taskResMang_->GetResHead(), stm->taskResMang_->taskResTail_);
+                RT_LOG(
+                    RT_LOG_ERROR, "Failed to recycle task. Reason: task ID is invalid, stream_id=%u, pos=%u, tail=%u.",
+                    stm->Id_(), stm->taskResMang_->GetResHead(), stm->taskResMang_->taskResTail_);
             }
             stm->taskResMang_->RecycleResHead();
             continue;
         }
         if ((recycleTask->isCqeNeedConcern != 0U) &&
             unlikely((stm->GetFailureMode() != ABORT_ON_FAILURE) && (!stm->isForceRecycle_))) {
-            RT_LOG(RT_LOG_DEBUG, "Task delay recycle until CQE received, stream_id=%d, task_id=%hu", stm->Id_(), recycleTaskId);
+            RT_LOG(
+                RT_LOG_DEBUG, "Task delay recycle until CQE received, stream_id=%d, task_id=%hu", stm->Id_(),
+                recycleTaskId);
             stm->SetNeedRecvCqeFlag(true);
             break;
         }
@@ -1946,30 +2013,34 @@ rtError_t StarsEngine::RecycleSeparatedStmByFinishedId(Stream * const stm, const
     return RT_ERROR_NONE;
 }
 
-rtError_t StarsEngine::TaskReclaimBySqHeadForSeparatedStm(Stream * const stm)
+rtError_t StarsEngine::TaskReclaimBySqHeadForSeparatedStm(Stream* const stm)
 {
     uint16_t sqHead = 0U;
     uint32_t endTaskId = MAX_UINT16_NUM;
     rtError_t error = device_->Driver_()->GetSqHead(device_->Id_(), device_->DevGetTsId(), stm->GetSqId(), sqHead);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Failed to query SQ head, retCode=%#x.",
-                                static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, "Failed to query SQ head, retCode=%#x.", static_cast<uint32_t>(error));
 
     if (unlikely(stm->GetFailureMode() == ABORT_ON_FAILURE)) {
         endTaskId = stm->GetLastTaskId();
-        RT_LOG(RT_LOG_INFO, "stream is in failure abort and need to reclaim all, stream_id=%d, lastTaskId=%u, "
-                            "failuremode=%" PRIu64, stm->Id_(), stm->GetLastTaskId(), stm->GetFailureMode());
+        RT_LOG(
+            RT_LOG_INFO,
+            "stream is in failure abort and need to reclaim all, stream_id=%d, lastTaskId=%u, "
+            "failuremode=%" PRIu64,
+            stm->Id_(), stm->GetLastTaskId(), stm->GetFailureMode());
         return RecycleSeparatedStmByFinishedId(stm, endTaskId);
     }
 
     error = stm->GetFinishedTaskIdBySqHead(sqHead, endTaskId);
     COND_PROC(((error != RT_ERROR_NONE) || (endTaskId == MAX_UINT16_NUM)), return RT_ERROR_NONE);
-    RT_LOG(RT_LOG_INFO, "device_id=%u, stream_id=%d, sqHead=%d, posHead=%u, posTail=%u, finishedTaskId=%d",
-           stm->Device_()->Id_(), stm->Id_(), sqHead, stm->GetTaskPosHead(), stm->GetTaskPosTail(), endTaskId);
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%u, stream_id=%d, sqHead=%d, posHead=%u, posTail=%u, finishedTaskId=%d",
+        stm->Device_()->Id_(), stm->Id_(), sqHead, stm->GetTaskPosHead(), stm->GetTaskPosTail(), endTaskId);
     (void)RecycleSeparatedStmByFinishedId(stm, endTaskId);
     return RT_ERROR_NONE;
 }
 
-rtError_t StarsEngine::TaskReclaimByCqeForSeparatedStm(Stream * const stm)
+rtError_t StarsEngine::TaskReclaimByCqeForSeparatedStm(Stream* const stm)
 {
     if (stm->IsExistCqe() || stm->GetNeedRecvCqeFlag()) {
         uint32_t finishTaskId = 0U;
@@ -1978,5 +2049,5 @@ rtError_t StarsEngine::TaskReclaimByCqeForSeparatedStm(Stream * const stm)
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

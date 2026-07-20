@@ -13,10 +13,9 @@
 namespace cce {
 namespace runtime {
 
-MemoryPool::MemoryPool(Device *dev, const bool isReadOnly) : NoCopy(), device_(dev),
-    driver_(dev->Driver_()), usedSize_(0), isReadOnly_(isReadOnly)
-{
-}
+MemoryPool::MemoryPool(Device* dev, const bool isReadOnly)
+    : NoCopy(), device_(dev), driver_(dev->Driver_()), usedSize_(0), isReadOnly_(isReadOnly)
+{}
 
 MemoryPool::~MemoryPool() noexcept
 {
@@ -32,28 +31,20 @@ MemoryPool::~MemoryPool() noexcept
     driver_ = nullptr;
 }
 
-size_t MemoryPool::GetUsedSize() const
-{
-    return usedSize_;
-}
+size_t MemoryPool::GetUsedSize() const { return usedSize_; }
 
-const void* MemoryPool::GetAddr() const
-{
-    return addr_;
-}
- 
-bool MemoryPool::GetReadOnlyFlag() const
-{
-    return isReadOnly_;
-}
+const void* MemoryPool::GetAddr() const { return addr_; }
+
+bool MemoryPool::GetReadOnlyFlag() const { return isReadOnly_; }
 
 rtError_t MemoryPool::Init()
 {
     addr_ = AllocDevMem(POOL_SIZE_2M);
-    NULL_PTR_RETURN(addr_ , RT_ERROR_MEMORY_ALLOCATION);
+    NULL_PTR_RETURN(addr_, RT_ERROR_MEMORY_ALLOCATION);
 
     memoryList_ = new (std::nothrow) MemoryList();
-    COND_RETURN_AND_MSG_OUTER(memoryList_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+    COND_RETURN_AND_MSG_OUTER(
+        memoryList_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
         std::to_string(sizeof(MemoryList)).c_str(), "new");
     return memoryList_->AddBlock(addr_, POOL_SIZE_2M);
 }
@@ -97,16 +88,15 @@ bool MemoryPool::Contains(void* ptr) const
            (static_cast<int8_t*>(ptr) < (static_cast<int8_t*>(addr_) + POOL_SIZE_2M));
 }
 
-void *MemoryPool::AllocDevMem(const uint32_t size) const
+void* MemoryPool::AllocDevMem(const uint32_t size) const
 {
     rtError_t error = RT_ERROR_NONE;
-    void *addr = nullptr;
-    const bool readOnly = (!device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_KERNEL_DATA_READ_ONLY)) ? 
-        isReadOnly_ : false;
-  
+    void* addr = nullptr;
+    const bool readOnly =
+        (!device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_KERNEL_DATA_READ_ONLY)) ? isReadOnly_ : false;
+
     error = driver_->DevMemAlloc(
-        &addr, static_cast<uint64_t>(size), RT_MEMORY_HBM, device_->Id_(),
-        MODULEID_RUNTIME, true, readOnly);
+        &addr, static_cast<uint64_t>(size), RT_MEMORY_HBM, device_->Id_(), MODULEID_RUNTIME, true, readOnly);
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "DevMemAlloc failed, device_id=%u, retCode=%#x", device_->Id_(), error);
         return nullptr;
@@ -114,10 +104,7 @@ void *MemoryPool::AllocDevMem(const uint32_t size) const
     return addr;
 }
 
-std::mutex *MemoryPool::GetMemoryPoolAdviseMutex()
-{
-    return &mutexAdviseMem_;
-}
+std::mutex* MemoryPool::GetMemoryPoolAdviseMutex() { return &mutexAdviseMem_; }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

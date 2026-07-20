@@ -19,14 +19,14 @@
 namespace cce {
 namespace runtime {
 #if F_DESC("FusionDumpAddrSetTask")
-rtError_t FusionDumpAddrSetTaskInit(TaskInfo* taskInfo, const uint16_t modelIndex, const void *const address,
-                                    const uint32_t dumpDataSize,
-                                    const uint32_t fusionFlag)
+rtError_t FusionDumpAddrSetTaskInit(
+    TaskInfo* taskInfo, const uint16_t modelIndex, const void* const address, const uint32_t dumpDataSize,
+    const uint32_t fusionFlag)
 {
-    COND_RETURN_ERROR_MSG_INNER((dumpDataSize == 0U), RT_ERROR_DUMP_ADDR_SET_FAILED,
-        "FusionDumpAddrSetTaskInit failed, dumpDataSize is 0.");
+    COND_RETURN_ERROR_MSG_INNER(
+        (dumpDataSize == 0U), RT_ERROR_DUMP_ADDR_SET_FAILED, "FusionDumpAddrSetTaskInit failed, dumpDataSize is 0.");
 
-    FusionDumpAddrSetTaskInfo *fusionDumpAddrSet = &(taskInfo->u.fusionDumpAddrSetTask);
+    FusionDumpAddrSetTaskInfo* fusionDumpAddrSet = &(taskInfo->u.fusionDumpAddrSetTask);
     TaskCommonInfoInit(taskInfo);
     taskInfo->type = TS_TASK_TYPE_FUSIONDUMP_ADDR_SET;
     taskInfo->typeName = "FUSIONDUMP_ADDR_SET";
@@ -38,16 +38,16 @@ rtError_t FusionDumpAddrSetTaskInit(TaskInfo* taskInfo, const uint16_t modelInde
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForFusionDumpAddrSetTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForFusionDumpAddrSetTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
-    FusionDumpAddrSetTaskInfo *fusionDumpAddrSet = &(taskInfo->u.fusionDumpAddrSetTask);
+    FusionDumpAddrSetTaskInfo* fusionDumpAddrSet = &(taskInfo->u.fusionDumpAddrSetTask);
     const uint64_t addr = fusionDumpAddrSet->addr;
     const rtError_t error = taskInfo->stream->Device_()->Driver_()->MemAddressTranslate(
         static_cast<int32_t>(taskInfo->stream->Device_()->Id_()), addr, &(fusionDumpAddrSet->combAddr));
     COND_RETURN_VOID(error != RT_ERROR_NONE, "translate failed, retCode=%#x, address=%#" PRIx64 ".", error, addr);
-    RT_LOG(RT_LOG_INFO, "vir_addr=%#" PRIx64 ", comb_addr=%#" PRIx64 ", dumpSize=%u, modelID=%u.",
-        addr, fusionDumpAddrSet->combAddr, fusionDumpAddrSet->dumpSize,
-        fusionDumpAddrSet->modelId);
+    RT_LOG(
+        RT_LOG_INFO, "vir_addr=%#" PRIx64 ", comb_addr=%#" PRIx64 ", dumpSize=%u, modelID=%u.", addr,
+        fusionDumpAddrSet->combAddr, fusionDumpAddrSet->dumpSize, fusionDumpAddrSet->modelId);
 
     command->u.fusionDumpAddrSetTask.dumpAddrPtr = fusionDumpAddrSet->combAddr;
     command->u.fusionDumpAddrSetTask.dumpSize = fusionDumpAddrSet->dumpSize;
@@ -58,8 +58,8 @@ void ToCommandBodyForFusionDumpAddrSetTask(TaskInfo* taskInfo, rtCommand_t *cons
 #endif
 
 #if F_DESC("DataDumpLoadInfoTask")
-rtError_t DataDumpLoadInfoTaskInit(TaskInfo* taskInfo, const void *const dumpInfoPtr,
-    const uint32_t len, const uint16_t kernelType)
+rtError_t DataDumpLoadInfoTaskInit(
+    TaskInfo* taskInfo, const void* const dumpInfoPtr, const uint32_t len, const uint16_t kernelType)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->type = TS_TASK_TYPE_DATADUMP_LOADINFO;
@@ -67,35 +67,35 @@ rtError_t DataDumpLoadInfoTaskInit(TaskInfo* taskInfo, const void *const dumpInf
     taskInfo->u.dataDumpLoadInfoTask.dumpInfo = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(dumpInfoPtr));
     taskInfo->u.dataDumpLoadInfoTask.length = len;
     taskInfo->u.dataDumpLoadInfoTask.kernelType = kernelType;
-    RT_LOG(RT_LOG_DEBUG, "data dump loadinfo, stream_id=%d, task_id=%hu, length=%u, flag=%u, task_type=%d(%s)",
-           taskInfo->stream->Id_(), taskInfo->id, len, kernelType,
-           static_cast<int32_t>(taskInfo->type), taskInfo->typeName);
+    RT_LOG(
+        RT_LOG_DEBUG, "data dump loadinfo, stream_id=%d, task_id=%hu, length=%u, flag=%u, task_type=%d(%s)",
+        taskInfo->stream->Id_(), taskInfo->id, len, kernelType, static_cast<int32_t>(taskInfo->type),
+        taskInfo->typeName);
 
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForDataDumpLoadInfoTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForDataDumpLoadInfoTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     command->u.dataDumpLoadInfoTask.dumpInfoPtr = taskInfo->u.dataDumpLoadInfoTask.dumpInfo;
     command->u.dataDumpLoadInfoTask.length = taskInfo->u.dataDumpLoadInfoTask.length;
 }
 
-void SetStarsResultForDataDumpLoadInfoTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq)
+void SetStarsResultForDataDumpLoadInfoTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq)
 {
     if ((logicCq.errorType & RT_STARS_EXIST_ERROR) != 0U) {
-        Stream *const reportStream = GetReportStream(taskInfo->stream);
+        Stream* const reportStream = GetReportStream(taskInfo->stream);
         taskInfo->errorCode = logicCq.errorCode;
-        STREAM_REPORT_ERR_MSG(reportStream, ERR_MODULE_AICPU, "An error occurred in the AI CPU task, retCode=%#x.",
-            taskInfo->errorCode);
+        STREAM_REPORT_ERR_MSG(
+            reportStream, ERR_MODULE_AICPU, "An error occurred in the AI CPU task, retCode=%#x.", taskInfo->errorCode);
     }
 }
 
 #endif
 
 #if F_DESC("DebugRegisterTask")
-rtError_t DebugRegisterTaskInit(TaskInfo* taskInfo, const uint32_t mdlId,
-                                const void *const address,
-                                const uint32_t curFlag)
+rtError_t DebugRegisterTaskInit(
+    TaskInfo* taskInfo, const uint32_t mdlId, const void* const address, const uint32_t curFlag)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->u.debugRegisterTask.addr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(address));
@@ -104,15 +104,15 @@ rtError_t DebugRegisterTaskInit(TaskInfo* taskInfo, const uint32_t mdlId,
     if (!dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_DEBUG_REGISTER_WITH_VA_ADDR)) {
         uint64_t pptr;
         error = dev->Driver_()->MemAddressTranslate(
-            static_cast<int32_t>(dev->Id_()),
-            static_cast<uint64_t>(reinterpret_cast<uintptr_t>(address)), &pptr);
+            static_cast<int32_t>(dev->Id_()), static_cast<uint64_t>(reinterpret_cast<uintptr_t>(address)), &pptr);
         COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "Convert memory from virtual to dma physical failed.");
         RT_LOG(RT_LOG_DEBUG, "pptr offset=%#" PRIx64 ".", pptr);
         taskInfo->u.debugRegisterTask.addr = pptr;
     } else {
         rtPtrAttributes_t attributes;
         error = dev->Driver_()->PtrGetAttributes(address, &attributes);
-        COND_RETURN_ERROR_MSG_INNER((error != RT_ERROR_NONE) || (attributes.location.type != RT_MEMORY_LOC_DEVICE),
+        COND_RETURN_ERROR_MSG_INNER(
+            (error != RT_ERROR_NONE) || (attributes.location.type != RT_MEMORY_LOC_DEVICE),
             RT_ERROR_DEBUG_REGISTER_FAILED, "address=0x%" PRIx64 " is unexpected, device_id=%u, error=%#x.",
             taskInfo->u.debugRegisterTask.addr, dev->Id_(), static_cast<uint32_t>(error));
     }
@@ -125,7 +125,7 @@ rtError_t DebugRegisterTaskInit(TaskInfo* taskInfo, const uint32_t mdlId,
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForDebugRegisterTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForDebugRegisterTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     command->u.debugRegisterTask.addr = taskInfo->u.debugRegisterTask.addr;
     RT_LOG(RT_LOG_DEBUG, "command->u.debugRegisterTask.addr=%#" PRIx64 ".", command->u.debugRegisterTask.addr);
@@ -145,7 +145,7 @@ rtError_t DebugUnRegisterTaskInit(TaskInfo* taskInfo, const uint32_t mdlId)
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForDebugUnRegisterTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForDebugUnRegisterTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     command->u.debugUnRegisterTask.modelId = taskInfo->u.debugUnRegisterTask.modelId;
 }
@@ -153,26 +153,26 @@ void ToCommandBodyForDebugUnRegisterTask(TaskInfo* taskInfo, rtCommand_t *const 
 #endif
 
 #if F_DESC("DebugRegisterForStreamTask")
-rtError_t DebugRegisterForStreamTaskInit(TaskInfo* taskInfo, const uint32_t stmId,
-                                          const void *const address,
-                                          const uint32_t curFlag)
+rtError_t DebugRegisterForStreamTaskInit(
+    TaskInfo* taskInfo, const uint32_t stmId, const void* const address, const uint32_t curFlag)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->u.debugRegisterForStreamTask.addr = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(address));
     auto dev = taskInfo->stream->Device_();
     rtError_t error = RT_ERROR_NONE;
-     if (!dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_DEBUG_REGISTER_WITH_VA_ADDR)) {
+    if (!dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_DEBUG_REGISTER_WITH_VA_ADDR)) {
         uint64_t pptr = 0ULL;
         error = dev->Driver_()->MemAddressTranslate(
-            static_cast<int32_t>(dev->Id_()),
-            static_cast<uint64_t>(reinterpret_cast<uintptr_t>(address)), &pptr);
-        COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "Convert memory address from virtual to dma physical failed.");
+            static_cast<int32_t>(dev->Id_()), static_cast<uint64_t>(reinterpret_cast<uintptr_t>(address)), &pptr);
+        COND_RETURN_ERROR(
+            (error != RT_ERROR_NONE), error, "Convert memory address from virtual to dma physical failed.");
         RT_LOG(RT_LOG_DEBUG, "pptr offset=%#" PRIx64, pptr);
         taskInfo->u.debugRegisterForStreamTask.addr = pptr;
     } else {
         rtPtrAttributes_t attributes;
         error = dev->Driver_()->PtrGetAttributes(address, &attributes);
-        COND_RETURN_ERROR_MSG_INNER((error != RT_ERROR_NONE) || (attributes.location.type != RT_MEMORY_LOC_DEVICE),
+        COND_RETURN_ERROR_MSG_INNER(
+            (error != RT_ERROR_NONE) || (attributes.location.type != RT_MEMORY_LOC_DEVICE),
             RT_ERROR_DEBUG_REGISTER_FAILED, "address=0x%" PRIx64 " is unexpected, device_id=%u, error=%#x.",
             taskInfo->u.debugRegisterForStreamTask.addr, dev->Id_(), static_cast<uint32_t>(error));
     }
@@ -185,7 +185,7 @@ rtError_t DebugRegisterForStreamTaskInit(TaskInfo* taskInfo, const uint32_t stmI
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForDebugRegisterForStreamTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForDebugRegisterForStreamTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     command->u.debugRegisterForStreamTask.addr = taskInfo->u.debugRegisterForStreamTask.addr;
     RT_LOG(RT_LOG_DEBUG, "command->u.debugRegisterTask.addr=%#" PRIx64, command->u.debugRegisterForStreamTask.addr);
@@ -206,7 +206,7 @@ rtError_t DebugUnRegisterForStreamTaskInit(TaskInfo* taskInfo, const uint32_t st
     return RT_ERROR_NONE;
 }
 
-void ToCmdBodyForDebugUnRegisterForStreamTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCmdBodyForDebugUnRegisterForStreamTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     command->u.debugUnRegisterForStreamTask.streamId = taskInfo->u.debugUnRegisterForStreamTask.streamId;
 }
@@ -221,7 +221,7 @@ rtError_t NopTaskInit(TaskInfo* taskInfo)
     return RT_ERROR_NONE;
 }
 
-void ToCommandForNopTask(TaskInfo *const taskInfo, rtCommand_t *const command)
+void ToCommandForNopTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
     UNUSED(taskInfo);
     UNUSED(command);
@@ -231,36 +231,36 @@ void ToCommandForNopTask(TaskInfo *const taskInfo, rtCommand_t *const command)
 #endif
 
 #if F_DESC("AicpuInfoLoadTask")
-rtError_t AicpuInfoLoadTaskInit(TaskInfo* taskInfo, const void *const aicpuInfo, const uint32_t len)
+rtError_t AicpuInfoLoadTaskInit(TaskInfo* taskInfo, const void* const aicpuInfo, const uint32_t len)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->type = TS_TASK_TYPE_AICPU_INFO_LOAD;
     taskInfo->typeName = "AICPU_LOADINFO";
     taskInfo->u.aicpuInfoLoadTask.aicpuInfo = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(aicpuInfo));
     taskInfo->u.aicpuInfoLoadTask.length = len;
-    RT_LOG(RT_LOG_DEBUG, "aicpu task load info,stream_id=%d,task_id=%hu,length=%u,task_type=%d(%s)",
-           taskInfo->stream->Id_(), taskInfo->id, len,
-           static_cast<int32_t>(taskInfo->type), taskInfo->typeName);
+    RT_LOG(
+        RT_LOG_DEBUG, "aicpu task load info,stream_id=%d,task_id=%hu,length=%u,task_type=%d(%s)",
+        taskInfo->stream->Id_(), taskInfo->id, len, static_cast<int32_t>(taskInfo->type), taskInfo->typeName);
 
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForAicpuInfoLoadTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForAicpuInfoLoadTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     command->u.aicpuInfoLoadTask.aicpuInfoPtr = taskInfo->u.aicpuInfoLoadTask.aicpuInfo;
     command->u.aicpuInfoLoadTask.length = taskInfo->u.aicpuInfoLoadTask.length;
 }
 
-void SetStarsResultForAicpuInfoLoadTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq)
+void SetStarsResultForAicpuInfoLoadTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq)
 {
     if ((logicCq.errorType & RT_STARS_EXIST_ERROR) != 0U) {
-        Stream *const reportStream = GetReportStream(taskInfo->stream);
+        Stream* const reportStream = GetReportStream(taskInfo->stream);
         taskInfo->errorCode = logicCq.errorCode;
-        STREAM_REPORT_ERR_MSG(reportStream, ERR_MODULE_AICPU, "An error occurred in the AI CPU task, retCode=%#x.",
-            taskInfo->errorCode);
+        STREAM_REPORT_ERR_MSG(
+            reportStream, ERR_MODULE_AICPU, "An error occurred in the AI CPU task, retCode=%#x.", taskInfo->errorCode);
     }
 }
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -17,13 +17,13 @@
 
 namespace cce {
 namespace runtime {
-    rtError_t XpuAllocTaskInfo(TaskInfo **taskInfo, Stream * const stm, uint32_t &pos, uint32_t sqeNum = 1U);
-    rtError_t XpuSendTask(TaskInfo *taskInfo, Stream * const stm);
-    void XpuTaskRollBack(Stream * const stm, uint32_t pos);
-    void XpuSaveTaskCommonInfo(TaskInfo *taskInfo, Stream * const stm, uint32_t pos, uint32_t sqeNum = 1U);
-    rtError_t XpuCheckTaskCanSend(Stream * const stm);
-    void XpuSetArgsAicpu(
-        const rtAicpuArgsEx_t* const aicpuArgsInfo, TaskInfo* const taskInfo, StarsArgLoaderResult* const result);
-}  // namespace runtime
-}  // namespace cce
-#endif  // __CCE_RUNTIME_TASK_XPU_HPP__
+rtError_t XpuAllocTaskInfo(TaskInfo** taskInfo, Stream* const stm, uint32_t& pos, uint32_t sqeNum = 1U);
+rtError_t XpuSendTask(TaskInfo* taskInfo, Stream* const stm);
+void XpuTaskRollBack(Stream* const stm, uint32_t pos);
+void XpuSaveTaskCommonInfo(TaskInfo* taskInfo, Stream* const stm, uint32_t pos, uint32_t sqeNum = 1U);
+rtError_t XpuCheckTaskCanSend(Stream* const stm);
+void XpuSetArgsAicpu(
+    const rtAicpuArgsEx_t* const aicpuArgsInfo, TaskInfo* const taskInfo, StarsArgLoaderResult* const result);
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_TASK_XPU_HPP__

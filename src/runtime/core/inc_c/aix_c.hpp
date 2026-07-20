@@ -15,42 +15,42 @@
 
 namespace cce {
 namespace runtime {
-    class Context;
-    struct StarsArgLoaderResult;
-    struct rtStreamLaunchKernelV2ExtendArgs_t {
-        const rtArgsEx_t *argsInfo;
-        const TaskCfg *taskCfg;
-        void **argsArray;
-        SimtArgsArray *simtArgsArray;
-        SimtArgsHost *simtArgsHost;
-        ArgsType argsType;
-    };
+class Context;
+struct StarsArgLoaderResult;
+struct rtStreamLaunchKernelV2ExtendArgs_t {
+    const rtArgsEx_t* argsInfo;
+    const TaskCfg* taskCfg;
+    void** argsArray;
+    SimtArgsArray* simtArgsArray;
+    SimtArgsHost* simtArgsHost;
+    ArgsType argsType;
+};
 
-    rtError_t StreamLaunchKernelV1(const void * const stubFunc, const uint32_t coreDim,
-        const rtArgsEx_t *argsInfo,
-        Stream *stm, const TaskCfg * const taskCfg,
-        const bool isLaunchVec);
-    rtError_t StreamLaunchKernelWithHandle(void * const progHandle, const uint64_t tilingKey, const uint32_t coreDim,
-        const rtArgsEx_t *argsInfo, Stream *stm,
-        const TaskCfg * const taskCfg = nullptr, const bool isLaunchVec = false);
-    rtError_t StreamLaunchKernelV2(Kernel *kernel, const uint32_t coreDim, Stream *stm,
-        const rtStreamLaunchKernelV2ExtendArgs_t *extendAgrs, const bool isLaunchVec = false);
-    rtError_t UpdateTaskPrepare(const Context *ctx, TaskInfo *updateTask, const Kernel *kernel, const Stream *stm);
-    rtError_t LaunchUpdateKernelSubmit(const Context *ctx, TaskInfo *updateTask, Stream *stm, const rtArgsEx_t *argsInfo,
-        StarsArgLoaderResult &result);
-    rtError_t UpdateDavidKernelTaskSubmit(TaskInfo * const updateTask, Stream * const stm, uint32_t sqeLen = 1U);
-    rtError_t CheckAndGetTotalShareMemorySize(const Kernel * const kernel, uint32_t dynamicShareMemSize, uint32_t &simtDcuSmSize);
+rtError_t StreamLaunchKernelV1(
+    const void* const stubFunc, const uint32_t coreDim, const rtArgsEx_t* argsInfo, Stream* stm,
+    const TaskCfg* const taskCfg, const bool isLaunchVec);
+rtError_t StreamLaunchKernelWithHandle(
+    void* const progHandle, const uint64_t tilingKey, const uint32_t coreDim, const rtArgsEx_t* argsInfo, Stream* stm,
+    const TaskCfg* const taskCfg = nullptr, const bool isLaunchVec = false);
+rtError_t StreamLaunchKernelV2(
+    Kernel* kernel, const uint32_t coreDim, Stream* stm, const rtStreamLaunchKernelV2ExtendArgs_t* extendAgrs,
+    const bool isLaunchVec = false);
+rtError_t UpdateTaskPrepare(const Context* ctx, TaskInfo* updateTask, const Kernel* kernel, const Stream* stm);
+rtError_t LaunchUpdateKernelSubmit(
+    const Context* ctx, TaskInfo* updateTask, Stream* stm, const rtArgsEx_t* argsInfo, StarsArgLoaderResult& result);
+rtError_t UpdateDavidKernelTaskSubmit(TaskInfo* const updateTask, Stream* const stm, uint32_t sqeLen = 1U);
+rtError_t CheckAndGetTotalShareMemorySize(
+    const Kernel* const kernel, uint32_t dynamicShareMemSize, uint32_t& simtDcuSmSize);
 
-    rtError_t StreamLaunchSimtArgsArray(Kernel *kernel, const uint32_t coreDim, Stream *stm,
-        SimtArgsArray *simtArgsArray, TaskCfg &taskCfg);
-rtError_t StreamLaunchArgsArray(Kernel *kernel, const uint32_t coreDim, Stream *stm,
-    void **argsArrayInfo, TaskCfg &taskCfg);
+rtError_t StreamLaunchSimtArgsArray(
+    Kernel* kernel, const uint32_t coreDim, Stream* stm, SimtArgsArray* simtArgsArray, TaskCfg& taskCfg);
+rtError_t StreamLaunchArgsArray(
+    Kernel* kernel, const uint32_t coreDim, Stream* stm, void** argsArrayInfo, TaskCfg& taskCfg);
 
+rtError_t StreamLaunchSimtArgsHost(
+    Kernel* kernel, const uint32_t coreDim, Stream* stm, SimtArgsHost* simtArgsHost, TaskCfg& taskCfg);
 
-    rtError_t StreamLaunchSimtArgsHost(Kernel *kernel, const uint32_t coreDim, Stream *stm,
-        SimtArgsHost *simtArgsHost, TaskCfg &taskCfg);
-
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_AIX_C_HPP__

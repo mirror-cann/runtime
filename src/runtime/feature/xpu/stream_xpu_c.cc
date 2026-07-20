@@ -15,7 +15,7 @@ namespace cce {
 namespace runtime {
 void XpuStreamLaunchKernelRecycle(StarsArgLoaderResult& result, TaskInfo*& recycleTask, Stream* stm)
 {
-    XpuStream *xpuStm = static_cast<XpuStream *>(stm);
+    XpuStream* xpuStm = static_cast<XpuStream*>(stm);
     if (result.handle != nullptr) {
         if (xpuStm->ArgManagePtr() != nullptr) {
             xpuStm->ArgManagePtr()->RecycleDevLoader(result.handle);
@@ -37,6 +37,5 @@ void XpuStreamLaunchKernelRecycleAicpu(StarsArgLoaderResult& result, TaskInfo*& 
     XpuStreamLaunchKernelRecycle(result, recycleTask, stm);
 }
 
-}  // namespace runtime
-}  // namespace cce
-
+} // namespace runtime
+} // namespace cce

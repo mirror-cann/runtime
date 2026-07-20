@@ -21,45 +21,30 @@ class CountNotify : public NoCopy {
 public:
     CountNotify(const uint32_t devId, const uint32_t taskSchId);
     ~CountNotify() noexcept override;
-    rtInnerObject *GetInnerHandle()
-    {
-        return &handle_;
-    }
-    const rtInnerObject *GetInnerHandle() const
-    {
-        return &handle_;
-    }
-    rtError_t GetCntNotifyAddress(uint64_t &addr, rtNotifyType_t regType);
-    rtError_t Record(Stream * const streamIn, const rtCntNtyRecordInfo_t * const info);
+    rtInnerObject* GetInnerHandle() { return &handle_; }
+    const rtInnerObject* GetInnerHandle() const { return &handle_; }
+    rtError_t GetCntNotifyAddress(uint64_t& addr, rtNotifyType_t regType);
+    rtError_t Record(Stream* const streamIn, const rtCntNtyRecordInfo_t* const info);
     rtError_t Setup();
-    rtError_t Wait(Stream * const streamIn, const rtCntNtyWaitInfo_t * const info);
+    rtError_t Wait(Stream* const streamIn, const rtCntNtyWaitInfo_t* const info);
     rtError_t ReAllocId() const;
 
-    uint32_t GetCntNotifyId() const
-    {
-        return notifyid_;
-    }
+    uint32_t GetCntNotifyId() const { return notifyid_; }
 
-    void SetNotifyFlag(uint32_t flag)
-    {
-        notifyFlag_ = flag;
-    }
+    void SetNotifyFlag(uint32_t flag) { notifyFlag_ = flag; }
 
-    uint32_t GetTsId() const
-    {
-        return tsId_;
-    }
+    uint32_t GetTsId() const { return tsId_; }
 
 private:
-    rtInnerObject handle_ {};
+    rtInnerObject handle_{};
     uint32_t notifyid_{MAX_UINT32_NUM};
     uint32_t phyId_{0U};
-    Driver *driver_{nullptr};
+    Driver* driver_{nullptr};
     uint32_t tsId_;
     uint32_t deviceId_;
     uint32_t notifyFlag_{0U};
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_COUNT_NOTIFY_HPP__
+#endif // __CCE_RUNTIME_COUNT_NOTIFY_HPP__

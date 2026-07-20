@@ -40,32 +40,34 @@ public:
     RuntimeIntf() = default;
     virtual ~RuntimeIntf() = default;
 
-    RuntimeIntf(const RuntimeIntf &) = delete;
-    RuntimeIntf &operator=(const RuntimeIntf &) = delete;
-    RuntimeIntf(RuntimeIntf &&) = delete;
-    RuntimeIntf &operator=(RuntimeIntf &&) = delete;
+    RuntimeIntf(const RuntimeIntf&) = delete;
+    RuntimeIntf& operator=(const RuntimeIntf&) = delete;
+    RuntimeIntf(RuntimeIntf&&) = delete;
+    RuntimeIntf& operator=(RuntimeIntf&&) = delete;
     virtual rtError_t Init() = 0;
     // Get api implement.
-    virtual Api *Api_() const = 0;
+    virtual Api* Api_() const = 0;
     // Get apiMbuf implement.
-    virtual ApiMbuf *ApiMbuf_() const = 0;
+    virtual ApiMbuf* ApiMbuf_() const = 0;
     // Get apiSoma implement.
-    virtual ApiSoma *ApiSoma_() const = 0;
-    virtual Api *ApiImpl_() const = 0;
-    virtual rtError_t ProfilerStop(const uint64_t profConfig, const int32_t numsDev, uint32_t *const deviceList,
+    virtual ApiSoma* ApiSoma_() const = 0;
+    virtual Api* ApiImpl_() const = 0;
+    virtual rtError_t ProfilerStop(
+        const uint64_t profConfig, const int32_t numsDev, uint32_t* const deviceList,
         const uint64_t profSwitchHi = 0) = 0;
-    virtual rtError_t ProfilerStart(const uint64_t profConfig, const int32_t numsDev, uint32_t *const deviceList,
-        const uint32_t cacheFlag, const uint64_t profSwitchHi = 0) = 0;
+    virtual rtError_t ProfilerStart(
+        const uint64_t profConfig, const int32_t numsDev, uint32_t* const deviceList, const uint32_t cacheFlag,
+        const uint64_t profSwitchHi = 0) = 0;
     virtual rtError_t SetExceptCallback(const rtErrorCallback callback) = 0;
-    virtual rtError_t SetTaskAbortCallBack(const char_t *regName, void *callback, void *args,
-        TaskAbortCallbackType type) = 0;
-    virtual rtError_t SetAicpuAttr(const char_t * const key, const char_t * const value) const = 0;
-    virtual rtError_t SubscribeReport(const uint64_t threadId, Stream * const stm, void *evtNotify) = 0;
-    virtual rtError_t UnSubscribeReport(Stream * const stm) = 0;
-    virtual Context *GetPriCtxByDeviceId(const uint32_t deviceId, uint32_t tsId) = 0;
-    virtual rtError_t GetElfOffset(void * const elfData, const uint32_t elfLen, uint32_t* offset) const = 0;
-    virtual rtError_t GetKernelBin(const char_t *const binFileName, char_t **const buffer, uint32_t *length) const = 0;
-    virtual rtError_t FreeKernelBin(char_t * const buffer) const = 0;
+    virtual rtError_t SetTaskAbortCallBack(
+        const char_t* regName, void* callback, void* args, TaskAbortCallbackType type) = 0;
+    virtual rtError_t SetAicpuAttr(const char_t* const key, const char_t* const value) const = 0;
+    virtual rtError_t SubscribeReport(const uint64_t threadId, Stream* const stm, void* evtNotify) = 0;
+    virtual rtError_t UnSubscribeReport(Stream* const stm) = 0;
+    virtual Context* GetPriCtxByDeviceId(const uint32_t deviceId, uint32_t tsId) = 0;
+    virtual rtError_t GetElfOffset(void* const elfData, const uint32_t elfLen, uint32_t* offset) const = 0;
+    virtual rtError_t GetKernelBin(const char_t* const binFileName, char_t** const buffer, uint32_t* length) const = 0;
+    virtual rtError_t FreeKernelBin(char_t* const buffer) const = 0;
     virtual bool ChipIsHaveStars() const = 0;
     virtual std::string GetSocVersion() const = 0;
     virtual int64_t GetAicpuCnt() const = 0;
@@ -75,17 +77,17 @@ public:
     virtual void SetBiuperfProfFlag(bool flag) = 0;
     virtual void SetL2CacheProfFlag(bool flag) = 0;
     virtual uint32_t GetWaitTimeout() = 0;
-    virtual rtError_t ChgUserDevIdToDeviceId(const uint32_t userDevId, uint32_t * const deviceId,
-        bool isDeviceSetResetOp = false) const = 0;
+    virtual rtError_t ChgUserDevIdToDeviceId(
+        const uint32_t userDevId, uint32_t* const deviceId, bool isDeviceSetResetOp = false) const = 0;
     virtual void UpdateDevProperties(const rtChipType_t chipTypeValue, const std::string& socVersion) = 0;
     virtual rtError_t RegKernelLaunchFillFunc(const char* symbol, rtKernelLaunchFillFunc callback) = 0;
     virtual rtError_t UnRegKernelLaunchFillFunc(const char* symbol) = 0;
-    virtual Context *CurrentContext() const = 0;
-    virtual void SetGlobalErr(const rtError_t errcode) const  = 0;
-    virtual rtError_t GetNpuDeviceCnt(int32_t &cnt) = 0;
+    virtual Context* CurrentContext() const = 0;
+    virtual void SetGlobalErr(const rtError_t errcode) const = 0;
+    virtual rtError_t GetNpuDeviceCnt(int32_t& cnt) = 0;
 
 private:
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

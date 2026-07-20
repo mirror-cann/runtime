@@ -24,9 +24,9 @@ namespace cce {
 namespace runtime {
 #define RTS_BUFF_ASSING_NUM (64U) // 64字节对齐
 /**
-* @ingroup
-* @brief the struct define of report msg when task is completed
-*/
+ * @ingroup
+ * @brief the struct define of report msg when task is completed
+ */
 struct tagTsTaskReportMsg {
     uint16_t SOP : 1; /* start of packet, indicates this is the first 32bit return payload */
     uint16_t MOP : 1; /* middle of packet, indicates the payload is a continuation of previous task return payload */
@@ -40,15 +40,11 @@ struct tagTsTaskReportMsg {
     uint16_t reserved : 6;
     uint16_t phase : 1;
     uint16_t SQ_head : 14;
-    uint16_t streamIDEx : 1; /* streamID high bit */
+    uint16_t streamIDEx : 1;      /* streamID high bit */
     uint16_t faultStreamIDEx : 1; /* fault streamID high bit */
 };
 
-static inline uint8_t GetStarsDefinedErrCode(const uint8_t errorType)
-{
-    return errorType & RT_STARS_EXIST_ERROR;
-}
-
+static inline uint8_t GetStarsDefinedErrCode(const uint8_t errorType) { return errorType & RT_STARS_EXIST_ERROR; }
 
 enum class tsReportType_t : uint8_t {
     TS_REPORT_MSG_TYPE_TS_REPORT = 0,
@@ -57,8 +53,8 @@ enum class tsReportType_t : uint8_t {
 };
 
 union tsReportBuf_t {
-    rtTaskReport_t *tsReport;
-    rtStarsCqe_t *starsCqe;
+    rtTaskReport_t* tsReport;
+    rtStarsCqe_t* starsCqe;
 };
 
 struct tagTsReportMsg {
@@ -73,7 +69,7 @@ union tagTsCmdSqBuf {
 };
 
 union tagTsCommandBuf {
-    rtCommand_t cmd;          // to ts module
+    rtCommand_t cmd;                                       // to ts module
     union {
         rtStarsSqe_t starsSqe[SQE_NUM_PER_STARS_TASK_MAX]; // STARS sqe format, to stars directly
         rtDavidSqe_t davidSqe[SQE_NUM_PER_DAVID_TASK_MAX]; // STARS sqe format, to stars directly
@@ -82,7 +78,7 @@ union tagTsCommandBuf {
 
 enum rtTaskCommandType {
     RT_TASK_COMMAND_TYPE_TS_COMMAND = 0, // ts module command format
-    RT_TASK_COMMAND_TYPE_STARS_SQE,  // STARS(System Task and Resource Scheduler) sqe format
+    RT_TASK_COMMAND_TYPE_STARS_SQE,      // STARS(System Task and Resource Scheduler) sqe format
     RT_TASK_COMMAND_TYPE_BUTT
 };
 
@@ -93,12 +89,12 @@ struct tagTaskTsCommand {
 };
 
 struct rtHostFuncCqReport_t {
-    volatile uint16_t phase      : 1;
-    volatile uint16_t SOP        : 1;
-    volatile uint16_t MOP        : 1;
-    volatile uint16_t EOP        : 1;
-    volatile uint16_t cqId       : 12; /* block flag */
-    volatile uint16_t streamId ;
+    volatile uint16_t phase : 1;
+    volatile uint16_t SOP : 1;
+    volatile uint16_t MOP : 1;
+    volatile uint16_t EOP : 1;
+    volatile uint16_t cqId : 12; /* block flag */
+    volatile uint16_t streamId;
     volatile uint16_t taskId;
     volatile uint16_t sqId;
     volatile uint16_t sqHead;
@@ -137,7 +133,7 @@ struct rtHostFuncRecordCommand_t {
     uint32_t reserved1[12];
 };
 
-struct tagTsHostFuncSendMsg{
+struct tagTsHostFuncSendMsg {
     union {
         rtHostFuncSqCommand_t sq_send_msg;
         rtHostFuncRecordCommand_t record_msg;
@@ -149,19 +145,19 @@ struct tagTsHostFuncSendMsg{
  * @brief the type definition of logic cq (total 16 bytes).
  */
 struct rtLogicReport_t {
-    volatile uint16_t phase      : 1;
-    volatile uint16_t SOP        : 1; /* start of packet, indicates this is the first 32bit return payload */
-    volatile uint16_t MOP        : 1; /* middle of packet, indicates the payload is a continuation of previous task
-                                         return payload */
-    volatile uint16_t EOP        : 1; /* end of packet, indicates this is the last 32bit return payload. SOP & EOP
-                                         can appear in the same packet, MOP & EOP can also appear on the same packet. */
-    volatile uint16_t logicCqId  : 12;
+    volatile uint16_t phase : 1;
+    volatile uint16_t SOP : 1; /* start of packet, indicates this is the first 32bit return payload */
+    volatile uint16_t MOP : 1; /* middle of packet, indicates the payload is a continuation of previous task
+                                  return payload */
+    volatile uint16_t EOP : 1; /* end of packet, indicates this is the last 32bit return payload. SOP & EOP
+                                  can appear in the same packet, MOP & EOP can also appear on the same packet. */
+    volatile uint16_t logicCqId : 12;
     volatile uint16_t streamId;
     volatile uint16_t taskId;
     volatile uint8_t logicCqType;
     volatile uint8_t reserved0;
     volatile uint32_t errorCode;
-    volatile uint32_t payLoad;    // ((faultTaskId & 0x0000ffff) << 16) | (faultStreamId & 0x0000ffff)
+    volatile uint32_t payLoad; // ((faultTaskId & 0x0000ffff) << 16) | (faultStreamId & 0x0000ffff)
 };
 
 enum tsLogicCqType {
@@ -181,11 +177,11 @@ enum tsLogicCqType {
  * @brief the type definition of virtual sq shm (total 32 bytes).
  */
 struct rtShmQuery_t {
-    volatile uint32_t taskId;       // execute position
-    volatile uint32_t firstErrorCode;   // first error code
-    volatile uint32_t taskId1;      // first error task
-    volatile uint32_t lastErrorCode;   // last error code
-    volatile uint32_t taskId2;      // last error task
+    volatile uint32_t taskId;         // execute position
+    volatile uint32_t firstErrorCode; // first error code
+    volatile uint32_t taskId1;        // first error task
+    volatile uint32_t lastErrorCode;  // last error code
+    volatile uint32_t taskId2;        // last error task
     volatile uint32_t payLoad;
     volatile uint32_t payLoad2;
     volatile uint32_t valid;
@@ -235,38 +231,33 @@ struct rtDebugReportInfo_t {
 // Factory class for task alloc and recycle.
 class TaskFactory : public NoCopy {
 public:
-    enum {
-        INIT_TASK_CAPACITY = 1024
-    };
+    enum { INIT_TASK_CAPACITY = 1024 };
 
-    TaskFactory(Device * const dev);
+    TaskFactory(Device* const dev);
     ~TaskFactory() override;
 
     rtError_t Init();
     void TearDown() noexcept;
     static uint32_t GetTaskMaxSize();
 
-    TaskInfo* Alloc(Stream *stream, tsTaskType_t taskType, rtError_t &errCode);
+    TaskInfo* Alloc(Stream* stream, tsTaskType_t taskType, rtError_t& errCode);
 
-    void SetSerialId(const Stream *const streamPtr, TaskInfo *const taskPtr);
+    void SetSerialId(const Stream* const streamPtr, TaskInfo* const taskPtr);
 
-    void ClearSerialVecId(const Stream *const streamPtr);
+    void ClearSerialVecId(const Stream* const streamPtr);
 
     void FreeStreamRes(const int32_t streamId);
 
-    int32_t Recycle(TaskInfo *const taskPtr);
+    int32_t Recycle(TaskInfo* const taskPtr);
 
-    TaskInfo *GetTask(const int32_t streamId, const uint16_t id);
+    TaskInfo* GetTask(const int32_t streamId, const uint16_t id);
 
-    int32_t TryAgainAlloc(Stream *const streamPtr, rtError_t &errCode);
-    void TryTaskReclaim(Stream *const streamPtr) const;
-    TaskAllocator *GetAllocator() const
-    {
-        return allocator_;
-    }
+    int32_t TryAgainAlloc(Stream* const streamPtr, rtError_t& errCode);
+    void TryTaskReclaim(Stream* const streamPtr) const;
+    TaskAllocator* GetAllocator() const { return allocator_; }
 
 private:
-    TaskAllocator *allocator_;
+    TaskAllocator* allocator_;
     // notify to alloc
     std::condition_variable allocRetry_;
     std::mutex allocRetryMutex_;
@@ -274,9 +265,9 @@ private:
     std::atomic<bool> exitFlag_;
     // for safe destructor
     std::atomic<uint64_t> retryCount_;
-    Device *device_;
+    Device* device_;
 };
 
-}
-}
-#endif  // __CCE_RUNTIME_TASK_HPP__
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_TASK_HPP__

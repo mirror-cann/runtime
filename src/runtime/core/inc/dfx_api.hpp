@@ -17,13 +17,13 @@
 namespace cce {
 namespace runtime {
 
-static inline uint64_t GetTimeInterval(const mmTimespec &beginTime)
+static inline uint64_t GetTimeInterval(const mmTimespec& beginTime)
 {
     const mmTimespec endTime = mmGetTickCount();
-    const uint64_t beginCnt = static_cast<uint64_t>(beginTime.tv_sec) * RT_MS_PER_S +
-        static_cast<uint64_t>(beginTime.tv_nsec) / RT_MS_TO_NS;
-    const uint64_t endCnt = static_cast<uint64_t>(endTime.tv_sec) * RT_MS_PER_S +
-        static_cast<uint64_t>(endTime.tv_nsec) / RT_MS_TO_NS;
+    const uint64_t beginCnt =
+        static_cast<uint64_t>(beginTime.tv_sec) * RT_MS_PER_S + static_cast<uint64_t>(beginTime.tv_nsec) / RT_MS_TO_NS;
+    const uint64_t endCnt =
+        static_cast<uint64_t>(endTime.tv_sec) * RT_MS_PER_S + static_cast<uint64_t>(endTime.tv_nsec) / RT_MS_TO_NS;
 
     return (endCnt > beginCnt) ? (endCnt - beginCnt) : 0ULL;
 }
@@ -31,7 +31,7 @@ static inline uint64_t GetTimeInterval(const mmTimespec &beginTime)
 static inline uint64_t ClockGetTimeUs()
 {
     // clock_gettime is *much* faster than std::chrono implementation on Linux
-    struct timespec t{};
+    struct timespec t {};
     (void)clock_gettime(CLOCK_MONOTONIC, &t);
     return static_cast<uint64_t>(t.tv_sec) * 1000000UL + static_cast<uint64_t>(t.tv_nsec) / 1000UL;
 }
@@ -42,7 +42,7 @@ static inline uint64_t ClockGetTimeIntervalUs(const uint64_t beginTime)
     return (endTime > beginTime) ? (endTime - beginTime) : 0ULL;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_DFX_API_HPP

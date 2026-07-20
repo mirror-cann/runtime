@@ -14,22 +14,22 @@
 #include <iostream>
 namespace cce {
 namespace runtime {
-bool GetConfigIniValueInt32(const std::string &userFileName, const std::string &key, int32_t &val);
-const std::string RealPath(const std::string &path);
+bool GetConfigIniValueInt32(const std::string& userFileName, const std::string& key, int32_t& val);
+const std::string RealPath(const std::string& path);
 bool IsStringNumeric(const std::string& str);
-bool GetDriverPath(std::string &driverPath);
-std::string GetFileName(const std::string &path);
-std::string GetFilePathByExtension(const std::string &binPath, std::string extension);
-const std::string RealPathForFileNotExists(const std::string &inputPath);
-bool GetConfigIniValueDouble(const std::string &userFileName, const std::string &key, double &val);
-uint64_t GetQuickHash(const void *data, const size_t size);
+bool GetDriverPath(std::string& driverPath);
+std::string GetFileName(const std::string& path);
+std::string GetFilePathByExtension(const std::string& binPath, std::string extension);
+const std::string RealPathForFileNotExists(const std::string& inputPath);
+bool GetConfigIniValueDouble(const std::string& userFileName, const std::string& key, double& val);
+uint64_t GetQuickHash(const void* data, const size_t size);
 std::string EscapeJsonString(const std::string& value);
-static inline void SetFailIndex(size_t *failIdx, size_t value)
+static inline void SetFailIndex(size_t* failIdx, size_t value)
 {
     if (failIdx != nullptr) {
         *failIdx = value;
     }
 }
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

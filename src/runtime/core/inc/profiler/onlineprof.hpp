@@ -23,11 +23,11 @@ constexpr uint32_t ONLINEPROF_HEAD_SIZE = 128;
 
 class OnlineProf {
 public:
-    static rtError_t OnlineProfMalloc(Stream * const stm);
-    static rtError_t OnlineProfFree(Stream * const stm);
-    static rtError_t GetOnlineProfilingData(const Stream * const stm, rtProfDataInfo_t * const pProfData,
-        const uint32_t profDataNum);
+    static rtError_t OnlineProfMalloc(Stream* const stm);
+    static rtError_t OnlineProfFree(Stream* const stm);
+    static rtError_t GetOnlineProfilingData(
+        const Stream* const stm, rtProfDataInfo_t* const pProfData, const uint32_t profDataNum);
 };
-}
-}
-#endif  // __CCE_RUNTIME_ONLINEPROF_HPP__
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_ONLINEPROF_HPP__

@@ -13,19 +13,19 @@
 
 namespace cce {
 namespace runtime {
-EventStateCallbackManager &EventStateCallbackManager::Instance()
+EventStateCallbackManager& EventStateCallbackManager::Instance()
 {
     static EventStateCallbackManager insEventStateCallbackManager;
     return insEventStateCallbackManager;
 }
 
-rtError_t EventStateCallbackManager::RegEventStateCallback(const char_t *regName, void *callback, void *args,
-    EventStateCallbackType cbType)
+rtError_t EventStateCallbackManager::RegEventStateCallback(
+    const char_t* regName, void* callback, void* args, EventStateCallbackType cbType)
 {
     const std::unique_lock<std::mutex> cbMapLock(mapMutex_);
     std::string tmpName(regName);
     if (callback == nullptr) {
-        (void) callbackMap_.erase(tmpName);
+        (void)callbackMap_.erase(tmpName);
         RT_LOG(RT_LOG_DEBUG, "Unregister event state callback finish, name:%s.", regName);
         return RT_ERROR_NONE;
     }
@@ -51,12 +51,12 @@ void EventStateCallbackManager::Notify(Stream* stream, Event* event, EventStateP
         const std::unique_lock<std::mutex> cbMapLock(mapMutex_);
         notifyMap.insert(callbackMap_.cbegin(), callbackMap_.cend());
     }
-    for (const auto &info:notifyMap) {
+    for (const auto& info : notifyMap) {
         RT_LOG(RT_LOG_DEBUG, "Notify [%s] event state start.", info.first.c_str());
         const EventStateCallbackType cbType = info.second.type;
         if (cbType == EventStateCallbackType::RT_EVENT_STATE_CALLBACK) {
             auto callback = info.second.callback;
-            void *args = info.second.args;
+            void* args = info.second.args;
             callback(stream, event, period, args);
         } else {
             // If cbType is invalid, stop notifying remaining callbacks immediately.
@@ -66,5 +66,5 @@ void EventStateCallbackManager::Notify(Stream* stream, Event* event, EventStateP
         RT_LOG(RT_LOG_DEBUG, "Notify [%s] event state end.", info.first.c_str());
     }
 }
-}
-}
+} // namespace runtime
+} // namespace cce

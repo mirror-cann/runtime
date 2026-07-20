@@ -7,50 +7,50 @@
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
  */
- 
+
 #ifndef CCE_RUNTIME_DEVICE_ERROR_INFO_H
 #define CCE_RUNTIME_DEVICE_ERROR_INFO_H
 #include "base.hpp"
 
 namespace cce {
 namespace runtime {
-	/*
-	0-63	RINGBUFFER_CUBE_ERROR_OFFSET
-	64-127	RINGBUFFER_MTE_ERROR_OFFSET
-	128-191	RINGBUFFER_L1_ERROR_OFFSET
-		RINGBUFFER_L1_ERROR_1_OFFSET
-	192-255	RINGBUFFER_SC_ERROR_OFFSET
-	256-319	RINGBUFFER_SU_ERROR_OFFSET
-	320-383	RINGBUFFER_VEC_ERROR_OFFSET
-		RINGBUFFER_VEC_ERROR_1_OFFSET
-	*/
-    constexpr uint32_t RINGBUFFER_CUBE_ERROR_OFFSET = 0U;
-    constexpr uint32_t RINGBUFFER_MTE_ERROR_OFFSET = 64U;
-    constexpr uint16_t RINGBUFFER_L1_ERROR_OFFSET = 128U;
-    constexpr uint32_t RINGBUFFER_L1_ERROR_1_OFFSET = 160U;
-    constexpr uint32_t RINGBUFFER_SC_ERROR_OFFSET = 192U;
-    constexpr uint16_t RINGBUFFER_SU_ERROR_OFFSET= 256U;
-    constexpr uint16_t RINGBUFFER_VEC_ERROR_OFFSET = 320U;
-    constexpr uint16_t RINGBUFFER_VEC_ERROR_1_OFFSET = 352;
-    constexpr uint32_t MAX_RECORD_CORE_NUM  = 32U;
-    constexpr uint32_t MAX_RECORD_DHA_NUM = 8U;
-    constexpr uint32_t CCU_TASK_LOCAL_MEM_ERROR = 0x02U;
-    constexpr uint32_t CCU_TASK_REMOTE_MEM_ERROR = 0x03U;
-    constexpr uint32_t CCU_TASK_MEM_COPY_ERROR = 0x0AU;
-    constexpr uint32_t CCU_TASK_LINK_ERROR = 0x05U;
-    constexpr uint32_t CCU_TASK_LOCAL_MEM_ERROR_SUBSTATUS = 0x0U;
-    constexpr uint32_t CCU_TASK_READ_LOCAL_MEM_ERROR_SUBSTATUS = 0xCU;
-    constexpr uint32_t RINGBUFFER_MAGIC = 0xA55A2020U;
-    constexpr uint32_t RINGBUFFER_ONE_ELEMENT_LENGTH = 4096U;
-    constexpr uint32_t RINGBUFFER_EXT_ONE_ELEMENT_LENGTH = 12288U; // 4K + 8K
-    constexpr uint32_t RINGBUFFER_LEN = 10U;
-    // total 2M, used:element(47k) * 30 = 1410k, stream snap shot:17k, TSCH_CAPABILITY_LEN:10k
-    constexpr uint32_t RINGBUFFER_LEN_DAVID = 30U;
-    constexpr uint32_t RINGBUFFER_EXT_ONE_ELEMENT_LENGTH_ON_DAVID = 48128U; // 47k for David
-    constexpr uint32_t MAX_STREAM_NUM_CLOUD = 2048U;
-    constexpr uint32_t MAX_AIC_ID = 64U;
-    constexpr uint32_t MAX_AIV_ID = 64U;
-    constexpr uint32_t MAX_DEV_ID = 16U;
+/*
+0-63	RINGBUFFER_CUBE_ERROR_OFFSET
+64-127	RINGBUFFER_MTE_ERROR_OFFSET
+128-191	RINGBUFFER_L1_ERROR_OFFSET
+    RINGBUFFER_L1_ERROR_1_OFFSET
+192-255	RINGBUFFER_SC_ERROR_OFFSET
+256-319	RINGBUFFER_SU_ERROR_OFFSET
+320-383	RINGBUFFER_VEC_ERROR_OFFSET
+    RINGBUFFER_VEC_ERROR_1_OFFSET
+*/
+constexpr uint32_t RINGBUFFER_CUBE_ERROR_OFFSET = 0U;
+constexpr uint32_t RINGBUFFER_MTE_ERROR_OFFSET = 64U;
+constexpr uint16_t RINGBUFFER_L1_ERROR_OFFSET = 128U;
+constexpr uint32_t RINGBUFFER_L1_ERROR_1_OFFSET = 160U;
+constexpr uint32_t RINGBUFFER_SC_ERROR_OFFSET = 192U;
+constexpr uint16_t RINGBUFFER_SU_ERROR_OFFSET = 256U;
+constexpr uint16_t RINGBUFFER_VEC_ERROR_OFFSET = 320U;
+constexpr uint16_t RINGBUFFER_VEC_ERROR_1_OFFSET = 352;
+constexpr uint32_t MAX_RECORD_CORE_NUM = 32U;
+constexpr uint32_t MAX_RECORD_DHA_NUM = 8U;
+constexpr uint32_t CCU_TASK_LOCAL_MEM_ERROR = 0x02U;
+constexpr uint32_t CCU_TASK_REMOTE_MEM_ERROR = 0x03U;
+constexpr uint32_t CCU_TASK_MEM_COPY_ERROR = 0x0AU;
+constexpr uint32_t CCU_TASK_LINK_ERROR = 0x05U;
+constexpr uint32_t CCU_TASK_LOCAL_MEM_ERROR_SUBSTATUS = 0x0U;
+constexpr uint32_t CCU_TASK_READ_LOCAL_MEM_ERROR_SUBSTATUS = 0xCU;
+constexpr uint32_t RINGBUFFER_MAGIC = 0xA55A2020U;
+constexpr uint32_t RINGBUFFER_ONE_ELEMENT_LENGTH = 4096U;
+constexpr uint32_t RINGBUFFER_EXT_ONE_ELEMENT_LENGTH = 12288U; // 4K + 8K
+constexpr uint32_t RINGBUFFER_LEN = 10U;
+// total 2M, used:element(47k) * 30 = 1410k, stream snap shot:17k, TSCH_CAPABILITY_LEN:10k
+constexpr uint32_t RINGBUFFER_LEN_DAVID = 30U;
+constexpr uint32_t RINGBUFFER_EXT_ONE_ELEMENT_LENGTH_ON_DAVID = 48128U; // 47k for David
+constexpr uint32_t MAX_STREAM_NUM_CLOUD = 2048U;
+constexpr uint32_t MAX_AIC_ID = 64U;
+constexpr uint32_t MAX_AIV_ID = 64U;
+constexpr uint32_t MAX_DEV_ID = 16U;
 
 enum rtErrorType : std::uint8_t {
     AICORE_ERROR = 0,
@@ -123,7 +123,7 @@ extern const std::map<uint32_t, std::string> g_ccuTimeoutEventIdBlkList;
 
 struct EventBlkEntry {
     uint32_t eventId;
-    const std::map<uint32_t, std::string> &blkList;
+    const std::map<uint32_t, std::string>& blkList;
 };
 
 enum rtSdmaErrorType : std::uint32_t {
@@ -142,61 +142,61 @@ enum rtSdmaErrorType : std::uint32_t {
 
 enum rtAICPUErrorType : std::uint16_t {
     // KERNEL
-    KERNEL_EXECUTE_PARAM_INVLID = 1,  // kernel execute param invalid
-    KERNEL_EXECUTE_INNER_ERROR = 2,   // kernel execute inner error
-    KERNEL_EXECUTE_TIMEOUT = 3,       // kernel execute timeout
+    KERNEL_EXECUTE_PARAM_INVLID = 1, // kernel execute param invalid
+    KERNEL_EXECUTE_INNER_ERROR = 2,  // kernel execute inner error
+    KERNEL_EXECUTE_TIMEOUT = 3,      // kernel execute timeout
 
     // aicpu processor
-    AE_END_OF_SEQUENCE = 6,              // end of sequence
-    AE_STATUS_SILENT_FAULT = 7,          // silent fault in 1980B
-    AE_STATUS_TASK_ABORT = 8,            // aicpu abort in 1980B
-    AE_STATUS_STRESS_DETECT_FAULT = 9,   // stress detect slient fault in 1980B
-    AE_STATUS_STRESS_DETECT_FAULT_NORAS = 10,   // stress detect slient fault in 1980B
-    AE_STATUS_STRESS_DETECT_FAULT_LOW = 11,   // stress detect slient fault in 1980B
-    AE_STATUS_STRESS_DETECT_FAULT_LOW_OFFLINE = 12,   // stress detect slient fault in 1980B
-    AE_TASK_WAIT = 101,                  // task wait for aicpu super task
+    AE_END_OF_SEQUENCE = 6,                         // end of sequence
+    AE_STATUS_SILENT_FAULT = 7,                     // silent fault in 1980B
+    AE_STATUS_TASK_ABORT = 8,                       // aicpu abort in 1980B
+    AE_STATUS_STRESS_DETECT_FAULT = 9,              // stress detect slient fault in 1980B
+    AE_STATUS_STRESS_DETECT_FAULT_NORAS = 10,       // stress detect slient fault in 1980B
+    AE_STATUS_STRESS_DETECT_FAULT_LOW = 11,         // stress detect slient fault in 1980B
+    AE_STATUS_STRESS_DETECT_FAULT_LOW_OFFLINE = 12, // stress detect slient fault in 1980B
+    AE_TASK_WAIT = 101,                             // task wait for aicpu super task
 
     // [1000, 1099] is used by hccl
-    AICPU_HCCL_OP_RETRY_FAILED = 1000,   // hccl op retry failed
-    AICPU_HCCL_OP_SDMA_LINK_FAILED = 1001,   // hccl op sdma link failed
+    AICPU_HCCL_OP_RETRY_FAILED = 1000,     // hccl op retry failed
+    AICPU_HCCL_OP_SDMA_LINK_FAILED = 1001, // hccl op sdma link failed
     AICPU_HCCL_OP_UB_DDRC_FAILED = 1002,   // hccl op ub ddrc failed
-    AICPU_HCCL_OP_UB_POISON_FAILED = 1003,   // hccl op ub poison failed
+    AICPU_HCCL_OP_UB_POISON_FAILED = 1003, // hccl op ub poison failed
     AICPU_HCCL_OP_UB_LINK_FAILED = 1004,   // hccl ub link error
 
-    AE_BAD_PARAM = 11001,                // bad param
-    AE_OPEN_SO_FAILED = 11002,           // open so failed
-    AE_GET_KERNEL_NAME_FAILED = 11003,   // get kernel failed
-    AE_KERNEL_API_PARAM_INVALID = 11004, // execute kernel api param invalid
-    AE_KERNEL_API_INNER = 11005,   // execute kernel api failed
-    AE_INNER = 11006,              // inner error
+    AE_BAD_PARAM = 11001,                  // bad param
+    AE_OPEN_SO_FAILED = 11002,             // open so failed
+    AE_GET_KERNEL_NAME_FAILED = 11003,     // get kernel failed
+    AE_KERNEL_API_PARAM_INVALID = 11004,   // execute kernel api param invalid
+    AE_KERNEL_API_INNER = 11005,           // execute kernel api failed
+    AE_INNER = 11006,                      // inner error
 
     // aicpu sd
-    AICPU_PARAMETER_NOT_VALID = 21001,     // param invalid
-    AICPU_DUMP_FAILED = 21002,             // dump failed
-    AICPU_FROM_DRV =  21003,               // drv error
-    AICPU_TOOL_ERR = 21004,                // tool error
-    AICPU_NOT_FOUND_LOGICAL_TASK = 21005,  // logical task not found
-    AICPU_TASK_EXECUTE_FAILED = 21006,     // task execute failed
-    AICPU_TASK_EXECUTE_TIMEOUT = 21007,    // task execute timeout
-    AICPU_INNER = 21008,             // inner error
+    AICPU_PARAMETER_NOT_VALID = 21001,    // param invalid
+    AICPU_DUMP_FAILED = 21002,            // dump failed
+    AICPU_FROM_DRV = 21003,               // drv error
+    AICPU_TOOL_ERR = 21004,               // tool error
+    AICPU_NOT_FOUND_LOGICAL_TASK = 21005, // logical task not found
+    AICPU_TASK_EXECUTE_FAILED = 21006,    // task execute failed
+    AICPU_TASK_EXECUTE_TIMEOUT = 21007,   // task execute timeout
+    AICPU_INNER = 21008,                  // inner error
     // error code for model
-    AICPU_IN_WORKING = 21100,              // current resource or model is working
-    AICPU_MODEL_NOT_FOUND = 21101,         // model not found
-    AICPU_STREAM_NOT_FOUND = 21102,        // stream not found
-    AICPU_MODEL_STATUS_NOT_ALLOW_OPERATE = 21103,  // operate not allowed with current model status
-    AICPU_MODEL_EXIT_ERR = 21104,          // model exit error
+    AICPU_IN_WORKING = 21100,                     // current resource or model is working
+    AICPU_MODEL_NOT_FOUND = 21101,                // model not found
+    AICPU_STREAM_NOT_FOUND = 21102,               // stream not found
+    AICPU_MODEL_STATUS_NOT_ALLOW_OPERATE = 21103, // operate not allowed with current model status
+    AICPU_MODEL_EXIT_ERR = 21104,                 // model exit error
 
     AICPU_RESERVED = 21200,
 
     // cust aicpu sd
-    AICPU_CUST_PARAMETER_NOT_VALID = 22001,     // param invalid
-    AICPU_CUST_DRV_ERR =  22002,                // driver error
-    AICPU_CUST_TOOL_ERR = 22003,                // tool error
-    AICPU_CUST_TASK_EXECUTE_FAILED = 22004,     // custom task execute failed
-    AICPU_CUST_TASK_EXECUTE_TIMEOUT = 22005,    // custom task execute timeout
+    AICPU_CUST_PARAMETER_NOT_VALID = 22001,        // param invalid
+    AICPU_CUST_DRV_ERR = 22002,                    // driver error
+    AICPU_CUST_TOOL_ERR = 22003,                   // tool error
+    AICPU_CUST_TASK_EXECUTE_FAILED = 22004,        // custom task execute failed
+    AICPU_CUST_TASK_EXECUTE_TIMEOUT = 22005,       // custom task execute timeout
     AICPU_CUST_TASK_EXECUTE_PARAM_INVALID = 22006, // custom task execute param invalid
-    AICPU_CUST_INNER = 22007,             // inner error
-    AICPU_CUST_RESERVED = 22200                // reserved: inner error
+    AICPU_CUST_INNER = 22007,                      // inner error
+    AICPU_CUST_RESERVED = 22200                    // reserved: inner error
 };
 
 struct RingBufferElementInfo {
@@ -210,13 +210,13 @@ struct RingBufferElementInfo {
 
 // it is control info in device ringbuffer.
 struct DevRingBufferCtlInfo {
-    uint32_t magic;  // used to judge whether the buffer is valid
-    uint32_t head;   // read pointer
-    uint32_t tail;   // write pointer
+    uint32_t magic;       // used to judge whether the buffer is valid
+    uint32_t head;        // read pointer
+    uint32_t tail;        // write pointer
     uint32_t ringBufferLen;
-    uint64_t pid;    // host pid
+    uint64_t pid;         // host pid
     uint32_t elementSize; // one ringbuffer element size
-    uint32_t reserved; // 8Byte alion
+    uint32_t reserved;    // 8Byte alion
 };
 
 struct RtsTimeoutStreamSnapshotInfo {
@@ -300,7 +300,7 @@ struct OneCoreErrorInfo {
 };
 
 struct CoreErrorInfo {
-    uint16_t type;  // AICORE or AIV
+    uint16_t type; // AICORE or AIV
     uint16_t coreNum;
     uint16_t deviceId;
     uint8_t dhaNum;
@@ -333,10 +333,10 @@ struct AicpuErrorInfo {
 // it is format data in one element from ringbuffer.
 struct DeviceErrorInfo {
     union {
-        CoreErrorInfo   coreErrorInfo;
-        SdmaErrorInfo   sdmaErrorInfo;
-        AicpuErrorInfo  aicpuErrorInfo;
-    }u;
+        CoreErrorInfo coreErrorInfo;
+        SdmaErrorInfo sdmaErrorInfo;
+        AicpuErrorInfo aicpuErrorInfo;
+    } u;
 };
 
 struct EventRasFilter {
@@ -354,6 +354,6 @@ extern const std::vector<EventRasFilter> g_ubMemPoisonRasList;
 extern const std::vector<EventRasFilter> g_ubMemPoisonRasOnlyPosisonList;
 
 extern const EventRasFilter g_ubMemTrafficTimeoutFilter;
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

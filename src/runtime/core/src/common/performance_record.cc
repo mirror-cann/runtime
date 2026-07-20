@@ -223,5 +223,5 @@ TIMESTAMP_DEFINE(AicoreLoad);
 TIMESTAMP_DEFINE(rtLaunchDvppTask);
 TIMESTAMP_DEFINE(rtMemcpyAsyncWithCfg);
 TIMESTAMP_DEFINE(BinaryMemCpy);
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

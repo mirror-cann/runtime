@@ -22,10 +22,7 @@
 
 namespace cce {
 namespace runtime {
-CtrlTaskPoolEntry::CtrlTaskPoolEntry()
-{
-    return;
-}
+CtrlTaskPoolEntry::CtrlTaskPoolEntry() { return; }
 
 CtrlTaskPoolEntry::~CtrlTaskPoolEntry()
 {
@@ -33,17 +30,14 @@ CtrlTaskPoolEntry::~CtrlTaskPoolEntry()
     return;
 }
 
-void CtrlTaskPoolEntry::Init(uint8_t * const ctrlTaskBuff, const uint32_t len)
+void CtrlTaskPoolEntry::Init(uint8_t* const ctrlTaskBuff, const uint32_t len)
 {
     taskBuff_ = ctrlTaskBuff;
     (void)memset_s(taskBuff_, static_cast<size_t>(len), 0, static_cast<size_t>(len));
     return;
 }
 
-CtrlResEntry::CtrlResEntry()
-{
-    return;
-}
+CtrlResEntry::CtrlResEntry() { return; }
 
 CtrlResEntry::~CtrlResEntry() noexcept
 {
@@ -73,11 +67,13 @@ rtError_t CtrlResEntry::Init(Device* const dev)
     resTailIndex_ = 0U;
 
     taskPool_ = new (std::nothrow) CtrlTaskPoolEntry[CTRL_TASK_POOL_SIZE];
-    COND_RETURN_AND_MSG_OUTER(taskPool_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+    COND_RETURN_AND_MSG_OUTER(
+        taskPool_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
         std::to_string(CTRL_TASK_POOL_SIZE * sizeof(CtrlTaskPoolEntry)), "new");
     taskList_ = new (std::nothrow) uint8_t[CTRL_TASK_POOL_SIZE];
-    COND_PROC_RETURN_AND_MSG_OUTER(taskList_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        DELETE_A(taskPool_), std::to_string(CTRL_TASK_POOL_SIZE * sizeof(uint8_t)), "new");
+    COND_PROC_RETURN_AND_MSG_OUTER(
+        taskList_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, DELETE_A(taskPool_),
+        std::to_string(CTRL_TASK_POOL_SIZE * sizeof(uint8_t)), "new");
     taskBuffCellSize_ = TaskFactory::GetTaskMaxSize();
     if ((taskBuffCellSize_ & (CTRL_BUFF_ASSING_NUM - 1U)) > 0) {
         taskBuffCellSize_ += CTRL_BUFF_ASSING_NUM;
@@ -87,7 +83,8 @@ rtError_t CtrlResEntry::Init(Device* const dev)
     const uint64_t buffSize = static_cast<uint64_t>(taskBuffCellSize_) * static_cast<uint64_t>(CTRL_TASK_POOL_SIZE);
     taskBaseAddr_ = new (std::nothrow) uint8_t[buffSize];
     COND_PROC_RETURN_AND_MSG_OUTER(taskBaseAddr_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        DELETE_A(taskPool_); DELETE_A(taskList_), std::to_string(buffSize * sizeof(uint8_t)), "new");
+                                   DELETE_A(taskPool_);
+                                   DELETE_A(taskList_), std::to_string(buffSize * sizeof(uint8_t)), "new");
     RT_LOG(RT_LOG_DEBUG, "[ctrlSq]taskBaseAddr_=0x%x taskBuffCellSize_=%u.", taskBaseAddr_, taskBuffCellSize_);
 
     for (uint32_t i = 0U; i < CTRL_TASK_POOL_SIZE; i++) {
@@ -98,7 +95,7 @@ rtError_t CtrlResEntry::Init(Device* const dev)
     return RT_ERROR_NONE;
 }
 
-void CtrlResEntry::AllocTaskId(uint32_t &taskId)
+void CtrlResEntry::AllocTaskId(uint32_t& taskId)
 {
     headMutex_.lock();
     if ((resHeadIndex_ + 1U) % CTRL_TASK_POOL_SIZE == resTailIndex_) {
@@ -145,20 +142,19 @@ TaskInfo* CtrlResEntry::GetTask(const uint32_t taskId) const
     if (taskList_[taskId] == CTRL_TASK_INVALID) {
         return nullptr;
     }
-    return RtPtrToPtr<TaskInfo *, uint8_t *>(taskPool_[taskId].taskBuff_);
+    return RtPtrToPtr<TaskInfo*, uint8_t*>(taskPool_[taskId].taskBuff_);
 }
 
-
-void CtrlResEntry::TryTaskReclaim(Stream *const stm) const
+void CtrlResEntry::TryTaskReclaim(Stream* const stm) const
 {
     stm->StreamSyncLock();
     (void)stm->Device_()->CtrlTaskReclaim(dynamic_cast<CtrlStream* const>(stm));
     stm->StreamSyncUnLock();
 }
 
-TaskInfo* CtrlTaskPoolEntry::Alloc(Stream * const stm, const uint32_t taskId, const tsTaskType_t taskType) const
+TaskInfo* CtrlTaskPoolEntry::Alloc(Stream* const stm, const uint32_t taskId, const tsTaskType_t taskType) const
 {
-    TaskInfo *tskInfo = RtPtrToPtr<TaskInfo *, uint8_t *>(taskBuff_);
+    TaskInfo* tskInfo = RtPtrToPtr<TaskInfo*, uint8_t*>(taskBuff_);
     (void)memset_s(tskInfo, sizeof(TaskInfo), 0, sizeof(TaskInfo));
     tskInfo->type = taskType;
     InitByStream(tskInfo, stm);
@@ -167,5 +163,5 @@ TaskInfo* CtrlTaskPoolEntry::Alloc(Stream * const stm, const uint32_t taskId, co
     return tskInfo;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -16,15 +16,15 @@
 
 namespace cce {
 namespace runtime {
-rtError_t AllocTaskAndSendDc(TaskInfo *submitTask, Stream *stm, uint32_t * const flipTaskId);
-rtError_t AllocTaskAndSendStars(TaskInfo *submitTask, Stream *stm, uint32_t * const flipTaskId);
-rtError_t SubmitTaskDc(TaskInfo *submitTask, Stream *stm, uint32_t * const flipTaskId, int32_t timeout);
-rtError_t SubmitTaskStars(TaskInfo *submitTask, Stream *stm, uint32_t * const flipTaskId, int32_t timeout);
-rtError_t AllocTaskAndSend(TaskInfo *submitTask, Stream *stm, uint32_t * const flipTaskId, int32_t timeout);
-rtError_t AllocAndSendFlipTask(uint16_t preTaskId, Stream *stm);
-rtError_t LoadArgsInfo(TaskInfo *submitTask, Stream *stm, uint16_t taskResId);
-rtError_t LoadArgsInfoForAicoreKernelTask(TaskInfo *submitTask, Stream *stm, uint16_t taskResId);
+rtError_t AllocTaskAndSendDc(TaskInfo* submitTask, Stream* stm, uint32_t* const flipTaskId);
+rtError_t AllocTaskAndSendStars(TaskInfo* submitTask, Stream* stm, uint32_t* const flipTaskId);
+rtError_t SubmitTaskDc(TaskInfo* submitTask, Stream* stm, uint32_t* const flipTaskId, int32_t timeout);
+rtError_t SubmitTaskStars(TaskInfo* submitTask, Stream* stm, uint32_t* const flipTaskId, int32_t timeout);
+rtError_t AllocTaskAndSend(TaskInfo* submitTask, Stream* stm, uint32_t* const flipTaskId, int32_t timeout);
+rtError_t AllocAndSendFlipTask(uint16_t preTaskId, Stream* stm);
+rtError_t LoadArgsInfo(TaskInfo* submitTask, Stream* stm, uint16_t taskResId);
+rtError_t LoadArgsInfoForAicoreKernelTask(TaskInfo* submitTask, Stream* stm, uint16_t taskResId);
 
-}
-}
-#endif  // __CCE_RUNTIME_TASK_SUBMIT_HPP__
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_TASK_SUBMIT_HPP__

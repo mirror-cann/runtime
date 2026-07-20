@@ -17,10 +17,7 @@
 
 namespace cce {
 namespace runtime {
-XpuArgLoader::XpuArgLoader(XpuDevice * const dev)
-    : NoCopy(), device_(dev)
-{
-}
+XpuArgLoader::XpuArgLoader(XpuDevice* const dev) : NoCopy(), device_(dev) {}
 
 XpuArgLoader::~XpuArgLoader()
 {
@@ -36,38 +33,42 @@ rtError_t XpuArgLoader::Init()
     uint32_t maxItemCount = device_->GetXpuMaxStream() * device_->GetXpuStreamDepth();
 
     const uint32_t argAllocatorSize = initCount;
-    argAllocator_ = new (std::nothrow) H2HCopyMgr(itemSize_, argAllocatorSize,
-        maxItemCount, BufferAllocator::LINEAR, H2HCopyPolicy::H2H_COPY_POLICY_SYNC);
+    argAllocator_ = new (std::nothrow) H2HCopyMgr(
+        itemSize_, argAllocatorSize, maxItemCount, BufferAllocator::LINEAR, H2HCopyPolicy::H2H_COPY_POLICY_SYNC);
 
-    COND_RETURN_AND_MSG_OUTER(argAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+    COND_RETURN_AND_MSG_OUTER(
+        argAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
         std::to_string(sizeof(H2HCopyMgr)).c_str(), "new");
 
     randomAllocator_ = new (std::nothrow) H2HCopyMgr(H2HCopyPolicy::H2H_COPY_POLICY_SYNC);
-    COND_RETURN_AND_MSG_OUTER(randomAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+    COND_RETURN_AND_MSG_OUTER(
+        randomAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
         std::to_string(sizeof(H2HCopyMgr)).c_str(), "new");
 
     const uint32_t handleAllocatorSize = 1024U;
-    handleAllocator_ = new (std::nothrow) BufferAllocator(static_cast<uint32_t>(sizeof(XpuHandle)), handleAllocatorSize,
-        maxItemCount);
+    handleAllocator_ =
+        new (std::nothrow) BufferAllocator(static_cast<uint32_t>(sizeof(XpuHandle)), handleAllocatorSize, maxItemCount);
 
-    COND_RETURN_AND_MSG_OUTER(handleAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+    COND_RETURN_AND_MSG_OUTER(
+        handleAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
         std::to_string(sizeof(BufferAllocator)).c_str(), "new");
     RT_LOG(RT_LOG_INFO, "new BufferAllocator handleAllocator_ ok, Runtime_alloc_size %zu", sizeof(BufferAllocator));
 
     return RT_ERROR_NONE;
 }
 
-rtError_t XpuArgLoader::AllocCopyPtr(const uint32_t size, ArgLoaderResult * const result) const
+rtError_t XpuArgLoader::AllocCopyPtr(const uint32_t size, ArgLoaderResult* const result) const
 {
-    XpuHandle *argHandle = nullptr;
+    XpuHandle* argHandle = nullptr;
     result->handle = handleAllocator_->AllocItem();
-    COND_RETURN_AND_MSG_OUTER(result->handle == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+    COND_RETURN_AND_MSG_OUTER(
+        result->handle == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
         std::to_string(sizeof(XpuHandle)).c_str(), "malloc");
-    argHandle = static_cast<XpuHandle *>(result->handle);
+    argHandle = static_cast<XpuHandle*>(result->handle);
     argHandle->isFreeArgs = false;
     bool isRandom = false;
 
-    H2HCopyMgr *argAllocator = nullptr;
+    H2HCopyMgr* argAllocator = nullptr;
     if (size <= XPU_ARG_POOL_COPY_SIZE) {
         argAllocator = argAllocator_;
     } else {
@@ -75,7 +76,7 @@ rtError_t XpuArgLoader::AllocCopyPtr(const uint32_t size, ArgLoaderResult * cons
         isRandom = true;
     }
 
-    void *kerArgs = nullptr;
+    void* kerArgs = nullptr;
     if (isRandom) {
         kerArgs = argAllocator->AllocHostMem(size);
     } else {
@@ -95,13 +96,13 @@ rtError_t XpuArgLoader::AllocCopyPtr(const uint32_t size, ArgLoaderResult * cons
     return RT_ERROR_NONE;
 }
 
-rtError_t XpuArgLoader::Release(void * const argHandle) const
+rtError_t XpuArgLoader::Release(void* const argHandle) const
 {
     if (argHandle == nullptr) {
         return RT_ERROR_NONE;
     }
 
-    XpuHandle *hdl = static_cast<XpuHandle *>(argHandle);
+    XpuHandle* hdl = static_cast<XpuHandle*>(argHandle);
     if (hdl->isFreeArgs) {
         hdl->argsAlloc->FreeHostMem(hdl->kerArgs);
         RT_LOG(RT_LOG_DEBUG, "Release arg memory!");
@@ -110,5 +111,5 @@ rtError_t XpuArgLoader::Release(void * const argHandle) const
     handleAllocator_->FreeByItem(argHandle);
     return RT_ERROR_NONE;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

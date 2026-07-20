@@ -37,13 +37,13 @@ rtError_t CmoTaskLaunch(const rtCmoTaskInfo_t* const taskInfo, Stream* const stm
 
     rtError_t error = CmoTaskInit(rtCmoTask, taskInfo, stm, flag);
     ERROR_GOTO_MSG_INNER(
-        error, ERROR_RECYCLE, "Init CMO task failed, stream_id=%d, task_id=%hu, retCode=%#x.",
-        streamId, rtCmoTask->id, error);
+        error, ERROR_RECYCLE, "Init CMO task failed, stream_id=%d, task_id=%hu, retCode=%#x.", streamId, rtCmoTask->id,
+        error);
 
     error = dev->SubmitTask(rtCmoTask, (curCtx != nullptr) ? curCtx->TaskGenCallback_() : nullptr);
     ERROR_GOTO_MSG_INNER(
-        error, ERROR_RECYCLE, "Submit CMO task failed, stream_id=%d, task_id=%hu, retCode=%#x.",
-        streamId, rtCmoTask->id, error);
+        error, ERROR_RECYCLE, "Submit CMO task failed, stream_id=%d, task_id=%hu, retCode=%#x.", streamId,
+        rtCmoTask->id, error);
 
     GET_THREAD_TASKID_AND_STREAMID(rtCmoTask, streamId);
     return error;

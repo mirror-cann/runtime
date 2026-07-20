@@ -15,9 +15,10 @@
 
 namespace cce {
 namespace runtime {
-rtError_t ReduceAsyncV2TaskInit(TaskInfo* const taskInfo, uint32_t cpyType, const void* srcAddr,
-    void* desAddr, const uint64_t cpySize, void* const overflowAddr);
-void ToCommandBodyForReduceAsyncV2Task(TaskInfo * const taskInfo, rtCommand_t * const command);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_REDUCE_TASK_H
+rtError_t ReduceAsyncV2TaskInit(
+    TaskInfo* const taskInfo, uint32_t cpyType, const void* srcAddr, void* desAddr, const uint64_t cpySize,
+    void* const overflowAddr);
+void ToCommandBodyForReduceAsyncV2Task(TaskInfo* const taskInfo, rtCommand_t* const command);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_REDUCE_TASK_H

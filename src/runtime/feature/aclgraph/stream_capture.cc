@@ -19,29 +19,28 @@ namespace runtime {
 void Stream::SingleStreamTerminateCapture()
 {
     SetCaptureStatus(RT_STREAM_CAPTURE_STATUS_INVALIDATED);
-    Stream *curCaptureStream = GetCaptureStream();
+    Stream* curCaptureStream = GetCaptureStream();
     if (curCaptureStream != nullptr) {
-        CaptureModel *captureModel = static_cast<CaptureModel *>(curCaptureStream->Model_());
+        CaptureModel* captureModel = static_cast<CaptureModel*>(curCaptureStream->Model_());
         if (captureModel != nullptr) {
             captureModel->TerminateCapture();
         }
     }
 }
 
-rtError_t Stream::AllocCascadeCaptureStream(Stream *&newCaptureStream, const Stream * const curCaptureStream)
+rtError_t Stream::AllocCascadeCaptureStream(Stream*& newCaptureStream, const Stream* const curCaptureStream)
 {
-    Context * const ctx = Context_();
-    const rtError_t error = ctx->AllocCascadeCaptureStream(this, curCaptureStream->Model_(),
-                                                     &newCaptureStream);
+    Context* const ctx = Context_();
+    const rtError_t error = ctx->AllocCascadeCaptureStream(this, curCaptureStream->Model_(), &newCaptureStream);
     if ((error != RT_ERROR_NONE) || (newCaptureStream == nullptr)) {
         SingleStreamTerminateCapture();
-        RT_LOG(RT_LOG_ERROR, "alloc capture stream failed, device_id=%u, original stream_id=%d.",
-            device_->Id_(), Id_());
+        RT_LOG(
+            RT_LOG_ERROR, "alloc capture stream failed, device_id=%u, original stream_id=%d.", device_->Id_(), Id_());
         return error;
     }
     if (curCaptureStream->Model_() != nullptr) {
-        CaptureModel *captureModel = static_cast<CaptureModel *>(curCaptureStream->Model_());
-        auto &addStreamMap = captureModel->GetAddStreamMap();
+        CaptureModel* captureModel = static_cast<CaptureModel*>(curCaptureStream->Model_());
+        auto& addStreamMap = captureModel->GetAddStreamMap();
         auto it = addStreamMap.find(this);
         if (it != addStreamMap.end()) {
             captureModel->SetAddStreamMap(this, newCaptureStream);
@@ -50,49 +49,47 @@ rtError_t Stream::AllocCascadeCaptureStream(Stream *&newCaptureStream, const Str
     return RT_ERROR_NONE;
 }
 
-void Stream::UpdateCascadeCaptureStreamInfo(Stream *newCaptureStream, Stream *curCaptureStream)
-{        
+void Stream::UpdateCascadeCaptureStreamInfo(Stream* newCaptureStream, Stream* curCaptureStream)
+{
     curCaptureStream->CancelLastLevelCaptureStream();
     newCaptureStream->MarkOrigCaptureStream(curCaptureStream->IsOrigCaptureStream());
     newCaptureStream->UpdateCurrentTaskGroup(curCaptureStream->GetCurrentTaskGroup());
     newCaptureStream->SetParentCaptureStream(curCaptureStream);
     curCaptureStream->ResetTaskGroup();
-    CaptureModel *captureModel = static_cast<CaptureModel *>(curCaptureStream->Model_());
+    CaptureModel* captureModel = static_cast<CaptureModel*>(curCaptureStream->Model_());
     if (captureModel != nullptr) {
         captureModel->ReplaceTaskGroupStreamId(
-            static_cast<uint16_t>(curCaptureStream->Id_()),
-            static_cast<uint16_t>(newCaptureStream->Id_()));
+            static_cast<uint16_t>(curCaptureStream->Id_()), static_cast<uint16_t>(newCaptureStream->Id_()));
         captureModel->InsertSingleOperStmIdAndCaptureStmId(Id_(), newCaptureStream->Id_());
     }
     UpdateCaptureStream(newCaptureStream);
 }
 
-rtError_t Stream::AllocCaptureTaskWithLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo **task)
+rtError_t Stream::AllocCaptureTaskWithLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo** task)
 {
     std::unique_lock<std::mutex> lk(captureLock_);
     return AllocCaptureTaskWithoutLock(taskType, sqeNum, task);
 }
 
-rtError_t Stream::AllocCaptureTaskWithoutLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo **task)
+rtError_t Stream::AllocCaptureTaskWithoutLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo** task)
 {
-    Stream *curCaptureStream = GetCaptureStream();
+    Stream* curCaptureStream = GetCaptureStream();
     if (curCaptureStream == nullptr) {
         /* stm exit capture mode */
         return RT_ERROR_STREAM_CAPTURE_EXIT;
     }
 
-    COND_PROC_RETURN_ERROR(IsTaskGroupBreak(), RT_ERROR_STREAM_TASKGRP_INTR,
-        SetTaskGroupErrCode(RT_ERROR_STREAM_TASKGRP_INTR), "the task group interrupted.");
+    COND_PROC_RETURN_ERROR(
+        IsTaskGroupBreak(), RT_ERROR_STREAM_TASKGRP_INTR, SetTaskGroupErrCode(RT_ERROR_STREAM_TASKGRP_INTR),
+        "the task group interrupted.");
 
     if ((curCaptureStream->GetCaptureSqeNum() + CAPTURE_TASK_RESERVED_NUM +
-         device_->GetDevProperties().expandStreamRsvTaskNum) >=
-         curCaptureStream->GetSqDepth()) {
-        Stream *newCaptureStream = nullptr;
-        Context * const ctx = Context_();
+         device_->GetDevProperties().expandStreamRsvTaskNum) >= curCaptureStream->GetSqDepth()) {
+        Stream* newCaptureStream = nullptr;
+        Context* const ctx = Context_();
         if (ctx == nullptr) {
             SingleStreamTerminateCapture();
-            RT_LOG(RT_LOG_ERROR, "context is null, device_id=%u, original stream_id=%d.",
-                device_->Id_(), Id_());
+            RT_LOG(RT_LOG_ERROR, "context is null, device_id=%u, original stream_id=%d.", device_->Id_(), Id_());
             return RT_ERROR_CONTEXT_NULL;
         }
         rtError_t error = AllocCascadeCaptureStream(newCaptureStream, curCaptureStream);
@@ -120,13 +117,15 @@ rtError_t Stream::AllocCaptureTaskWithoutLock(tsTaskType_t taskType, uint32_t sq
         return errCode;
     }
 
-    RT_LOG(RT_LOG_INFO,
+    RT_LOG(
+        RT_LOG_INFO,
         "Alloc task in capture stream successfully, device id=%u, origin stream_id=%d, capture stream_id=%d, "
-        "task sequence id=%u.", device_->Id_(), Id_(), curCaptureStream->Id_(), (*task)->modelSeqId);
+        "task sequence id=%u.",
+        device_->Id_(), Id_(), curCaptureStream->Id_(), (*task)->modelSeqId);
     return RT_ERROR_NONE;
 }
 
-rtError_t Stream::AllocCaptureTask(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo **task, bool isNeedLock)
+rtError_t Stream::AllocCaptureTask(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo** task, bool isNeedLock)
 {
     if (isNeedLock) {
         return AllocCaptureTaskWithLock(taskType, sqeNum, task);
@@ -135,10 +134,10 @@ rtError_t Stream::AllocCaptureTask(tsTaskType_t taskType, uint32_t sqeNum, TaskI
     }
 }
 
-void Stream::EnterCapture(const Stream * const captureStream)
+void Stream::EnterCapture(const Stream* const captureStream)
 {
     /* enter capture status */
-    CaptureModel *captureMdl = RtPtrToPtr<CaptureModel *>(captureStream->Model_());
+    CaptureModel* captureMdl = RtPtrToPtr<CaptureModel*>(captureStream->Model_());
     if (captureMdl != nullptr) {
         captureMdl->EnterCaptureNotify(Id_(), captureStream->Id_());
     }
@@ -169,9 +168,9 @@ void Stream::ResetCaptureInfo()
 void Stream::ExitCapture()
 {
     /* exit capture status */
-    Stream *captureStream = GetCaptureStream();
+    Stream* captureStream = GetCaptureStream();
     if (captureStream != nullptr) {
-        CaptureModel *captureMdl = dynamic_cast<CaptureModel *>(captureStream->Model_());
+        CaptureModel* captureMdl = dynamic_cast<CaptureModel*>(captureStream->Model_());
         if (captureMdl != nullptr) {
             captureMdl->ExitCaptureNotify();
             captureMdl->SetModelCacheOpInfoSwitch(0);
@@ -181,7 +180,6 @@ void Stream::ExitCapture()
     ResetCaptureInfo();
     return;
 }
-
 
 } // namespace runtime
 } // namespace cce

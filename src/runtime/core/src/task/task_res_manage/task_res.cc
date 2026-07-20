@@ -17,19 +17,18 @@
 namespace cce {
 namespace runtime {
 
-TaskResManage::~TaskResManage()
-{
-}
+TaskResManage::~TaskResManage() {}
 
 TIMESTAMP_EXTERN(TaskResManage_LoadInputOutputArgs);
-rtError_t TaskResManage::LoadInputOutputArgs(const Stream * const stm, void *&kerArgs, uint32_t taskResId,
-    const uint32_t size, const void * const args, const rtArgsEx_t * const argsInfo) const
+rtError_t TaskResManage::LoadInputOutputArgs(
+    const Stream* const stm, void*& kerArgs, uint32_t taskResId, const uint32_t size, const void* const args,
+    const rtArgsEx_t* const argsInfo) const
 {
     if ((stm->NonSupportModelCompile()) || (stm->Model_() == nullptr) || (argsInfo->isNoNeedH2DCopy == 0U)) {
         kerArgs = taskRes_[taskResId].copyDev;
 
         if (argsInfo->hasTiling != 0U) { // set tiling data offset to tiling addr
-            *(reinterpret_cast<uint64_t *>(reinterpret_cast<char_t *>(argsInfo->args) + argsInfo->tilingAddrOffset)) =
+            *(reinterpret_cast<uint64_t*>(reinterpret_cast<char_t*>(argsInfo->args) + argsInfo->tilingAddrOffset)) =
                 static_cast<uint64_t>(reinterpret_cast<uintptr_t>(kerArgs) + argsInfo->tilingDataOffset);
         }
         UpdateAddrField(kerArgs, argsInfo->args, argsInfo->hostInputInfoNum, argsInfo->hostInputInfoPtr);
@@ -37,15 +36,17 @@ rtError_t TaskResManage::LoadInputOutputArgs(const Stream * const stm, void *&ke
         TIMESTAMP_BEGIN(TaskResManage_LoadInputOutputArgs);
         const errno_t ret = memcpy_s(kerArgs, size, args, size);
         TIMESTAMP_END(TaskResManage_LoadInputOutputArgs);
-        COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_DRV_MEMORY,
-            "Failed to call memcpy_s to copy args, src=%p, dest=%p, dest_max=%u, count=%u, kind=%d, retCode=%#x.",
-            args, kerArgs, size, size, RT_MEMCPY_HOST_TO_DEVICE, static_cast<uint32_t>(ret));
+        COND_RETURN_ERROR_MSG_CALL(
+            ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_DRV_MEMORY,
+            "Failed to call memcpy_s to copy args, src=%p, dest=%p, dest_max=%u, count=%u, kind=%d, retCode=%#x.", args,
+            kerArgs, size, size, RT_MEMCPY_HOST_TO_DEVICE, static_cast<uint32_t>(ret));
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t TaskResManage::LoadInputOutputArgs(const Stream * const stm, void *&kerArgs, uint32_t taskResId,
-    const uint32_t size, const void * const args, const rtAicpuArgsEx_t * const argsInfo) const
+rtError_t TaskResManage::LoadInputOutputArgs(
+    const Stream* const stm, void*& kerArgs, uint32_t taskResId, const uint32_t size, const void* const args,
+    const rtAicpuArgsEx_t* const argsInfo) const
 {
     if ((stm->NonSupportModelCompile()) || (stm->Model_() == nullptr) || (argsInfo->isNoNeedH2DCopy == 0U)) {
         kerArgs = taskRes_[taskResId].copyDev;
@@ -56,15 +57,16 @@ rtError_t TaskResManage::LoadInputOutputArgs(const Stream * const stm, void *&ke
         TIMESTAMP_BEGIN(TaskResManage_LoadInputOutputArgs);
         const errno_t ret = memcpy_s(kerArgs, size, args, size);
         TIMESTAMP_END(TaskResManage_LoadInputOutputArgs);
-        COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_DRV_MEMORY,
-            "Failed to call memcpy_s to copy args, src=%p, dest=%p, dest_max=%u, count=%u, kind=%d, retCode=%#x.",
-            args, kerArgs, size, size, RT_MEMCPY_HOST_TO_DEVICE, static_cast<uint32_t>(ret));
+        COND_RETURN_ERROR_MSG_CALL(
+            ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_DRV_MEMORY,
+            "Failed to call memcpy_s to copy args, src=%p, dest=%p, dest_max=%u, count=%u, kind=%d, retCode=%#x.", args,
+            kerArgs, size, size, RT_MEMCPY_HOST_TO_DEVICE, static_cast<uint32_t>(ret));
     }
 
     return RT_ERROR_NONE;
 }
 
-void TaskResManage::SetResult(void * const kerArgs, struct ArgLoaderResult * const result) const
+void TaskResManage::SetResult(void* const kerArgs, struct ArgLoaderResult* const result) const
 {
     result->handle = nullptr;
     result->kerArgs = kerArgs;
@@ -76,10 +78,10 @@ TaskResManage::TaskResManage()
     taskPoolNum_ = GetTaskPoolSizeByChipType(chipType);
 }
 
-void TaskResManage::FreePcieBarBuffer(void *addr, Device* para) const
+void TaskResManage::FreePcieBarBuffer(void* addr, Device* para) const
 {
     if (addr != nullptr) {
-        Device * const dev = para;
+        Device* const dev = para;
         (void)dev->Driver_()->PcieHostUnRegister(addr, dev->Id_());
         (void)dev->Driver_()->DevMemFree(addr, dev->Id_());
         dev->ArgStreamMutexLock();
@@ -93,8 +95,8 @@ void TaskResManage::FreePcieBarBuffer(void *addr, Device* para) const
 
 void* TaskResManage::MallocPcieBarBuffer(const uint32_t size, Device* const dev, bool isLogError) const
 {
-    void *addr = nullptr;
-    void *outAddr = nullptr;
+    void* addr = nullptr;
+    void* outAddr = nullptr;
     uint32_t val = RT_CAPABILITY_NOT_SUPPORT;
     bool is4KAsync = (size > HUGE_PAGE_MEM_CRITICAL_VALUE) ? false : true;
     (void)dev->Driver_()->CheckSupportPcieBarCopy(dev->Id_(), val, is4KAsync);
@@ -102,14 +104,15 @@ void* TaskResManage::MallocPcieBarBuffer(const uint32_t size, Device* const dev,
         RT_LOG(RT_LOG_WARNING, "dev does not support pcie bar copy, device_id=%d, val=%u.", dev->Id_(), val);
         return nullptr;
     }
-    rtError_t ret = dev->Driver_()->DevMemAlloc(&addr, static_cast<uint64_t>(size),
-                                                RT_MEMORY_P2P_HBM, dev->Id_(), MODULEID_RUNTIME, isLogError);
+    rtError_t ret = dev->Driver_()->DevMemAlloc(
+        &addr, static_cast<uint64_t>(size), RT_MEMORY_P2P_HBM, dev->Id_(), MODULEID_RUNTIME, isLogError);
     if (ret != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_WARNING, "alloc dev mem failed, retCode=%#x, size=%u, dev_id=%u.", ret, size, dev->Id_());
         return nullptr;
     }
     ret = dev->Driver_()->PcieHostRegister(addr, static_cast<uint64_t>(size), dev->Id_(), outAddr);
-    COND_PROC_RETURN_ERROR_MSG_INNER(ret != RT_ERROR_NONE, nullptr, (void)dev->Driver_()->DevMemFree(addr, dev->Id_()),
+    COND_PROC_RETURN_ERROR_MSG_INNER(
+        ret != RT_ERROR_NONE, nullptr, (void)dev->Driver_()->DevMemFree(addr, dev->Id_()),
         "PcieHostRegister falied, retCode=%#x, size=%u, dev_id=%u.", ret, size, dev->Id_());
     return addr;
 }
@@ -120,8 +123,8 @@ bool TaskResManage::CreateTaskRes(Stream* stm)
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     const bool isOffline = (dev->Driver_()->GetRunMode() == RT_RUN_MODE_OFFLINE);
     const auto supportCreateTaskRes = dev->GetDevProperties().supportCreateTaskRes;
-    if ((supportCreateTaskRes == SupportCreateTaskRes::CREATE_TASK_RES_NOT_SUPPORT) || 
-        (isOffline && (supportCreateTaskRes != SupportCreateTaskRes::CREATE_TASK_RES_SUPPORT_WITH_OFFLINE)) || 
+    if ((supportCreateTaskRes == SupportCreateTaskRes::CREATE_TASK_RES_NOT_SUPPORT) ||
+        (isOffline && (supportCreateTaskRes != SupportCreateTaskRes::CREATE_TASK_RES_SUPPORT_WITH_OFFLINE)) ||
         (!Runtime::Instance()->GetDisableThread())) {
         RT_LOG(RT_LOG_WARNING, "does not support, chipType=%u, isOffline=%u.", chipType, isOffline);
         return false;
@@ -135,8 +138,11 @@ bool TaskResManage::CreateTaskRes(Stream* stm)
 
     const uint32_t taskPoolSize = taskPoolNum_ * taskResCellSize;
     taskResBaseAddr_ = new (std::nothrow) uint8_t[taskPoolSize];
-    COND_RETURN_WARN((taskResBaseAddr_ == nullptr), false, "no memory for taskRes,"
-        "taskResSize=%u, taskPoolNum_=%u.", taskResCellSize, taskPoolNum_);
+    COND_RETURN_WARN(
+        (taskResBaseAddr_ == nullptr), false,
+        "no memory for taskRes,"
+        "taskResSize=%u, taskPoolNum_=%u.",
+        taskResCellSize, taskPoolNum_);
 
     streamId_ = stm->Id_();
     deviceId_ = stm->Device_()->Id_();
@@ -162,10 +168,11 @@ bool TaskResManage::CreateTaskRes(Stream* stm)
 
     // 4. pcieBar
     // 310P alloc 1024 with aicoreErr
-    const uint32_t taskNum = (!dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_NUM_DOT_EXPAND)) ? 
-        taskPoolNum_ : (taskPoolNum_ + 1);
+    const uint32_t taskNum = (!dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_NUM_DOT_EXPAND)) ?
+                                 taskPoolNum_ :
+                                 (taskPoolNum_ + 1);
     const uint32_t pciePoolSize = taskNum * RTS_LITE_PCIE_BAR_COPY_SIZE;
-    pcieBaseAddr_ = RtPtrToPtr<uint8_t*, void *>(MallocPcieBarBuffer(pciePoolSize, dev, false));
+    pcieBaseAddr_ = RtPtrToPtr<uint8_t*, void*>(MallocPcieBarBuffer(pciePoolSize, dev, false));
     if (pcieBaseAddr_ == nullptr) {
         dev->ArgStreamMutexUnLock();
         RT_LOG(RT_LOG_WARNING, "no pciebar for taskRes.");
@@ -175,7 +182,7 @@ bool TaskResManage::CreateTaskRes(Stream* stm)
     dev->ArgStreamMutexUnLock();
 
     for (uint32_t i = 0U; i < taskPoolNum_; i++) {
-        taskRes_[i].copyDev = static_cast<void *>(pcieBaseAddr_ + (i * RTS_LITE_PCIE_BAR_COPY_SIZE));
+        taskRes_[i].copyDev = static_cast<void*>(pcieBaseAddr_ + (i * RTS_LITE_PCIE_BAR_COPY_SIZE));
     }
     stm->SetIsHasPcieBarFlag(true);
     RT_LOG(RT_LOG_DEBUG, "pciebar Buffer alloc success.");
@@ -191,7 +198,7 @@ void TaskResManage::ReleaseTaskResource(Stream* stm)
     if (taskRes_ != nullptr) {
         delete[] taskResBaseAddr_;
         taskResBaseAddr_ = nullptr;
-        taskRes_ =  nullptr;
+        taskRes_ = nullptr;
     }
 }
 
@@ -215,15 +222,14 @@ uint16_t TaskResManage::GetTaskPoolSizeByChipType(const rtChipType_t chipType) c
 {
     DevProperties prop;
     rtError_t ret = GET_DEV_PROPERTIES(chipType, prop);
-    COND_RETURN_ERROR_MSG_INNER(ret != RT_ERROR_NONE, 0U,
-        "GetDevProperties failed, chip type=%d.", chipType);
+    COND_RETURN_ERROR_MSG_INNER(ret != RT_ERROR_NONE, 0U, "GetDevProperties failed, chip type=%d.", chipType);
     if (prop.taskPoolSizeFromRtsqDepth) {
         return prop.rtsqDepth;
     }
     return prop.taskPoolSize;
 }
 
-bool TaskResManage::AllocTaskResId(uint32_t &taskResId)
+bool TaskResManage::AllocTaskResId(uint32_t& taskResId)
 {
     taskTailMutex_.lock();
     uint32_t head = taskResHead_;
@@ -246,7 +252,9 @@ TaskInfo* TaskResManage::GetTaskInfo(uint32_t taskId) const
     const uint16_t tail = taskResTail_;
     uint32_t taskResId = taskId % taskPoolNum_;
     if (head == tail) {
-        RT_LOG(RT_LOG_WARNING, "head==tail, device_id=%u, stream_id=%d, taskId=%u, taskResId=%u, head=%hu, tail=%hu, "
+        RT_LOG(
+            RT_LOG_WARNING,
+            "head==tail, device_id=%u, stream_id=%d, taskId=%u, taskResId=%u, head=%hu, tail=%hu, "
             "taskResHead_=%hu, taskResTail_=%hu, taskInfo_id=%hu.",
             deviceId_, streamId_, taskId, taskResId, head, tail, taskResHead_, taskResTail_,
             taskRes_[taskResId].taskInfo.id);
@@ -256,7 +264,9 @@ TaskInfo* TaskResManage::GetTaskInfo(uint32_t taskId) const
     const bool flag1 = (head < tail) && (!((taskResId >= head) && (taskResId < tail)));
     const bool flag2 = (head > tail) && ((taskResId >= tail) && (taskResId < head));
     if (flag1 || flag2) {
-        RT_LOG(RT_LOG_WARNING, "taskResId is invalid, device_id=%u, stream_id=%d, taskId=%u, taskResId=%u, "
+        RT_LOG(
+            RT_LOG_WARNING,
+            "taskResId is invalid, device_id=%u, stream_id=%d, taskId=%u, taskResId=%u, "
             "head=%hu, tail=%hu, taskResHead_=%hu, taskResTail_=%hu, taskInfo_id=%hu, isValidInO1=%hhu.",
             deviceId_, streamId_, taskId, taskResId, head, tail, taskResHead_, taskResTail_,
             taskRes_[taskResId].taskInfo.id, taskRes_[taskResId].taskInfo.isValidInO1);
@@ -264,7 +274,9 @@ TaskInfo* TaskResManage::GetTaskInfo(uint32_t taskId) const
     }
 
     if ((taskRes_[taskResId].taskInfo.id == 0xFFFFU) || (taskRes_[taskResId].taskInfo.id != taskId)) {
-        RT_LOG(RT_LOG_WARNING, "taskResId is recycled, device_id=%u, stream_id=%d, taskId=%u, taskResId=%u, "
+        RT_LOG(
+            RT_LOG_WARNING,
+            "taskResId is recycled, device_id=%u, stream_id=%d, taskId=%u, taskResId=%u, "
             "head=%hu, tail=%hu, taskResHead_=%hu, taskResTail_=%hu, taskInfo_id=%hu",
             deviceId_, streamId_, taskId, taskResId, head, tail, taskResHead_, taskResTail_,
             taskRes_[taskResId].taskInfo.id);
@@ -273,10 +285,7 @@ TaskInfo* TaskResManage::GetTaskInfo(uint32_t taskId) const
 
     return &taskRes_[taskResId].taskInfo;
 }
-TaskInfo* TaskResManage::GetHeadTaskInfo() const
-{
-    return &taskRes_[taskResHead_].taskInfo;
-}
+TaskInfo* TaskResManage::GetHeadTaskInfo() const { return &taskRes_[taskResHead_].taskInfo; }
 
 void TaskResManage::RecycleResHead()
 {
@@ -284,10 +293,7 @@ void TaskResManage::RecycleResHead()
     taskResHead_ = (taskResHead_ + 1U) % taskPoolNum_;
 }
 
-uint16_t TaskResManage::GetResHead() const
-{
-    return taskResHead_;
-}
+uint16_t TaskResManage::GetResHead() const { return taskResHead_; }
 
 bool TaskResManage::RecycleTaskInfoOn(uint32_t taskId)
 {
@@ -298,15 +304,17 @@ bool TaskResManage::RecycleTaskInfoOn(uint32_t taskId)
     bool flag1 = (taskResHead_ < tail) && (!((taskDesHeadIdx >= taskResHead_) && (taskDesHeadIdx < tail)));
     bool flag2 = (taskResHead_ > tail) && ((taskDesHeadIdx >= tail) && (taskDesHeadIdx < taskResHead_));
     if (flag1 || flag2) {
-        RT_LOG(RT_LOG_WARNING, "taskDesHeadIdx is invalid, device_id=%u, stream_id=%u, taskId=%u, taskDesHeadIdx=%u, "
-            "taskResHead_=%u, taskResTail_=%u", deviceId_, streamId_, taskId, taskDesHeadIdx, taskResHead_, tail);
+        RT_LOG(
+            RT_LOG_WARNING,
+            "taskDesHeadIdx is invalid, device_id=%u, stream_id=%u, taskId=%u, taskDesHeadIdx=%u, "
+            "taskResHead_=%u, taskResTail_=%u",
+            deviceId_, streamId_, taskId, taskDesHeadIdx, taskResHead_, tail);
         taskHeadMutex_.unlock();
         return false;
     }
 
     taskResHead_ = (taskDesHeadIdx + 1) % taskPoolNum_;
-    RT_LOG(RT_LOG_INFO, "recycleOn taskinfo success, taskId=%u, taskResHead_=%u, tail=%u.", taskId,
-        taskResHead_, tail);
+    RT_LOG(RT_LOG_INFO, "recycleOn taskinfo success, taskId=%u, taskResHead_=%u, tail=%u.", taskId, taskResHead_, tail);
     taskHeadMutex_.unlock();
     return true;
 }
@@ -321,7 +329,9 @@ bool TaskResManage::RecycleTaskInfoO1(uint32_t taskId)
     const bool flag1 = (taskResHead_ < tail) && (!((taskDesHeadIdx >= taskResHead_) && (taskDesHeadIdx < tail)));
     const bool flag2 = (taskResHead_ > tail) && ((taskDesHeadIdx >= tail) && (taskDesHeadIdx < taskResHead_));
     if (flag1 || flag2) {
-        RT_LOG(RT_LOG_WARNING, "taskDesHeadIdx is invalid, device_id=%u, stream_id=%d, taskId=%u, taskDesHeadIdx=%u, "
+        RT_LOG(
+            RT_LOG_WARNING,
+            "taskDesHeadIdx is invalid, device_id=%u, stream_id=%d, taskId=%u, taskDesHeadIdx=%u, "
             "taskResHead_=%u, tail=%u, taskResTail_=%u",
             deviceId_, streamId_, taskId, taskDesHeadIdx, taskResHead_, tail, taskResTail_);
         taskHeadMutex_.unlock();
@@ -332,7 +342,9 @@ bool TaskResManage::RecycleTaskInfoO1(uint32_t taskId)
         taskRes_[taskDesHeadIdx].taskInfo.id = 0xFFFFU;
         taskRes_[taskDesHeadIdx].taskInfo.isValidInO1 = true;
     } else {
-        RT_LOG(RT_LOG_WARNING, "taskDesHeadIdx is already recycle, device_id=%u, stream_id=%d, taskId=%u, "
+        RT_LOG(
+            RT_LOG_WARNING,
+            "taskDesHeadIdx is already recycle, device_id=%u, stream_id=%d, taskId=%u, "
             "taskDesHeadIdx=%u, taskResHead_=%u, tail=%u, taskResTail_=%u, resTaskId=%hu",
             deviceId_, streamId_, taskId, taskDesHeadIdx, taskResHead_, tail, taskResTail_,
             taskRes_[taskDesHeadIdx].taskInfo.id);
@@ -346,7 +358,9 @@ bool TaskResManage::RecycleTaskInfoO1(uint32_t taskId)
         taskResHead_ = (taskResHead_ + 1U) % taskPoolNum_;
     }
 
-    RT_LOG(RT_LOG_INFO, "recycleO1 taskinfo success, device_id=%u, stream_id=%d, taskId=%u, taskDesHeadIdx=%u, "
+    RT_LOG(
+        RT_LOG_INFO,
+        "recycleO1 taskinfo success, device_id=%u, stream_id=%d, taskId=%u, taskDesHeadIdx=%u, "
         "taskResHead_=%u, tail=%u, taskResTail_=%u",
         deviceId_, streamId_, taskId, taskDesHeadIdx, taskResHead_, tail, taskResTail_);
 
@@ -354,8 +368,8 @@ bool TaskResManage::RecycleTaskInfoO1(uint32_t taskId)
     return true;
 }
 
-TaskInfo* TaskResManage::AllocTaskInfoByTaskResId(Stream *stm, uint32_t taskResId,
-                                                  uint16_t taskId, tsTaskType_t taskType)
+TaskInfo* TaskResManage::AllocTaskInfoByTaskResId(
+    Stream* stm, uint32_t taskResId, uint16_t taskId, tsTaskType_t taskType)
 {
     // 1. check tail Invalid：head <= tail amd head > tail
     taskTailMutex_.lock();
@@ -363,26 +377,28 @@ TaskInfo* TaskResManage::AllocTaskInfoByTaskResId(Stream *stm, uint32_t taskResI
     uint32_t tail = taskResTail_;
     if ((taskResTail_ + 1U) % taskPoolNum_ == head) {
         taskTailMutex_.unlock();
-        RT_LOG(RT_LOG_DEBUG, "taskRes Queue full, taskResId=%u, head=%u, taskResTail_=%u.",
-               taskResId, head, taskResTail_);
+        RT_LOG(
+            RT_LOG_DEBUG, "taskRes Queue full, taskResId=%u, head=%u, taskResTail_=%u.", taskResId, head, taskResTail_);
         return nullptr;
     }
 
     bool flag1 = (head < taskResTail_) && ((taskResId >= head) && (taskResId < taskResTail_));
     bool flag2 = (head > taskResTail_) && (!((taskResId >= taskResTail_) && (taskResId < head)));
     if (flag1 || flag2) {
-        RT_LOG(RT_LOG_WARNING, "taskResId is invalid, device_id=%u, stream_id=%u, taskResId=%u, head=%u, "
-            "taskResHead_=%hu, taskResTail_=%hu", deviceId_, streamId_, taskResId, head, taskResHead_, taskResTail_);
+        RT_LOG(
+            RT_LOG_WARNING,
+            "taskResId is invalid, device_id=%u, stream_id=%u, taskResId=%u, head=%u, "
+            "taskResHead_=%hu, taskResTail_=%hu",
+            deviceId_, streamId_, taskResId, head, taskResHead_, taskResTail_);
         taskTailMutex_.unlock();
         return nullptr;
     }
 
-    TaskInfo *task = nullptr;
+    TaskInfo* task = nullptr;
     while (taskResId != tail) {
         if ((taskResId + 1U) % taskPoolNum_ == head) {
             taskTailMutex_.unlock();
-            RT_LOG(RT_LOG_DEBUG, "taskRes Queue full 2, taskResId=%u, head=%u, tail=%u.",
-                taskResId, head, tail);
+            RT_LOG(RT_LOG_DEBUG, "taskRes Queue full 2, taskResId=%u, head=%u, tail=%u.", taskResId, head, tail);
             return nullptr;
         }
 
@@ -390,8 +406,9 @@ TaskInfo* TaskResManage::AllocTaskInfoByTaskResId(Stream *stm, uint32_t taskResI
         task->id = 0xFFFFU;
         task->isValidInO1 = true;
         tail = (tail + 1U) % taskPoolNum_;
-        RT_LOG(RT_LOG_DEBUG, "taskResId is not equal taskResTail_, taskResId=%u, taskResTail_=%u",
-            taskResId, taskResTail_);
+        RT_LOG(
+            RT_LOG_DEBUG, "taskResId is not equal taskResTail_, taskResId=%u, taskResTail_=%u", taskResId,
+            taskResTail_);
     }
 
     task = &taskRes_[taskResId].taskInfo;
@@ -405,7 +422,9 @@ TaskInfo* TaskResManage::AllocTaskInfoByTaskResId(Stream *stm, uint32_t taskResI
     taskResTail_ = (taskResId + 1U) % taskPoolNum_;
     __sync_synchronize();
     taskTailMutex_.unlock();
-    RT_LOG(RT_LOG_DEBUG, "alloc taskinfo success, device_id=%u, stream_id=%u, taskResId=%u, taskResHead_=%u, "
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "alloc taskinfo success, device_id=%u, stream_id=%u, taskResId=%u, taskResHead_=%u, "
         "taskResTail_=%u, taskPoolNum_=%u.",
         deviceId_, streamId_, taskResId, taskResHead_, taskResTail_, taskPoolNum_);
 
@@ -415,7 +434,7 @@ TaskInfo* TaskResManage::AllocTaskInfoByTaskResId(Stream *stm, uint32_t taskResI
 void TaskResManage::ShowDfxInfo(void) const
 {
     RT_LOG(RT_LOG_EVENT, "task res info, taskResHead=%hu, taskResTail=%hu", taskResHead_, taskResTail_);
-    
+
     if (taskPoolNum_ == 0U) {
         return;
     }
@@ -428,7 +447,8 @@ void TaskResManage::ShowDfxInfo(void) const
     for (uint32_t index = 0; index <= 5U; index++) {
         headIndex[index] = (headStart + index) % taskPoolNum_;
     }
-    RT_LOG(RT_LOG_EVENT, "task head info, headStart=%u, taskId:isValid %hu:%d, %hu:%d, %hu:%d, %hu:%d, %hu:%d, %hu:%d",
+    RT_LOG(
+        RT_LOG_EVENT, "task head info, headStart=%u, taskId:isValid %hu:%d, %hu:%d, %hu:%d, %hu:%d, %hu:%d, %hu:%d",
         headStart, taskRes_[headIndex[0U]].taskInfo.id, taskRes_[headIndex[0U]].taskInfo.isValidInO1,
         taskRes_[headIndex[1U]].taskInfo.id, taskRes_[headIndex[1U]].taskInfo.isValidInO1,
         taskRes_[headIndex[2U]].taskInfo.id, taskRes_[headIndex[2U]].taskInfo.isValidInO1,
@@ -439,7 +459,8 @@ void TaskResManage::ShowDfxInfo(void) const
     for (uint32_t index = 0; index <= 5U; index++) {
         tailIndex[index] = (tailStart + index) % taskPoolNum_;
     }
-    RT_LOG(RT_LOG_EVENT, "task tail info, tailStart=%u, taskId:isValid %hu:%d, %hu:%d, %hu:%d, %hu:%d, %hu:%d, %hu:%d",
+    RT_LOG(
+        RT_LOG_EVENT, "task tail info, tailStart=%u, taskId:isValid %hu:%d, %hu:%d, %hu:%d, %hu:%d, %hu:%d, %hu:%d",
         tailStart, taskRes_[tailIndex[0U]].taskInfo.id, taskRes_[tailIndex[0U]].taskInfo.isValidInO1,
         taskRes_[tailIndex[1U]].taskInfo.id, taskRes_[tailIndex[1U]].taskInfo.isValidInO1,
         taskRes_[tailIndex[2U]].taskInfo.id, taskRes_[tailIndex[2U]].taskInfo.isValidInO1,
@@ -447,5 +468,5 @@ void TaskResManage::ShowDfxInfo(void) const
         taskRes_[tailIndex[4U]].taskInfo.id, taskRes_[tailIndex[4U]].taskInfo.isValidInO1,
         taskRes_[tailIndex[5U]].taskInfo.id, taskRes_[tailIndex[5U]].taskInfo.isValidInO1);
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

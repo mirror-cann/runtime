@@ -16,11 +16,11 @@
 namespace cce {
 namespace runtime {
 constexpr uint64_t DCACHE_LOCK_DEVICE_OFFSET = 64U * 1024U * 1024U;
-void FreeDcacheAddr(const uint32_t deviceId, void *&dcacheAddr, void *&drvHandle);
-rtError_t AllocAddrForDcache(const uint32_t deviceId, void *&dcacheAddr, const uint64_t size, void *&drvHandle);
-rtError_t QueryDcacheLockStatus(uint32_t deviceId, uint32_t tsId, const void *dcacheAddr, bool &dCacheLockFlag);
-rtError_t DcacheLockSendTask(const Context *ctx, const uint32_t blockDim, const void * const funcAddr, Stream *stream);
-}  // namespace runtime
-}  // namespace cce
+void FreeDcacheAddr(const uint32_t deviceId, void*& dcacheAddr, void*& drvHandle);
+rtError_t AllocAddrForDcache(const uint32_t deviceId, void*& dcacheAddr, const uint64_t size, void*& drvHandle);
+rtError_t QueryDcacheLockStatus(uint32_t deviceId, uint32_t tsId, const void* dcacheAddr, bool& dCacheLockFlag);
+rtError_t DcacheLockSendTask(const Context* ctx, const uint32_t blockDim, const void* const funcAddr, Stream* stream);
+} // namespace runtime
+} // namespace cce
 
 #endif

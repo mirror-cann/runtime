@@ -12,11 +12,11 @@
 
 namespace cce {
 namespace runtime {
-Engine *EngineFactory::CreateEngine(const rtChipType_t chipType, Device *dev)
+Engine* EngineFactory::CreateEngine(const rtChipType_t chipType, Device* dev)
 {
     UNUSED(chipType);
     COND_RETURN_ERROR((dev == nullptr), nullptr, "Create engine failed, device is null.");
-    Engine *newEngine = nullptr;
+    Engine* newEngine = nullptr;
 
     newEngine = new (std::nothrow) StarsEngine(dev);
     RT_LOG(RT_LOG_INFO, "new StarsEngine, Runtime_alloc_size %zu", sizeof(StarsEngine));
@@ -28,5 +28,5 @@ Engine *EngineFactory::CreateEngine(const rtChipType_t chipType, Device *dev)
     RT_LOG(RT_LOG_INFO, "Engine init success.");
     return newEngine;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

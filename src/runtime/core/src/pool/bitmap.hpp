@@ -31,13 +31,13 @@ public:
     void OccupyId(const int32_t id) const;
 
 private:
-    volatile uint64_t *freeBitmap_;
+    volatile uint64_t* freeBitmap_;
     uint32_t maxIdCount_;
     std::mutex mutex_;
     uint32_t allocedCnt_;
     uint32_t lastAllocIdx_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_BITMAP_HPP
+#endif // CCE_RUNTIME_BITMAP_HPP

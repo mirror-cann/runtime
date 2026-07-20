@@ -27,42 +27,21 @@ public:
     rtError_t SetupByFlagAndCheck(void) override;
     rtError_t Setup(void) override;
     rtError_t TearDown(const bool terminal = false, bool flag = true) override;
-    rtError_t SetDqsSchedCfg(const rtDqsSchedCfg_t * const cfg);
+    rtError_t SetDqsSchedCfg(const rtDqsSchedCfg_t* const cfg);
 
-    stars_dqs_ctrl_space_t *GetDqsCtrlSpace() const
-    {
-        return dqsCtrlSpace_;
-    }
+    stars_dqs_ctrl_space_t* GetDqsCtrlSpace() const { return dqsCtrlSpace_; }
 
-    void SetDqsNotify(Notify *notify)
-    {
-        dqsNotify_ = notify;
-    }
- 
-    const Notify *GetDqsNotify() const
-    {
-        return dqsNotify_;
-    }
- 
-    void SetDqsCountNotify(CountNotify *notify)
-    {
-        dqsCountNotify_ = notify;
-    }
-    
-    const CountNotify *GetDqsCountNotify() const
-    {
-        return dqsCountNotify_;
-    }
+    void SetDqsNotify(Notify* notify) { dqsNotify_ = notify; }
 
-    stars_dqs_inter_chip_space_t *GetDqsInterChipSpace() const
-    {
-        return dqsInterChipSpace_;
-    }
+    const Notify* GetDqsNotify() const { return dqsNotify_; }
 
-    void SetAccSubInfo(const stars_queue_subscribe_acc_param_t &param)
-    {
-        accSubInfo_ = param;
-    }
+    void SetDqsCountNotify(CountNotify* notify) { dqsCountNotify_ = notify; }
+
+    const CountNotify* GetDqsCountNotify() const { return dqsCountNotify_; }
+
+    stars_dqs_inter_chip_space_t* GetDqsInterChipSpace() const { return dqsInterChipSpace_; }
+
+    void SetAccSubInfo(const stars_queue_subscribe_acc_param_t& param) { accSubInfo_ = param; }
 
 private:
     rtError_t CreateDqsCtrlSpace(void);
@@ -70,28 +49,22 @@ private:
     void DestroyDqsCtrlSpace(void);
     void DestroyDqsInterChipSpace(void);
     rtError_t DestroyAccSubInfo(void);
-    rtError_t SetStreamCtrlSpaceInfo(const rtDqsSchedCfg_t * const dqsSchedCfg);
-    rtError_t SetCtrlSpaceInputQueInfo(const rtDqsSchedCfg_t * const dqsSchedCfg);
-    rtError_t SetCtrlSpaceOutputQueInfo(const rtDqsSchedCfg_t * const dqsSchedCfg);
+    rtError_t SetStreamCtrlSpaceInfo(const rtDqsSchedCfg_t* const dqsSchedCfg);
+    rtError_t SetCtrlSpaceInputQueInfo(const rtDqsSchedCfg_t* const dqsSchedCfg);
+    rtError_t SetCtrlSpaceOutputQueInfo(const rtDqsSchedCfg_t* const dqsSchedCfg);
     void InitCtrlSpaceMbufHandleInfo(void) const;
 
-    void SetDqsCtrlSpace(stars_dqs_ctrl_space_t *ctrlSpace)
-    {
-        dqsCtrlSpace_ = ctrlSpace;
-    }
+    void SetDqsCtrlSpace(stars_dqs_ctrl_space_t* ctrlSpace) { dqsCtrlSpace_ = ctrlSpace; }
 
-    void SetDqsInterChipSpace(stars_dqs_inter_chip_space_t *interChipSpace)
-    {
-        dqsInterChipSpace_ = interChipSpace;
-    }
+    void SetDqsInterChipSpace(stars_dqs_inter_chip_space_t* interChipSpace) { dqsInterChipSpace_ = interChipSpace; }
 
-    Notify *dqsNotify_ = nullptr;
-    CountNotify *dqsCountNotify_ = nullptr;
-    stars_dqs_ctrl_space_t *dqsCtrlSpace_ = nullptr;
-    stars_dqs_inter_chip_space_t *dqsInterChipSpace_ = nullptr;
+    Notify* dqsNotify_ = nullptr;
+    CountNotify* dqsCountNotify_ = nullptr;
+    stars_dqs_ctrl_space_t* dqsCtrlSpace_ = nullptr;
+    stars_dqs_inter_chip_space_t* dqsInterChipSpace_ = nullptr;
     stars_queue_subscribe_acc_param_t accSubInfo_ = {};
 };
 
-} // runtime
-} // cce
+} // namespace runtime
+} // namespace cce
 #endif // __CCE_RUNTIME_STREAM_WITH_DQS_HPP__

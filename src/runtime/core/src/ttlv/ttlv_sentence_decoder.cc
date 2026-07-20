@@ -30,26 +30,28 @@ static std::map<const uint16_t, std::vector<std::string>> g_tsCodeToFormatInfo =
     {TAG_TS_ERR_MSG_PID, {"TGID", "", "="}},
 };
 
-void TTLVSentenceDecoder::PrintErrMsg(std::string &outStr, const std::string &space)
+void TTLVSentenceDecoder::PrintErrMsg(std::string& outStr, const std::string& space)
 {
     int32_t errMsgDepth = 0;
-    for (auto &errMsgDecoder : decoderErrMsg_) {
+    for (auto& errMsgDecoder : decoderErrMsg_) {
         char_t outputString[RT_MAX_STRING_LEN] = {};
         int32_t copyCnt = 0;
         // print string
-        int32_t cnt = sprintf_s(outputString, RT_MAX_STRING_LEN, "%sMessage info[%d]:%s",
-            space.c_str(), errMsgDepth, errMsgDecoder.GetErrMsgSting().c_str());
+        int32_t cnt = sprintf_s(
+            outputString, RT_MAX_STRING_LEN, "%sMessage info[%d]:%s", space.c_str(), errMsgDepth,
+            errMsgDecoder.GetErrMsgSting().c_str());
         if (unlikely(cnt < 0)) {
             RT_LOG(RT_LOG_WARNING, "PrintErrMsg failed, sprintf_s ret=%d", cnt);
             return;
         }
         copyCnt += cnt;
         // print error message other info
-        auto &currentTime = errMsgDecoder.GetCurTime();
-        cnt = sprintf_s(outputString + copyCnt, RT_MAX_STRING_LEN - static_cast<uint32_t>(copyCnt),
-                        "\n %s Other info[%d]:time=%s, function=%s, line=%hu, error code=%#hx",
-                        space.c_str(), errMsgDepth, currentTime.c_str(), errMsgDecoder.GetFuncCode().c_str(),
-                        errMsgDecoder.GetLine(), errMsgDecoder.GetRetErrCode());
+        auto& currentTime = errMsgDecoder.GetCurTime();
+        cnt = sprintf_s(
+            outputString + copyCnt, RT_MAX_STRING_LEN - static_cast<uint32_t>(copyCnt),
+            "\n %s Other info[%d]:time=%s, function=%s, line=%hu, error code=%#hx", space.c_str(), errMsgDepth,
+            currentTime.c_str(), errMsgDecoder.GetFuncCode().c_str(), errMsgDecoder.GetLine(),
+            errMsgDecoder.GetRetErrCode());
         if (unlikely(cnt < 0)) {
             RT_LOG(RT_LOG_WARNING, "PrintErrMsg failed, sprintf_s ret=%d", cnt);
             return;
@@ -66,7 +68,7 @@ void TTLVSentenceDecoder::PrintErrMsg(std::string &outStr, const std::string &sp
 //     Exception info:task_id=512,task_type=aicpu_kernel,stream_id=1, task_phase:TASK_PHASE_WAIT....
 //     Message info[0]: Repeat bind model, maintaince model_id=1.       ----TTLVSentenceDecoder::decoderErrMsg_
 //     Other info[0]: exception_function_code=6,line=536,return code=0x8F,timestamp=20210802160059.135.
-void TTLVSentenceDecoder::PrintOut(std::string &outStr)
+void TTLVSentenceDecoder::PrintOut(std::string& outStr)
 {
     std::string space = " ";
     std::string prefix;
@@ -85,7 +87,7 @@ void TTLVSentenceDecoder::PrintOut(std::string &outStr)
     space += " ";
     lineStr += space + "Exception info:";
     bool firstWord = true;
-    for (auto &word : decoderWord_) {
+    for (auto& word : decoderWord_) {
         if (firstWord) {
             firstWord = false;
         } else {
@@ -98,5 +100,5 @@ void TTLVSentenceDecoder::PrintOut(std::string &outStr)
     PrintErrMsg(outStr, space);
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

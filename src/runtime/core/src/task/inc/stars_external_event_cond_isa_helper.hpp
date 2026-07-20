@@ -17,11 +17,10 @@
 namespace cce {
 namespace runtime {
 
-void ConstructDynamicSqHeadGotoR(const uint64_t sqIdMemAddr, const uint32_t sqHead, const uint8_t endOffset,
-    RtStarsDynamicSqHeadGotoR &gotoBlock);
+void ConstructDynamicSqHeadGotoR(
+    const uint64_t sqIdMemAddr, const uint32_t sqHead, const uint8_t endOffset, RtStarsDynamicSqHeadGotoR& gotoBlock);
 
-void ConstructExternalWaitFuncCall(
-    RtStarsExternalWaitFuncCall &fc, const RtStarsExternalWaitFuncCallPara &fcPara);
+void ConstructExternalWaitFuncCall(RtStarsExternalWaitFuncCall& fc, const RtStarsExternalWaitFuncCallPara& fcPara);
 
 } // namespace runtime
 } // namespace cce

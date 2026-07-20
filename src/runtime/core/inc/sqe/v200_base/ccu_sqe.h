@@ -16,7 +16,7 @@
 namespace cce {
 namespace runtime {
 #pragma pack(push)
-#pragma pack (1)
+#pragma pack(1)
 
 union CcuResv {
     // for fusion kernel sub task
@@ -89,6 +89,6 @@ struct RtDavidStarsCcuSqe32B {
 };
 
 #pragma pack(pop)
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

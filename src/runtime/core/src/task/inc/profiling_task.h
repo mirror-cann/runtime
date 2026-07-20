@@ -15,23 +15,23 @@
 namespace cce {
 namespace runtime {
 
-rtError_t DynamicProfilingEnableTaskInit(TaskInfo * const taskInfo, const uint64_t processId,
-    const rtProfCfg_t *const profCfg);
-rtError_t DynamicProfilingDisableTaskInit(TaskInfo * const taskInfo, const uint64_t processId,
-    const rtProfCfg_t *const profCfg);
-rtError_t ProfilingEnableTaskInit(TaskInfo * const taskInfo, const uint64_t processId,
-    const rtProfCfg_t *const profCfg);
-rtError_t ProfilingDisableTaskInit(TaskInfo * const taskInfo, const uint64_t processId,
-    const rtProfCfg_t *const profCfg);
-rtError_t OnlineProfEnableTaskInit(TaskInfo * const taskInfo, const uint64_t onlineProfilingAddr);
-rtError_t OnlineProfDisableTaskInit(TaskInfo * const taskInfo, const uint64_t onlineProfilingAddr);
-rtError_t AdcProfTaskInit(TaskInfo * const taskInfo, const uint64_t address, const uint32_t len);
+rtError_t DynamicProfilingEnableTaskInit(
+    TaskInfo* const taskInfo, const uint64_t processId, const rtProfCfg_t* const profCfg);
+rtError_t DynamicProfilingDisableTaskInit(
+    TaskInfo* const taskInfo, const uint64_t processId, const rtProfCfg_t* const profCfg);
+rtError_t ProfilingEnableTaskInit(TaskInfo* const taskInfo, const uint64_t processId, const rtProfCfg_t* const profCfg);
+rtError_t ProfilingDisableTaskInit(
+    TaskInfo* const taskInfo, const uint64_t processId, const rtProfCfg_t* const profCfg);
+rtError_t OnlineProfEnableTaskInit(TaskInfo* const taskInfo, const uint64_t onlineProfilingAddr);
+rtError_t OnlineProfDisableTaskInit(TaskInfo* const taskInfo, const uint64_t onlineProfilingAddr);
+rtError_t AdcProfTaskInit(TaskInfo* const taskInfo, const uint64_t address, const uint32_t len);
 rtError_t ProfilerTraceTaskInit(TaskInfo* taskInfo, const uint64_t id, const bool notifyFlag, const uint32_t flags);
 rtError_t ProfilerTraceExTaskInit(TaskInfo* taskInfo, const uint64_t id, const uint64_t mdlId, const uint16_t tag);
 
-rtError_t PCTraceTaskInit(TaskInfo * const taskInfo, const uint16_t enableTaskIndex,
-                          const uint16_t coreDims, std::shared_ptr<PCTrace> pcTracePtr);
-void ToCommandBodyForPCTraceTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_PROFILING_TASK_H
+rtError_t PCTraceTaskInit(
+    TaskInfo* const taskInfo, const uint16_t enableTaskIndex, const uint16_t coreDims,
+    std::shared_ptr<PCTrace> pcTracePtr);
+void ToCommandBodyForPCTraceTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_PROFILING_TASK_H

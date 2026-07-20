@@ -17,12 +17,10 @@
 
 namespace cce {
 namespace runtime {
-TaskAllocator::TaskAllocator(const uint32_t itemSize, const uint32_t initCount, const uint32_t maxCount,
-    const BufferAllocator::Strategy stg)
-    : NoCopy(), allocator_(itemSize, initCount, maxCount, stg),
-      usedCntSink_(0U), usedCntUnSink_(0U)
-{
-}
+TaskAllocator::TaskAllocator(
+    const uint32_t itemSize, const uint32_t initCount, const uint32_t maxCount, const BufferAllocator::Strategy stg)
+    : NoCopy(), allocator_(itemSize, initCount, maxCount, stg), usedCntSink_(0U), usedCntUnSink_(0U)
+{}
 
 TaskAllocator::~TaskAllocator()
 {
@@ -36,10 +34,10 @@ TaskAllocator::~TaskAllocator()
     }
 }
 
-void TaskAllocator::GetAllocId(int32_t &retId, TaskIdManager * const idManager)
+void TaskAllocator::GetAllocId(int32_t& retId, TaskIdManager* const idManager)
 {
     std::lock_guard<std::mutex> taskIdManagerLock(idManager->taskIdManagerLock);
-    int32_t &lastId = idManager->lastId;
+    int32_t& lastId = idManager->lastId;
     for (uint32_t i = 0U; i < MAX_UINT16_NUM; i++) {
         lastId++;
         if (lastId >= static_cast<int32_t>(MAX_UINT16_NUM)) {
@@ -60,16 +58,18 @@ void TaskAllocator::GetAllocId(int32_t &retId, TaskIdManager * const idManager)
     }
 }
 
-void TaskAllocator::FreeById(const Stream * const stm, const int32_t taskId, bool isSinkFlag)
+void TaskAllocator::FreeById(const Stream* const stm, const int32_t taskId, bool isSinkFlag)
 {
-    COND_RETURN_VOID(((taskId >= static_cast<int32_t>(MAX_UINT16_NUM)) || (taskId < 0)),
+    COND_RETURN_VOID(
+        ((taskId >= static_cast<int32_t>(MAX_UINT16_NUM)) || (taskId < 0)),
         "Invalid task_id, current taskId is %d valid task range is [%u, %u)", taskId, 0, MAX_UINT16_NUM);
     COND_RETURN_VOID(stm == nullptr, "input parameter is invalid, stream is null");
 
     const int32_t streamId = stm->Id_();
-    TaskIdManager *idManager = nullptr;
+    TaskIdManager* idManager = nullptr;
 
-    COND_RETURN_VOID(static_cast<uint32_t>(streamId) >= RT_MAX_STREAM_ID,
+    COND_RETURN_VOID(
+        static_cast<uint32_t>(streamId) >= RT_MAX_STREAM_ID,
         "Get item by id failed, stream id is invalid, stream_id=%d", streamId);
 
     std::unique_lock<std::mutex> vecIdLock(vecIdManagerLock_);
@@ -94,7 +94,7 @@ void TaskAllocator::FreeById(const Stream * const stm, const int32_t taskId, boo
     idManager->mapTaskIds[taskId] = RT_INVALID_ID;
     idLock.unlock();
 
-    uint32_t * const usedCnt = (isSinkFlag ? &usedCntSink_ : &usedCntUnSink_);
+    uint32_t* const usedCnt = (isSinkFlag ? &usedCntSink_ : &usedCntUnSink_);
     std::unique_lock<std::mutex> taskLock(taskAllocLock_);
     if (*usedCnt > 0U) {
         *usedCnt = *usedCnt - 1U;
@@ -105,16 +105,19 @@ void TaskAllocator::FreeById(const Stream * const stm, const int32_t taskId, boo
     return;
 }
 
-int32_t TaskAllocator::AllocId(const Stream * const stm, rtError_t &errCode)
+int32_t TaskAllocator::AllocId(const Stream* const stm, rtError_t& errCode)
 {
     int32_t retId = RT_INVALID_ID;
     // Allocating taskId in the same stream cannot be operated in mutiple threads at the same time.
     const int32_t streamId = stm->Id_();
-    TaskIdManager *idManager = nullptr;
+    TaskIdManager* idManager = nullptr;
 
     if (static_cast<uint32_t>(streamId) >= RT_MAX_STREAM_ID) {
-        RT_LOG(RT_LOG_ERROR, "Invalid streamId in AllocTaskInfo. streamId=%d. "
-            "This should not happen as Stream ensures valid ID.", streamId);
+        RT_LOG(
+            RT_LOG_ERROR,
+            "Invalid streamId in AllocTaskInfo. streamId=%d. "
+            "This should not happen as Stream ensures valid ID.",
+            streamId);
         errCode = RT_ERROR_STREAM_INVALID;
         return RT_INVALID_ID;
     }
@@ -132,7 +135,7 @@ int32_t TaskAllocator::AllocId(const Stream * const stm, rtError_t &errCode)
     }
     vecIdLock.unlock();
 
-    uint32_t *usedCnt = nullptr;
+    uint32_t* usedCnt = nullptr;
     uint32_t maxCnt;
     if (stm->IsTaskSink()) {
         usedCnt = &usedCntSink_;
@@ -145,9 +148,10 @@ int32_t TaskAllocator::AllocId(const Stream * const stm, rtError_t &errCode)
     std::unique_lock<std::mutex> taskLock(taskAllocLock_);
     if (*usedCnt >= maxCnt) {
         taskLock.unlock();
-        RT_LOG(RT_LOG_WARNING,
-            "Alloc failed invalid usedCnt=%u, valid cnt range is [%u, %u),usedCntSink_=%u, usedCntUnSink_=%u",
-            *usedCnt, 0, maxCnt, usedCntSink_, usedCntUnSink_);
+        RT_LOG(
+            RT_LOG_WARNING,
+            "Alloc failed invalid usedCnt=%u, valid cnt range is [%u, %u),usedCntSink_=%u, usedCntUnSink_=%u", *usedCnt,
+            0, maxCnt, usedCntSink_, usedCntUnSink_);
         errCode = RT_ERROR_TASK_OUT_OF_RANGE;
         return retId;
     }
@@ -158,8 +162,9 @@ int32_t TaskAllocator::AllocId(const Stream * const stm, rtError_t &errCode)
     if (retId < 0) {
         taskLock.lock();
         *usedCnt = *usedCnt - 1U;
-        RT_LOG(RT_LOG_WARNING, "alloc task fail, retId=%d, maxCnt=%u, usedCnt=%u, streamId=%d",
-            retId, maxCnt, *usedCnt, streamId);
+        RT_LOG(
+            RT_LOG_WARNING, "alloc task fail, retId=%d, maxCnt=%u, usedCnt=%u, streamId=%d", retId, maxCnt, *usedCnt,
+            streamId);
         errCode = RT_ERROR_TASK_ID_ALLOCATION;
         taskLock.unlock();
     }
@@ -167,36 +172,39 @@ int32_t TaskAllocator::AllocId(const Stream * const stm, rtError_t &errCode)
     return retId;
 }
 
-void *TaskAllocator::GetItemById(const int32_t streamId, const int32_t taskId, rtError_t &errCode)
+void* TaskAllocator::GetItemById(const int32_t streamId, const int32_t taskId, rtError_t& errCode)
 {
     COND_PROC_RETURN_ERROR_MSG_INNER(
-        ((taskId >= static_cast<int32_t>(MAX_UINT16_NUM)) || (taskId < 0)),
-        nullptr, errCode = RT_ERROR_TASK_ID_INVALID ,
+        ((taskId >= static_cast<int32_t>(MAX_UINT16_NUM)) || (taskId < 0)), nullptr, errCode = RT_ERROR_TASK_ID_INVALID,
         "Get item by id failed, invalid task_id, current taskId is %d"
-        "valid task range is [%u, %u)", taskId, 0U, MAX_UINT16_NUM);
+        "valid task range is [%u, %u)",
+        taskId, 0U, MAX_UINT16_NUM);
     COND_PROC_RETURN_ERROR_MSG_INNER(
-        (static_cast<uint32_t>(streamId) >= RT_MAX_STREAM_ID),
-        nullptr, errCode = RT_ERROR_STREAM_INVALID,
+        (static_cast<uint32_t>(streamId) >= RT_MAX_STREAM_ID), nullptr, errCode = RT_ERROR_STREAM_INVALID,
         "Get item by id failed, stream id is invalid, stream_id=%d", streamId);
 
     std::unique_lock<std::mutex> vecIdLock(vecIdManagerLock_);
     const auto iter = vecIdManager_[static_cast<uint32_t>(streamId)];
     if (iter != nullptr) {
         const int32_t bufferId = iter->mapTaskIds[taskId];
-        COND_PROC_RETURN_WARN(bufferId < 0, nullptr, errCode = RT_ERROR_TASK_ID_ALLOCATION,
-            "stream_id=%d, task_id=%d, buffer_id=%d", streamId, taskId, bufferId);
+        COND_PROC_RETURN_WARN(
+            bufferId < 0, nullptr, errCode = RT_ERROR_TASK_ID_ALLOCATION, "stream_id=%d, task_id=%d, buffer_id=%d",
+            streamId, taskId, bufferId);
         return allocator_.GetItemById(bufferId);
     } else {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Get task failed, the stream_id %d is invalid,"
-                                       "current stream_id is not in tasklist", streamId);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR,
+            "Get task failed, the stream_id %d is invalid,"
+            "current stream_id is not in tasklist",
+            streamId);
         errCode = RT_ERROR_STREAM_INVALID;
         return nullptr;
     }
 }
 
-TaskIdManager *TaskAllocator::TaskIdManagerAlloc(const int32_t streamId)
+TaskIdManager* TaskAllocator::TaskIdManagerAlloc(const int32_t streamId)
 {
-    TaskIdManager * const idManager = new (std::nothrow) TaskIdManager;
+    TaskIdManager* const idManager = new (std::nothrow) TaskIdManager;
     if (idManager == nullptr) {
         return nullptr;
     }
@@ -218,30 +226,29 @@ void TaskAllocator::FreeStreamRes(const int32_t streamId)
     if (streamId == -1) {
         return;
     }
-    COND_RETURN_VOID(static_cast<uint32_t>(streamId) >= RT_MAX_STREAM_ID,
-        "stream id is invalid, stream_id=%d", streamId);
+    COND_RETURN_VOID(
+        static_cast<uint32_t>(streamId) >= RT_MAX_STREAM_ID, "stream id is invalid, stream_id=%d", streamId);
     std::unique_lock<std::mutex> vecIdLock(vecIdManagerLock_);
-    DELETE_O(vecIdManager_[static_cast<uint32_t>(streamId)]); 
+    DELETE_O(vecIdManager_[static_cast<uint32_t>(streamId)]);
 }
 
 void TaskAllocator::ClearSerialId(const int32_t streamId)
 {
     std::unique_lock<std::mutex> serialLock(serialManagerLock_);
-    SerialTaskId &serialTask = serialManager_[streamId];
+    SerialTaskId& serialTask = serialManager_[streamId];
     serialTask.lastId = 0U;
     (void)serialTask.serialIds.clear();
 }
 
-void TaskAllocator::SetSerialId(const int32_t streamId, TaskInfo * const taskPtr)
+void TaskAllocator::SetSerialId(const int32_t streamId, TaskInfo* const taskPtr)
 {
     COND_RETURN_VOID(taskPtr == nullptr, "null task");
 
     std::lock_guard<std::mutex> serialLock(serialManagerLock_);
-    SerialTaskId &serialTask = serialManager_[streamId];
-    uint16_t serialId = serialTask.lastId++;    // auto overflow.
+    SerialTaskId& serialTask = serialManager_[streamId];
+    uint16_t serialId = serialTask.lastId++; // auto overflow.
     if (taskPtr->stream != nullptr) {
-        if ((taskPtr->stream->Device_() != nullptr)
-            && (serialId >= MAX_UINT16_NUM)) {
+        if ((taskPtr->stream->Device_() != nullptr) && (serialId >= MAX_UINT16_NUM)) {
             serialId = serialTask.lastId++;
         }
     }
@@ -250,8 +257,9 @@ void TaskAllocator::SetSerialId(const int32_t streamId, TaskInfo * const taskPtr
     taskPtr->id = serialId;
     taskPtr->serial = true;
     UpdateFlipNum(taskPtr, true);
-    RT_LOG(RT_LOG_DEBUG, "stream_id=%d, change task_id=%hu(old) to serial_id=%hu(new)",
-        streamId, serialTask.serialIds[serialId], serialId);
+    RT_LOG(
+        RT_LOG_DEBUG, "stream_id=%d, change task_id=%hu(old) to serial_id=%hu(new)", streamId,
+        serialTask.serialIds[serialId], serialId);
 }
 
 void TaskAllocator::DelSerialId(const int32_t streamId, const uint16_t serial)
@@ -262,7 +270,7 @@ void TaskAllocator::DelSerialId(const int32_t streamId, const uint16_t serial)
         return;
     }
 
-    SerialTaskId &idManager = it1->second;
+    SerialTaskId& idManager = it1->second;
     (void)idManager.serialIds.erase(serial);
 }
 
@@ -276,7 +284,7 @@ int32_t TaskAllocator::GetTaskId(const int32_t streamId, const uint16_t serial)
         return retId;
     }
 
-    SerialTaskId &idManager = it1->second;
+    SerialTaskId& idManager = it1->second;
     const auto it2 = idManager.serialIds.find(serial);
     if (it2 != idManager.serialIds.end()) {
         retId = static_cast<int32_t>(it2->second);
@@ -286,7 +294,7 @@ int32_t TaskAllocator::GetTaskId(const int32_t streamId, const uint16_t serial)
     return retId;
 }
 
-void *TaskAllocator::GetItemBySerial(const int32_t streamId, const int32_t serial)
+void* TaskAllocator::GetItemBySerial(const int32_t streamId, const int32_t serial)
 {
     std::unique_lock<std::mutex> serialLock(serialManagerLock_);
     const auto it1 = serialManager_.find(streamId);
@@ -296,7 +304,7 @@ void *TaskAllocator::GetItemBySerial(const int32_t streamId, const int32_t seria
         return nullptr;
     }
 
-    SerialTaskId &idManager = it1->second;
+    SerialTaskId& idManager = it1->second;
     const auto it2 = idManager.serialIds.find(static_cast<uint16_t>(serial));
     if (it2 == idManager.serialIds.end()) {
         serialLock.unlock();
@@ -310,5 +318,5 @@ void *TaskAllocator::GetItemBySerial(const int32_t streamId, const int32_t seria
     return GetItemById(streamId, static_cast<int32_t>(it2->second), errCode);
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -18,23 +18,24 @@ namespace runtime {
 class Device;
 class Context;
 
-class XpuContext : public Context  {
+class XpuContext : public Context {
 public:
-
-    XpuContext(Device * const ctxDevice, const bool primaryCtx);
+    XpuContext(Device* const ctxDevice, const bool primaryCtx);
     ~XpuContext() override;
 
-    rtError_t StreamCreate(const uint32_t prio, const uint32_t flag, Stream ** const result, DvppGrp *grp = nullptr, const bool isSoftWareSqEnable = false, const bool isAutoSplitEnable = false) override;
+    rtError_t StreamCreate(
+        const uint32_t prio, const uint32_t flag, Stream** const result, DvppGrp* grp = nullptr,
+        const bool isSoftWareSqEnable = false, const bool isAutoSplitEnable = false) override;
 
     // init context
     rtError_t Setup() override;
 
     // destroy this context
     rtError_t TearDown() override;
-    rtError_t TearDownStream(Stream *stm, bool flag = true) const override;
-    rtError_t CheckStatus(const Stream * const stm = nullptr, const bool isBlockDefault = true) override;
+    rtError_t TearDownStream(Stream* stm, bool flag = true) const override;
+    rtError_t CheckStatus(const Stream* const stm = nullptr, const bool isBlockDefault = true) override;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_XPU_CONTEXT_HPP
+#endif // CCE_RUNTIME_XPU_CONTEXT_HPP

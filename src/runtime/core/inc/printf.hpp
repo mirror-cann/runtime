@@ -26,7 +26,7 @@ struct BlockInfo {
     uint32_t coreId = 0;      // 当前core id
     uint32_t blockNum = 0;    // 本次总共的核数
     uint32_t remainLen = 0;   // 可打印的总长度
-    uint16_t magic = 0xAE86U;  // 信息校验数 // 0xAE86
+    uint16_t magic = 0xAE86U; // 信息校验数 // 0xAE86
     uint16_t flag = 0;        // flag value, 0:simd-aic, 1:simd-aiv, 2:simt
     uint32_t rsv = 0;         // DUMP EXC FLAG
     uint64_t dumpAddr = 0;    // 起始printf的地址
@@ -34,7 +34,7 @@ struct BlockInfo {
     uint32_t resv[4] = {0U};
 };
 
-enum class DumpType : uint32_t  {
+enum class DumpType : uint32_t {
     DUMP_DEFAULT = 0,
     DUMP_SCALAR,
     DUMP_TENSOR,
@@ -53,65 +53,65 @@ enum class DumpType : uint32_t  {
 
 #pragma pack(push, 1)
 struct DumpInfoHead {
-    DumpType type = DumpType::DUMP_DEFAULT;      // dump type, DUMP_SCALAR:1, DUMP_TENSOR:2
-    uint32_t infoLen = 0U;   // length for dump info
-    uint8_t  infoMsg[0U];    // extend value
+    DumpType type = DumpType::DUMP_DEFAULT; // dump type, DUMP_SCALAR:1, DUMP_TENSOR:2
+    uint32_t infoLen = 0U;                  // length for dump info
+    uint8_t infoMsg[0U];                    // extend value
 };
 #pragma pack(pop)
- 
+
 struct BlockWriteInfo {
     DumpType dumpType = DumpType::DUMP_BUFI;
     uint32_t length = 16; // writeIdx 和 packIdx 的大小相加
     uint64_t writeIdx = 0;
     uint64_t packIdx = 0;
 };
- 
+
 struct BlockReadInfo {
     DumpType dumpType = DumpType::DUMP_BUFO;
-    uint32_t length = 16;  // readIdx 和 resv 的大小相加
+    uint32_t length = 16; // readIdx 和 resv 的大小相加
     uint64_t readIdx = 0;
     uint64_t resv = 0;
 };
 
 struct DumpTimeStampInfoMsg {
-    uint32_t descId;   // dot Id for description
+    uint32_t descId; // dot Id for description
     uint16_t blockIdx;
     uint16_t rsv;
-    uint64_t syscyc;   // dotting timestamp with system cycle
+    uint64_t syscyc;  // dotting timestamp with system cycle
     uint64_t curPc;   // currrent pc for source line
-    uint64_t entry; // Entry system cycle
-    uint32_t resv[2];   // reserved
+    uint64_t entry;   // Entry system cycle
+    uint32_t resv[2]; // reserved
 };
 
 constexpr uint32_t RT_DUMP_SHAPE_MAX_SIZE = 8U;
 struct DumpTensorInfo {
     uint32_t addr = 0U;
-    uint32_t dataType = 0U; // 数据类型
-    uint32_t desc;          // 用户标识
+    uint32_t dataType = 0U;                        // 数据类型
+    uint32_t desc;                                 // 用户标识
     uint32_t bufferId;
-    uint16_t position;        // position GM, UB, L1, L0C
-    uint16_t blockIdx = 0U;      // block idx
-    uint32_t dim = 0U;        // dim值
+    uint16_t position;                             // position GM, UB, L1, L0C
+    uint16_t blockIdx = 0U;                        // block idx
+    uint32_t dim = 0U;                             // dim值
     uint32_t shape[RT_DUMP_SHAPE_MAX_SIZE] = {0U}; // shape 各维度值 < 8
-    uint32_t resv = 0U;       // 保留字
-    uint32_t dumpSize;        // dump实际的大小，不包含对齐长度
+    uint32_t resv = 0U;                            // 保留字
+    uint32_t dumpSize;                             // dump实际的大小，不包含对齐长度
 };
 
 struct DumpShapeInfo {
-    uint32_t dim = 0U;            // shapeInfo.dim, 即：fmt的offset
-    uint32_t shape[RT_DUMP_SHAPE_MAX_SIZE] = {0U};     
-    uint32_t resv;                
+    uint32_t dim = 0U; // shapeInfo.dim, 即：fmt的offset
+    uint32_t shape[RT_DUMP_SHAPE_MAX_SIZE] = {0U};
+    uint32_t resv;
 };
 
 constexpr uint32_t RT_KERNEL_DFX_INFO_CORE_TYPE_AIC = 0U;
 constexpr uint32_t RT_KERNEL_DFX_INFO_CORE_TYPE_AIV = 1U;
 constexpr uint32_t RT_KERNEL_DFX_INFO_CORE_TYPE_SIMT = 2U;
 
-rtError_t InitPrintf(void *addr, const size_t blockSize, const Device * const dev);
-rtError_t InitSimtPrintf(void *addr, const size_t blockSize, Driver *curDrv);
-rtError_t ParsePrintf(void *addr, const size_t blockSize, Driver *curDrv);
-rtError_t ParseSimtPrintf(void *addr, const size_t blockSize, Driver *curDrv, const Device * const dev);
-} // runtime
-} // cce
- 
+rtError_t InitPrintf(void* addr, const size_t blockSize, const Device* const dev);
+rtError_t InitSimtPrintf(void* addr, const size_t blockSize, Driver* curDrv);
+rtError_t ParsePrintf(void* addr, const size_t blockSize, Driver* curDrv);
+rtError_t ParseSimtPrintf(void* addr, const size_t blockSize, Driver* curDrv, const Device* const dev);
+} // namespace runtime
+} // namespace cce
+
 #endif // CCE_RUNTIME_PRINTF_HPP

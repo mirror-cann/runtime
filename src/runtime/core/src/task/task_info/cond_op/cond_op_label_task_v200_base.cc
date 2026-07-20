@@ -19,22 +19,23 @@
 namespace cce {
 namespace runtime {
 
-void ConstructDavidSqeForLabelSetTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForLabelSetTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
-    Stream * const stm = taskInfo->stream;
+    Stream* const stm = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
+    RtDavidPlaceHolderSqe* const phSqe = &(davidSqe->phSqe);
     phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
     phSqe->taskType = TS_TASK_TYPE_LABEL_SET;
     phSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
-    Model *mdl = stm->Model_();
+    Model* mdl = stm->Model_();
     if (mdl != nullptr) {
         mdl->LabelCountInc();
     }
     PrintDavidSqe(davidSqe, "LabelSet");
-    RT_LOG(RT_LOG_INFO, "LabelSetTask, deviceId=%u, streamId=%d taskId=%hu", stm->Device_()->Id_(), stm->Id_(),
+    RT_LOG(
+        RT_LOG_INFO, "LabelSetTask, deviceId=%u, streamId=%d taskId=%hu", stm->Device_()->Id_(), stm->Id_(),
         taskInfo->id);
 }
 
@@ -86,5 +87,5 @@ static bool CondOpLabelTaskRegister()
 
 static bool g_condOpLabelTaskRegister = CondOpLabelTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

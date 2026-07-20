@@ -14,11 +14,11 @@
 
 namespace cce {
 namespace runtime {
-void Construct2ndSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t *sqe)
+void Construct2ndSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t* sqe)
 {
     UNUSED(taskInfo);
     UNUSED(sqe);
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

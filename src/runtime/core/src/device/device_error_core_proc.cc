@@ -52,8 +52,7 @@ const std::map<uint32_t, std::string> g_aicOrSdmaOrHcclLocalMulBitEccEventIdBlkL
     {0x81B58002U, "UB Dispatch Input Error."},
     {0x81B58004U, "UB Dispatch Config Error."},
     {0x81AF8008U, "UB multiple bit ecc error."},
-    {0x81B18008U, "UB PORT multiple bit ecc error."}
-};
+    {0x81B18008U, "UB PORT multiple bit ecc error."}};
 
 const std::map<uint32_t, std::string> g_hcclRemoteMulBitEccEventIdBlkList = {
     {0x80CD8008U, "L2BUFF multi bit Err."},
@@ -75,8 +74,7 @@ const std::map<uint32_t, std::string> g_hcclRemoteMulBitEccEventIdBlkList = {
     {0x81AF8004U, "UB software configuration error."},
     {0x81AF8008U, "UB Multi Bit Ecc."},
     {0x81B18008U, "UB_PORT Multi Bit Ecc."},
-    {0x81B1800DU, "UB_PORT link error."}
-};
+    {0x81B1800DU, "UB_PORT link error."}};
 
 const std::vector<EventRasFilter> g_ubNonMemPoisonRasList = {
     {0x81AF8009U, 0x03U, 0x02U, 0x10000000U, "poison."},
@@ -87,86 +85,54 @@ const std::vector<EventRasFilter> g_ubNonMemPoisonRasList = {
     {0x81AF8009U, 0x03U, 0x03U, 0x01000000U, "UB IO traffic store operation poison."},
     {0x81AF8009U, 0x03U, 0x03U, 0x00020000U, "UB: RX DMA 2-bit ECC error in IO read returns poison."},
     {0x81AF8009U, 0x03U, 0x03U, 0x00008000U, "Read/atomic request address hitting DWQE space returns poison."},
-    {0x81AF8009U, 0x03U, 0x03U, 0x00002000U, "Atomic write data poisoning / Atomic lookup table exception / Atomic timeout exception / Atomic packet header assembly exception returns poison."},
-    {0x81AF8009U, 0x03U, 0x03U, 0x00000800U, "Read timeout exception / Read lookup table exception / Read packet header assembly exception returns poison."},
-    {0x81AF8009U, 0x03U, 0x03U, 0x00000200U, "CCUA read operation returns poison."}
-};
+    {0x81AF8009U, 0x03U, 0x03U, 0x00002000U,
+     "Atomic write data poisoning / Atomic lookup table exception / Atomic timeout exception / Atomic packet header "
+     "assembly exception returns poison."},
+    {0x81AF8009U, 0x03U, 0x03U, 0x00000800U,
+     "Read timeout exception / Read lookup table exception / Read packet header assembly exception returns poison."},
+    {0x81AF8009U, 0x03U, 0x03U, 0x00000200U, "CCUA read operation returns poison."}};
 
 const std::vector<EventRasFilter> g_ubMemPoisonRasList = {
     {0x81AF8009U, 0x03, 0x03, 0x80000000, "UB MEM Atomic data Poison."},
     {0x81AF8009U, 0x03, 0x03, 0x08000000, "UB MEM traffic poison."},
-    {0x81AF8009U, 0x03, 0x03, 0x00800000, "UB MEM read operation returned poison due to abnormal traffic."}
-};
+    {0x81AF8009U, 0x03, 0x03, 0x00800000, "UB MEM read operation returned poison due to abnormal traffic."}};
 
-const std::vector<EventRasFilter> g_ubMemPoisonRasOnlyPosisonList = {
-    {0x81AF8009U, 0x03, 0x02, 0x10000000, "poison."}
-};
+const std::vector<EventRasFilter> g_ubMemPoisonRasOnlyPosisonList = {{0x81AF8009U, 0x03, 0x02, 0x10000000, "poison."}};
 
 const std::map<uint32_t, std::string> g_mulBitEccEventId = {
-    {0x80CD8008U, "L2BUFF multi bit Err."},
-    {0x80F2180DU, "HBMA/MATA Os Err."},
-    {0x80F38008U, "HBMA Multi Bit Ecc."},
-    {0x81338002U, "TS Dispatch Input Err"},
-    {0x81338004U, "TS Dispatch Config Err."},
-    {0x81338008U, "TS Dispatch Multi Bit Ecc."},
-    {0x813B8002U, "AIC Dispatch Input Error"},
-    {0x813B8004U, "AIC Dispatch Config Error."},
-    {0x813B8008U, "AIC Dispatch Multi Bit Ecc."},
-    {0x81478002U, "DVPP Dispatch Input Error"},
-    {0x81478004U, "DVPP Dispatch Config Error"},
-    {0x81478008U, "DVPP Dispatch Multi Bit Ecc."},
-    {0x815F8002U, "PERI Dispatch Input Error."},
-    {0x815F8004U, "PERI Dispatch Config Error"},
-    {0x815F8008U, "PERI Dispatch Multi Bit Ecc."},
-    {0x81938002U, "DSA Dispatch Input Error."},
-    {0x81938004U, "DSA Dispatch Config Error."},
-    {0x81938008U, "DSA Dispatch Multi Bit Ecc."},
-    {0x81958002U, "NIC Dispatch Input Error."},
-    {0x81958004U, "NIC Dispatch Config Error."},
-    {0x81958008U, "NIC Dispatch Multi Bit Ecc."},
-    {0x81978002U, "PCIE Dispatch Input Error."},
-    {0x81978004U, "PCIE Dispatch Config Error."},
-    {0x81978008U, "PCIE Dispatch Multi Bit Ecc."}
-};
+    {0x80CD8008U, "L2BUFF multi bit Err."},        {0x80F2180DU, "HBMA/MATA Os Err."},
+    {0x80F38008U, "HBMA Multi Bit Ecc."},          {0x81338002U, "TS Dispatch Input Err"},
+    {0x81338004U, "TS Dispatch Config Err."},      {0x81338008U, "TS Dispatch Multi Bit Ecc."},
+    {0x813B8002U, "AIC Dispatch Input Error"},     {0x813B8004U, "AIC Dispatch Config Error."},
+    {0x813B8008U, "AIC Dispatch Multi Bit Ecc."},  {0x81478002U, "DVPP Dispatch Input Error"},
+    {0x81478004U, "DVPP Dispatch Config Error"},   {0x81478008U, "DVPP Dispatch Multi Bit Ecc."},
+    {0x815F8002U, "PERI Dispatch Input Error."},   {0x815F8004U, "PERI Dispatch Config Error"},
+    {0x815F8008U, "PERI Dispatch Multi Bit Ecc."}, {0x81938002U, "DSA Dispatch Input Error."},
+    {0x81938004U, "DSA Dispatch Config Error."},   {0x81938008U, "DSA Dispatch Multi Bit Ecc."},
+    {0x81958002U, "NIC Dispatch Input Error."},    {0x81958004U, "NIC Dispatch Config Error."},
+    {0x81958008U, "NIC Dispatch Multi Bit Ecc."},  {0x81978002U, "PCIE Dispatch Input Error."},
+    {0x81978004U, "PCIE Dispatch Config Error."},  {0x81978008U, "PCIE Dispatch Multi Bit Ecc."}};
 
 const std::map<uint32_t, std::string> g_mulBitEccEventIdBlkList = {
-    {0x80CD8008U, "L2BUFF multi bit Err."},
-    {0x80F2180DU, "HBMA/MATA Os Err."},
-    {0x80F38008U, "HBMA Multi Bit Ecc."},
-    {0x81338002U, "TS Dispatch Input Err."},
-    {0x81338004U, "TS Dispatch Config Err."},
-    {0x813B8002U, "AIC Dispatch Input Error."},
-    {0x813B8004U, "AIC Dispatch Config Error."},
-    {0x815F8002U, "PERI Dispatch Input Error."},
-    {0x815F8004U, "PERI Dispatch Config Error."},
-    {0x81978002U, "PCIE Dispatch Input Error."},
-    {0x81978004U, "PCIE Dispatch Config Error."},
-    {0x81B58002U, "UB Dispatch Input Error."},
-    {0x81B58004U, "UB Dispatch Config Error."},
-    {0x81AF8008U, "UB Multi Bit Ecc."},
-    {0x81B18008U, "UB_PORT Multi Bit Ecc."}
-};
+    {0x80CD8008U, "L2BUFF multi bit Err."},       {0x80F2180DU, "HBMA/MATA Os Err."},
+    {0x80F38008U, "HBMA Multi Bit Ecc."},         {0x81338002U, "TS Dispatch Input Err."},
+    {0x81338004U, "TS Dispatch Config Err."},     {0x813B8002U, "AIC Dispatch Input Error."},
+    {0x813B8004U, "AIC Dispatch Config Error."},  {0x815F8002U, "PERI Dispatch Input Error."},
+    {0x815F8004U, "PERI Dispatch Config Error."}, {0x81978002U, "PCIE Dispatch Input Error."},
+    {0x81978004U, "PCIE Dispatch Config Error."}, {0x81B58002U, "UB Dispatch Input Error."},
+    {0x81B58004U, "UB Dispatch Config Error."},   {0x81AF8008U, "UB Multi Bit Ecc."},
+    {0x81B18008U, "UB_PORT Multi Bit Ecc."}};
 
 const std::map<uint32_t, std::string> g_l2MulBitEccEventIdBlkList = {
-    {0x80E01801U, "HBM Multi Bit Error."},
-    {0x80F2180DU, "HBMA/MATA Os Error."},
-    {0x80F38008U, "HBMA Multi Bit Ecc."},
-    {0x81338002U, "TS Dispatch Input Error"},
-    {0x81338004U, "TS Dispatch Config Error."},
-    {0x81338008U, "TS Dispatch Multi Bit Ecc."},
-    {0x813B8002U, "AIC Dispatch Input Error"},
-    {0x813B8004U, "AIC Dispatch Config Error."},
-    {0x81478002U, "DVPP Dispatch Input Error"},
-    {0x81478004U, "DVPP Dispatch Config Error"},
-    {0x815F8002U, "PERI Dispatch Input Error."},
-    {0x815F8004U, "PERI Dispatch Config Error"},
-    {0x81978002U, "PCIE Dispatch Input Error."},
-    {0x81978004U, "PCIE Dispatch Config Error."},
-    {0x81B58002U, "UB Dispatch Input Error."},
-    {0x81B58004U, "UB Dispatch Config Error."},
-    {0x813D8005U, "AIC AA Ring Parity Error."},
-    {0x81AF8009U, "UB Posion Error."}
-};
+    {0x80E01801U, "HBM Multi Bit Error."},       {0x80F2180DU, "HBMA/MATA Os Error."},
+    {0x80F38008U, "HBMA Multi Bit Ecc."},        {0x81338002U, "TS Dispatch Input Error"},
+    {0x81338004U, "TS Dispatch Config Error."},  {0x81338008U, "TS Dispatch Multi Bit Ecc."},
+    {0x813B8002U, "AIC Dispatch Input Error"},   {0x813B8004U, "AIC Dispatch Config Error."},
+    {0x81478002U, "DVPP Dispatch Input Error"},  {0x81478004U, "DVPP Dispatch Config Error"},
+    {0x815F8002U, "PERI Dispatch Input Error."}, {0x815F8004U, "PERI Dispatch Config Error"},
+    {0x81978002U, "PCIE Dispatch Input Error."}, {0x81978004U, "PCIE Dispatch Config Error."},
+    {0x81B58002U, "UB Dispatch Input Error."},   {0x81B58004U, "UB Dispatch Config Error."},
+    {0x813D8005U, "AIC AA Ring Parity Error."},  {0x81AF8009U, "UB Posion Error."}};
 
 const std::map<uint32_t, std::string> g_ccuTimeoutEventIdBlkList = {
     {0x81B58002U, "UB Dispatch Input Error."},
@@ -176,16 +142,14 @@ const std::map<uint32_t, std::string> g_ccuTimeoutEventIdBlkList = {
     {0x81AF8008U, "UB Multi Bit Ecc."},
     {0x81AF8009U, "UB Posion Error."},
     {0x81B18008U, "UB_PORT Multi Bit Ecc."},
-    {0x81B1800DU, "UB_PORT Link Error."}
-};  // This blacklist is used for both TA ack timeout and UBMEM timeout.
+    {0x81B1800DU, "UB_PORT Link Error."}}; // This blacklist is used for both TA ack timeout and UBMEM timeout.
 
 const EventRasFilter g_ubMemTrafficTimeoutFilter = {
     .eventId = UB_POISON_ERROR_EVENT_ID,
     .subModuleId = 0x03,
     .errorRegisterIndex = 0x03,
     .bitMask = 0x100000,
-    .description = "UB MEM traffic timeout exception"
-};
+    .description = "UB MEM traffic timeout exception"};
 
 namespace {
 enum RtCoreErrorType : std::uint8_t {
@@ -380,9 +344,9 @@ const std::map<uint64_t, std::string> DeviceErrorProc::errorMapInfo_ = {
     {CCU_DIV0, "Division by zero error."},
     {CCU_ILLEGAL_INSTR, "Illegal instruction, which is usually caused by unaligned UUB addresses."},
     {CCU_LOOP_CNT_ERR, "The loop count of the hardware loop instruction is 0."
-     " Possible cause: The compiler optimization is incorrect or the instruction is overwritten."},
+                       " Possible cause: The compiler optimization is incorrect or the instruction is overwritten."},
     {CCU_LOOP_ERR, "The loopend instruction is executed before executing loop instruction."
-     " Possible cause: The compiler optimization is incorrect or the instruction is overwritten."},
+                   " Possible cause: The compiler optimization is incorrect or the instruction is overwritten."},
     {CCU_NEG_SQRT, "The number of roots is negative. "},
     {CCU_UB_ECC, "A multi-bit ECC error occures when CCU reads/writes UB. See the RAS alarm handling."},
     {CUBE_INVLD_INPUT, "The data of L0a and L0b read back is the INF or NAN data."},
@@ -397,19 +361,20 @@ const std::map<uint64_t, std::string> DeviceErrorProc::errorMapInfo_ = {
     {CUBE_L0C_SELF_RDWR_CFLT, "The address for VEC to read L0C confilicts with that for CUBE to write L0C."},
     {CUBE_L0C_WRAP_AROUND, "The operation address of L0C exceeds the maximum range of L0C."},
     {IFU_BUS_ERR, "The address of instruction is illegal when the AIcore reads instructions from GM."
-     "Possible cause: The application unloads the operator binary in advance or stack corruption occurs."},
+                  "Possible cause: The application unloads the operator binary in advance or stack corruption occurs."},
     {MTE_AIPP_ILLEGAL_PARAM, "The configuration of AIPP is incorrect."},
     {MTE_BAS_RADDR_OBOUND, "The base address of the mte load3d instruction is out of bounds."},
     {MTE_BIU_RDWR_RESP, "MTE accesses an invalid GM address or the cross-device memory access times out."},
     {MTE_CIDX_OVERFLOW, "The C0 index of the mte load3d instruction overflows."},
     {MTE_DECOMP, "The number of load index entries is different from the number of data blocks "
-     "to be decompressed in the latest load decompressed data."},
+                 "to be decompressed in the latest load decompressed data."},
     {MTE_F1WPOS_LARGER_FSIZE, "The 1st filter window position of the mte load3d instruction is greater than "
-     "(Feature map size – Filter size)."},
+                              "(Feature map size – Filter size)."},
     {MTE_FMAP_LESS_KERNEL, "The feature map size of the mte load3d instruction is less than the kernel size."},
     {MTE_FMAPWH_LARGER_L1SIZE,
      "FeatureMapW * FeatureMapH * (CIndex + 1) of the mte load3d instruction is greater than L1 buffer size/32."},
-    {MTE_FPOS_LARGER_FSIZE, "The fetch position in filter of the mte load3d instruction is greater than the filter size."},
+    {MTE_FPOS_LARGER_FSIZE,
+     "The fetch position in filter of the mte load3d instruction is greater than the filter size."},
     {MTE_GDMA_ILLEGAL_BURST_LEN, "The burst length of the mte instruction is incorrect."},
     {MTE_GDMA_ILLEGAL_BURST_NUM, "The burst num of the mte command is incorrect."},
     {MTE_GDMA_READ_OVERFLOW, "The address for the MTE instruction to read on-chip buffer is out of bounds."},
@@ -422,13 +387,16 @@ const std::map<uint64_t, std::string> DeviceErrorProc::errorMapInfo_ = {
     {MTE_L0B_RDWR_CFLT, "L0B read/write conflict in the MTE (same address)."},
     {MTE_L1_ECC, "A multi-bit ECC error occurs when MTE reads/writes L1. See the RAS alarm handling."},
     {MTE_PADDING_CFG, "The error in mte load3d padding configuration."},
-    {MTE_READ_OVERFLOW, "The read address of the mte load2d instruction is greater than the maximum address of the source (L1)."},
-    {MTE_ROB_ECC, "A multi-bit ECC error occurs when MTE reads/writes the internal buffer. See the RAS alarm handling."},
+    {MTE_READ_OVERFLOW,
+     "The read address of the mte load2d instruction is greater than the maximum address of the source (L1)."},
+    {MTE_ROB_ECC,
+     "A multi-bit ECC error occurs when MTE reads/writes the internal buffer. See the RAS alarm handling."},
     {MTE_TLU_ECC, "An error occurred during the ECC check of the MTE TLU."},
     {MTE_UB_ECC, "A multi-bit ECC error occurs when MTE reads/writes UB. See the RAS alarm handling."},
     {MTE_UNZIP, "Decompression exception: length check or parity check or empty FIFO read or full FIFO write."},
     {MTE_WRITE_3D_OVERFLOW, "The write address of the mte load3d instruction is out of bounds."},
-    {MTE_WRITE_OVERFLOW, "The write address of the mte load2d instruction is greater than the maximum destination address."},
+    {MTE_WRITE_OVERFLOW,
+     "The write address of the mte load2d instruction is greater than the maximum destination address."},
     {VEC_DATA_EXCP_CCU, "Data from the CCU is abnormal."},
     {VEC_DATA_EXCP_MTE, "Data from the MTE is abnormal."},
     {VEC_DATA_EXCP_VEC, "Data from the VEC is abnormal."},
@@ -459,10 +427,10 @@ const std::map<uint64_t, std::string> DeviceErrorProc::errorMapInfo_ = {
     {VEC_INSTR_ADDR_MISALIGN, "The UB address accessed by the VEC instruction is not aligned."},
     {VEC_INSTR_ILLEGAL_CFG, "The VEC instruction parameter is invalid."},
     {VEC_INSTR_UNDEF, "The VEC instruction is abnormal. "
-     "Possible cause: The parameter violates the instruction constraints, the binary version does not match, or the instruction is overwritten."},
+                      "Possible cause: The parameter violates the instruction constraints, the binary version does not "
+                      "match, or the instruction is overwritten."},
     {CCU_ADDR_ERR, "The GM address accessed by scalar exceeds 48 bits."},
-    {CCU_BUS_ERR,
-     "The scalar instruction accesses an invalid GM address or the cross-device memory access times out."},
+    {CCU_BUS_ERR, "The scalar instruction accesses an invalid GM address or the cross-device memory access times out."},
     {MTE_ERR_ADDR_MISALIGN, "The access address of the MTE instruction is not aligned with the data type bit width."},
     {MTE_ERR_DW_PAD_CONF_ERR, "DEPTHWIS PADDING is incorrectly configured."},
     {MTE_ERR_DW_FMAP_H_ILLEGAL, "The value of H configured on the DEPTHWISE FMAP is less than 3."},
@@ -513,8 +481,7 @@ const std::map<uint64_t, std::string> DeviceErrorProc::errorMapInfo_ = {
     {CUBE_ILLEGAL_INSTR, "The CUBE instruction parameter is invalid."},
     {CCU_SAFETY_CRC_ERR, "MTE CRC error."},
     {MTE_TIMEOUT, "An exception is reported when the MTE instruction or data times out."},
-    {MTE_UB_RD_CFLT,
-     "When the MTE reads the ub, the ub read/write conflict occurs and an exception is reported."},
+    {MTE_UB_RD_CFLT, "When the MTE reads the ub, the ub read/write conflict occurs and an exception is reported."},
     {MTE_UB_WR_CFLT, "When the MTE writes to the UB, the UB read/write conflict is reported."},
     {MTE_KTABLE_WR_ADDR_OVERFLOW,
      "An exception is reported when a write address conflict occurs when the MTE is full."},
@@ -525,8 +492,10 @@ const std::map<uint64_t, std::string> DeviceErrorProc::errorMapInfo_ = {
     {CCU_UB_OVERFLOW_ERR, "The address for scalar to read/write UB is out of bounds."},
     {BIU_UNSPLIT_ERR, "An exception occurs on the BIU, for example, tag_id error or FIFO overflow."},
     {MTE_STB_ECC_ERR, "A multi-bit ECC error occurs when MTE read STB buffer. See the RAS alarm handling."},
-    {MTE_AIPP_ECC_ERR, "A multi-bit ECC error occurs when MTE read the internal buffer of AIPP. See the RAS alarm handling."},
-    {CCU_LSU_ATOMIC_ERR, "The scalar atomic instruction accesses the GM that is modified by scalar but is not written back."},
+    {MTE_AIPP_ECC_ERR,
+     "A multi-bit ECC error occurs when MTE read the internal buffer of AIPP. See the RAS alarm handling."},
+    {CCU_LSU_ATOMIC_ERR,
+     "The scalar atomic instruction accesses the GM that is modified by scalar but is not written back."},
     {CCU_CROSS_CORE_SET_OVFL_ERR,
      "The value of the flag counter for inter-core communication exceeds the maximum value 15."},
     {FIXP_ERR_OUT_WRITE_OVERFLOW, "The GM address accessed by FIXP exceeds 48 bits."},
@@ -566,46 +535,42 @@ const std::map<uint64_t, std::string> DeviceErrorProc::errorMapInfo_ = {
     {VEC_ERR_PARITY_ERR, "A parity check error occurs in the VEC."},
 };
 
-void DeviceErrorProc::PrintCoreErrorInfo(const DeviceErrorInfo *const coreInfo,
-                                         const uint64_t errorNumber,
-                                         const std::string &coreType,
-                                         const uint64_t coreIdx,
-                                         const Device *const dev,
-                                         const std::string &errorStr)
+void DeviceErrorProc::PrintCoreErrorInfo(
+    const DeviceErrorInfo* const coreInfo, const uint64_t errorNumber, const std::string& coreType,
+    const uint64_t coreIdx, const Device* const dev, const std::string& errorStr)
 {
     /* logs for aic tools, do not modify the item befor making a new agreement with tools */
-    RT_LOG_CALL_MSG(ERR_MODULE_TBE,
-           "The error from device(%hu), serial number is %" PRIu64 ", "
-           "there is an error of %s, core id is %" PRIu64 ", "
-           "error code = %#" PRIx64 ", dump info: "
-           "pc start: %#" PRIx64 ", current: %#" PRIx64 ", "
-           "vec error info: %#" PRIx64 ", mte error info: %#" PRIx64 ", "
-           "ifu error info: %#" PRIx64 ", ccu error info: %#" PRIx64 ", "
-           "cube error info: %#" PRIx64 ", biu error info: %#" PRIx64 ", "
-           "aic error mask: %#" PRIx64 ", para base: %#" PRIx64 ", errorStr: %s",
-           coreInfo->u.coreErrorInfo.deviceId, errorNumber,
-           coreType.c_str(), coreInfo->u.coreErrorInfo.info[coreIdx].coreId,
-           coreInfo->u.coreErrorInfo.info[coreIdx].aicError,
-           coreInfo->u.coreErrorInfo.info[coreIdx].pcStart, coreInfo->u.coreErrorInfo.info[coreIdx].currentPC,
-           coreInfo->u.coreErrorInfo.info[coreIdx].vecErrInfo, coreInfo->u.coreErrorInfo.info[coreIdx].mteErrInfo,
-           coreInfo->u.coreErrorInfo.info[coreIdx].ifuErrInfo, coreInfo->u.coreErrorInfo.info[coreIdx].ccuErrInfo,
-           coreInfo->u.coreErrorInfo.info[coreIdx].cubeErrInfo, coreInfo->u.coreErrorInfo.info[coreIdx].biuErrInfo,
-           coreInfo->u.coreErrorInfo.info[coreIdx].aicErrorMask, coreInfo->u.coreErrorInfo.info[coreIdx].paraBase,
-           errorStr.c_str());
+    RT_LOG_CALL_MSG(
+        ERR_MODULE_TBE,
+        "The error from device(%hu), serial number is %" PRIu64 ", "
+        "there is an error of %s, core id is %" PRIu64 ", "
+        "error code = %#" PRIx64 ", dump info: "
+        "pc start: %#" PRIx64 ", current: %#" PRIx64 ", "
+        "vec error info: %#" PRIx64 ", mte error info: %#" PRIx64 ", "
+        "ifu error info: %#" PRIx64 ", ccu error info: %#" PRIx64 ", "
+        "cube error info: %#" PRIx64 ", biu error info: %#" PRIx64 ", "
+        "aic error mask: %#" PRIx64 ", para base: %#" PRIx64 ", errorStr: %s",
+        coreInfo->u.coreErrorInfo.deviceId, errorNumber, coreType.c_str(),
+        coreInfo->u.coreErrorInfo.info[coreIdx].coreId, coreInfo->u.coreErrorInfo.info[coreIdx].aicError,
+        coreInfo->u.coreErrorInfo.info[coreIdx].pcStart, coreInfo->u.coreErrorInfo.info[coreIdx].currentPC,
+        coreInfo->u.coreErrorInfo.info[coreIdx].vecErrInfo, coreInfo->u.coreErrorInfo.info[coreIdx].mteErrInfo,
+        coreInfo->u.coreErrorInfo.info[coreIdx].ifuErrInfo, coreInfo->u.coreErrorInfo.info[coreIdx].ccuErrInfo,
+        coreInfo->u.coreErrorInfo.info[coreIdx].cubeErrInfo, coreInfo->u.coreErrorInfo.info[coreIdx].biuErrInfo,
+        coreInfo->u.coreErrorInfo.info[coreIdx].aicErrorMask, coreInfo->u.coreErrorInfo.info[coreIdx].paraBase,
+        errorStr.c_str());
     if ((dev != nullptr) && (coreInfo->u.coreErrorInfo.type == static_cast<uint16_t>(AICORE_ERROR)) &&
         (dev->GetTschVersion() >= static_cast<uint32_t>(TS_VERSION_AIC_ERR_REG_EXT))) {
-        RT_LOG_CALL_MSG(ERR_MODULE_TBE,
+        RT_LOG_CALL_MSG(
+            ERR_MODULE_TBE,
             "The extend info from device(%hu), serial number is %" PRIu64 ", there is %s error, core id is %" PRIu64
             ", aicore int: %#" PRIx64 ", aicore error2: %#" PRIx64 ", axi clamp ctrl: %#" PRIx64
-            ", axi clamp state: %#" PRIx64
-            ", biu status0: %#" PRIx64 ", biu status1: %#" PRIx64
-            ", clk gate mask: %#" PRIx64 ", dbg addr: %#" PRIx64
-            ", ecc en: %#" PRIx64 ", mte ccu ecc 1bit error: %#" PRIx64
-            ", vector cube ecc 1bit error: %#" PRIx64 ", run stall: %#" PRIx64
-            ", dbg data0: %#" PRIx64 ", dbg data1: %#" PRIx64
-            ", dbg data2: %#" PRIx64 ", dbg data3: %#" PRIx64 ", dfx data: %#" PRIx64,
-            coreInfo->u.coreErrorInfo.deviceId, errorNumber,
-            coreType.c_str(), coreInfo->u.coreErrorInfo.extend_info[coreIdx].coreId,
+            ", axi clamp state: %#" PRIx64 ", biu status0: %#" PRIx64 ", biu status1: %#" PRIx64
+            ", clk gate mask: %#" PRIx64 ", dbg addr: %#" PRIx64 ", ecc en: %#" PRIx64
+            ", mte ccu ecc 1bit error: %#" PRIx64 ", vector cube ecc 1bit error: %#" PRIx64 ", run stall: %#" PRIx64
+            ", dbg data0: %#" PRIx64 ", dbg data1: %#" PRIx64 ", dbg data2: %#" PRIx64 ", dbg data3: %#" PRIx64
+            ", dfx data: %#" PRIx64,
+            coreInfo->u.coreErrorInfo.deviceId, errorNumber, coreType.c_str(),
+            coreInfo->u.coreErrorInfo.extend_info[coreIdx].coreId,
             coreInfo->u.coreErrorInfo.extend_info[coreIdx].aiCoreInt,
             coreInfo->u.coreErrorInfo.extend_info[coreIdx].aicError2,
             coreInfo->u.coreErrorInfo.extend_info[coreIdx].axiClampCtrl,
@@ -626,14 +591,14 @@ void DeviceErrorProc::PrintCoreErrorInfo(const DeviceErrorInfo *const coreInfo,
     }
 }
 
-void DeviceErrorProc::PrintCoreInfoErrMsg(const DeviceErrorInfo *const coreInfo)
+void DeviceErrorProc::PrintCoreInfoErrMsg(const DeviceErrorInfo* const coreInfo)
 {
     std::string errLevel(RT_TBE_INNER_ERROR);
     const auto it = errMsgCommMap_.find(coreInfo->u.coreErrorInfo.type);
     if (unlikely(it != errMsgCommMap_.end())) {
         errLevel = it->second;
     }
-    std::array<char_t, MSG_LENGTH> buffer {};
+    std::array<char_t, MSG_LENGTH> buffer{};
 
     std::string errorCode;
     if (coreInfo->u.coreErrorInfo.coreNum == 0U) {
@@ -642,35 +607,36 @@ void DeviceErrorProc::PrintCoreInfoErrMsg(const DeviceErrorInfo *const coreInfo)
         errorCode = std::string("0-") + std::to_string(coreInfo->u.coreErrorInfo.coreNum - 1U);
     }
 
-    (void)snprintf_truncated_s(&(buffer[0]), static_cast<size_t>(MSG_LENGTH),
+    (void)snprintf_truncated_s(
+        &(buffer[0]), static_cast<size_t>(MSG_LENGTH),
         "The device(%u), core list[%s], error code is:", static_cast<uint32_t>(coreInfo->u.coreErrorInfo.deviceId),
         errorCode.c_str());
     uint16_t coreIdx;
     int32_t countTotal = 0;
     int32_t cnt = 0;
     for (coreIdx = 0U; coreIdx < coreInfo->u.coreErrorInfo.coreNum; ++coreIdx) {
-        if ((static_cast<int32_t>(coreIdx) % 4) == 0) {   // 4 表示每4个core一组
+        if ((static_cast<int32_t>(coreIdx) % 4) == 0) { // 4 表示每4个core一组
             REPORT_INNER_ERROR(errLevel.c_str(), "%s", &(buffer[0]));
-            countTotal = sprintf_s(&(buffer[0]), static_cast<size_t>(MSG_LENGTH), "coreId(%2lu):",
-                static_cast<uint64_t>(coreIdx));
+            countTotal = sprintf_s(
+                &(buffer[0]), static_cast<size_t>(MSG_LENGTH), "coreId(%2lu):", static_cast<uint64_t>(coreIdx));
             COND_RETURN_VOID_AND_MSG_INNER(countTotal < 0, "Failed to call sprintf_s, count=%d.", countTotal);
         }
         if ((countTotal >= MSG_LENGTH) || (coreIdx >= MAX_RECORD_CORE_NUM)) {
             break;
         }
-        cnt = sprintf_s(&(buffer[countTotal]), static_cast<size_t>(MSG_LENGTH) - static_cast<size_t>(countTotal),
-                        "%#16" PRIx64 "    ", coreInfo->u.coreErrorInfo.info[coreIdx].aicError);
+        cnt = sprintf_s(
+            &(buffer[countTotal]), static_cast<size_t>(MSG_LENGTH) - static_cast<size_t>(countTotal),
+            "%#16" PRIx64 "    ", coreInfo->u.coreErrorInfo.info[coreIdx].aicError);
         COND_RETURN_VOID_AND_MSG_INNER(cnt < 0, "Failed to call sprintf_s, count=%d.", cnt);
         countTotal += cnt;
     }
-    if (static_cast<int32_t>(coreIdx) > 0) {   // 4 表示每4个core一组, 最后只要cordIdx > 0, 总是会有最后一组没打印
+    if (static_cast<int32_t>(coreIdx) > 0) { // 4 表示每4个core一组, 最后只要cordIdx > 0, 总是会有最后一组没打印
         REPORT_INNER_ERROR(errLevel.c_str(), "%s", &(buffer[0]));
     }
 }
 
-rtError_t DeviceErrorProc::ProcessCoreErrorInfo(const DeviceErrorInfo * const coreInfo,
-                                                const uint64_t errorNumber,
-                                                const Device *const dev)
+rtError_t DeviceErrorProc::ProcessCoreErrorInfo(
+    const DeviceErrorInfo* const coreInfo, const uint64_t errorNumber, const Device* const dev)
 {
     std::string coreType;
     uint32_t offset = 0U;
@@ -715,13 +681,13 @@ rtError_t DeviceErrorProc::ProcessCoreErrorInfo(const DeviceErrorInfo * const co
         PrintCoreErrorInfo(coreInfo, errorNumber, coreType, static_cast<uint64_t>(coreIdx), dev, errorString);
     }
 
-    if ((dev != nullptr) && (coreInfo->u.coreErrorInfo.type == static_cast<uint16_t>(AICORE_ERROR))
-        && (dev->GetTschVersion() >= static_cast<uint32_t>(TS_VERSION_AIC_ERR_DHA_INFO))) {
+    if ((dev != nullptr) && (coreInfo->u.coreErrorInfo.type == static_cast<uint16_t>(AICORE_ERROR)) &&
+        (dev->GetTschVersion() >= static_cast<uint32_t>(TS_VERSION_AIC_ERR_DHA_INFO))) {
         const uint16_t dhaNum = coreInfo->u.coreErrorInfo.dhaNum;
         RT_LOG(RT_LOG_DEBUG, "dha num:%hu", dhaNum);
         for (uint16_t dhaIndex = 0U; (dhaIndex < dhaNum) && (dhaIndex < MAX_RECORD_DHA_NUM); ++dhaIndex) {
-            RT_LOG_CALL_MSG(ERR_MODULE_TBE,
-                "The dha(mata) info comes from device(%hu), the dha id is %u, dha status 1 info: 0x%x.",
+            RT_LOG_CALL_MSG(
+                ERR_MODULE_TBE, "The dha(mata) info comes from device(%hu), the dha id is %u, dha status 1 info: 0x%x.",
                 coreInfo->u.coreErrorInfo.deviceId, coreInfo->u.coreErrorInfo.dhaInfo[dhaIndex].regId,
                 coreInfo->u.coreErrorInfo.dhaInfo[dhaIndex].status1);
         }
@@ -751,7 +717,7 @@ const std::string GetStarsRingBufferHeadMsg(const uint16_t errType)
     }
 }
 
-bool HasMteErr(const Device * const dev)
+bool HasMteErr(const Device* const dev)
 {
     bool hasMteErr = dev->GetDeviceRas();
     uint32_t count = 0;
@@ -784,8 +750,7 @@ bool IsSmmuFault(const uint32_t deviceId)
 {
     bool isSmmuFault = false;
     const rtError_t error = NpuDriver::GetSmmuFaultValid(deviceId, isSmmuFault);
-    COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, false,
-        "Getting fault SMMU valid status is not supported");
+    COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, false, "Getting fault SMMU valid status is not supported");
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "Cannot get smmu of device_id=%u, error=%d", deviceId, error);
         return false;
@@ -824,7 +789,7 @@ bool HasBlacklistEventOnDevice(const uint32_t deviceId, const std::map<uint32_t,
 }
 
 /* 检查是否存在黑名单中的UCE错误 */
-bool HasMemUceErr(const Device * const dev, const std::map<uint32_t, std::string>& eventIdBlkList)
+bool HasMemUceErr(const Device* const dev, const std::map<uint32_t, std::string>& eventIdBlkList)
 {
     NULL_PTR_RETURN(dev, false);
     const uint32_t deviceId = dev->Id_();
@@ -834,7 +799,9 @@ bool HasMemUceErr(const Device * const dev, const std::map<uint32_t, std::string
     return HasBlacklistEventOnDevice(deviceId, eventIdBlkList) || CheckSmmuFault(deviceId);
 }
 
-bool IsHitBlacklist(const rtDmsFaultEvent *faultEventInfo, const uint32_t eventCount, const std::map<uint32_t, std::string>& eventIdBlkList)
+bool IsHitBlacklist(
+    const rtDmsFaultEvent* faultEventInfo, const uint32_t eventCount,
+    const std::map<uint32_t, std::string>& eventIdBlkList)
 {
     if (faultEventInfo == nullptr) {
         RT_LOG(RT_LOG_ERROR, "faultEventInfo is nullptr.");
@@ -853,7 +820,8 @@ bool IsHitBlacklist(const rtDmsFaultEvent *faultEventInfo, const uint32_t eventC
     return false;
 }
 
-bool IsFaultEventOccur(const uint32_t faultEventId, const rtDmsFaultEvent * const faultEventInfo, const uint32_t eventCount)
+bool IsFaultEventOccur(
+    const uint32_t faultEventId, const rtDmsFaultEvent* const faultEventInfo, const uint32_t eventCount)
 {
     if (faultEventInfo == nullptr) {
         RT_LOG(RT_LOG_ERROR, "faultEventInfo is nullptr.");
@@ -867,58 +835,59 @@ bool IsFaultEventOccur(const uint32_t faultEventId, const rtDmsFaultEvent * cons
     return false;
 }
 
-rtError_t GetDeviceFaultEvents(const uint32_t deviceId, rtDmsFaultEvent* const faultEventInfo, uint32_t &eventCount,
-                               bool needLog)
+rtError_t GetDeviceFaultEvents(
+    const uint32_t deviceId, rtDmsFaultEvent* const faultEventInfo, uint32_t& eventCount, bool needLog)
 {
     rtError_t error = RT_ERROR_NONE;
     error = NpuDriver::GetAllFaultEvent(deviceId, faultEventInfo, &eventCount, needLog);
-    COND_RETURN_WARN(error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "Getting fault events is not supported.");
-    COND_RETURN_ERROR((error != RT_ERROR_NONE) || (eventCount > RAS_GET_MAX_NUM), (error == RT_ERROR_NONE) ? RT_ERROR_DRV_ERR : error,
-        "Get fault event error, device_id=%u, eventCount=%u, maxFaultNum=%u, error=%#x.", deviceId,
-            eventCount, RAS_GET_MAX_NUM, static_cast<uint32_t>(error));
+    COND_RETURN_WARN(
+        error == RT_ERROR_FEATURE_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "Getting fault events is not supported.");
+    COND_RETURN_ERROR(
+        (error != RT_ERROR_NONE) || (eventCount > RAS_GET_MAX_NUM), (error == RT_ERROR_NONE) ? RT_ERROR_DRV_ERR : error,
+        "Get fault event error, device_id=%u, eventCount=%u, maxFaultNum=%u, error=%#x.", deviceId, eventCount,
+        RAS_GET_MAX_NUM, static_cast<uint32_t>(error));
     return error;
 }
 
-void ProcessSdmaError(TaskInfo *taskInfo)
+void ProcessSdmaError(TaskInfo* taskInfo)
 {
-    Stream * const stream = taskInfo->stream;
+    Stream* const stream = taskInfo->stream;
     NULL_PTR_RETURN_DIRECTLY(stream);
-    Device * const dev = stream->Device_();
+    Device* const dev = stream->Device_();
     NULL_PTR_RETURN_DIRECTLY(dev);
     if (HasMteErr(stream->Device_())) {
         taskInfo->errorCode = TS_ERROR_SDMA_POISON_ERROR;
-        (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
+        (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
     } else if (!HasMemUceErr(stream->Device_())) {
         taskInfo->errorCode = TS_ERROR_SDMA_LINK_ERROR;
-        (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
+        (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
     } else {
         taskInfo->errorCode = TS_ERROR_SDMA_ERROR;
     }
 }
 
-static void SetDeviceFaultTypeByErrorType(const Device * const dev, const rtErrorType errorType, bool &isMteError)
+static void SetDeviceFaultTypeByErrorType(const Device* const dev, const rtErrorType errorType, bool& isMteError)
 {
     UNUSED(errorType);
     if ((!IsHitBlacklist(dev->Id_(), g_mulBitEccEventId)) && (!IsSmmuFault(dev->Id_()))) {
-        (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
+        (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::HBM_UCE_ERROR);
         isMteError = true;
     }
 }
 
-static void MteErrorProc(const TaskInfo * const errTaskPtr, const Device * const dev, const int32_t errorCode, bool &isMteError)
+static void MteErrorProc(
+    const TaskInfo* const errTaskPtr, const Device* const dev, const int32_t errorCode, bool& isMteError)
 {
     if ((errTaskPtr->stream != nullptr) && (errTaskPtr->stream->Context_() != nullptr) &&
         (errTaskPtr->stream->Device_() != nullptr) && (errorCode == RT_ERROR_DEVICE_MEM_ERROR)) {
-        (RtPtrToUnConstPtr<TaskInfo *>(errTaskPtr))->stream->SetAbortStatus(errorCode);
-        (RtPtrToUnConstPtr<TaskInfo *>(errTaskPtr))->stream->Context_()->SetFailureError(errorCode);
-        (RtPtrToUnConstPtr<TaskInfo *>(errTaskPtr))->stream->Device_()->SetDeviceStatus(errorCode);
+        (RtPtrToUnConstPtr<TaskInfo*>(errTaskPtr))->stream->SetAbortStatus(errorCode);
+        (RtPtrToUnConstPtr<TaskInfo*>(errTaskPtr))->stream->Context_()->SetFailureError(errorCode);
+        (RtPtrToUnConstPtr<TaskInfo*>(errTaskPtr))->stream->Device_()->SetDeviceStatus(errorCode);
     }
     SetDeviceFaultTypeByErrorType(dev, AICORE_ERROR, isMteError);
 }
 
-void SetTaskMteErr(TaskInfo *errTaskPtr, const Device * const dev,
-    const std::map<uint32_t, std::string>& eventIdBlkList)
+void SetTaskMteErr(TaskInfo* errTaskPtr, const Device* const dev, const std::map<uint32_t, std::string>& eventIdBlkList)
 {
     // 若不支持ras上报接口，直接返回内存错误
     bool isMteError = false;
@@ -934,12 +903,13 @@ void SetTaskMteErr(TaskInfo *errTaskPtr, const Device * const dev,
         } else if (HasMemUceErr(dev, eventIdBlkList)) {
             errTaskPtr->mte_error = 0U;
         } else {
-            (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
+            (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
         }
     }
 }
 
-void GetMteErrFromCqeStatus(TaskInfo *errTaskPtr, const Device * const dev, const uint32_t cqeStatus,
+void GetMteErrFromCqeStatus(
+    TaskInfo* errTaskPtr, const Device* const dev, const uint32_t cqeStatus,
     const std::map<uint32_t, std::string>& eventIdBlkList)
 {
     if ((cqeStatus == TS_SDMA_STATUS_DDRC_ERROR) || (cqeStatus == TS_SDMA_STATUS_LINK_ERROR) ||
@@ -957,13 +927,13 @@ void GetMteErrFromCqeStatus(TaskInfo *errTaskPtr, const Device * const dev, cons
             } else if (HasMemUceErr(dev, eventIdBlkList)) {
                 errTaskPtr->mte_error = 0U;
             } else {
-                (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
+                (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
             }
         }
     }
 }
 
-bool IsEventRasMatch(const rtDmsFaultEvent &event, const EventRasFilter &filter)
+bool IsEventRasMatch(const rtDmsFaultEvent& event, const EventRasFilter& filter)
 {
     uint32_t rasCode = 0;
     rasCode |= static_cast<uint32_t>(event.rasCode[0]) << 24;
@@ -974,16 +944,20 @@ bool IsEventRasMatch(const rtDmsFaultEvent &event, const EventRasFilter &filter)
            (event.errorRegisterIndex == filter.errorRegisterIndex) && ((filter.bitMask & rasCode) != 0);
 }
 
-static void AddExceptionRegInfo(const StarsDeviceErrorInfo * const starsInfo, const uint32_t coreIdx,
-    const uint16_t type, const TaskInfo *errTaskPtr)
+static void AddExceptionRegInfo(
+    const StarsDeviceErrorInfo* const starsInfo, const uint32_t coreIdx, const uint16_t type,
+    const TaskInfo* errTaskPtr)
 {
-    COND_RETURN_NORMAL(type != AICORE_ERROR && type != AIVECTOR_ERROR && type != FFTS_PLUS_AICORE_ERROR &&
-        type != FFTS_PLUS_AIVECTOR_ERROR, "the type[%hu] not match", type);
-    COND_RETURN_VOID(errTaskPtr == nullptr || errTaskPtr->stream == nullptr ||
-        errTaskPtr->stream->Device_() == nullptr, "Cannot get the device by errTaskPtr");
+    COND_RETURN_NORMAL(
+        type != AICORE_ERROR && type != AIVECTOR_ERROR && type != FFTS_PLUS_AICORE_ERROR &&
+            type != FFTS_PLUS_AIVECTOR_ERROR,
+        "the type[%hu] not match", type);
+    COND_RETURN_VOID(
+        errTaskPtr == nullptr || errTaskPtr->stream == nullptr || errTaskPtr->stream->Device_() == nullptr,
+        "Cannot get the device by errTaskPtr");
 
-    const uint8_t errCoreType = (type == AICORE_ERROR || type == FFTS_PLUS_AICORE_ERROR) ?
-        AICORE_ERROR : AIVECTOR_ERROR;
+    const uint8_t errCoreType =
+        (type == AICORE_ERROR || type == FFTS_PLUS_AICORE_ERROR) ? AICORE_ERROR : AIVECTOR_ERROR;
     const StarsOneCoreErrorInfo& info = starsInfo->u.coreErrorInfo.info[coreIdx];
     rtExceptionErrRegInfo_t regInfo = {};
     regInfo.coreId = static_cast<uint32_t>(info.coreId);
@@ -1014,7 +988,7 @@ static void AddExceptionRegInfo(const StarsDeviceErrorInfo * const starsInfo, co
     regInfo.errReg[RT_V100_AIC_COND_0] = static_cast<uint32_t>(info.aicCond);
     regInfo.errReg[RT_V100_AIC_COND_1] = static_cast<uint32_t>(info.aicCond >> REG_OFFSET);
 
-    Device *dev = errTaskPtr->stream->Device_();
+    Device* dev = errTaskPtr->stream->Device_();
     uint32_t taskId = starsInfo->u.coreErrorInfo.comm.taskId;
     uint32_t streamId = starsInfo->u.coreErrorInfo.comm.streamId;
     RT_LOG(RT_LOG_ERROR, "add error register: core_id=%u, stream_id=%u, task_id=%u", regInfo.coreId, streamId, taskId);
@@ -1024,11 +998,13 @@ static void AddExceptionRegInfo(const StarsDeviceErrorInfo * const starsInfo, co
     exceptionRegMap[key].push_back(regInfo);
 }
 
-static void PrintCoreInfo(const StarsDeviceErrorInfo * const info, const uint32_t coreIdx, const uint64_t errorNumber,
+static void PrintCoreInfo(
+    const StarsDeviceErrorInfo* const info, const uint32_t coreIdx, const uint64_t errorNumber,
     std::string& errorString, std::string& headMsg)
 {
     /* logs for aic tools, do not modify the item befor making a new agreement with tools */
-    RT_LOG_CALL_MSG(ERR_MODULE_TBE,
+    RT_LOG_CALL_MSG(
+        ERR_MODULE_TBE,
         "The error from device(chipId:%u, dieId:%u), serial number is %" PRIu64 ", "
         "there is an exception of %s, core id is %" PRIu64 ", "
         "error code = %#" PRIx64 ", dump info: "
@@ -1042,7 +1018,8 @@ static void PrintCoreInfo(const StarsDeviceErrorInfo * const info, const uint32_
         "errorStr: %s "
         "fixp_error0 info: %#x, fixp_error1 info: %#x, "
         "fsmId:%u, tslot:%u, thread:%u, ctxid:%u, blk:%u, sublk:%u, subErrType:%u.\n"
-        "For details, see the troubleshooting document on the Ascend official website. Search for the keyword \"AI Core Error\".",
+        "For details, see the troubleshooting document on the Ascend official website. Search for the keyword \"AI "
+        "Core Error\".",
         info->u.coreErrorInfo.comm.chipId, info->u.coreErrorInfo.comm.dieId, errorNumber, headMsg.c_str(),
         info->u.coreErrorInfo.info[coreIdx].coreId, info->u.coreErrorInfo.info[coreIdx].aicError[0],
         info->u.coreErrorInfo.info[coreIdx].pcStart, info->u.coreErrorInfo.info[coreIdx].currentPC,
@@ -1050,18 +1027,18 @@ static void PrintCoreInfo(const StarsDeviceErrorInfo * const info, const uint32_
         info->u.coreErrorInfo.info[coreIdx].ifuErrInfo, info->u.coreErrorInfo.info[coreIdx].ccuErrInfo,
         info->u.coreErrorInfo.info[coreIdx].cubeErrInfo, info->u.coreErrorInfo.info[coreIdx].biuErrInfo,
         info->u.coreErrorInfo.info[coreIdx].aicErrorMask, info->u.coreErrorInfo.info[coreIdx].paraBase,
-        info->u.coreErrorInfo.info[coreIdx].aicCond,
-        info->u.coreErrorInfo.info[coreIdx].aicError[0], info->u.coreErrorInfo.info[coreIdx].aicError[1],
-        info->u.coreErrorInfo.info[coreIdx].aicError[2], errorString.c_str(),
-        info->u.coreErrorInfo.info[coreIdx].fixPError0, info->u.coreErrorInfo.info[coreIdx].fixPError1,
-        info->u.coreErrorInfo.info[coreIdx].fsmId, info->u.coreErrorInfo.info[coreIdx].fsmTslotId,
-        info->u.coreErrorInfo.info[coreIdx].fsmThreadId, info->u.coreErrorInfo.info[coreIdx].fsmCxtId,
-        info->u.coreErrorInfo.info[coreIdx].fsmBlkId, info->u.coreErrorInfo.info[coreIdx].fsmSublkId,
-        info->u.coreErrorInfo.info[coreIdx].subErrType);
+        info->u.coreErrorInfo.info[coreIdx].aicCond, info->u.coreErrorInfo.info[coreIdx].aicError[0],
+        info->u.coreErrorInfo.info[coreIdx].aicError[1], info->u.coreErrorInfo.info[coreIdx].aicError[2],
+        errorString.c_str(), info->u.coreErrorInfo.info[coreIdx].fixPError0,
+        info->u.coreErrorInfo.info[coreIdx].fixPError1, info->u.coreErrorInfo.info[coreIdx].fsmId,
+        info->u.coreErrorInfo.info[coreIdx].fsmTslotId, info->u.coreErrorInfo.info[coreIdx].fsmThreadId,
+        info->u.coreErrorInfo.info[coreIdx].fsmCxtId, info->u.coreErrorInfo.info[coreIdx].fsmBlkId,
+        info->u.coreErrorInfo.info[coreIdx].fsmSublkId, info->u.coreErrorInfo.info[coreIdx].subErrType);
 }
 
-static void ProcessMteAndFfts(const StarsDeviceErrorInfo * const info, const uint32_t coreIdx, bool& isMteErr,
-    const bool isCloudV2, const bool isFftsPlusTask, TaskInfo *errTaskPtr)
+static void ProcessMteAndFfts(
+    const StarsDeviceErrorInfo* const info, const uint32_t coreIdx, bool& isMteErr, const bool isCloudV2,
+    const bool isFftsPlusTask, TaskInfo* errTaskPtr)
 {
     // 取mteErrInfo[26:24]
     const uint64_t mteErrBit = (info->u.coreErrorInfo.info[coreIdx].mteErrInfo >> 24U) & 0x7U;
@@ -1078,13 +1055,14 @@ static void ProcessMteAndFfts(const StarsDeviceErrorInfo * const info, const uin
         fftsPlusErrInfo.threadId = static_cast<uint16_t>(info->u.coreErrorInfo.info[coreIdx].fsmThreadId);
         fftsPlusErrInfo.errType = info->u.coreErrorInfo.comm.type;
         fftsPlusErrInfo.pcStart = info->u.coreErrorInfo.info[coreIdx].pcStart;
-        PushBackErrInfo(errTaskPtr, static_cast<const void *>(&fftsPlusErrInfo),
-                        static_cast<uint32_t>(sizeof(rtFftsPlusTaskErrInfo_t)));
+        PushBackErrInfo(
+            errTaskPtr, static_cast<const void*>(&fftsPlusErrInfo),
+            static_cast<uint32_t>(sizeof(rtFftsPlusTaskErrInfo_t)));
     }
 }
 
-void DeviceErrorProc::ProcessStarsCoreErrorOneMapInfo(uint32_t * const cnt, uint64_t err, std::string &errorString,
-    uint32_t offset)
+void DeviceErrorProc::ProcessStarsCoreErrorOneMapInfo(
+    uint32_t* const cnt, uint64_t err, std::string& errorString, uint32_t offset)
 {
     if (err == 0ULL) {
         return;
@@ -1109,7 +1087,7 @@ void DeviceErrorProc::ProcessStarsCoreErrorOneMapInfo(uint32_t * const cnt, uint
     return;
 }
 
-void DeviceErrorProc::ProcessStarsCoreErrorMapInfo(const StarsOneCoreErrorInfo * const info, std::string &errorString)
+void DeviceErrorProc::ProcessStarsCoreErrorMapInfo(const StarsOneCoreErrorInfo* const info, std::string& errorString)
 {
     uint32_t cnt = 0U;
 
@@ -1119,9 +1097,10 @@ void DeviceErrorProc::ProcessStarsCoreErrorMapInfo(const StarsOneCoreErrorInfo *
     DeviceErrorProc::ProcessStarsCoreErrorOneMapInfo(&cnt, info->aicError[1], errorString, RINGBUFFER_ERRCODE2_OFFSET);
     // aicError4 17 bits
     // aicError5 aicError 4
-    const uint64_t err = (static_cast<uint64_t>((info->aicError[2] >> 32ULL) << 17ULL) | (info->aicError[2] & 0x1FFFFULL));
+    const uint64_t err =
+        (static_cast<uint64_t>((info->aicError[2] >> 32ULL) << 17ULL) | (info->aicError[2] & 0x1FFFFULL));
     DeviceErrorProc::ProcessStarsCoreErrorOneMapInfo(&cnt, err, errorString, RINGBUFFER_ERRCODE4_OFFSET);
-    if (cnt != 0U) {  // at least one error bit exists.
+    if (cnt != 0U) { // at least one error bit exists.
         return;
     }
 
@@ -1129,8 +1108,9 @@ void DeviceErrorProc::ProcessStarsCoreErrorMapInfo(const StarsOneCoreErrorInfo *
     return;
 }
 
-rtError_t DeviceErrorProc::ProcessStarsCoreTimeoutDfxInfo(const StarsDeviceErrorInfo *const info,
-    const uint64_t errorNumber, const Device *const dev, const DeviceErrorProc *const insPtr)
+rtError_t DeviceErrorProc::ProcessStarsCoreTimeoutDfxInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr)
 {
     UNUSED(insPtr);
     if (info == nullptr) {
@@ -1138,16 +1118,12 @@ rtError_t DeviceErrorProc::ProcessStarsCoreTimeoutDfxInfo(const StarsDeviceError
         return RT_ERROR_NONE;
     }
     StarsErrorCommonInfo common = info->u.coreTimeoutDfxInfo.comm;
-    RT_LOG(RT_LOG_ERROR,
+    RT_LOG(
+        RT_LOG_ERROR,
         "The error from device(chipId:%u, dieId:%u), serial number is %" PRIu64 ", "
         "aicore task timeout dfx, falut_stream_id=%u, falut_task_id=%u, falut_slot_id=%u, timeout and own_bitmap=0",
-        common.chipId,
-        common.dieId,
-        errorNumber,
-        common.streamId,
-        common.taskId,
-        common.exceptionSlotId);
-    TaskInfo *errTaskPtr = dev->GetTaskFactory()->GetTask(static_cast<int32_t>(common.streamId), common.taskId);
+        common.chipId, common.dieId, errorNumber, common.streamId, common.taskId, common.exceptionSlotId);
+    TaskInfo* errTaskPtr = dev->GetTaskFactory()->GetTask(static_cast<int32_t>(common.streamId), common.taskId);
     if (errTaskPtr != nullptr) {
         errTaskPtr->isRingbufferGet = true;
     }
@@ -1158,13 +1134,13 @@ rtError_t DeviceErrorProc::ProcessStarsCoreTimeoutDfxInfo(const StarsDeviceError
             ProcessStarsTimeoutDfxSlotInfo(info, dev, slotIdx);
             continue;
         }
-        TaskInfo *taskInfo = dev->GetTaskFactory()->GetTask(static_cast<int32_t>(slotInfo.streamId), slotInfo.taskId);
+        TaskInfo* taskInfo = dev->GetTaskFactory()->GetTask(static_cast<int32_t>(slotInfo.streamId), slotInfo.taskId);
         if (taskInfo == nullptr) {
             RT_LOG(RT_LOG_ERROR, "task info is null, stream_id=%hu, task_id=%hu", slotInfo.streamId, slotInfo.taskId);
             continue;
         }
 
-        AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
+        AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
         if (aicTaskInfo->kernel == nullptr) {
             RT_LOG(RT_LOG_ERROR, "task kernel is null, stream_id=%hu, task_id=%hu", slotInfo.streamId, slotInfo.taskId);
             continue;
@@ -1182,21 +1158,18 @@ rtError_t DeviceErrorProc::ProcessStarsCoreTimeoutDfxInfo(const StarsDeviceError
     for (uint16_t coreIdx = 0U; coreIdx < common.coreNum; coreIdx++) {
         StarsOneTimeoutCoreDfxInfo coreInfo = info->u.coreTimeoutDfxInfo.coreInfo[coreIdx];
         if (coreInfo.subError != 0) {
-            RT_LOG(RT_LOG_ERROR,
+            RT_LOG(
+                RT_LOG_ERROR,
                 "aicore task timeout dfx, show core info, core_id=%u, core_type=%u, sub_error=%u, "
                 "current_pc=%#" PRIx64 ", slot_id=%u.",
-                coreInfo.coreId,
-                coreInfo.coreType,
-                coreInfo.subError,
-                coreInfo.currentPc,
-                coreInfo.slotId);
+                coreInfo.coreId, coreInfo.coreType, coreInfo.subError, coreInfo.currentPc, coreInfo.slotId);
         }
     }
     return RT_ERROR_NONE;
 }
 
 void DeviceErrorProc::ProcessStarsTimeoutDfxSlotInfo(
-    const StarsDeviceErrorInfo *const info, const Device *const dev, uint16_t slotIdx)
+    const StarsDeviceErrorInfo* const info, const Device* const dev, uint16_t slotIdx)
 {
     if (info == nullptr || dev == nullptr) {
         RT_LOG(RT_LOG_WARNING, "info or device is null");
@@ -1206,13 +1179,14 @@ void DeviceErrorProc::ProcessStarsTimeoutDfxSlotInfo(
     const uint16_t streamId = slotInfo.streamId;
     const uint16_t taskId = slotInfo.taskId;
 
-    TaskInfo *taskInfo = dev->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), taskId);
+    TaskInfo* taskInfo = dev->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), taskId);
     if (taskInfo == nullptr) {
-        RT_LOG(RT_LOG_ERROR, "task info is null, device_id=%u, stream_id=%u, task_id=%u, slot_id=%u",
-        dev->Id_(), streamId, taskId, slotInfo.slotId);
+        RT_LOG(
+            RT_LOG_ERROR, "task info is null, device_id=%u, stream_id=%u, task_id=%u, slot_id=%u", dev->Id_(), streamId,
+            taskId, slotInfo.slotId);
         return;
     }
-    AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
+    AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
     std::string kernelNameStr;
     std::string kernelInfoExt;
     if (aicTaskInfo->kernel == nullptr) {
@@ -1220,30 +1194,22 @@ void DeviceErrorProc::ProcessStarsTimeoutDfxSlotInfo(
         kernelInfoExt = "none";
     } else {
         kernelNameStr = aicTaskInfo->kernel->Name_().empty() ? "none" : aicTaskInfo->kernel->Name_();
-        kernelInfoExt = aicTaskInfo->kernel->KernelInfoExtString().empty() ? "none" :
-            aicTaskInfo->kernel->KernelInfoExtString();
+        kernelInfoExt =
+            aicTaskInfo->kernel->KernelInfoExtString().empty() ? "none" : aicTaskInfo->kernel->KernelInfoExtString();
     }
-    RT_LOG(RT_LOG_ERROR,
+    RT_LOG(
+        RT_LOG_ERROR,
         "aicore task timeout dfx, show slot info, slot_id=%u, device_id=%u, stream_id=%u, task_id=%u, "
         "sche_mode=%u, blockd_dim=%u, aic_own_bitmap=%#" PRIx64 ", aiv_own_bitmap0=%#" PRIx64
         " aiv_own_bitmap1=%#" PRIx64 ", "
         "kernel_name=%s, kernel_info_ext=%s, pc_start=%#" PRIx64 ".",
-        slotInfo.slotId,
-        dev->Id_(),
-        streamId,
-        taskId,
-        aicTaskInfo->schemMode,
-        aicTaskInfo->comm.dim,
-        slotInfo.aicOwnBitmap,
-        slotInfo.aivOwnBitmap0,
-        slotInfo.aivOwnBitmap1,
-        kernelNameStr.c_str(),
-        kernelInfoExt.c_str(),
-        slotInfo.pcStart);
+        slotInfo.slotId, dev->Id_(), streamId, taskId, aicTaskInfo->schemMode, aicTaskInfo->comm.dim,
+        slotInfo.aicOwnBitmap, slotInfo.aivOwnBitmap0, slotInfo.aivOwnBitmap1, kernelNameStr.c_str(),
+        kernelInfoExt.c_str(), slotInfo.pcStart);
 }
 
 void DeviceErrorProc::ProcessStarsTimeoutDfxSlotInfo4FftsPlus(
-    const StarsDeviceErrorInfo *const info, const Device *dev, uint16_t slotIdx)
+    const StarsDeviceErrorInfo* const info, const Device* dev, uint16_t slotIdx)
 {
     if (info == nullptr || dev == nullptr) {
         RT_LOG(RT_LOG_WARNING, "info or device is null");
@@ -1253,7 +1219,7 @@ void DeviceErrorProc::ProcessStarsTimeoutDfxSlotInfo4FftsPlus(
     const uint16_t streamId = slotInfo.streamId;
     const uint16_t taskId = slotInfo.taskId;
 
-    TaskInfo *taskInfo = dev->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), taskId);
+    TaskInfo* taskInfo = dev->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), taskId);
     if (taskInfo == nullptr) {
         RT_LOG(RT_LOG_ERROR, "task info is null, stream_id=%u, task_id=%u", streamId, taskId);
         return;
@@ -1261,26 +1227,19 @@ void DeviceErrorProc::ProcessStarsTimeoutDfxSlotInfo4FftsPlus(
 
     rtFftsPlusAicAivCtx_t contextInfo;
     const uint64_t offset = static_cast<uint64_t>(slotInfo.cxtId) * CONTEXT_LEN;
-    FftsPlusTaskInfo *fftsPlusTaskInfo = &(taskInfo->u.fftsPlusTask);
+    FftsPlusTaskInfo* fftsPlusTaskInfo = &(taskInfo->u.fftsPlusTask);
     if (((offset + CONTEXT_LEN) > fftsPlusTaskInfo->descBufLen) || (fftsPlusTaskInfo->descAlignBuf == nullptr)) {
-        RT_LOG(RT_LOG_ERROR,
+        RT_LOG(
+            RT_LOG_ERROR,
             "fftsplus task timeout dfx print failed, dev_id=%u, stream_id=%d, "
             "task_id=%u, context_id=%u, descBufLen=%u, descAlignBuf=%u, descAlignBuf is invalid.",
-            dev->Id_(),
-            streamId,
-            taskId,
-            slotInfo.cxtId,
-            fftsPlusTaskInfo->descBufLen,
-            fftsPlusTaskInfo->descAlignBuf);
+            dev->Id_(), streamId, taskId, slotInfo.cxtId, fftsPlusTaskInfo->descBufLen, fftsPlusTaskInfo->descAlignBuf);
         return;
     }
-    Driver *const devDrv = dev->Driver_();
-    uint8_t *const descAlignBuf = RtPtrToPtr<uint8_t *, void *>(fftsPlusTaskInfo->descAlignBuf);
-    const rtError_t ret = devDrv->MemCopySync(&contextInfo,
-        CONTEXT_LEN,
-        static_cast<void *>(&descAlignBuf[offset]),
-        CONTEXT_LEN,
-        RT_MEMCPY_DEVICE_TO_HOST);
+    Driver* const devDrv = dev->Driver_();
+    uint8_t* const descAlignBuf = RtPtrToPtr<uint8_t*, void*>(fftsPlusTaskInfo->descAlignBuf);
+    const rtError_t ret = devDrv->MemCopySync(
+        &contextInfo, CONTEXT_LEN, static_cast<void*>(&descAlignBuf[offset]), CONTEXT_LEN, RT_MEMCPY_DEVICE_TO_HOST);
     if (ret != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "MemCopySync failed, retCode=%#x.", ret);
         return;
@@ -1291,19 +1250,28 @@ void DeviceErrorProc::ProcessStarsTimeoutDfxSlotInfo4FftsPlus(
     uint16_t blockdim = 0U;
     if ((contextInfo.contextType == RT_CTX_TYPE_AICORE) || (contextInfo.contextType == RT_CTX_TYPE_AIV)) {
         (void)mapAddr.emplace_back(
-            static_cast<uint64_t>(contextInfo.nonTailTaskStartPcH) << 32U | static_cast<uint64_t>(contextInfo.nonTailTaskStartPcL));
-        (void)mapAddr.emplace_back(static_cast<uint64_t>(contextInfo.tailTaskStartPcH) << 32U | static_cast<uint64_t>(contextInfo.tailTaskStartPcL));
+            static_cast<uint64_t>(contextInfo.nonTailTaskStartPcH) << 32U |
+            static_cast<uint64_t>(contextInfo.nonTailTaskStartPcL));
+        (void)mapAddr.emplace_back(
+            static_cast<uint64_t>(contextInfo.tailTaskStartPcH) << 32U |
+            static_cast<uint64_t>(contextInfo.tailTaskStartPcL));
         schemMode = contextInfo.schem;
         blockdim = contextInfo.tailBlockdim;
     } else if ((contextInfo.contextType == RT_CTX_TYPE_MIX_AIC) || (contextInfo.contextType == RT_CTX_TYPE_MIX_AIV)) {
-        rtFftsPlusMixAicAivCtx_t *mixCtx = nullptr;
-        mixCtx = RtPtrToPtr<rtFftsPlusMixAicAivCtx_t *, rtFftsPlusAicAivCtx_t *>(&contextInfo);
+        rtFftsPlusMixAicAivCtx_t* mixCtx = nullptr;
+        mixCtx = RtPtrToPtr<rtFftsPlusMixAicAivCtx_t*, rtFftsPlusAicAivCtx_t*>(&contextInfo);
         (void)mapAddr.emplace_back(
-            static_cast<uint64_t>(mixCtx->nonTailAicTaskStartPcH) << 32U | static_cast<uint64_t>(mixCtx->nonTailAicTaskStartPcL));
-        (void)mapAddr.emplace_back(static_cast<uint64_t>(mixCtx->tailAicTaskStartPcH) << 32U | static_cast<uint64_t>(mixCtx->tailAicTaskStartPcL));
+            static_cast<uint64_t>(mixCtx->nonTailAicTaskStartPcH) << 32U |
+            static_cast<uint64_t>(mixCtx->nonTailAicTaskStartPcL));
         (void)mapAddr.emplace_back(
-            static_cast<uint64_t>(mixCtx->nonTailAivTaskStartPcH) << 32U | static_cast<uint64_t>(mixCtx->nonTailAivTaskStartPcL));
-        (void)mapAddr.emplace_back(static_cast<uint64_t>(mixCtx->tailAivTaskStartPcH) << 32U | static_cast<uint64_t>(mixCtx->tailAivTaskStartPcL));
+            static_cast<uint64_t>(mixCtx->tailAicTaskStartPcH) << 32U |
+            static_cast<uint64_t>(mixCtx->tailAicTaskStartPcL));
+        (void)mapAddr.emplace_back(
+            static_cast<uint64_t>(mixCtx->nonTailAivTaskStartPcH) << 32U |
+            static_cast<uint64_t>(mixCtx->nonTailAivTaskStartPcL));
+        (void)mapAddr.emplace_back(
+            static_cast<uint64_t>(mixCtx->tailAivTaskStartPcH) << 32U |
+            static_cast<uint64_t>(mixCtx->tailAivTaskStartPcL));
         schemMode = mixCtx->schem;
         blockdim = mixCtx->tailBlockdim;
     } else {
@@ -1320,37 +1288,29 @@ void DeviceErrorProc::ProcessStarsTimeoutDfxSlotInfo4FftsPlus(
     }
     kernelName = (kernelName.empty()) ? "none" : kernelName;
 
-    RT_LOG(RT_LOG_ERROR,
+    RT_LOG(
+        RT_LOG_ERROR,
         "fftsplus aicore task timeout dfx, show slot info, slot_id=%u, device_id=%u, stream_id=%u, task_id=%u, "
         "sche_mode=%u, block_dim=%u, aic_own_bitmap=%#" PRIx64 ", aiv_own_bitmap0=%#" PRIx64
         ", aiv_own_bitmap1=%#" PRIx64 ", "
         "kernel_name=%s, pc_start=%#" PRIx64 ".",
-        slotInfo.slotId,
-        dev->Id_(),
-        streamId,
-        taskId,
-        schemMode,
-        blockdim,
-        slotInfo.aicOwnBitmap,
-        slotInfo.aivOwnBitmap0,
-        slotInfo.aivOwnBitmap1,
-        kernelName.c_str(),
-        slotInfo.pcStart);
+        slotInfo.slotId, dev->Id_(), streamId, taskId, schemMode, blockdim, slotInfo.aicOwnBitmap,
+        slotInfo.aivOwnBitmap0, slotInfo.aivOwnBitmap1, kernelName.c_str(), slotInfo.pcStart);
 }
 
-rtError_t DeviceErrorProc::ProcessStarsCoreErrorInfo(const StarsDeviceErrorInfo * const info,
-                                                     const uint64_t errorNumber,
-                                                     const Device * const dev, const DeviceErrorProc * const insPtr)
+rtError_t DeviceErrorProc::ProcessStarsCoreErrorInfo(
+    const StarsDeviceErrorInfo* const info, const uint64_t errorNumber, const Device* const dev,
+    const DeviceErrorProc* const insPtr)
 {
     UNUSED(insPtr);
     bool isFftsPlusTask = false;
     const uint16_t type = info->u.coreErrorInfo.comm.type;
 
-    TaskInfo *errTaskPtr = dev->GetTaskFactory()->GetTask(static_cast<int32_t>(info->u.coreErrorInfo.comm.streamId),
-        info->u.coreErrorInfo.comm.taskId);
+    TaskInfo* errTaskPtr = dev->GetTaskFactory()->GetTask(
+        static_cast<int32_t>(info->u.coreErrorInfo.comm.streamId), info->u.coreErrorInfo.comm.taskId);
     if (errTaskPtr != nullptr) {
         errTaskPtr->isRingbufferGet = true;
-        if ((errTaskPtr->type ==  TS_TASK_TYPE_FFTS_PLUS) &&
+        if ((errTaskPtr->type == TS_TASK_TYPE_FFTS_PLUS) &&
             ((type == FFTS_PLUS_AICORE_ERROR) || (type == FFTS_PLUS_AIVECTOR_ERROR))) {
             isFftsPlusTask = true;
         }
@@ -1360,17 +1320,20 @@ rtError_t DeviceErrorProc::ProcessStarsCoreErrorInfo(const StarsDeviceErrorInfo 
         }
     }
 
-    const bool isSupportFastRecover = dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DFX_FAST_RECOVER_MTE_ERROR);
+    const bool isSupportFastRecover =
+        dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DFX_FAST_RECOVER_MTE_ERROR);
     const uint32_t inputcoreNum = info->u.coreErrorInfo.comm.coreNum;
     // info->u.coreErrorInfo.comm.flag等于1的场景在上述流程已经判断过，不需要再重复判断
-    bool isMteErr = (inputcoreNum > 0U) && (info->u.coreErrorInfo.comm.flag != 1U) && isSupportFastRecover; 
+    bool isMteErr = (inputcoreNum > 0U) && (info->u.coreErrorInfo.comm.flag != 1U) && isSupportFastRecover;
     for (uint32_t coreIdx = 0U; coreIdx < inputcoreNum; coreIdx++) {
         if (isFftsPlusTask == false && errTaskPtr != nullptr && errTaskPtr->u.aicTaskInfo.kernel == nullptr) {
-            AicTaskInfo *aicTask = &errTaskPtr->u.aicTaskInfo;
-            RT_LOG(RT_LOG_ERROR, "stream_id=%u, task_id=%u not with kernel info.", info->u.coreErrorInfo.comm.streamId,
+            AicTaskInfo* aicTask = &errTaskPtr->u.aicTaskInfo;
+            RT_LOG(
+                RT_LOG_ERROR, "stream_id=%u, task_id=%u not with kernel info.", info->u.coreErrorInfo.comm.streamId,
                 info->u.coreErrorInfo.comm.taskId);
             if (aicTask->progHandle != nullptr && coreIdx < MAX_CORE_BLOCK_NUM) {
-                aicTask->kernel =aicTask->progHandle->SearchKernelByPcAddr(info->u.coreErrorInfo.info[coreIdx].pcStart);
+                aicTask->kernel =
+                    aicTask->progHandle->SearchKernelByPcAddr(info->u.coreErrorInfo.info[coreIdx].pcStart);
             }
         }
         std::string errorString;
@@ -1390,13 +1353,14 @@ rtError_t DeviceErrorProc::ProcessStarsCoreErrorInfo(const StarsDeviceErrorInfo 
     }
     if (isLinkError) {
         errTaskPtr->mte_error = TS_ERROR_SDMA_LINK_ERROR;
-        (RtPtrToUnConstPtr<Device *>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
+        (RtPtrToUnConstPtr<Device*>(dev))->SetDeviceFaultType(DeviceFaultType::LINK_ERROR);
     }
     if (errTaskPtr != nullptr) {
-        RT_LOG(RT_LOG_ERROR, "devId=%u, streamId=%u, taskId=%u, MTE errorCode=%u.", dev->Id_(),
-               info->u.coreErrorInfo.comm.streamId, info->u.coreErrorInfo.comm.taskId, errTaskPtr->mte_error);
+        RT_LOG(
+            RT_LOG_ERROR, "devId=%u, streamId=%u, taskId=%u, MTE errorCode=%u.", dev->Id_(),
+            info->u.coreErrorInfo.comm.streamId, info->u.coreErrorInfo.comm.taskId, errTaskPtr->mte_error);
     }
     return RT_ERROR_NONE;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

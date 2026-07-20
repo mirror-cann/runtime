@@ -12,8 +12,7 @@
 
 namespace cce {
 namespace runtime {
-const std::unordered_set<RtOptionalFeatureType> CHIP_XPU_FEATURE{
-    RtOptionalFeatureType::RT_FEATURE_XPU};
+const std::unordered_set<RtOptionalFeatureType> CHIP_XPU_FEATURE{RtOptionalFeatureType::RT_FEATURE_XPU};
 REGISTER_CHIP_FEATURE_SET(CHIP_XPU, CHIP_XPU_FEATURE);
-}
-}
+} // namespace runtime
+} // namespace cce

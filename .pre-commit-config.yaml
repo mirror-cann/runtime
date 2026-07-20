@@ -5,7 +5,7 @@ repos:
       - id: clang-format
         types_or: [c++, c]
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx)$
-        exclude: ^(docs|example|include|pkg_inc|scripts|src|stub|tests)
+        exclude: ^(docs|example|include|pkg_inc|scripts|src/(acl|aicpu_sched|cmodel_driver|dfx|inc|mmpa|platform|queue_schedule|runtime_compact|tprt|tsd)(/|$)|stub|tests)
         args:
           - "--style=file"
           - "--verbose"

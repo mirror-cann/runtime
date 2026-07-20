@@ -18,7 +18,7 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("LabelSetTask")
-rtError_t LabelSetTaskInit(TaskInfo* taskInfo, const uint16_t labelIndex, void * const devDestAddr)
+rtError_t LabelSetTaskInit(TaskInfo* taskInfo, const uint16_t labelIndex, void* const devDestAddr)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->type = TS_TASK_TYPE_LABEL_SET;
@@ -28,15 +28,14 @@ rtError_t LabelSetTaskInit(TaskInfo* taskInfo, const uint16_t labelIndex, void *
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForLabelSetTask(TaskInfo* taskInfo, rtCommand_t * const command)
+void ToCommandBodyForLabelSetTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     command->u.labelSetTask.labelId = taskInfo->u.labelSetTask.labelId;
-    Stream * const stm = taskInfo->stream;
+    Stream* const stm = taskInfo->stream;
     if (stm->Device_()->GetTschVersion() >= TS_VERSION_MORE_LABEL) {
         uint64_t pptr;
         const rtError_t error = taskInfo->stream->Device_()->Driver_()->MemAddressTranslate(
-            static_cast<int32_t>(stm->Device_()->Id_()),
-            RtPtrToValue(taskInfo->u.labelSetTask.devDstAddr), &pptr);
+            static_cast<int32_t>(stm->Device_()->Id_()), RtPtrToValue(taskInfo->u.labelSetTask.devDstAddr), &pptr);
         COND_RETURN_VOID(error != RT_ERROR_NONE, "convert memory address from virtual to physic failed");
         command->u.labelSetTask.labelPtr = pptr;
         RT_LOG(RT_LOG_DEBUG, "ts support 64k table,add label dev addr=%" PRIu64 " to command.", pptr);
@@ -49,26 +48,27 @@ void ToCommandBodyForLabelSetTask(TaskInfo* taskInfo, rtCommand_t * const comman
 // head       : The position of label in sq
 void SetLabelInfoForLabelSetTask(TaskInfo* taskInfo, const uint32_t pos)
 {
-    Stream * const stm = taskInfo->stream;
+    Stream* const stm = taskInfo->stream;
     const uint32_t labelId = static_cast<uint32_t>(taskInfo->u.labelSetTask.labelId);
-    void *devDstAddr = taskInfo->u.labelSetTask.devDstAddr;
+    void* devDstAddr = taskInfo->u.labelSetTask.devDstAddr;
     const uint32_t sqId = stm->GetSqId();
-    uint16_t * const execTimesSvm = stm->GetExecutedTimesSvm();
+    uint16_t* const execTimesSvm = stm->GetExecutedTimesSvm();
     const uint64_t streamExecTimesAddr = RtPtrToValue((execTimesSvm));
-    uint32_t labelInfo[RT_CHIP_CLOUD_V2_LABEL_INFO_SIZE/sizeof(uint32_t)];
+    uint32_t labelInfo[RT_CHIP_CLOUD_V2_LABEL_INFO_SIZE / sizeof(uint32_t)];
     // labelInfo format: rtsq_id=R1[10:0], head=R1[31:16]
     labelInfo[0U] = (sqId & 0x7FFU) + (pos << 16U);
     labelInfo[2U] = static_cast<uint32_t>(streamExecTimesAddr & 0x00000000FFFFFFFFU);
     labelInfo[3U] = static_cast<uint32_t>((streamExecTimesAddr & 0xFFFFFFFF00000000U) >> UINT32_BIT_NUM);
-    RT_LOG(RT_LOG_DEBUG,
+    RT_LOG(
+        RT_LOG_DEBUG,
         "LabelSetTask, set label position in sq, labelId:%u, sqId:%u, pos:%u, labelInfo:%u, devDstAddr=%#" PRIx64,
-        static_cast<uint32_t>(labelId), sqId, pos, labelInfo,
-        RtPtrToValue((devDstAddr)));
+        static_cast<uint32_t>(labelId), sqId, pos, labelInfo, RtPtrToValue((devDstAddr)));
 
-    const rtError_t error = taskInfo->stream->Device_()->Driver_()->MemCopySync(devDstAddr,
-        RT_CHIP_CLOUD_V2_LABEL_INFO_SIZE, static_cast<void *>(labelInfo), RT_CHIP_CLOUD_V2_LABEL_INFO_SIZE,
+    const rtError_t error = taskInfo->stream->Device_()->Driver_()->MemCopySync(
+        devDstAddr, RT_CHIP_CLOUD_V2_LABEL_INFO_SIZE, static_cast<void*>(labelInfo), RT_CHIP_CLOUD_V2_LABEL_INFO_SIZE,
         RT_MEMCPY_HOST_TO_DEVICE);
-    COND_LOG_ERROR((error != RT_ERROR_NONE),
+    COND_LOG_ERROR(
+        (error != RT_ERROR_NONE),
         "LabelSetTask set label position in sq failed, label_id=%u, sq_id=%u, pos=%u, retCode=%#x.",
         static_cast<uint32_t>(labelId), sqId, pos, static_cast<uint32_t>(error));
 }
@@ -76,20 +76,19 @@ void SetLabelInfoForLabelSetTask(TaskInfo* taskInfo, const uint32_t pos)
 #endif
 
 #if F_DESC("LabelSwitchTask")
-rtError_t LabelSwitchTaskInit(TaskInfo* taskInfo, const void *const ptr, const rtCondition_t cond,
-                              const uint32_t val, const uint16_t labelId)
+rtError_t LabelSwitchTaskInit(
+    TaskInfo* taskInfo, const void* const ptr, const rtCondition_t cond, const uint32_t val, const uint16_t labelId)
 {
-    LabelSwitchTaskInfo *labelSwitchTask = &(taskInfo->u.labelSwitchTask);
+    LabelSwitchTaskInfo* labelSwitchTask = &(taskInfo->u.labelSwitchTask);
     TaskCommonInfoInit(taskInfo);
     taskInfo->type = TS_TASK_TYPE_LABEL_SWITCH;
     taskInfo->typeName = "LABEL_SWITCH";
 
     uint64_t physicPtr;
-    const rtError_t error =
-        taskInfo->stream->Device_()->Driver_()->MemAddressTranslate(
-            static_cast<int32_t>(taskInfo->stream->Device_()->Id_()),
-            RtPtrToValue(ptr), &physicPtr);
-    COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "Convert memory address from virtual to physic failed, retCode=%#x.", error);
+    const rtError_t error = taskInfo->stream->Device_()->Driver_()->MemAddressTranslate(
+        static_cast<int32_t>(taskInfo->stream->Device_()->Id_()), RtPtrToValue(ptr), &physicPtr);
+    COND_RETURN_ERROR(
+        (error != RT_ERROR_NONE), error, "Convert memory address from virtual to physic failed, retCode=%#x.", error);
 
     labelSwitchTask->pptr = physicPtr;
     labelSwitchTask->condition = cond;
@@ -98,9 +97,9 @@ rtError_t LabelSwitchTaskInit(TaskInfo* taskInfo, const void *const ptr, const r
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForLabelSwitchTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForLabelSwitchTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
-    LabelSwitchTaskInfo *labelSwitchTask = &(taskInfo->u.labelSwitchTask);
+    LabelSwitchTaskInfo* labelSwitchTask = &(taskInfo->u.labelSwitchTask);
     command->u.labelSwitchTask.pptr = labelSwitchTask->pptr;
     command->u.labelSwitchTask.condition = labelSwitchTask->condition;
     command->u.labelSwitchTask.value = labelSwitchTask->value;
@@ -120,12 +119,12 @@ rtError_t LabelGotoTaskInit(TaskInfo* taskInfo, const uint16_t lblId)
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForLabelGotoTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForLabelGotoTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     command->u.labelGotoTask.labelId = taskInfo->u.labelGotoTask.labelId;
 }
 
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -17,7 +17,7 @@
 
 namespace cce {
 namespace runtime {
-Module::Module(Device * const dev)
+Module::Module(Device* const dev)
     : NoCopy(),
       device_(dev),
       baseAddr_(nullptr),
@@ -29,13 +29,9 @@ Module::Module(Device * const dev)
       baseAddrSize_(0U),
       kernelNamesSize_(0U),
       soNamesSize_(0U)
-{
-}
+{}
 TIMESTAMP_EXTERN(ModuleDevMemFree);
-Module::~Module() noexcept
-{
-    TearDown();
-}
+Module::~Module() noexcept { TearDown(); }
 
 void Module::TearDown() noexcept
 {
@@ -73,15 +69,15 @@ void Module::TearDown() noexcept
 TIMESTAMP_EXTERN(ModuleMemAlloc);
 TIMESTAMP_EXTERN(ModuleLoadProgram);
 
-rtError_t Module::Load(Program * const prog)
+rtError_t Module::Load(Program* const prog)
 {
-    void *devMem = nullptr;
-    void *data = nullptr;
+    void* devMem = nullptr;
+    void* data = nullptr;
     bool readonly = true;
     uint32_t size = 0U;
     uint32_t alignSize = 0U;
     rtError_t error = RT_ERROR_NONE;
-    Driver * const curDrv = device_->Driver_();
+    Driver* const curDrv = device_->Driver_();
     const rtChipType_t chipType = device_->GetChipType();
     bool isPoolMem = true;
     NULL_PTR_RETURN_MSG(prog, RT_ERROR_PROGRAM_NULL);
@@ -91,30 +87,39 @@ rtError_t Module::Load(Program * const prog)
         size = prog->GetBinarySize();
         data = prog->GetBinary();
 
-        const auto &progKernelName = prog->GetKernelNamesBuffer();
+        const auto& progKernelName = prog->GetKernelNamesBuffer();
         if (!progKernelName.empty()) {
             RT_LOG(RT_LOG_DEBUG, "load on host the kernel name, size=%zu(bytes).", progKernelName.size());
-            error = curDrv->DevMemAlloc(&kernelNamesBaseAddr_, progKernelName.size() + 1U,
-                RT_MEMORY_HBM, device_->Id_());
-            ERROR_GOTO(error, FAIL_FREE, "Malloc kernel names buffer failed, type=%d(RT_MEMORY_HBM), "
-                "size=%zu(bytes), retCode=%#x.", RT_MEMORY_HBM, progKernelName.size(), static_cast<uint32_t>(error));
+            error =
+                curDrv->DevMemAlloc(&kernelNamesBaseAddr_, progKernelName.size() + 1U, RT_MEMORY_HBM, device_->Id_());
+            ERROR_GOTO(
+                error, FAIL_FREE,
+                "Malloc kernel names buffer failed, type=%d(RT_MEMORY_HBM), "
+                "size=%zu(bytes), retCode=%#x.",
+                RT_MEMORY_HBM, progKernelName.size(), static_cast<uint32_t>(error));
 
-            error = curDrv->MemCopySync(kernelNamesBaseAddr_, progKernelName.size(), progKernelName.c_str(),
-                progKernelName.size(), RT_MEMCPY_HOST_TO_DEVICE);
+            error = curDrv->MemCopySync(
+                kernelNamesBaseAddr_, progKernelName.size(), progKernelName.c_str(), progKernelName.size(),
+                RT_MEMCPY_HOST_TO_DEVICE);
             ERROR_GOTO(error, FAIL_FREE, "Memcpy failed, retCode=%#x.", static_cast<uint32_t>(error));
 
             error = curDrv->DevMemAlloc(&soNamesBaseAddr_, prog->GetSoName().size(), RT_MEMORY_HBM, device_->Id_());
-            ERROR_GOTO(error, FAIL_FREE, "Malloc so names buffer failed, size=%zu(bytes), "
-                "type=%d(RT_MEMORY_HBM), retCode=%#x.", prog->GetSoName().size(),
-                static_cast<int32_t>(RT_MEMORY_HBM), static_cast<uint32_t>(error));
+            ERROR_GOTO(
+                error, FAIL_FREE,
+                "Malloc so names buffer failed, size=%zu(bytes), "
+                "type=%d(RT_MEMORY_HBM), retCode=%#x.",
+                prog->GetSoName().size(), static_cast<int32_t>(RT_MEMORY_HBM), static_cast<uint32_t>(error));
 
-            error = curDrv->MemCopySync(soNamesBaseAddr_, prog->GetSoName().size(),
-                prog->GetSoName().c_str(), prog->GetSoName().size(), RT_MEMCPY_HOST_TO_DEVICE);
-            ERROR_GOTO(error, FAIL_FREE, "Memcpy so names failed, size=%zu(bytes), "
-                "type=%d(RT_MEMCPY_HOST_TO_DEVICE), retCode=%#x.", prog->GetSoName().size(),
-                static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
+            error = curDrv->MemCopySync(
+                soNamesBaseAddr_, prog->GetSoName().size(), prog->GetSoName().c_str(), prog->GetSoName().size(),
+                RT_MEMCPY_HOST_TO_DEVICE);
+            ERROR_GOTO(
+                error, FAIL_FREE,
+                "Memcpy so names failed, size=%zu(bytes), "
+                "type=%d(RT_MEMCPY_HOST_TO_DEVICE), retCode=%#x.",
+                prog->GetSoName().size(), static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
             kernelNamesSize_ = progKernelName.size() + 1U;
-            soNamesSize_  = prog->GetSoName().size();
+            soNamesSize_ = prog->GetSoName().size();
         }
     } else {
         size = prog->LoadSize();
@@ -125,14 +130,16 @@ rtError_t Module::Load(Program * const prog)
     error = prog->RefreshSymbolAddr();
     ERROR_GOTO(error, FAIL_FREE, "refresh symbol address failed!");
 
-    COND_GOTO_ERROR_MSG_AND_ASSIGN_INNER(size == 0U, FAIL_FREE, error, RT_ERROR_PROGRAM_SIZE,
+    COND_GOTO_ERROR_MSG_AND_ASSIGN_INNER(
+        size == 0U, FAIL_FREE, error, RT_ERROR_PROGRAM_SIZE,
         "Failed to load the module because the program size (which should be greater than 0) is 0.");
     NULL_PTR_GOTO_MSG_INNER(data, FAIL_FREE, error, RT_ERROR_PROGRAM_DATA);
 
     {
         TIMESTAMP_BEGIN(ModuleMemAlloc);
         const uint32_t devSize = device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_SIMT) ?
-            (size + PREFETCH_INCREASE_SIZE) : size;
+                                     (size + PREFETCH_INCREASE_SIZE) :
+                                     size;
         if (IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_MEM_POOL_ALIGN)) {
             alignSize = (devSize + POOL_ALIGN_SIZE) & (~POOL_ALIGN_SIZE);
             devMem = device_->GetKernelMemoryPool()->Allocate(alignSize, readonly);
@@ -140,8 +147,9 @@ rtError_t Module::Load(Program * const prog)
         }
 
         if (devMem == nullptr) {
-            error = curDrv->DevMemAlloc(&devMem, static_cast<uint64_t>(devSize + INSTR_ALIGN_SIZE),
-                RT_MEMORY_HBM, device_->Id_(), MODULEID_RUNTIME, true, readonly);
+            error = curDrv->DevMemAlloc(
+                &devMem, static_cast<uint64_t>(devSize + INSTR_ALIGN_SIZE), RT_MEMORY_HBM, device_->Id_(),
+                MODULEID_RUNTIME, true, readonly);
             isPoolMem = false;
             ERROR_GOTO(error, FAIL_FREE, "Malloc device program failed, retCode=%#x.", static_cast<uint32_t>(error));
         }
@@ -157,7 +165,7 @@ rtError_t Module::Load(Program * const prog)
         if ((RtPtrToPtr<uintptr_t>(devMem) & 0xFFFULL) != 0ULL) {
             // 2 ^ 12 is 4K align
             const uintptr_t devMemAlign = (((RtPtrToPtr<uintptr_t>(devMem)) >> 12U) + 1UL) << 12U;
-            devMem = RtPtrToPtr<void *>(devMemAlign);
+            devMem = RtPtrToPtr<void*>(devMemAlign);
         }
         baseAddrAlign_ = devMem;
         baseAddrSize_ = devSize;
@@ -172,7 +180,9 @@ rtError_t Module::Load(Program * const prog)
             error = Program::BinaryMemCopySync(baseAddrAlign_, adviseSize, size, data, device_, readonly);
         }
 
-        ERROR_GOTO(error, FAIL_FREE, "Memcpy failed, size=%u(bytes),"
+        ERROR_GOTO(
+            error, FAIL_FREE,
+            "Memcpy failed, size=%u(bytes),"
             "type=%d(RT_MEMCPY_HOST_TO_DEVICE), retCode=%#x",
             size, static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error));
     }
@@ -204,64 +214,66 @@ FAIL_FREE:
     return error;
 }
 
-Program *Module::GetProgram() const
+Program* Module::GetProgram() const
 {
     if (programId_ < Runtime::maxProgramNum_) {
-        RefObject<Program *> *const programItem = Runtime::Instance()->GetProgramAllocator()->GetDataToItem(programId_);
+        RefObject<Program*>* const programItem = Runtime::Instance()->GetProgramAllocator()->GetDataToItem(programId_);
         if (programItem != nullptr) {
-            Program *programInst = programItem->GetVal(false);
+            Program* programInst = programItem->GetVal(false);
             return programInst;
         }
     }
     return nullptr;
 }
 
-rtError_t Module::CalModuleHash(std::size_t &hash) const
+rtError_t Module::CalModuleHash(std::size_t& hash) const
 {
-    void *hostMem = nullptr;
+    void* hostMem = nullptr;
     const bool suppSimt = device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_SIMT);
-    COND_RETURN_ERROR((baseAddrAlign_ == nullptr) || (baseAddrSize_ == 0U) ||
-        (suppSimt && (baseAddrSize_ <= PREFETCH_INCREASE_SIZE)), RT_ERROR_INVALID_VALUE,
-        "Cal module hash failed, support simt=%d, address size=%u(bytes)", suppSimt, baseAddrSize_);
+    COND_RETURN_ERROR(
+        (baseAddrAlign_ == nullptr) || (baseAddrSize_ == 0U) || (suppSimt && (baseAddrSize_ <= PREFETCH_INCREASE_SIZE)),
+        RT_ERROR_INVALID_VALUE, "Cal module hash failed, support simt=%d, address size=%u(bytes)", suppSimt,
+        baseAddrSize_);
     const uint32_t dataSize = suppSimt ? (baseAddrSize_ - PREFETCH_INCREASE_SIZE) : baseAddrSize_;
-    Driver * const deviceDrv = device_->Driver_();
+    Driver* const deviceDrv = device_->Driver_();
     rtError_t error = deviceDrv->HostMemAlloc(&hostMem, static_cast<uint64_t>(dataSize) + 1ULL, device_->Id_());
 
-    ERROR_RETURN(error, "Malloc host memory for calculate module hash failed, retCode=%#x.",
-                 static_cast<uint32_t>(error));
-    error = deviceDrv->MemCopySync(hostMem, static_cast<uint64_t>(dataSize) + 1ULL, baseAddrAlign_,
-        static_cast<uint64_t>(dataSize), RT_MEMCPY_DEVICE_TO_HOST);
+    ERROR_RETURN(
+        error, "Malloc host memory for calculate module hash failed, retCode=%#x.", static_cast<uint32_t>(error));
+    error = deviceDrv->MemCopySync(
+        hostMem, static_cast<uint64_t>(dataSize) + 1ULL, baseAddrAlign_, static_cast<uint64_t>(dataSize),
+        RT_MEMCPY_DEVICE_TO_HOST);
 
-    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)deviceDrv->HostMemFree(hostMem);,
-        "Memcpy failed, size=%u(bytes), type=%d(RT_MEMCPY_DEVICE_TO_HOST), retCode=%#x.",
-        dataSize, static_cast<int32_t>(RT_MEMCPY_DEVICE_TO_HOST), static_cast<uint32_t>(error));
+    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)deviceDrv->HostMemFree(hostMem);
+                           , "Memcpy failed, size=%u(bytes), type=%d(RT_MEMCPY_DEVICE_TO_HOST), retCode=%#x.", dataSize,
+                           static_cast<int32_t>(RT_MEMCPY_DEVICE_TO_HOST), static_cast<uint32_t>(error));
     // calculate hash
-    const std::string hashStr(RtPtrToPtr<const char_t *>(hostMem), static_cast<uint64_t>(dataSize));
+    const std::string hashStr(RtPtrToPtr<const char_t*>(hostMem), static_cast<uint64_t>(dataSize));
     hash = std::hash<std::string>{}(hashStr);
     (void)deviceDrv->HostMemFree(hostMem);
     return RT_ERROR_NONE;
 }
 
-rtError_t Module::GetFunction(const Kernel * const kernelIn, uint64_t * const function) const
+rtError_t Module::GetFunction(const Kernel* const kernelIn, uint64_t* const function) const
 {
-    *function = RtPtrToPtr<uintptr_t, void *>(baseAddrAlign_) + kernelIn->Offset_();
+    *function = RtPtrToPtr<uintptr_t, void*>(baseAddrAlign_) + kernelIn->Offset_();
     return RT_ERROR_NONE;
 }
 
-rtError_t Module::GetFunction(const Kernel * const kernelIn, uint64_t * const function1, uint64_t * const function2) const
+rtError_t Module::GetFunction(const Kernel* const kernelIn, uint64_t* const function1, uint64_t* const function2) const
 {
-    *function1 = RtPtrToPtr<uintptr_t, void *>(baseAddrAlign_) + kernelIn->Offset_();
+    *function1 = RtPtrToPtr<uintptr_t, void*>(baseAddrAlign_) + kernelIn->Offset_();
     *function2 = 0UL;
     // 只有 MIX_AIC_AIV_MAIN_AIC/MIX_AIC_AIV_MAIN_AIV 场景才会出现两个offset都存在的情况
     // 但是可能编译时aiv在前，aic在后，导致offset2 == 0，属于正常场景。
     if ((kernelIn->GetMixType() == MIX_AIC_AIV_MAIN_AIC) || (kernelIn->GetMixType() == MIX_AIC_AIV_MAIN_AIV)) {
-        *function2 = RtPtrToPtr<uintptr_t, void *>(baseAddrAlign_) + kernelIn->Offset2_();
+        *function2 = RtPtrToPtr<uintptr_t, void*>(baseAddrAlign_) + kernelIn->Offset2_();
     }
 
     return RT_ERROR_NONE;
 }
 
-rtError_t Module::GetPrefetchCnt(const Kernel * const kernelIn, uint32_t &icachePrefetchCnt) const
+rtError_t Module::GetPrefetchCnt(const Kernel* const kernelIn, uint32_t& icachePrefetchCnt) const
 {
     // 0KB, aicpu task not need prefetch
     constexpr uint32_t aicpuIcachePrefetchSizeMax = 0U;
@@ -291,7 +303,8 @@ rtError_t Module::GetPrefetchCnt(const Kernel * const kernelIn, uint32_t &icache
             prefetchMaxSize = aicoreIcachePrefetchSizeMax;
             break;
         default:
-            RT_LOG_INNER_MSG(RT_LOG_ERROR, "Get prefetch cnt failed, kernelAttrType=%d.", kernelIn->GetKernelAttrType());
+            RT_LOG_INNER_MSG(
+                RT_LOG_ERROR, "Get prefetch cnt failed, kernelAttrType=%d.", kernelIn->GetKernelAttrType());
             return RT_ERROR_INVALID_VALUE;
     }
 
@@ -300,14 +313,15 @@ rtError_t Module::GetPrefetchCnt(const Kernel * const kernelIn, uint32_t &icache
     const uint32_t prefetchMaxSizeCnt = prefetchMaxSize / prefetchUnits;
     icachePrefetchCnt = (restSizeCnt > prefetchMaxSizeCnt) ? prefetchMaxSizeCnt : restSizeCnt;
 
-    RT_LOG(RT_LOG_DEBUG, "get prefetch cnt success, kernel=%s, prefetchCnt=%u, restSize=%u.",
-        kernelIn->KernelInfoExt_(), icachePrefetchCnt, restSize);
+    RT_LOG(
+        RT_LOG_DEBUG, "get prefetch cnt success, kernel=%s, prefetchCnt=%u, restSize=%u.", kernelIn->KernelInfoExt_(),
+        icachePrefetchCnt, restSize);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t Module::GetPrefetchCnt(const Kernel * const kernelIn, uint32_t &icachePrefetchCnt1,
-                                 uint32_t &icachePrefetchCnt2) const
+rtError_t Module::GetPrefetchCnt(
+    const Kernel* const kernelIn, uint32_t& icachePrefetchCnt1, uint32_t& icachePrefetchCnt2) const
 {
     // 0KB, aicpu task not need prefetch
     constexpr uint32_t aicpuIcachePrefetchSizeMax = 0U;
@@ -345,7 +359,8 @@ rtError_t Module::GetPrefetchCnt(const Kernel * const kernelIn, uint32_t &icache
             prefetchMaxSize2 = aivectorIcachePrefetchSizeMax;
             break;
         default:
-            RT_LOG_INNER_MSG(RT_LOG_ERROR, "Get prefetch cnt failed, kernelAttrType=%d.", kernelIn->GetKernelAttrType());
+            RT_LOG_INNER_MSG(
+                RT_LOG_ERROR, "Get prefetch cnt failed, kernelAttrType=%d.", kernelIn->GetKernelAttrType());
             return RT_ERROR_INVALID_VALUE;
     }
 
@@ -359,17 +374,19 @@ rtError_t Module::GetPrefetchCnt(const Kernel * const kernelIn, uint32_t &icache
         icachePrefetchCnt2 = (restSizeCnt2 > prefetchMaxSizeCnt2) ? prefetchMaxSizeCnt2 : restSizeCnt2;
     }
 
-    RT_LOG(RT_LOG_DEBUG, "get prefetch cnt success, kernel=%s, prefetchCnt1=%u, prefetchCnt2=%u, mixtype=%hu, "
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "get prefetch cnt success, kernel=%s, prefetchCnt1=%u, prefetchCnt2=%u, mixtype=%hu, "
         "restSize1=%u, restSize2=%u.",
         kernelIn->KernelInfoExt_(), icachePrefetchCnt1, icachePrefetchCnt2, mixtype, restSize1, restSize2);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t Module::GetTaskRation(const Kernel * const kernelIn,  uint32_t &taskRation) const
+rtError_t Module::GetTaskRation(const Kernel* const kernelIn, uint32_t& taskRation) const
 {
     taskRation = kernelIn->GetTaskRation();
     return RT_ERROR_NONE;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

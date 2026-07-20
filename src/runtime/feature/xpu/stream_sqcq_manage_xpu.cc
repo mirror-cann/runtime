@@ -16,10 +16,9 @@
 
 namespace cce {
 namespace runtime {
-XpuStreamSqCqManage::XpuStreamSqCqManage(Device *const dev) : StreamSqCqManage(dev)
-{}
+XpuStreamSqCqManage::XpuStreamSqCqManage(Device* const dev) : StreamSqCqManage(dev) {}
 
-rtError_t XpuStreamSqCqManage::AllocXpuStreamSqCq(const Stream *const newStm)
+rtError_t XpuStreamSqCqManage::AllocXpuStreamSqCq(const Stream* const newStm)
 {
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
     int32_t streamId = newStm->Id_();
@@ -35,11 +34,12 @@ rtError_t XpuStreamSqCqManage::AllocXpuStreamSqCq(const Stream *const newStm)
         return RT_ERROR_STREAM_DUPLICATE;
     }
 
-    XpuDriver *xpuDriver = static_cast<XpuDriver *>(Device_()->Driver_());
+    XpuDriver* xpuDriver = static_cast<XpuDriver*>(Device_()->Driver_());
     rtError_t error =
         xpuDriver->XpuDriverDeviceSqCqAlloc(newStm->Device_()->Id_(), newStm->GetSqId(), newStm->GetCqId());
-    COND_RETURN_AND_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_STREAM_NEW,
-        "Failed to allocate XPU SQ/CQ, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    COND_RETURN_AND_MSG_INNER(
+        error != RT_ERROR_NONE, RT_ERROR_STREAM_NEW, "Failed to allocate XPU SQ/CQ, stream_id=%d, retCode=%#x.",
+        streamId, static_cast<uint32_t>(error));
     streamIdToSqIdMap_[streamId] = newStm->GetSqId();
     streamIdToCqIdMap_[streamId] = newStm->GetCqId();
     return RT_ERROR_NONE;
@@ -47,7 +47,7 @@ rtError_t XpuStreamSqCqManage::AllocXpuStreamSqCq(const Stream *const newStm)
 
 rtError_t XpuStreamSqCqManage::SetXpuTprtSqCqStatus(const uint32_t devId, const uint32_t sqId) const
 {
-    rtError_t error = static_cast<XpuDriver *>(Device_()->Driver_())->XpuDriverSetSqCqStatus(devId, sqId);
+    rtError_t error = static_cast<XpuDriver*>(Device_()->Driver_())->XpuDriverSetSqCqStatus(devId, sqId);
     return error;
 }
 
@@ -71,10 +71,10 @@ rtError_t XpuStreamSqCqManage::DeAllocXpuStreamSqCq(const uint32_t devId, const 
     streamIdToSqIdMap_.erase(streamId);
     streamIdToCqIdMap_.erase(streamId);
 
-    rtError_t error = static_cast<XpuDriver *>(Device_()->Driver_())->XpuDriverSqCqDestroy(devId, sqId, cqId);
+    rtError_t error = static_cast<XpuDriver*>(Device_()->Driver_())->XpuDriverSqCqDestroy(devId, sqId, cqId);
     RT_LOG(RT_LOG_INFO, "[SqCqManage]success to release sq, sq_id=%u, cq_id=%u, stream_id=%u", sqId, cqId, streamId);
     return error;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

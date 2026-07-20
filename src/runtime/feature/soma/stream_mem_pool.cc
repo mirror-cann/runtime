@@ -17,14 +17,28 @@ namespace runtime {
 std::once_flag PoolRegistry::initFlag_;
 PoolRegistry* PoolRegistry::poolRegistry_ = nullptr;
 
-Segment::Segment(uint64_t base, uint64_t size) :
-    basePtr(base), size(size), prev(nullptr), next(nullptr), streamId(INVALID_STREAM_ID),
-    graphId(MODEL_ID_INVALID), eventId(INVALID_EVENT_ID), seqId(INVALID_SEQ_ID), state(SegmentState::FREE)
+Segment::Segment(uint64_t base, uint64_t size)
+    : basePtr(base),
+      size(size),
+      prev(nullptr),
+      next(nullptr),
+      streamId(INVALID_STREAM_ID),
+      graphId(MODEL_ID_INVALID),
+      eventId(INVALID_EVENT_ID),
+      seqId(INVALID_SEQ_ID),
+      state(SegmentState::FREE)
 {}
 
-Segment::Segment(uint64_t base, uint64_t size, Segment *prev, Segment *next) :
-    basePtr(base), size(size), prev(prev), next(next), streamId(INVALID_STREAM_ID),
-    graphId(MODEL_ID_INVALID), eventId(INVALID_EVENT_ID), seqId(INVALID_SEQ_ID), state(SegmentState::FREE)
+Segment::Segment(uint64_t base, uint64_t size, Segment* prev, Segment* next)
+    : basePtr(base),
+      size(size),
+      prev(prev),
+      next(next),
+      streamId(INVALID_STREAM_ID),
+      graphId(MODEL_ID_INVALID),
+      eventId(INVALID_EVENT_ID),
+      seqId(INVALID_SEQ_ID),
+      state(SegmentState::FREE)
 {}
 
 Segment* Segment::SplitLeft(uint64_t splitedSize, bool mustSplit)
@@ -61,14 +75,23 @@ void Segment::MergeLeft()
     delete old_prev;
 }
 
-SegmentManager::SegmentManager(Segment *seg, uint32_t deviceId, bool canDelete) :
-    tail_(seg), base_(0U), size_(0U), busySize_(0U), reserveSize_(0U), maxBusySize_(0U),
-    maxReservedSize_(0U), deviceId_(deviceId), graphId_(MODEL_ID_INVALID),
-    canDelete_(canDelete), isIPCPool_(false)
+SegmentManager::SegmentManager(Segment* seg, uint32_t deviceId, bool canDelete)
+    : tail_(seg),
+      base_(0U),
+      size_(0U),
+      busySize_(0U),
+      reserveSize_(0U),
+      maxBusySize_(0U),
+      maxReservedSize_(0U),
+      deviceId_(deviceId),
+      graphId_(MODEL_ID_INVALID),
+      canDelete_(canDelete),
+      isIPCPool_(false)
 {
     if (seg == nullptr) {
-        RT_LOG(RT_LOG_WARNING,
-            "The mempool is being initialized using an empty segment, memPoolID=%#" PRIx64, MemPoolId());
+        RT_LOG(
+            RT_LOG_WARNING, "The mempool is being initialized using an empty segment, memPoolID=%#" PRIx64,
+            MemPoolId());
     } else {
         base_ = seg->basePtr;
         size_ = seg->size;
@@ -77,12 +100,9 @@ SegmentManager::SegmentManager(Segment *seg, uint32_t deviceId, bool canDelete) 
     }
 }
 
-Segment* SegmentManager::CreateSegment(uint64_t base, uint64_t size)
-{
-    return new (std::nothrow) Segment(base, size);
-}
+Segment* SegmentManager::CreateSegment(uint64_t base, uint64_t size) { return new (std::nothrow) Segment(base, size); }
 
-Segment* SegmentManager::CreateSegment(uint64_t base, uint64_t size, Segment *next, Segment *prev)
+Segment* SegmentManager::CreateSegment(uint64_t base, uint64_t size, Segment* next, Segment* prev)
 {
     return new (std::nothrow) Segment(base, size, next, prev);
 }
@@ -99,9 +119,9 @@ SegmentManager::~SegmentManager()
     std::lock_guard<std::mutex> lock(mutex_);
 
     if (tail_ == nullptr) {
-        return ;
+        return;
     }
-    Segment *it = tail_->prev;
+    Segment* it = tail_->prev;
     while (tail_->basePtr != base_) {
         RT_LOG(RT_LOG_DEBUG, "tail=%#" PRIx64 ".", tail_->basePtr);
         tail_->prev = it->prev;
@@ -115,7 +135,8 @@ SegmentManager::~SegmentManager()
     delete tail_;
 }
 
-Segment* SegmentManager::TryToReuse(size_t size, const int32_t streamId, PoolDependencyFea &state, ReuseFlag &flag) const
+Segment* SegmentManager::TryToReuse(
+    size_t size, const int32_t streamId, PoolDependencyFea& state, ReuseFlag& flag) const
 {
     UNUSED(size);
     UNUSED(streamId);
@@ -124,21 +145,24 @@ Segment* SegmentManager::TryToReuse(size_t size, const int32_t streamId, PoolDep
     return nullptr;
 }
 
-rtError_t SegmentManager::SegmentAlloc(Segment* &ret, uint64_t size, int streamId, ReuseFlag &flag)
+rtError_t SegmentManager::SegmentAlloc(Segment*& ret, uint64_t size, int streamId, ReuseFlag& flag)
 {
     RT_LOG(RT_LOG_DEBUG, "Allocating segment, size=%#" PRIx64 " streamId=%d.", size, streamId);
-    COND_RETURN_ERROR(tail_ == nullptr, RT_ERROR_MEM_POOL_ALLOC,
-        "Segment not properly initialized, memPoolID=%#" PRIx64 ".", MemPoolId());
-    
-    COND_RETURN_AND_MSG_OUTER(isIPCPool_, RT_ERROR_POOL_UNSUPPORTED, ErrorCode::EE1016, "Allocate memory from memory pool",
+    COND_RETURN_ERROR(
+        tail_ == nullptr, RT_ERROR_MEM_POOL_ALLOC, "Segment not properly initialized, memPoolID=%#" PRIx64 ".",
+        MemPoolId());
+
+    COND_RETURN_AND_MSG_OUTER(
+        isIPCPool_, RT_ERROR_POOL_UNSUPPORTED, ErrorCode::EE1016, "Allocate memory from memory pool",
         "The IPC memory pool does not support this operation");
 
     std::lock_guard<std::mutex> lock(mutex_);
     Segment* reuseSegment = TryToReuse(size, streamId, state_, flag);
     if (reuseSegment == nullptr) {
         ret = AllocFromFreeSegs(size);
-        COND_RETURN_ERROR(ret == nullptr, RT_ERROR_MEM_POOL_ALLOC,
-            "Unable to alloc segments(size=%#" PRIx64 ") from free segments.", size);
+        COND_RETURN_ERROR(
+            ret == nullptr, RT_ERROR_MEM_POOL_ALLOC, "Unable to alloc segments(size=%#" PRIx64 ") from free segments.",
+            size);
 
         ret->state = SegmentState::BUSY;
         ret->streamId = streamId;
@@ -146,14 +170,16 @@ rtError_t SegmentManager::SegmentAlloc(Segment* &ret, uint64_t size, int streamI
         reserveSize_ += size;
         maxReservedSize_ = max(maxReservedSize_, reserveSize_);
     } else {
-        RT_LOG(RT_LOG_DEBUG,
-            "Allocating new segment from cached segments, size=%#" PRIx64 ", cached block size=%#" PRIx64 ".",
-            size, reuseSegment->size);
+        RT_LOG(
+            RT_LOG_DEBUG,
+            "Allocating new segment from cached segments, size=%#" PRIx64 ", cached block size=%#" PRIx64 ".", size,
+            reuseSegment->size);
         reuseSegment->streamId = streamId;
         RT_LOG(RT_LOG_DEBUG, "Update reuseSegment streamId to %d.", streamId);
         (void)cachedSegs_.erase(reuseSegment);
         ret = reuseSegment->SplitLeft(size);
-        COND_RETURN_ERROR(ret == nullptr, RT_ERROR_MEM_POOL_ALLOC,
+        COND_RETURN_ERROR(
+            ret == nullptr, RT_ERROR_MEM_POOL_ALLOC,
             "Unable to alloc segments(size=%#" PRIx64 ") from segment(size=%#" PRIx64 ").", size, reuseSegment->size);
 
         ret->state = SegmentState::BUSY;
@@ -171,9 +197,10 @@ rtError_t SegmentManager::SegmentFree(uint64_t ptr, bool forceFree)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = allocedMap_.find(ptr);
-    COND_RETURN_ERROR(it == allocedMap_.end(), RT_ERROR_POOL_PTR_NOTFOUND,
-        "Unable to free ptr=%#" PRIx64 " from memPoolId=%#" PRIx64, ptr, MemPoolId());
-    Segment *seg = it->second;
+    COND_RETURN_ERROR(
+        it == allocedMap_.end(), RT_ERROR_POOL_PTR_NOTFOUND, "Unable to free ptr=%#" PRIx64 " from memPoolId=%#" PRIx64,
+        ptr, MemPoolId());
+    Segment* seg = it->second;
     RT_LOG(RT_LOG_DEBUG, "Free segment ptr=%#" PRIx64 " size=%#" PRIx64 ".", seg->basePtr, seg->size);
     (void)allocedMap_.erase(it);
     busySize_ -= seg->size;
@@ -195,10 +222,12 @@ uint64_t SegmentManager::GetAllocSize(uint64_t ptr)
     return (it != allocedMap_.end()) ? it->second->size : 0;
 }
 
-void SegmentManager::MergeIntoCachedSegs(Segment* &seg)
+void SegmentManager::MergeIntoCachedSegs(Segment*& seg)
 {
-    RT_LOG(RT_LOG_DEBUG, "Merging segment into cachedSegs ptr=%#" PRIx64 " size=%#" PRIx64 ".", seg->basePtr, seg->size);
-    while ((seg->basePtr != base_) && (seg->prev != nullptr) && (seg->prev->state == SegmentState::CACHED) && CheckMergeRules(seg->prev, seg)) {
+    RT_LOG(
+        RT_LOG_DEBUG, "Merging segment into cachedSegs ptr=%#" PRIx64 " size=%#" PRIx64 ".", seg->basePtr, seg->size);
+    while ((seg->basePtr != base_) && (seg->prev != nullptr) && (seg->prev->state == SegmentState::CACHED) &&
+           CheckMergeRules(seg->prev, seg)) {
         (void)cachedSegs_.erase(seg->prev);
         seg->MergeLeft();
     }
@@ -212,15 +241,14 @@ void SegmentManager::MergeIntoCachedSegs(Segment* &seg)
     (void)cachedSegs_.insert(seg);
 }
 
-Segment* SegmentManager::SingleStreamReuse(size_t size, const int32_t streamId, ReuseFlag &flag) const
+Segment* SegmentManager::SingleStreamReuse(size_t size, const int32_t streamId, ReuseFlag& flag) const
 {
     RT_LOG(RT_LOG_DEBUG, "Find segment by single stream reuse, size=%zu, streamId=%d.", size, streamId);
     Segment* curStmSeg = nullptr;
 
-    auto it = std::lower_bound(cachedSegs_.begin(), cachedSegs_.end(), size,
-        [](const Segment* seg, size_t targetSize) {
-            return seg->size < targetSize;
-        });
+    auto it = std::lower_bound(cachedSegs_.begin(), cachedSegs_.end(), size, [](const Segment* seg, size_t targetSize) {
+        return seg->size < targetSize;
+    });
 
     for (; it != cachedSegs_.end(); ++it) {
         Segment* segment = *it;
@@ -232,8 +260,9 @@ Segment* SegmentManager::SingleStreamReuse(size_t size, const int32_t streamId, 
 
     if (curStmSeg != nullptr) {
         flag = ReuseFlag::REUSE_FLAG_STANDARD;
-        RT_LOG(RT_LOG_DEBUG, "Single stream reuse successfully, flag=%d, segPtr=%#" PRIx64 ".",
-        static_cast<int32_t>(flag), curStmSeg->basePtr);
+        RT_LOG(
+            RT_LOG_DEBUG, "Single stream reuse successfully, flag=%d, segPtr=%#" PRIx64 ".", static_cast<int32_t>(flag),
+            curStmSeg->basePtr);
         return curStmSeg;
     }
 
@@ -242,17 +271,17 @@ Segment* SegmentManager::SingleStreamReuse(size_t size, const int32_t streamId, 
     return curStmSeg;
 }
 
-Segment* SegmentManager::StreamEventReuse(size_t size, const int32_t streamId, ReuseFlag &flag) const
+Segment* SegmentManager::StreamEventReuse(size_t size, const int32_t streamId, ReuseFlag& flag) const
 {
     RT_LOG(RT_LOG_DEBUG, "Find segment by multiple stream event reuse, size=%zu, streamId=%d.", size, streamId);
 
-    std::unordered_map<std::pair<int32_t, int32_t>, uint64_t, PairHash> sequenceMap = PoolRegistry::Instance().GetSequenceMap();
+    std::unordered_map<std::pair<int32_t, int32_t>, uint64_t, PairHash> sequenceMap =
+        PoolRegistry::Instance().GetSequenceMap();
     Segment* eventStmSeg = nullptr;
 
-    auto it = std::lower_bound(cachedSegs_.begin(), cachedSegs_.end(), size,
-        [](const Segment* seg, size_t targetSize) {
-            return seg->size < targetSize;
-        });
+    auto it = std::lower_bound(cachedSegs_.begin(), cachedSegs_.end(), size, [](const Segment* seg, size_t targetSize) {
+        return seg->size < targetSize;
+    });
 
     for (; it != cachedSegs_.end(); ++it) {
         Segment* segment = *it;
@@ -265,8 +294,9 @@ Segment* SegmentManager::StreamEventReuse(size_t size, const int32_t streamId, R
 
     if (eventStmSeg != nullptr) {
         flag = ReuseFlag::REUSE_FLAG_STANDARD;
-        RT_LOG(RT_LOG_DEBUG, "Stream event reuse successfully, flag=%d, segPtr=%#" PRIx64 ".",
-            static_cast<int32_t>(flag), eventStmSeg->basePtr);
+        RT_LOG(
+            RT_LOG_DEBUG, "Stream event reuse successfully, flag=%d, segPtr=%#" PRIx64 ".", static_cast<int32_t>(flag),
+            eventStmSeg->basePtr);
         return eventStmSeg;
     }
 
@@ -275,23 +305,23 @@ Segment* SegmentManager::StreamEventReuse(size_t size, const int32_t streamId, R
     return eventStmSeg;
 }
 
-Segment* SegmentManager::StreamInternalReuse(size_t size, const int32_t streamId, bool reuseType, ReuseFlag &flag) const
+Segment* SegmentManager::StreamInternalReuse(size_t size, const int32_t streamId, bool reuseType, ReuseFlag& flag) const
 {
     RT_LOG(RT_LOG_DEBUG, "Find segment by stream internal reuse, size=%zu, streamId=%d.", size, streamId);
 
     Segment* otherStmSeg = nullptr;
 
-    auto it = std::lower_bound(cachedSegs_.begin(), cachedSegs_.end(), size,
-        [](const Segment* seg, size_t targetSize) {
-            return seg->size < targetSize;
-        });
+    auto it = std::lower_bound(cachedSegs_.begin(), cachedSegs_.end(), size, [](const Segment* seg, size_t targetSize) {
+        return seg->size < targetSize;
+    });
     if (it != cachedSegs_.end()) {
         otherStmSeg = *it;
     }
 
     if (otherStmSeg != nullptr) {
         flag = reuseType ? ReuseFlag::REUSE_FLAG_STANDARD : ReuseFlag::REUSE_FLAG_INTERNAL;
-        RT_LOG(RT_LOG_DEBUG, "Stream internal reuse successfully, flag=%d, segPtr=%#" PRIx64 ".",
+        RT_LOG(
+            RT_LOG_DEBUG, "Stream internal reuse successfully, flag=%d, segPtr=%#" PRIx64 ".",
             static_cast<int32_t>(flag), otherStmSeg->basePtr);
         return otherStmSeg;
     }
@@ -301,19 +331,17 @@ Segment* SegmentManager::StreamInternalReuse(size_t size, const int32_t streamId
     return otherStmSeg;
 }
 
-bool SegmentManager::CheckMergeRules(const Segment *segLeft, const Segment *segRight) const
+bool SegmentManager::CheckMergeRules(const Segment* segLeft, const Segment* segRight) const
 {
     if (segLeft == tail_ || segRight == tail_) {
         return false;
     }
-    return (segLeft->state == segRight->state) &&
-        (segLeft->streamId == segRight->streamId) &&
-        (segLeft->graphId == segRight->graphId) &&
-        (segLeft->eventId == segRight->eventId) &&
-        (segLeft->seqId == segRight->seqId);
+    return (segLeft->state == segRight->state) && (segLeft->streamId == segRight->streamId) &&
+           (segLeft->graphId == segRight->graphId) && (segLeft->eventId == segRight->eventId) &&
+           (segLeft->seqId == segRight->seqId);
 }
 
-Segment *SegmentManager::AllocFromFreeSegs(uint64_t size)
+Segment* SegmentManager::AllocFromFreeSegs(uint64_t size)
 {
     RT_LOG(RT_LOG_DEBUG, "Allocating new segment from free segments, size=%#" PRIx64 ".", size);
     Segment reqSegs = Segment(0, size);
@@ -332,7 +360,7 @@ Segment *SegmentManager::AllocFromFreeSegs(uint64_t size)
     return ret;
 }
 
-void SegmentManager::MergeIntoFreeSegs(Segment* &seg)
+void SegmentManager::MergeIntoFreeSegs(Segment*& seg)
 {
     RT_LOG(RT_LOG_DEBUG, "Merging free segment basePtr=%#" PRIx64 " size=%lu.", seg->basePtr, seg->size);
 
@@ -356,10 +384,10 @@ void SegmentManager::TrimCachedSegs(const uint64_t minBytesToKeep)
     auto it = cachedSegs_.begin();
     while ((it != cachedSegs_.end()) && (reserveSize_ > minBytesToKeep)) {
         Segment* seg = *it;
-        RT_LOG(RT_LOG_DEBUG, "Trim cached segment basePtr=%#" PRIx64 " size=%lu.",
-                seg->basePtr, seg->size);
+        RT_LOG(RT_LOG_DEBUG, "Trim cached segment basePtr=%#" PRIx64 " size=%lu.", seg->basePtr, seg->size);
         if (seg->size > reserveSize_ - minBytesToKeep) {
-            RT_LOG(RT_LOG_DEBUG, "Split last segment with size=%lu for exact trimming, reserved size=%lu, size=%lu.",
+            RT_LOG(
+                RT_LOG_DEBUG, "Split last segment with size=%lu for exact trimming, reserved size=%lu, size=%lu.",
                 seg->size, reserveSize_, minBytesToKeep);
             (void)cachedSegs_.erase(seg);
             uint64_t leftSize = reserveSize_ - minBytesToKeep;
@@ -376,13 +404,13 @@ void SegmentManager::TrimCachedSegs(const uint64_t minBytesToKeep)
     }
 }
 
-void SegmentManager::SetInitialSegment(Segment *seg)
+void SegmentManager::SetInitialSegment(Segment* seg)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     COND_RETURN_VOID(seg == nullptr, "SetInitialSegment: seg is null.");
-    tail_  = seg;
-    base_  = seg->basePtr;
-    size_  = seg->size;
+    tail_ = seg;
+    base_ = seg->basePtr;
+    size_ = seg->size;
     seg->state = SegmentState::FREE;
     (void)freeSegs_.insert(seg);
 }
@@ -391,17 +419,18 @@ rtError_t SegmentManager::TrimTo(const uint64_t minBytesToKeep)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     RT_LOG(RT_LOG_DEBUG, "Trim reserved size from %lu to %lu.", reserveSize_, minBytesToKeep);
-    COND_RETURN_ERROR(minBytesToKeep > size_, RT_ERROR_POOL_OP_INVALID,
-        "Trim size should smaller than mempool total size, total size=%lu, trim to size=%lu.",
-        size_, minBytesToKeep);
-    COND_RETURN_DEBUG(minBytesToKeep >= reserveSize_, RT_ERROR_NONE,
-        "No need to trim, reserved size=%lu, trim to size=%lu.", reserveSize_, minBytesToKeep);
-    COND_RETURN_ERROR(minBytesToKeep < busySize_, RT_ERROR_POOL_OP_INVALID,
-        "Trim size is smaller than busy size, busy size=%lu, trim to size=%lu.",
-        busySize_, minBytesToKeep);
+    COND_RETURN_ERROR(
+        minBytesToKeep > size_, RT_ERROR_POOL_OP_INVALID,
+        "Trim size should smaller than mempool total size, total size=%lu, trim to size=%lu.", size_, minBytesToKeep);
+    COND_RETURN_DEBUG(
+        minBytesToKeep >= reserveSize_, RT_ERROR_NONE, "No need to trim, reserved size=%lu, trim to size=%lu.",
+        reserveSize_, minBytesToKeep);
+    COND_RETURN_ERROR(
+        minBytesToKeep < busySize_, RT_ERROR_POOL_OP_INVALID,
+        "Trim size is smaller than busy size, busy size=%lu, trim to size=%lu.", busySize_, minBytesToKeep);
 
     TrimCachedSegs(minBytesToKeep);
-    return RT_ERROR_NONE;    
+    return RT_ERROR_NONE;
 }
 
 rtError_t SegmentManager::GetAttribute(rtMemPoolAttr attr, void* value)
@@ -439,14 +468,15 @@ rtError_t SegmentManager::GetAttribute(rtMemPoolAttr attr, void* value)
     return RT_ERROR_NONE;
 }
 
-rtError_t SegmentManager::SetAttribute(rtMemPoolAttr attr, const void *value)
+rtError_t SegmentManager::SetAttribute(rtMemPoolAttr attr, const void* value)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     uint64_t reset = 0U;
 
-    COND_RETURN_AND_MSG_OUTER(isIPCPool_, RT_ERROR_POOL_UNSUPPORTED, ErrorCode::EE1016, "Allocate memory from memory pool",
+    COND_RETURN_AND_MSG_OUTER(
+        isIPCPool_, RT_ERROR_POOL_UNSUPPORTED, ErrorCode::EE1016, "Allocate memory from memory pool",
         "The IPC memory pool does not support this operation");
-    
+
     switch (attr) {
         case rtMemPoolReuseFollowEventDependencies:
             state_.eventDependencies = (*static_cast<const uint32_t*>(value) == 0U ? 0U : 1U);
@@ -462,23 +492,27 @@ rtError_t SegmentManager::SetAttribute(rtMemPoolAttr attr, const void *value)
             break;
         case rtMemPoolAttrReleaseThreshold:
             reset = *static_cast<const uint64_t*>(value);
-            COND_RETURN_ERROR(reset > size_, RT_ERROR_POOL_PROP_INVALID,
-                "Value is out of range, reset value=%#" PRIx64", should less than maxsize=%#" PRIx64 ".", reset, size_);
+            COND_RETURN_ERROR(
+                reset > size_, RT_ERROR_POOL_PROP_INVALID,
+                "Value is out of range, reset value=%#" PRIx64 ", should less than maxsize=%#" PRIx64 ".", reset,
+                size_);
             state_.waterMark = reset;
-            RT_LOG(RT_LOG_DEBUG, "Set attribute releaseThreshold, value=%#" PRIx64 ".",
+            RT_LOG(
+                RT_LOG_DEBUG, "Set attribute releaseThreshold, value=%#" PRIx64 ".",
                 *static_cast<const uint64_t*>(value));
             break;
         case rtMemPoolAttrReservedMemHigh:
             reset = *static_cast<const uint64_t*>(value);
-            COND_RETURN_ERROR(reset != 0, RT_ERROR_POOL_PROP_INVALID,
-                "Set attribute reservedMemHigh only accept zero, value=%ul", reset);
+            COND_RETURN_ERROR(
+                reset != 0, RT_ERROR_POOL_PROP_INVALID, "Set attribute reservedMemHigh only accept zero, value=%ul",
+                reset);
             maxReservedSize_ = 0U;
             RT_LOG(RT_LOG_DEBUG, "Reset reservedMemHigh to zero successfully.");
             break;
         case rtMemPoolAttrUsedMemHigh:
             reset = *static_cast<const uint64_t*>(value);
-            COND_RETURN_ERROR(reset != 0, RT_ERROR_POOL_PROP_INVALID,
-                "Set attribute usedMemHigh only accept zero, value=%ul", reset);
+            COND_RETURN_ERROR(
+                reset != 0, RT_ERROR_POOL_PROP_INVALID, "Set attribute usedMemHigh only accept zero, value=%ul", reset);
             maxBusySize_ = 0U;
             RT_LOG(RT_LOG_DEBUG, "Reset usedMemHigh to zero successfully.");
             break;
@@ -507,12 +541,9 @@ rtError_t PoolRegistry::Init()
     return RT_ERROR_NONE;
 }
 
-PoolRegistry::~PoolRegistry()
-{
-    RT_LOG(RT_LOG_EVENT, "SOMA PoolRegistry destructor.");
-}
+PoolRegistry::~PoolRegistry() { RT_LOG(RT_LOG_EVENT, "SOMA PoolRegistry destructor."); }
 
-SegmentManager* PoolRegistry::CreateManager(Segment *seg, uint32_t deviceId, bool canDeleteOutsideDestruction)
+SegmentManager* PoolRegistry::CreateManager(Segment* seg, uint32_t deviceId, bool canDeleteOutsideDestruction)
 {
     return new (std::nothrow) SegmentManager(seg, deviceId, canDeleteOutsideDestruction);
 }
@@ -523,15 +554,16 @@ void PoolRegistry::DeleteManager(SegmentManager*& manager)
     manager = nullptr;
 }
 
-rtError_t PoolRegistry::InitializeMemPool(SegmentManager *mgr, uint64_t va, uint64_t size)
+rtError_t PoolRegistry::InitializeMemPool(SegmentManager* mgr, uint64_t va, uint64_t size)
 {
-    Segment *seg = SegmentManager::CreateSegment(va, size, nullptr, nullptr);
-    COND_RETURN_AND_MSG_OUTER(seg == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(Segment)).c_str(), "new");
+    Segment* seg = SegmentManager::CreateSegment(va, size, nullptr, nullptr);
+    COND_RETURN_AND_MSG_OUTER(
+        seg == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(Segment)).c_str(), "new");
     mgr->SetInitialSegment(seg);
     return RT_ERROR_NONE;
 }
 
-void PoolRegistry::RegisterMemPool(SegmentManager *mgr)
+void PoolRegistry::RegisterMemPool(SegmentManager* mgr)
 {
     std::shared_ptr<SegmentManager> owned(mgr);
     std::lock_guard<std::mutex> lock(mutex_);
@@ -539,17 +571,19 @@ void PoolRegistry::RegisterMemPool(SegmentManager *mgr)
     (void)poolOwnership_.emplace(mgr, owned);
 }
 
-rtError_t PoolRegistry::CheckRemoveMemPool(SegmentManager *memPool)
+rtError_t PoolRegistry::CheckRemoveMemPool(SegmentManager* memPool)
 {
     COND_RETURN_ERROR(memPool == nullptr, RT_ERROR_MEM_POOL_NULL, "Memory pool is nullptr.");
     COND_RETURN_ERROR(!initialized_, RT_ERROR_MEM_POOL_NULL, "PoolRegistry not initialized.");
     std::lock_guard<std::mutex> lock(mutex_);
 
     auto it = poolOwnership_.find(memPool);
-    COND_RETURN_ERROR(it == poolOwnership_.end(), RT_ERROR_POOL_PTR_NOTFOUND,
-        "Failed to remove memPool, memPoolId=%#" PRIx64 ".", memPool->MemPoolId());
-    COND_RETURN_ERROR(!it->second->CanDelete(), RT_ERROR_POOL_OP_INVALID,
-        "Failed to destroy not deletable memPool(Id=%#" PRIx64 ").", memPool->MemPoolId());
+    COND_RETURN_ERROR(
+        it == poolOwnership_.end(), RT_ERROR_POOL_PTR_NOTFOUND, "Failed to remove memPool, memPoolId=%#" PRIx64 ".",
+        memPool->MemPoolId());
+    COND_RETURN_ERROR(
+        !it->second->CanDelete(), RT_ERROR_POOL_OP_INVALID, "Failed to destroy not deletable memPool(Id=%#" PRIx64 ").",
+        memPool->MemPoolId());
     return RT_ERROR_NONE;
 }
 
@@ -558,9 +592,11 @@ rtError_t PoolRegistry::RemoveMemPool(SegmentManager* memPool, std::shared_ptr<S
     {
         std::lock_guard<std::mutex> lock(mutex_);
         auto ownIt = poolOwnership_.find(memPool);
-        COND_RETURN_ERROR(ownIt == poolOwnership_.end(), RT_ERROR_POOL_PTR_NOTFOUND,
-            "Failed to remove memPool, memPoolId=%p.", memPool);
-        COND_RETURN_ERROR(!ownIt->second->CanDelete(), RT_ERROR_POOL_OP_INVALID,
+        COND_RETURN_ERROR(
+            ownIt == poolOwnership_.end(), RT_ERROR_POOL_PTR_NOTFOUND, "Failed to remove memPool, memPoolId=%p.",
+            memPool);
+        COND_RETURN_ERROR(
+            !ownIt->second->CanDelete(), RT_ERROR_POOL_OP_INVALID,
             "Failed to destroy not deletable memPool(Id=%#" PRIx64 ").", ownIt->second->MemPoolId());
 
         (void)entries_.erase(memPool);
@@ -570,7 +606,7 @@ rtError_t PoolRegistry::RemoveMemPool(SegmentManager* memPool, std::shared_ptr<S
     return RT_ERROR_NONE;
 }
 
-std::shared_ptr<SegmentManager> PoolRegistry::QueryMemPool(SegmentManager *p)
+std::shared_ptr<SegmentManager> PoolRegistry::QueryMemPool(SegmentManager* p)
 {
     if (p == nullptr) {
         return nullptr;
@@ -589,8 +625,9 @@ bool PoolRegistry::InMemPoolRegion(uint64_t ptr)
     if (entries_.empty()) {
         return false;
     }
-    auto it = std::upper_bound(entries_.begin(), entries_.end(), ptr,
-        [](uint64_t p, const SegmentManager *mgr) { return p < mgr->PoolSegAddr(); });
+    auto it = std::upper_bound(entries_.begin(), entries_.end(), ptr, [](uint64_t p, const SegmentManager* mgr) {
+        return p < mgr->PoolSegAddr();
+    });
     if (it == entries_.begin()) {
         return false;
     }
@@ -603,16 +640,17 @@ std::shared_ptr<SegmentManager> PoolRegistry::FindMemPoolByPtr(uint64_t ptr)
     std::lock_guard<std::mutex> lock(mutex_);
     COND_RETURN_DEBUG(entries_.empty(), nullptr, "No memory pools created.");
 
-    auto it = std::lower_bound(entries_.begin(), entries_.end(), ptr,
-        [](const SegmentManager *memPool, const uint64_t p) {
+    auto it =
+        std::lower_bound(entries_.begin(), entries_.end(), ptr, [](const SegmentManager* memPool, const uint64_t p) {
             return memPool->PoolSegAddr() + memPool->PoolSize() <= p;
         });
-    COND_RETURN_DEBUG((it == entries_.end() || ptr < (*it)->PoolSegAddr()), nullptr,
-         "Pointer %#" PRIx64 " not found in any memory pool range.", ptr);
+    COND_RETURN_DEBUG(
+        (it == entries_.end() || ptr < (*it)->PoolSegAddr()), nullptr,
+        "Pointer %#" PRIx64 " not found in any memory pool range.", ptr);
 
     auto ownIt = poolOwnership_.find(*it);
-    COND_RETURN_DEBUG((ownIt == poolOwnership_.end()), nullptr,
-         "entries_/poolOwnership_ inconsistency for pool %p.", *it);
+    COND_RETURN_DEBUG(
+        (ownIt == poolOwnership_.end()), nullptr, "entries_/poolOwnership_ inconsistency for pool %p.", *it);
     return ownIt->second;
 }
 
@@ -650,7 +688,7 @@ void PoolRegistry::UpdateSeqMap(const int32_t streamId, const int32_t eventId)
         return;
     }
     std::pair<int32_t, uint64_t>& record = it->second;
-    int32_t recordStreamId = record.first;   // the stream that recorded this event
+    int32_t recordStreamId = record.first; // the stream that recorded this event
     uint64_t recordSeqId = record.second;  // the index of the event record in stream
     sequenceMap_[{streamId, recordStreamId}] = max(sequenceMap_[{streamId, recordStreamId}], recordSeqId);
 }
@@ -673,7 +711,7 @@ void PoolRegistry::RemoveSeqMap(rtStream_t stm)
 {
     std::lock_guard<std::mutex> lock(mutex_);
 
-    Stream *stream = nullptr;
+    Stream* stream = nullptr;
     if (GetValidatedObject<Stream>(stm, stream) != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_WARNING, "RemoveSeqMap skip invalid stream handle.");
         return;
@@ -690,7 +728,7 @@ void PoolRegistry::RemoveSeqMap(rtStream_t stm)
     }
 }
 
-void PoolRegistry::StreamStateCallback(rtStream_t stm, rtStreamState type, void *args)
+void PoolRegistry::StreamStateCallback(rtStream_t stm, rtStreamState type, void* args)
 {
     UNUSED(args);
     if (type == RT_STREAM_STATE_DESTROY_PRE) {
@@ -698,7 +736,7 @@ void PoolRegistry::StreamStateCallback(rtStream_t stm, rtStreamState type, void 
     }
 }
 
-void PoolRegistry::EventStateCallbackWrapper(Stream* stream, Event* event, EventStatePeriod period, void *args)
+void PoolRegistry::EventStateCallbackWrapper(Stream* stream, Event* event, EventStatePeriod period, void* args)
 {
     RT_LOG(RT_LOG_DEBUG, "PoolRegistry event callback start, period %u.", static_cast<uint32_t>(period));
     UNUSED(args);
@@ -721,18 +759,20 @@ void PoolRegistry::EventStateCallbackWrapper(Stream* stream, Event* event, Event
 
 rtError_t PoolRegistry::RegisterSomaCallBack()
 {
-    rtError_t error = StreamStateCallbackManager::Instance().RegStreamStateCallback("Inner#SomaStreamCallback",
-        RtPtrToPtr<void *>(StreamStateCallback), nullptr, StreamStateCallback::RTS_STREAM_STATE_CALLBACK);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, RT_ERROR_POOL_OP_INVALID,
-        "Soma stream state callback register failed, reCode=%#x.", error);
-    error = EventStateCallbackManager::Instance().RegEventStateCallback("Inner#SomaEventCallback",
-        RtPtrToPtr<void *>(PoolRegistry::EventStateCallbackWrapper), nullptr,
+    rtError_t error = StreamStateCallbackManager::Instance().RegStreamStateCallback(
+        "Inner#SomaStreamCallback", RtPtrToPtr<void*>(StreamStateCallback), nullptr,
+        StreamStateCallback::RTS_STREAM_STATE_CALLBACK);
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, RT_ERROR_POOL_OP_INVALID, "Soma stream state callback register failed, reCode=%#x.",
+        error);
+    error = EventStateCallbackManager::Instance().RegEventStateCallback(
+        "Inner#SomaEventCallback", RtPtrToPtr<void*>(PoolRegistry::EventStateCallbackWrapper), nullptr,
         EventStateCallbackType::RT_EVENT_STATE_CALLBACK);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, RT_ERROR_POOL_OP_INVALID,
-        "Soma event state callback register failed, reCode=%#x.", error);
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, RT_ERROR_POOL_OP_INVALID, "Soma event state callback register failed, reCode=%#x.",
+        error);
     return RT_ERROR_NONE;
 }
 
-
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

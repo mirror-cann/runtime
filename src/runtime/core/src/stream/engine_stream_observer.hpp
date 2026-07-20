@@ -9,17 +9,17 @@
  */
 #ifndef CCE_RUNTIME_ENGINE_STREAM_OBSERVER_HPP
 #define CCE_RUNTIME_ENGINE_STREAM_OBSERVER_HPP
- 
+
 #include "engine.hpp"
- 
+
 namespace cce {
 namespace runtime {
 class EngineStreamObserver : public EngineObserver {
 public:
-    void TaskSubmited(Device * const dev, TaskInfo * const tsk) override;
-    void TaskFinished(const uint32_t devId, const TaskInfo * const tsk) override;
+    void TaskSubmited(Device* const dev, TaskInfo* const tsk) override;
+    void TaskFinished(const uint32_t devId, const TaskInfo* const tsk) override;
 };
-}  // namespace runtime
-}  // namespace cce
- 
-#endif  // CCE_RUNTIME_ENGINE_STREAM_OBSERVER_HPP
+} // namespace runtime
+} // namespace cce
+
+#endif // CCE_RUNTIME_ENGINE_STREAM_OBSERVER_HPP

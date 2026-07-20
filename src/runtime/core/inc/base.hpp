@@ -41,37 +41,40 @@ void __attribute((weak)) AtraceReportStop(int32_t devId);
 namespace cce {
 namespace runtime {
 #ifdef BUILD_VERSION_ENG
-#define RT_LOG_LEVEL        RT_LOG_WARNING
+#define RT_LOG_LEVEL RT_LOG_WARNING
 #elif defined(BUILD_VERSION_USER)
-#define RT_LOG_LEVEL        RT_LOG_WARNING
+#define RT_LOG_LEVEL RT_LOG_WARNING
 #elif defined(BUILD_VERSION_PERF)
-#define RT_LOG_LEVEL        RT_LOG_ERROR
+#define RT_LOG_LEVEL RT_LOG_ERROR
 #else
-#define RT_LOG_LEVEL        RT_LOG_INFO
+#define RT_LOG_LEVEL RT_LOG_INFO
 #endif
 
 #ifndef UNUSED
-#define UNUSED(expr) do { \
-    (void)(expr); \
-} while (false)
+#define UNUSED(expr)  \
+    do {              \
+        (void)(expr); \
+    } while (false)
 #endif
 
 #ifndef F_DESC
-#define F_DESC(x)            1
+#define F_DESC(x) 1
 #endif
 
 #if (defined WIN32) || (defined CFG_DEV_PLATFORM_PC)
 
 #define RT_LOG(level, format, ...) RT_LOG_##level(format, ##__VA_ARGS__)
 #define RT_EVENT_LOG_MASK (static_cast<uint32_t>(RUNTIME) | static_cast<uint32_t>(RUN_LOG_MASK))
-#define RT_LOG_RT_LOG_EVENT(format, ...)                                                 \
-    do {                                                                                 \
-        dlog_info(static_cast<int32_t>(RT_EVENT_LOG_MASK), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
+#define RT_LOG_RT_LOG_EVENT(format, ...)                                                                               \
+    do {                                                                                                               \
+        dlog_info(                                                                                                     \
+            static_cast<int32_t>(RT_EVENT_LOG_MASK), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
     } while (false)
 
-#define RT_LOG_RT_LOG_WARNING_EVENT(format, ...)                                                  \
-    do {                                                                                  \
-        dlog_warn(static_cast<int32_t>(RT_EVENT_LOG_MASK), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
+#define RT_LOG_RT_LOG_WARNING_EVENT(format, ...)                                                                       \
+    do {                                                                                                               \
+        dlog_warn(                                                                                                     \
+            static_cast<int32_t>(RT_EVENT_LOG_MASK), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
     } while (false)
 
 #define RT_LOG_RT_LOG_ERROR(format, ...)                                                            \
@@ -79,13 +82,13 @@ namespace runtime {
         cce::runtime::RecordErrorLog(__FILE__, __LINE__, &__func__[0], format "\n", ##__VA_ARGS__); \
     } while (false)
 
-#define RT_LOG_RT_LOG_WARNING(format, ...)                                               \
-    do {                                                                                 \
-        dlog_warn(static_cast<int32_t>(RUNTIME), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__);  \
+#define RT_LOG_RT_LOG_WARNING(format, ...)                                                                         \
+    do {                                                                                                           \
+        dlog_warn(static_cast<int32_t>(RUNTIME), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
     } while (false)
 
-#define RT_LOG_RT_LOG_INFO(format, ...)                                                  \
-    do {                                                                                 \
+#define RT_LOG_RT_LOG_INFO(format, ...)                                                                            \
+    do {                                                                                                           \
         dlog_info(static_cast<int32_t>(RUNTIME), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
     } while (false)
 
@@ -99,14 +102,10 @@ namespace runtime {
 #ifndef REPORT_INNER_ERROR
 #define REPORT_INNER_ERROR(level, format, ...)
 #endif
-#define RT_LOG_INNER_MSG(level, format, ...) \
-        RT_LOG(level, format, ##__VA_ARGS__);
-#define RT_LOG_CALL_MSG(model_type, format, ...) \
-        RT_LOG(RT_LOG_ERROR, format, ##__VA_ARGS__);
-#define RT_LOG_OUTER_MSG(error_code, format, ...) \
-        RT_LOG(RT_LOG_ERROR, format, ##__VA_ARGS__);
-#define RT_LOG_CALL_MSG_NO_RT_LOG(module_type, format, ...) \
-        RT_LOG(RT_LOG_ERROR, format, ##__VA_ARGS__);
+#define RT_LOG_INNER_MSG(level, format, ...) RT_LOG(level, format, ##__VA_ARGS__);
+#define RT_LOG_CALL_MSG(model_type, format, ...) RT_LOG(RT_LOG_ERROR, format, ##__VA_ARGS__);
+#define RT_LOG_OUTER_MSG(error_code, format, ...) RT_LOG(RT_LOG_ERROR, format, ##__VA_ARGS__);
+#define RT_LOG_CALL_MSG_NO_RT_LOG(module_type, format, ...) RT_LOG(RT_LOG_ERROR, format, ##__VA_ARGS__);
 #define RT_LOG_OUTER_MSG_IMPL(error_code, ...)
 #define RT_LOG_OUTER_MSG_WITH_FUNC(error_code, ...)
 #define RT_LOG_OUTER_MSG_WITH_FUNC_DESC(error_code, funcDesc, ...)
@@ -132,14 +131,16 @@ namespace runtime {
 #define RT_LOG(level, format, ...) RT_LOG_##level(format, ##__VA_ARGS__)
 
 #define RT_EVENT_LOG_MASK (static_cast<uint32_t>(RUNTIME) | static_cast<uint32_t>(RUN_LOG_MASK))
-#define RT_LOG_RT_LOG_EVENT(format, ...)                                                  \
-    do {                                                                                  \
-        dlog_info(static_cast<int32_t>(RT_EVENT_LOG_MASK), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
+#define RT_LOG_RT_LOG_EVENT(format, ...)                                                                               \
+    do {                                                                                                               \
+        dlog_info(                                                                                                     \
+            static_cast<int32_t>(RT_EVENT_LOG_MASK), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
     } while (false)
 
-#define RT_LOG_RT_LOG_WARNING_EVENT(format, ...)                                                  \
-    do {                                                                                  \
-        dlog_warn(static_cast<int32_t>(RT_EVENT_LOG_MASK), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
+#define RT_LOG_RT_LOG_WARNING_EVENT(format, ...)                                                                       \
+    do {                                                                                                               \
+        dlog_warn(                                                                                                     \
+            static_cast<int32_t>(RT_EVENT_LOG_MASK), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
     } while (false)
 
 #define RT_LOG_RT_LOG_ERROR(format, ...)                                                            \
@@ -147,14 +148,14 @@ namespace runtime {
         cce::runtime::RecordErrorLog(__FILE__, __LINE__, &__func__[0], format "\n", ##__VA_ARGS__); \
     } while (false)
 
-#define RT_LOG_RT_LOG_WARNING(format, ...)                                               \
-    do {                                                                                 \
+#define RT_LOG_RT_LOG_WARNING(format, ...)                                                                         \
+    do {                                                                                                           \
         dlog_warn(static_cast<int32_t>(RUNTIME), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
     } while (false)
 
-#define RT_LOG_RT_LOG_INFO(format, ...)                                                    \
-    do {                                                                                   \
-        dlog_info(static_cast<int32_t>(RUNTIME), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__);   \
+#define RT_LOG_RT_LOG_INFO(format, ...)                                                                            \
+    do {                                                                                                           \
+        dlog_info(static_cast<int32_t>(RUNTIME), " %d %s: " format "\n", mmGetTid(), &__func__[0], ##__VA_ARGS__); \
     } while (false)
 
 #define RT_LOG_RT_LOG_DEBUG(format, ...)                                                                       \
@@ -166,16 +167,14 @@ namespace runtime {
 
 #define RT_LOG_FLUSH() DlogFlush()
 
-static constexpr const char_t *RT_ERR_MSG_INVALID_HEAD = "INVALID_HEAD";
-static constexpr const char_t *RT_LOG_LEVEL_TO_ERR_MSG[RT_LOG_LEVEL_MAX] = {
-    RT_INNER_ERROR, RT_INNER_WARNING, RT_ERR_MSG_INVALID_HEAD, RT_ERR_MSG_INVALID_HEAD, RT_ERR_MSG_INVALID_HEAD
-};
+static constexpr const char_t* RT_ERR_MSG_INVALID_HEAD = "INVALID_HEAD";
+static constexpr const char_t* RT_LOG_LEVEL_TO_ERR_MSG[RT_LOG_LEVEL_MAX] = {
+    RT_INNER_ERROR, RT_INNER_WARNING, RT_ERR_MSG_INVALID_HEAD, RT_ERR_MSG_INVALID_HEAD, RT_ERR_MSG_INVALID_HEAD};
 
-static constexpr const char_t *RT_MODULE_TYPE_TO_ERR_MSG[ERR_MODULE_MAX] = {
-    RT_AICPU_INNER_ERROR, RT_DRV_INNER_ERROR, RT_HCCL_INNER_ERROR, RT_INNER_ERROR,
-    RT_PROFILE_INNER_ERROR, RT_TBE_INNER_ERROR, RT_SYSTEM_INNER_ERROR, RT_INNER_ERROR,
-    RT_FE_INNER_ERROR, RT_AICPU_TIMEOUT_ERROR, RT_INVALID_ARGUMENT_ERROR
-};
+static constexpr const char_t* RT_MODULE_TYPE_TO_ERR_MSG[ERR_MODULE_MAX] = {
+    RT_AICPU_INNER_ERROR,   RT_DRV_INNER_ERROR,     RT_HCCL_INNER_ERROR,      RT_INNER_ERROR,
+    RT_PROFILE_INNER_ERROR, RT_TBE_INNER_ERROR,     RT_SYSTEM_INNER_ERROR,    RT_INNER_ERROR,
+    RT_FE_INNER_ERROR,      RT_AICPU_TIMEOUT_ERROR, RT_INVALID_ARGUMENT_ERROR};
 
 // RT_LOG_INNER_MSG description:
 // Used for print runtime inner error, need error_manager library.
@@ -183,38 +182,41 @@ static constexpr const char_t *RT_MODULE_TYPE_TO_ERR_MSG[ERR_MODULE_MAX] = {
 // This usually used to record RT_LOG_ERROR faults
 // if you want to use RT_LOG_WARNING level, your changes need to be carefully reviewed
 // Other level may cause an exception log
-#define RT_LOG_INNER_MSG(level, format, ...) \
-    do { \
-        RT_LOG(level, format, ##__VA_ARGS__);                           \
-        REPORT_INNER_ERROR(RT_LOG_LEVEL_TO_ERR_MSG[(level)], format, ##__VA_ARGS__);                 \
+#define RT_LOG_INNER_MSG(level, format, ...)                                         \
+    do {                                                                             \
+        RT_LOG(level, format, ##__VA_ARGS__);                                        \
+        REPORT_INNER_ERROR(RT_LOG_LEVEL_TO_ERR_MSG[(level)], format, ##__VA_ARGS__); \
     } while (false)
 
 // report other module error message by module type
-#define RT_LOG_CALL_MSG(module_type, format, ...) \
-    do { \
-        RT_LOG(RT_LOG_ERROR, format, ##__VA_ARGS__);               \
-        REPORT_CALL_ERROR(RT_MODULE_TYPE_TO_ERR_MSG[(module_type)], format, ##__VA_ARGS__);      \
+#define RT_LOG_CALL_MSG(module_type, format, ...)                                           \
+    do {                                                                                    \
+        RT_LOG(RT_LOG_ERROR, format, ##__VA_ARGS__);                                        \
+        REPORT_CALL_ERROR(RT_MODULE_TYPE_TO_ERR_MSG[(module_type)], format, ##__VA_ARGS__); \
     } while (false)
 
 // report other module error message by module type and no rt log
-#define RT_LOG_CALL_MSG_NO_RT_LOG(module_type, format, ...) \
-    do { \
-        REPORT_CALL_ERROR(RT_MODULE_TYPE_TO_ERR_MSG[(module_type)], format, ##__VA_ARGS__);      \
+#define RT_LOG_CALL_MSG_NO_RT_LOG(module_type, format, ...)                                 \
+    do {                                                                                    \
+        REPORT_CALL_ERROR(RT_MODULE_TYPE_TO_ERR_MSG[(module_type)], format, ##__VA_ARGS__); \
     } while (false)
 
 // report outer error message, such as invalid parameter
-#define RT_LOG_OUTER_MSG(error_code, format, ...)                                                                    \
-    do { \
-        RT_LOG(RT_LOG_ERROR, format, ##__VA_ARGS__);                                                                 \
-        std::vector<char> value_string(LIMIT_PER_MESSAGE, '\0');                                                     \
-        if (error_message::FormatErrorMessage(value_string.data(), value_string.size(), format, ##__VA_ARGS__) > 0) {\
-            ReportErrMsg((error_code), value_string);                                                                  \
-        }                                                                                                            \
+#define RT_LOG_OUTER_MSG(error_code, format, ...)                                                                     \
+    do {                                                                                                              \
+        RT_LOG(RT_LOG_ERROR, format, ##__VA_ARGS__);                                                                  \
+        std::vector<char> value_string(LIMIT_PER_MESSAGE, '\0');                                                      \
+        if (error_message::FormatErrorMessage(value_string.data(), value_string.size(), format, ##__VA_ARGS__) > 0) { \
+            ReportErrMsg((error_code), value_string);                                                                 \
+        }                                                                                                             \
     } while (false)
- 
-constexpr const char* ErrorCodeToString(ErrorCode code) {
+
+constexpr const char* ErrorCodeToString(ErrorCode code)
+{
 #undef RT_ERR_TO_STR
-#define RT_ERR_TO_STR(code, name, params, msg, level) case ErrorCode::code: return name;
+#define RT_ERR_TO_STR(code, name, params, msg, level) \
+    case ErrorCode::code:                             \
+        return name;
     switch (code) {
         RUNTIME_ERROR_CODE_TABLE(RT_ERR_TO_STR)
         default:
@@ -228,7 +230,7 @@ inline std::string MakeStr(std::nullptr_t) { return ""; }
 inline std::string MakeStr(const char* s) { return (s != nullptr) ? s : ""; }
 inline std::string MakeStr(const std::string& s) { return s; }
 inline std::string MakeStr(std::string&& s) { return std::move(s); }
-template<typename T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, int> = 0>
+template <typename T, std::enable_if_t<std::is_arithmetic_v<T> || std::is_enum_v<T>, int> = 0>
 inline std::string MakeStr(T v)
 {
     std::ostringstream oss;
@@ -252,9 +254,14 @@ inline std::string MakeStr(const void* p)
 #define RT_ERRVAL_M1(a) cce::runtime::MakeStr(a)
 #define RT_ERRVAL_M2(a, b) cce::runtime::MakeStr(a), cce::runtime::MakeStr(b)
 #define RT_ERRVAL_M3(a, b, c) cce::runtime::MakeStr(a), cce::runtime::MakeStr(b), cce::runtime::MakeStr(c)
-#define RT_ERRVAL_M4(a, b, c, d) cce::runtime::MakeStr(a), cce::runtime::MakeStr(b), cce::runtime::MakeStr(c), cce::runtime::MakeStr(d)
-#define RT_ERRVAL_M5(a, b, c, d, e) cce::runtime::MakeStr(a), cce::runtime::MakeStr(b), cce::runtime::MakeStr(c), cce::runtime::MakeStr(d), cce::runtime::MakeStr(e)
-#define RT_ERRVAL_M6(a, b, c, d, e, f) cce::runtime::MakeStr(a), cce::runtime::MakeStr(b), cce::runtime::MakeStr(c), cce::runtime::MakeStr(d), cce::runtime::MakeStr(e), cce::runtime::MakeStr(f)
+#define RT_ERRVAL_M4(a, b, c, d) \
+    cce::runtime::MakeStr(a), cce::runtime::MakeStr(b), cce::runtime::MakeStr(c), cce::runtime::MakeStr(d)
+#define RT_ERRVAL_M5(a, b, c, d, e)                                                                         \
+    cce::runtime::MakeStr(a), cce::runtime::MakeStr(b), cce::runtime::MakeStr(c), cce::runtime::MakeStr(d), \
+        cce::runtime::MakeStr(e)
+#define RT_ERRVAL_M6(a, b, c, d, e, f)                                                                      \
+    cce::runtime::MakeStr(a), cce::runtime::MakeStr(b), cce::runtime::MakeStr(c), cce::runtime::MakeStr(d), \
+        cce::runtime::MakeStr(e), cce::runtime::MakeStr(f)
 #define RT_ERRVAL_CAT_I(a, b) a##b
 #define RT_ERRVAL_CAT(a, b) RT_ERRVAL_CAT_I(a, b)
 #define RT_ERRVAL_GET(_0, _1, _2, _3, _4, _5, _6, N, ...) N
@@ -262,15 +269,12 @@ inline std::string MakeStr(const void* p)
 #define RT_ERRVAL_DISPATCH(N, ...) RT_ERRVAL_CAT(RT_ERRVAL_M, N)(__VA_ARGS__)
 #define RT_ERRVAL_VALUES(...) RT_ERRVAL_DISPATCH(RT_ERRVAL_COUNT(__VA_ARGS__), __VA_ARGS__)
 
-inline void ErrorCodeProcess(ErrorCode errorCode, const char* file,
-    const int32_t line, const char* func, const std::vector<std::string>& values)
+inline void ErrorCodeProcess(
+    ErrorCode errorCode, const char* file, const int32_t line, const char* func, const std::vector<std::string>& values)
 {
 #if (!defined(WIN32)) && (!defined(CFG_DEV_PLATFORM_PC))
     ProcessErrorCodeImpl(errorCode, file, line, func, values);
-    ErrorManager::GetInstance().ATCReportErrMessage(
-        ErrorCodeToString(errorCode),
-        GetParamNames(errorCode),
-        values);
+    ErrorManager::GetInstance().ATCReportErrMessage(ErrorCodeToString(errorCode), GetParamNames(errorCode), values);
 #else
     (void)errorCode;
     (void)file;
@@ -287,17 +291,16 @@ inline void ErrorCodeProcess(ErrorCode errorCode, const char* file,
 // EE1003错误码上报，带语义化函数描述
 #define RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(funcDesc, parm, ...) \
     RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, funcDesc, (parm), #parm, ##__VA_ARGS__)
- 
-#define RT_LOG_OUTER_MSG_WITH_FUNC(error_code, ...) \
-    RT_LOG_OUTER_MSG_IMPL((error_code), __func__, ##__VA_ARGS__)
+
+#define RT_LOG_OUTER_MSG_WITH_FUNC(error_code, ...) RT_LOG_OUTER_MSG_IMPL((error_code), __func__, ##__VA_ARGS__)
 
 #define RT_LOG_OUTER_MSG_WITH_FUNC_DESC(error_code, funcDesc, ...) \
     RT_LOG_OUTER_MSG_IMPL((error_code), funcDesc, ##__VA_ARGS__)
 
 // 由调用者保证传参个数和errmsg匹配
-#define RT_LOG_OUTER_MSG_IMPL(error_code, ...)                                                               \
-    do {                                                                                                     \
-        ErrorCodeProcess((error_code), __FILE__, __LINE__, &__func__[0], {RT_ERRVAL_VALUES(__VA_ARGS__)});                     \
+#define RT_LOG_OUTER_MSG_IMPL(error_code, ...)                                                                \
+    do {                                                                                                      \
+        ErrorCodeProcess((error_code), __FILE__, __LINE__, &__func__ [0], { RT_ERRVAL_VALUES(__VA_ARGS__) }); \
     } while (false)
 #endif
 
@@ -306,45 +309,40 @@ inline void ErrorCodeProcess(ErrorCode errorCode, const char* file,
 /* Use existed Marcos as much as possible */
 /******************************************/
 #define NULL_PTR_PROC_RETURN_ERROR(PTR, ERR, PROC) \
-    if (unlikely((PTR) == nullptr)) { \
-        PROC; \
-        RT_LOG(RT_LOG_ERROR, #PTR " is NULL!");     \
-        return (ERR); }
+    if (unlikely((PTR) == nullptr)) {              \
+        PROC;                                      \
+        RT_LOG(RT_LOG_ERROR, #PTR " is NULL!");    \
+        return (ERR);                              \
+    }
 #define NULL_PTR_RETURN_NOLOG(PTR, ERRCODE) \
-    if (unlikely((PTR) == nullptr)) { \
-        return ERRCODE; }
+    if (unlikely((PTR) == nullptr)) {       \
+        return ERRCODE;                     \
+    }
 
-#define NULL_PTR_RETURN_DIRECTLY(PTR) \
-    if (unlikely((PTR) == nullptr)) { \
-        RT_LOG(RT_LOG_ERROR, #PTR " is NULL!");     \
-        return; }
+#define NULL_PTR_RETURN_DIRECTLY(PTR)           \
+    if (unlikely((PTR) == nullptr)) {           \
+        RT_LOG(RT_LOG_ERROR, #PTR " is NULL!"); \
+        return;                                 \
+    }
 
-#define NULL_PTR_RETURN(PTR, ERRCODE) \
-    COND_RETURN_ERROR(((PTR) == nullptr), ERRCODE, #PTR " is NULL!")
+#define NULL_PTR_RETURN(PTR, ERRCODE) COND_RETURN_ERROR(((PTR) == nullptr), ERRCODE, #PTR " is NULL!")
 
-#define ERROR_RETURN(ERRCODE, format, ...) \
-    COND_RETURN_ERROR((ERRCODE) != RT_ERROR_NONE, ERRCODE, format, ##__VA_ARGS__)
+#define ERROR_RETURN(ERRCODE, format, ...) COND_RETURN_ERROR((ERRCODE) != RT_ERROR_NONE, ERRCODE, format, ##__VA_ARGS__)
 
 #define ERROR_GOTO(ERRCODE, LABEL, format, ...) \
     COND_GOTO_ERROR((ERRCODE) != RT_ERROR_NONE, LABEL, ERRCODE, ERRCODE, format, ##__VA_ARGS__)
 
-#define COND_RETURN_VOID(COND, format, ...) \
-    COND_RETURN_((COND), , RT_LOG_ERROR, format, ##__VA_ARGS__)
+#define COND_RETURN_VOID(COND, format, ...) COND_RETURN_((COND), , RT_LOG_ERROR, format, ##__VA_ARGS__)
 
-#define COND_RETURN_VOID_WARN(COND, format, ...) \
-    COND_RETURN_((COND), , RT_LOG_WARNING, format, ##__VA_ARGS__)
+#define COND_RETURN_VOID_WARN(COND, format, ...) COND_RETURN_((COND), , RT_LOG_WARNING, format, ##__VA_ARGS__)
 
-#define COND_RETURN_NORMAL(COND, format, ...) \
-    COND_RETURN_((COND), , RT_LOG_INFO, format, ##__VA_ARGS__)
+#define COND_RETURN_NORMAL(COND, format, ...) COND_RETURN_((COND), , RT_LOG_INFO, format, ##__VA_ARGS__)
 
-#define COND_RETURN_WITH_NOLOG(COND, ERRCODE) \
-    COND_RETURN_WITH_NOLOG_((COND), ERRCODE)
+#define COND_RETURN_WITH_NOLOG(COND, ERRCODE) COND_RETURN_WITH_NOLOG_((COND), ERRCODE)
 
-#define COND_RETURN_ERROR(COND, ERRCODE, format, ...) \
-    COND_RETURN_((COND), ERRCODE, RT_LOG_ERROR, format, ##__VA_ARGS__)
+#define COND_RETURN_ERROR(COND, ERRCODE, format, ...) COND_RETURN_((COND), ERRCODE, RT_LOG_ERROR, format, ##__VA_ARGS__)
 
-#define COND_RETURN_DEBUG(COND, ERRCODE, format, ...) \
-    COND_RETURN_((COND), ERRCODE, RT_LOG_DEBUG, format, ##__VA_ARGS__)
+#define COND_RETURN_DEBUG(COND, ERRCODE, format, ...) COND_RETURN_((COND), ERRCODE, RT_LOG_DEBUG, format, ##__VA_ARGS__)
 
 #define COND_RETURN_WARN(COND, ERRCODE, format, ...) \
     COND_RETURN_((COND), ERRCODE, RT_LOG_WARNING, format, ##__VA_ARGS__)
@@ -355,32 +353,30 @@ inline void ErrorCodeProcess(ErrorCode errorCode, const char* file,
 #define COND_PROC_RETURN_WARN(COND, ERRCODE, PROC, format, ...) \
     COND_PROC_RETURN_((COND), ERRCODE, PROC, RT_LOG_WARNING, format, ##__VA_ARGS__)
 
-#define COND_RETURN_EVENT(COND, ERRCODE, format, ...) \
-    COND_RETURN_((COND), ERRCODE, RT_LOG_EVENT, format, ##__VA_ARGS__)
+#define COND_RETURN_EVENT(COND, ERRCODE, format, ...) COND_RETURN_((COND), ERRCODE, RT_LOG_EVENT, format, ##__VA_ARGS__)
 
-#define COND_RETURN_INFO(COND, ERRCODE, format, ...) \
-    COND_RETURN_((COND), ERRCODE, RT_LOG_INFO, format, ##__VA_ARGS__)
+#define COND_RETURN_INFO(COND, ERRCODE, format, ...) COND_RETURN_((COND), ERRCODE, RT_LOG_INFO, format, ##__VA_ARGS__)
 
 #define COND_GOTO_ERROR(COND, LABEL, ERROR, ERRCODE, format, ...) \
     COND_GOTO_WITH_ERRCODE_((COND), LABEL, ERROR, ERRCODE, RT_LOG_ERROR, format, ##__VA_ARGS__)
 
 #define COND_LOG(COND, format, ...)                    \
-    if (unlikely(COND)) {                      \
+    if (unlikely(COND)) {                              \
         RT_LOG(RT_LOG_WARNING, format, ##__VA_ARGS__); \
     }
 
 #define COND_LOG_DEBUG(COND, format, ...)            \
-    if (unlikely(COND)) {                    \
+    if (unlikely(COND)) {                            \
         RT_LOG(RT_LOG_DEBUG, format, ##__VA_ARGS__); \
     }
 
 #define COND_LOG_ERROR(COND, format, ...)            \
-    if (unlikely(COND)) {                    \
+    if (unlikely(COND)) {                            \
         RT_LOG(RT_LOG_ERROR, format, ##__VA_ARGS__); \
     }
 #define COND_PROC(COND, PROC) \
-    if (unlikely(COND)) { \
-        PROC; \
+    if (unlikely(COND)) {     \
+        PROC;                 \
     }
 // Do NOT use this Marco directly
 #define COND_RETURN_WITH_NOLOG_(COND, ERRCODE) \
@@ -389,25 +385,25 @@ inline void ErrorCodeProcess(ErrorCode errorCode, const char* file,
     }
 // Do NOT use this Marco directly
 #define COND_RETURN_(COND, ERRCODE, LOGTYPE, format, ...) \
-    if (unlikely(COND)) {                         \
+    if (unlikely(COND)) {                                 \
         RT_LOG(LOGTYPE, format, ##__VA_ARGS__);           \
-        return ERRCODE;                           \
+        return ERRCODE;                                   \
     }
 
 // Do NOT use this Marco directly
 #define COND_PROC_RETURN_(COND, ERRCODE, PROC, LOGTYPE, format, ...) \
-    if (unlikely(COND)) {                                    \
+    if (unlikely(COND)) {                                            \
         RT_LOG(LOGTYPE, format, ##__VA_ARGS__);                      \
-        PROC;                                                \
-        return ERRCODE;                                      \
+        PROC;                                                        \
+        return ERRCODE;                                              \
     }
 
 // Do NOT use this Marco directly
 #define COND_GOTO_WITH_ERRCODE_(COND, LABEL, ERROR, ERRCODE, LOGTYPE, format, ...) \
-    if (unlikely(COND)) {                                                  \
+    if (unlikely(COND)) {                                                          \
         RT_LOG(LOGTYPE, format, ##__VA_ARGS__);                                    \
-        ERROR = (ERRCODE);                                                 \
-        goto LABEL;                                                        \
+        ERROR = (ERRCODE);                                                         \
+        goto LABEL;                                                                \
     }
 
 // Checks a condition and returns an error code with an optional warning log
@@ -421,16 +417,16 @@ inline void ErrorCodeProcess(ErrorCode errorCode, const char* file,
     } while (false)
 
 // delete an object
-#define DELETE_O(p)  \
+#define DELETE_O(p)       \
     if ((p) != nullptr) { \
-        delete (p);    \
+        delete (p);       \
         (p) = nullptr;    \
     }
 
 // delete an array
-#define DELETE_A(p)  \
+#define DELETE_A(p)       \
     if ((p) != nullptr) { \
-        delete[] (p);  \
+        delete[] (p);     \
         (p) = nullptr;    \
     }
 
@@ -438,14 +434,14 @@ using TDT_StatusType = uint32_t;
 
 struct rtSocInfo_t final {
     rtChipType_t chipType;
-    const char_t *socName; // Must be a constant string
+    const char_t* socName; // Must be a constant string
 };
 
 // delete an ref obj
-#define DELETE_R(p)                 \
+#define DELETE_R(p)                            \
     if (((p) != nullptr) && ((p)->DecRef())) { \
-        delete (p);                   \
-        (p) = nullptr;                   \
+        delete (p);                            \
+        (p) = nullptr;                         \
     }
 
 static inline uint64_t GetWallUs()
@@ -486,24 +482,24 @@ static inline long long GetThreadNs()
         VAR##Count.fetch_add(1);          \
     } while (false)
 
-#define TIMESTAMP_DEFINE(VAR) \
-    __THREAD_LOCAL__ std::atomic<int32_t> VAR##Count{0};       \
+#define TIMESTAMP_DEFINE(VAR)                            \
+    __THREAD_LOCAL__ std::atomic<int32_t> VAR##Count{0}; \
     __THREAD_LOCAL__ std::atomic<long long> VAR##Time{0};
 
-#define TIMESTAMP_EXTERN(VAR) \
-    extern __THREAD_LOCAL__ std::atomic<int32_t> VAR##Count;    \
+#define TIMESTAMP_EXTERN(VAR)                                \
+    extern __THREAD_LOCAL__ std::atomic<int32_t> VAR##Count; \
     extern __THREAD_LOCAL__ std::atomic<long long> VAR##Time;
 
 #ifndef TEMP_PERFORMANCE_NOT_OUTPUT
-#define TIMESTAMP_DUMP(VAR)                                                                                     \
-    do {                                                                                                        \
-        int32_t count = VAR##Count;                                                                             \
-        long long totalTime = VAR##Time;                                                                        \
-        RT_LOG(RT_LOG_ERROR, "[" #VAR "] TIME = %.3f us, COUNT = %d", count ? (float64_t)totalTime / count : 0, \
-               count);                                                                                          \
+#define TIMESTAMP_DUMP(VAR)                                                                                          \
+    do {                                                                                                             \
+        int32_t count = VAR##Count;                                                                                  \
+        long long totalTime = VAR##Time;                                                                             \
+        RT_LOG(                                                                                                      \
+            RT_LOG_ERROR, "[" #VAR "] TIME = %.3f us, COUNT = %d", count ? (float64_t)totalTime / count : 0, count); \
     } while (false)
 #else
-#define TIMESTAMP_DUMP(VAR) 
+#define TIMESTAMP_DUMP(VAR)
 #endif
 
 #define TIMESTAMP_NAME(VAR)
@@ -516,9 +512,9 @@ static inline long long GetThreadNs()
 #define TIMESTAMP_DEFINE(VAR)
 #define TIMESTAMP_EXTERN(VAR)
 #define TIMESTAMP_DUMP(VAR)
-#define TIMESTAMP_BEGIN(VAR)   ATRACE_BEGIN(#VAR)
-#define TIMESTAMP_END(VAR)     ATRACE_END()
-#define TIMESTAMP_NAME(VAR)    ATRACE_NAME(VAR)
+#define TIMESTAMP_BEGIN(VAR) ATRACE_BEGIN(#VAR)
+#define TIMESTAMP_END(VAR) ATRACE_END()
+#define TIMESTAMP_NAME(VAR) ATRACE_NAME(VAR)
 
 #else
 #define TIMESTAMP_BEGIN(VAR)
@@ -529,43 +525,43 @@ static inline long long GetThreadNs()
 #define TIMESTAMP_NAME(VAR)
 #endif
 
-void RtLogErrorLevelControl(bool isLogError, const char *format, ...);
+void RtLogErrorLevelControl(bool isLogError, const char* format, ...);
 
 class NoCopy {
 public:
-    NoCopy()  = default;
+    NoCopy() = default;
     virtual ~NoCopy() = default;
 
 private:
-    NoCopy &operator=(const NoCopy &other) = delete;
+    NoCopy& operator=(const NoCopy& other) = delete;
 
-    NoCopy(const NoCopy &other) = delete;
+    NoCopy(const NoCopy& other) = delete;
 };
 
-template<typename TI>
+template <typename TI>
 inline uint64_t RtPtrToValue(const TI ptr)
 {
     return static_cast<uint64_t>(reinterpret_cast<uintptr_t>(ptr));
 }
 
-template<typename TO>
+template <typename TO>
 inline TO RtValueToPtr(const uint64_t value)
 {
     return reinterpret_cast<TO>(static_cast<uintptr_t>(value));
 }
 
-template<typename TO, typename TI>
+template <typename TO, typename TI>
 inline TO RtPtrToPtr(const TI ptr)
 {
     return reinterpret_cast<TO>(ptr);
 }
 
-template<typename TO, typename TI>
+template <typename TO, typename TI>
 inline TO RtPtrToUnConstPtr(TI ptr)
 {
     return const_cast<TO>(ptr);
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // __CCE_RUNTIME_BASE_HPP__

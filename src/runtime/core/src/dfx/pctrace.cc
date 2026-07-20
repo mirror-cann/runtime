@@ -14,7 +14,7 @@
 #include "error_message_manage.hpp"
 
 namespace {
-constexpr char_t const *PC_TRACE_FILE_NAME = "/home/ascend/pctrace/pctraceFile";
+constexpr char_t const* PC_TRACE_FILE_NAME = "/home/ascend/pctrace/pctraceFile";
 }
 
 namespace cce {
@@ -27,7 +27,7 @@ PCTrace::~PCTrace()
     }
 }
 
-rtError_t PCTrace::Init(Device * const dev, Module * const mdl)
+rtError_t PCTrace::Init(Device* const dev, Module* const mdl)
 {
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     NULL_PTR_RETURN_MSG(mdl, RT_ERROR_MODULE_NULL);
@@ -45,21 +45,20 @@ rtError_t PCTrace::WritePCTraceFile()
     char_t filename[len] = {};
     // get pctrace file length from base addr
     const uint64_t pctraceFileAddr = tspctrace_.pctraceAddr;
-    COND_RETURN_ERROR_MSG_INNER(pctraceFileAddr == 0U, RT_ERROR_PCTRACE_FILE,
-        "Failed to write pc trace file, pctrace address is NULL.");
+    COND_RETURN_ERROR_MSG_INNER(
+        pctraceFileAddr == 0U, RT_ERROR_PCTRACE_FILE, "Failed to write pc trace file, pctrace address is NULL.");
 
     RT_LOG(RT_LOG_INFO, "write pc trace file start, first flush!");
     (void)device_->Driver_()->DevMemFlushCache(pctraceFileAddr, sizeof(uint64_t));
-    const uint32_t pcTraceFileLen =
-            static_cast<uint32_t>(*(RtValueToPtr<uint64_t *>(pctraceFileAddr)));
+    const uint32_t pcTraceFileLen = static_cast<uint32_t>(*(RtValueToPtr<uint64_t*>(pctraceFileAddr)));
     if (pcTraceFileLen > tspctrace_.pctraceAddrSize) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "The length of PC trace file %u cannot exceed the size of PC trace address %" PRIu64 ".",
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "The length of PC trace file %u cannot exceed the size of PC trace address %" PRIu64 ".",
             pcTraceFileLen, tspctrace_.pctraceAddrSize);
         return RT_ERROR_PCTRACE_FILE;
     }
 
-    (void)device_->Driver_()->DevMemFlushCache(pctraceFileAddr,
-        static_cast<size_t>(pcTraceFileLen));
+    (void)device_->Driver_()->DevMemFlushCache(pctraceFileAddr, static_cast<size_t>(pcTraceFileLen));
 
     mmSystemTime_t currentTime;
     if (mmGetLocalTime(&currentTime) != EN_OK) {
@@ -67,11 +66,12 @@ rtError_t PCTrace::WritePCTraceFile()
         return RT_ERROR_PCTRACE_TIME;
     }
 
-    const int32_t ret = sprintf_s(filename, static_cast<size_t>(len), "%s_%d%02d%02d%02d%02d%02d%" PRId64 ".bin",
-        PC_TRACE_FILE_NAME, currentTime.wYear, currentTime.wMonth, currentTime.wDay, currentTime.wHour,
-        currentTime.wMinute, currentTime.wSecond, currentTime.wMilliseconds * 1000);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret == -1, RT_ERROR_PCTRACE_TIME,
-        "Failed to call sprintf_s, count=%d.", ret);
+    const int32_t ret = sprintf_s(
+        filename, static_cast<size_t>(len), "%s_%d%02d%02d%02d%02d%02d%" PRId64 ".bin", PC_TRACE_FILE_NAME,
+        currentTime.wYear, currentTime.wMonth, currentTime.wDay, currentTime.wHour, currentTime.wMinute,
+        currentTime.wSecond, currentTime.wMilliseconds * 1000);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_SYSTEM, ret == -1, RT_ERROR_PCTRACE_TIME, "Failed to call sprintf_s, count=%d.", ret);
 
     auto fd = mmOpen2(filename, M_CREAT | M_WRONLY, M_UMASK_USRREAD | M_UMASK_USRWRITE);
     if (fd == -1) {
@@ -81,39 +81,41 @@ rtError_t PCTrace::WritePCTraceFile()
 
     mmSsize_t writeRet = mmWrite(fd, &tspctrace_.baseAddr, sizeof(uint64_t));
     if (writeRet != static_cast<mmSsize_t>(sizeof(uint64_t))) {
-        RT_LOG_CALL_MSG(ERR_MODULE_SYSTEM, "Write baseAddr failed, need write size=%zu, writeRet=%zd.",
-            sizeof(uint64_t), writeRet);
-        (void) mmClose(fd);
+        RT_LOG_CALL_MSG(
+            ERR_MODULE_SYSTEM, "Write baseAddr failed, need write size=%zu, writeRet=%zd.", sizeof(uint64_t), writeRet);
+        (void)mmClose(fd);
         fd = -1;
         return RT_ERROR_PCTRACE_FILE;
     }
-    writeRet = mmWrite(fd, RtValueToPtr<void *>(pctraceFileAddr), pcTraceFileLen);
+    writeRet = mmWrite(fd, RtValueToPtr<void*>(pctraceFileAddr), pcTraceFileLen);
     if (writeRet != static_cast<mmSsize_t>(pcTraceFileLen)) {
-        RT_LOG_CALL_MSG(ERR_MODULE_SYSTEM, "Failed to write pcTraceFile, writeSize=%u, writeRet=%zd.",
-            pcTraceFileLen, writeRet);
-        (void) mmClose(fd);
+        RT_LOG_CALL_MSG(
+            ERR_MODULE_SYSTEM, "Failed to write pcTraceFile, writeSize=%u, writeRet=%zd.", pcTraceFileLen, writeRet);
+        (void)mmClose(fd);
         fd = -1;
         return RT_ERROR_PCTRACE_FILE;
     }
-    (void) mmClose(fd);
+    (void)mmClose(fd);
     fd = -1;
     RT_LOG(RT_LOG_INFO, "Write file end, pcTraceFileLen=%d", pcTraceFileLen);
     return error;
 }
 
-rtError_t PCTrace::AllocPCTraceMemory(void **addr, uint64_t addrSize)
+rtError_t PCTrace::AllocPCTraceMemory(void** addr, uint64_t addrSize)
 {
     RT_LOG(RT_LOG_INFO, "AllocPCTraceMemory:Alloc memory start");
-    void *addrTempt = nullptr;
+    void* addrTempt = nullptr;
 
     rtError_t error = device_->Driver_()->DevMemAllocForPctrace(&addrTempt, addrSize, device_->Id_());
-    ERROR_RETURN(error, "Failed to allocate pctrace memory, size=%" PRIu64 ", retCode=%#x.",
-                           addrSize, static_cast<uint32_t>(error));
+    ERROR_RETURN(
+        error, "Failed to allocate pctrace memory, size=%" PRIu64 ", retCode=%#x.", addrSize,
+        static_cast<uint32_t>(error));
 
     const errno_t ret = memset_s(addrTempt, addrSize, 0, addrSize);
     if (ret != EOK) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to call memset_s to set addrTempt, size=%" PRIu64 ", retCode=%#x.",
-            addrSize, static_cast<uint32_t>(ret));
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Failed to call memset_s to set addrTempt, size=%" PRIu64 ", retCode=%#x.", addrSize,
+            static_cast<uint32_t>(ret));
         error = device_->Driver_()->DevMemFreeForPctrace(addrTempt);
         ERROR_RETURN(error, "Failed to free pctrace memory, retCode=%#x.", static_cast<uint32_t>(error));
         return RT_ERROR_SEC_HANDLE;
@@ -138,7 +140,7 @@ rtError_t PCTrace::FreePCTraceMemory()
     }
 
     RT_LOG(RT_LOG_INFO, "vir_addr=%" PRIx64 ", addr_size=%" PRIu64, tspctrace_.pctraceAddr, tspctrace_.pctraceAddrSize);
-    void * const pcTraceAddr = RtValueToPtr<void *>(tspctrace_.pctraceAddr);
+    void* const pcTraceAddr = RtValueToPtr<void*>(tspctrace_.pctraceAddr);
     if (pcTraceAddr == nullptr) {
         RT_LOG(RT_LOG_INFO, "PCTrace addr is null,no need free");
         return RT_ERROR_NONE;
@@ -148,5 +150,5 @@ rtError_t PCTrace::FreePCTraceMemory()
     ERROR_RETURN(error, "Failed to free pctrace mem, retCode=%#x.", static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

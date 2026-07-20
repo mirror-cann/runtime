@@ -15,7 +15,7 @@
 namespace cce {
 namespace runtime {
 
-TaskInfo* GetStreamTaskInfo(const Device * const dev, uint16_t streamId, uint16_t pos)
+TaskInfo* GetStreamTaskInfo(const Device* const dev, uint16_t streamId, uint16_t pos)
 {
     if (dev != nullptr) {
         return dev->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), pos);

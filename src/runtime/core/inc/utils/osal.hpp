@@ -24,7 +24,7 @@
 #include <malloc.h>
 #include <windows.h>
 #include <immintrin.h>
-#endif  // !WIN32
+#endif // !WIN32
 #include <functional>
 
 // thread_local
@@ -50,17 +50,17 @@
 namespace cce {
 namespace runtime {
 extern bool g_isAddrFlatDevice;
-void * AlignedMalloc(const size_t aligned, const size_t size);
+void* AlignedMalloc(const size_t aligned, const size_t size);
 
-void AlignedFree(void * const addr);
+void AlignedFree(void* const addr);
 
-bool CompareAndExchange(volatile uint64_t * const addr, const uint64_t currentValue, const uint64_t val);
+bool CompareAndExchange(volatile uint64_t* const addr, const uint64_t currentValue, const uint64_t val);
 
-bool CompareAndExchange(volatile uint32_t * const addr, const uint32_t currentValue, const uint32_t val);
+bool CompareAndExchange(volatile uint32_t* const addr, const uint32_t currentValue, const uint32_t val);
 
-void FetchAndOr(volatile uint64_t * const addr, const uint64_t val);
+void FetchAndOr(volatile uint64_t* const addr, const uint64_t val);
 
-void FetchAndAnd(volatile uint64_t * const addr, const uint64_t val);
+void FetchAndAnd(volatile uint64_t* const addr, const uint64_t val);
 
 uint64_t BitScan(const uint64_t val);
 
@@ -71,32 +71,17 @@ uint64_t GetTickCount(void);
 template <class T>
 class Atomic {
 public:
-    explicit Atomic(T v) noexcept : val_(v)
-    {
-    }
+    explicit Atomic(T v) noexcept : val_(v) {}
 
     ~Atomic() = default;
 
+    bool CompareExchange(T exp, T val) { return val_.compare_exchange_strong(exp, val); }
 
-    bool CompareExchange(T exp, T val)
-    {
-        return val_.compare_exchange_strong(exp, val);
-    }
+    T Exchange(T val) { return val_.exchange(val); }
 
-    T Exchange(T val)
-    {
-        return val_.exchange(val);
-    }
+    T FetchAndAdd(T val) { return (T)val_.fetch_add(val); }
 
-    T FetchAndAdd(T val)
-    {
-        return (T)val_.fetch_add(val);
-    }
-
-    T FetchAndSub(T val)
-    {
-        return (T)val_.fetch_sub(val);
-    }
+    T FetchAndSub(T val) { return (T)val_.fetch_sub(val); }
 
     T AddAndFetch(T val)
     {
@@ -110,15 +95,9 @@ public:
         return old - val;
     }
 
-    void Add(T val)
-    {
-        (void)FetchAndAdd(val);
-    }
+    void Add(T val) { (void)FetchAndAdd(val); }
 
-    void Sub(T val)
-    {
-        (void)FetchAndSub(val);
-    }
+    void Sub(T val) { (void)FetchAndSub(val); }
 
     T Value() const
     {
@@ -126,10 +105,7 @@ public:
         return val;
     }
 
-    void Set(T val)
-    {
-        val_.store(val);
-    }
+    void Set(T val) { val_.store(val); }
 
 private:
     std::atomic<T> val_;
@@ -137,15 +113,9 @@ private:
 
 class SpinLock {
 public:
-    SpinLock() :atomicLock_(1)
-    {
-        (void)pthread_spin_init(&lock_, PTHREAD_PROCESS_PRIVATE);
-    }
+    SpinLock() : atomicLock_(1) { (void)pthread_spin_init(&lock_, PTHREAD_PROCESS_PRIVATE); }
 
-    ~SpinLock()
-    {
-        (void)pthread_spin_destroy(&lock_);
-    }
+    ~SpinLock() { (void)pthread_spin_destroy(&lock_); }
 
     void Lock()
     {
@@ -179,7 +149,7 @@ public:
     virtual ~ThreadRunnable() = default;
 
     // Running entry of thread.
-    virtual void Run(const void *param) = 0;
+    virtual void Run(const void* param) = 0;
 };
 
 // An os thread running concurrency with others.
@@ -215,10 +185,10 @@ class OsalFactory {
 public:
     // Create Thread object.
     // The thread will start after created.
-    static Thread *CreateThread(const char_t * const name, ThreadRunnable * const runnable, void * const param);
+    static Thread* CreateThread(const char_t* const name, ThreadRunnable* const runnable, void* const param);
 
     // Create Notifier object.
-    static Notifier *CreateNotifier();
+    static Notifier* CreateNotifier();
 
     // Get actual thread object size allocated by CreateThread.
     static size_t GetThreadObjectSize();
@@ -233,9 +203,7 @@ public:
 
 class ScopeGuard {
 public:
-    explicit ScopeGuard(std::function<void()> callback)
-        : exitCallback_(callback)
-    {}
+    explicit ScopeGuard(std::function<void()> callback) : exitCallback_(callback) {}
 
     ~ScopeGuard() noexcept
     {
@@ -243,10 +211,7 @@ public:
             exitCallback_();
         }
     }
-    void ReleaseGuard()
-    {
-        exitCallback_ = nullptr;
-    }
+    void ReleaseGuard() { exitCallback_ = nullptr; }
 
 private:
     ScopeGuard(ScopeGuard const&) = delete;
@@ -260,12 +225,10 @@ private:
 
 class ThreadGuard {
 public:
-    ThreadGuard(): threadAtexitFlag_(false), monitorStatus_(true)
-    {
-    }
+    ThreadGuard() : threadAtexitFlag_(false), monitorStatus_(true) {}
     ~ThreadGuard() = default;
     static void ThreadExit();
-    void SetThreadTid(const mmThread inTid, const std::string &threadName);
+    void SetThreadTid(const mmThread inTid, const std::string& threadName);
     bool DelThreadTid(const mmThread inTid);
     bool FindThreadTid(const mmThread inTid);
     std::vector<std::pair<mmThread, std::string>> GetAllThreadTid();
@@ -280,7 +243,7 @@ private:
     std::map<mmThread, std::string> threadTid_;
     std::mutex mutex_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_OSAL_HPP__
+#endif // __CCE_RUNTIME_OSAL_HPP__

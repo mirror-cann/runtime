@@ -24,27 +24,26 @@ public:
     XpuDriver();
     ~XpuDriver() override = default;
     rtError_t XpuDriverDeviceSqCqAlloc(const uint32_t devId, const uint32_t sqId, const uint32_t cqId);
-    rtError_t XpuDriverDeviceOpen(const uint32_t devId, TprtCfgInfo_t *devInfo) const;
+    rtError_t XpuDriverDeviceOpen(const uint32_t devId, TprtCfgInfo_t* devInfo) const;
     rtError_t XpuDriverDeviceClose(const uint32_t devId) const;
     rtError_t XpuDriverSetSqCqStatus(const uint32_t devId, const uint32_t sqId);
     rtError_t XpuDriverSqCqDestroy(const uint32_t devId, const uint32_t sqId, const uint32_t cqId);
 
-    static Driver *Instance_()
-    {
-        return new (std::nothrow) XpuDriver();
-    }
-	rtError_t GetSqState(const uint32_t deviceId, const uint32_t sqId, uint32_t &status);
-    rtError_t LogicCqReportV2(const LogicCqWaitInfo &waitInfo, uint8_t *report, uint32_t reportCnt,
-        uint32_t &realCnt) override;
-    rtError_t GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool &status) override;
-    rtError_t GetSqHead(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t &head, bool needLog) override;
+    static Driver* Instance_() { return new (std::nothrow) XpuDriver(); }
+    rtError_t GetSqState(const uint32_t deviceId, const uint32_t sqId, uint32_t& status);
+    rtError_t LogicCqReportV2(
+        const LogicCqWaitInfo& waitInfo, uint8_t* report, uint32_t reportCnt, uint32_t& realCnt) override;
+    rtError_t GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool& status) override;
+    rtError_t GetSqHead(
+        const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t& head, bool needLog) override;
     void InitDrvErrCodeMap();
     rtError_t GetDrvErrCode(const uint32_t errCode);
+
 private:
     std::map<uint32_t, rtError_t> tprtErrMap_;
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_NPU_DRIVER_HPP
+#endif // CCE_RUNTIME_NPU_DRIVER_HPP

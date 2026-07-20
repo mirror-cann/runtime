@@ -21,7 +21,7 @@
 #include "runtime.hpp"
 #include "thread_local_container.hpp"
 #include "global_state_manager.hpp"
- 
+
 using namespace cce::runtime;
 namespace cce {
 namespace runtime {
@@ -31,18 +31,18 @@ TIMESTAMP_EXTERN(rtMemPoolSetAttr);
 TIMESTAMP_EXTERN(rtMemPoolGetAttr);
 TIMESTAMP_EXTERN(rtMemPoolMallocAsync);
 TIMESTAMP_EXTERN(rtMemPoolFreeAsync);
-}
-}
- 
+} // namespace runtime
+} // namespace cce
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
- 
+
 VISIBILITY_DEFAULT
-rtError_t rtMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProps *poolProps)
+rtError_t rtMemPoolCreate(rtMemPool_t* memPool, const rtMemPoolProps* poolProps)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiSoma * const apiInstance = ApiSoma::Instance();
+    ApiSoma* const apiInstance = ApiSoma::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtMemPoolCreate);
     const rtError_t error = apiInstance->StreamMemPoolCreate(memPool, poolProps);
@@ -51,12 +51,12 @@ rtError_t rtMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProps *poolProps)
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
- 
+
 VISIBILITY_DEFAULT
 rtError_t rtMemPoolDestroy(const rtMemPool_t memPool)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiSoma * const apiInstance = ApiSoma::Instance();
+    ApiSoma* const apiInstance = ApiSoma::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtMemPoolDestroy);
     const rtError_t error = apiInstance->StreamMemPoolDestroy(memPool);
@@ -65,12 +65,12 @@ rtError_t rtMemPoolDestroy(const rtMemPool_t memPool)
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
- 
+
 VISIBILITY_DEFAULT
-rtError_t rtMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
+rtError_t rtMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiSoma * const apiInstance = ApiSoma::Instance();
+    ApiSoma* const apiInstance = ApiSoma::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtMemPoolSetAttr);
     const rtError_t error = apiInstance->StreamMemPoolSetAttr(memPool, attr, value);
@@ -79,12 +79,12 @@ rtError_t rtMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
- 
+
 VISIBILITY_DEFAULT
-rtError_t rtMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
+rtError_t rtMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiSoma * const apiInstance = ApiSoma::Instance();
+    ApiSoma* const apiInstance = ApiSoma::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtMemPoolGetAttr);
     const rtError_t error = apiInstance->StreamMemPoolGetAttr(memPool, attr, value);
@@ -93,14 +93,14 @@ rtError_t rtMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
- 
+
 VISIBILITY_DEFAULT
-rtError_t rtMemPoolMallocAsync(void **ptr, const uint64_t size, const rtMemPool_t memPoolId, const rtStream_t stm)
+rtError_t rtMemPoolMallocAsync(void** ptr, const uint64_t size, const rtMemPool_t memPoolId, const rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiSoma * const apiInstance = ApiSoma::Instance();
+    ApiSoma* const apiInstance = ApiSoma::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
- 
+
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(exeStream);
     TIMESTAMP_BEGIN(rtMemPoolMallocAsync);
@@ -108,32 +108,32 @@ rtError_t rtMemPoolMallocAsync(void **ptr, const uint64_t size, const rtMemPool_
     TIMESTAMP_END(rtMemPoolMallocAsync);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
- 
+
     return ACL_RT_SUCCESS;
 }
- 
+
 VISIBILITY_DEFAULT
-rtError_t rtMemPoolFreeAsync(void *ptr, rtStream_t stm)
+rtError_t rtMemPoolFreeAsync(void* ptr, rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    ApiSoma * const apiInstance = ApiSoma::Instance();
+    ApiSoma* const apiInstance = ApiSoma::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    
+
     TIMESTAMP_BEGIN(rtMemPoolFreeAsync);
     const rtError_t error = apiInstance->MemPoolFreeAsync(ptr, exeStream);
     TIMESTAMP_END(rtMemPoolFreeAsync);
- 
+
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
- 
+
 VISIBILITY_DEFAULT
 rtError_t rtMemPoolTrimTo(rtMemPool_t memPool, uint64_t minBytesToKeep)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiSoma * const apiInstance = ApiSoma::Instance();
+    ApiSoma* const apiInstance = ApiSoma::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->MemPoolTrimTo(memPool, minBytesToKeep);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);

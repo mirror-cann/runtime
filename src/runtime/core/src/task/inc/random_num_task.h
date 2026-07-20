@@ -16,8 +16,8 @@
 namespace cce {
 namespace runtime {
 // dsa random num task
-rtError_t GetDsaSqeByRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo, TaskInfo *commonTask, rtStarsDsaSqe_t &sqe);
-rtError_t CheckRandomNumTaskInfo(const rtRandomNumTaskInfo_t *taskInfo);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_RANDOM_NUM_TASK_H
+rtError_t GetDsaSqeByRandomNumTask(const rtRandomNumTaskInfo_t* taskInfo, TaskInfo* commonTask, rtStarsDsaSqe_t& sqe);
+rtError_t CheckRandomNumTaskInfo(const rtRandomNumTaskInfo_t* taskInfo);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_RANDOM_NUM_TASK_H

@@ -13,14 +13,14 @@
 
 namespace cce {
 namespace runtime {
-StreamSqCqManage::StreamSqCqManage(Device * const dev) : NoCopy(), device_(dev), normalCq_(UINT32_MAX) {}
-void StreamSqCqManage::FillStreamInfoEx(const Stream * const stm, rtStreamInfoExMsg_t &infoEX) const
+StreamSqCqManage::StreamSqCqManage(Device* const dev) : NoCopy(), device_(dev), normalCq_(UINT32_MAX) {}
+void StreamSqCqManage::FillStreamInfoEx(const Stream* const stm, rtStreamInfoExMsg_t& infoEX) const
 {
     FillStreamAttrSimt(stm, infoEX);
     FillStreamAttrDqsInterChip(stm, infoEX);
 }
 
-void StreamSqCqManage::FillStreamAttrSimt(const Stream * const stm, rtStreamInfoExMsg_t &infoEX) const
+void StreamSqCqManage::FillStreamAttrSimt(const Stream* const stm, rtStreamInfoExMsg_t& infoEX) const
 {
     if (!stm->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_SIMT)) {
         return;
@@ -44,13 +44,15 @@ void StreamSqCqManage::FillStreamAttrSimt(const Stream * const stm, rtStreamInfo
     infoEX.body.kisSimtDvgWarpStkSize = device_->GetSimtDvgWarpStkSize();
     infoEX.body.poolId = stm->Device_()->GetPoolId();
     infoEX.body.poolIdMax = stm->Device_()->GetPoolIdMax();
-    RT_LOG(RT_LOG_DEBUG, "Alloc sq cq info: validFlag=%llu, poolId=%u, poolIdMax=%u, stackPhyAddr=%#llx,"
-           " WarpStkSize=%u, DvgWarpStkSize=%u.",
-           infoEX.body.validFlag, infoEX.body.poolId, infoEX.body.poolIdMax, stackPhyAddr, 
-           infoEX.body.kisSimtWarpStkSize, infoEX.body.kisSimtDvgWarpStkSize);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "Alloc sq cq info: validFlag=%llu, poolId=%u, poolIdMax=%u, stackPhyAddr=%#llx,"
+        " WarpStkSize=%u, DvgWarpStkSize=%u.",
+        infoEX.body.validFlag, infoEX.body.poolId, infoEX.body.poolIdMax, stackPhyAddr, infoEX.body.kisSimtWarpStkSize,
+        infoEX.body.kisSimtDvgWarpStkSize);
 }
 
-void StreamSqCqManage::FillStreamAttrDqsInterChip(const Stream * const stm, rtStreamInfoExMsg_t &infoEX) const
+void StreamSqCqManage::FillStreamAttrDqsInterChip(const Stream* const stm, rtStreamInfoExMsg_t& infoEX) const
 {
     if (!stm->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_DQS_INTER_CHIP) ||
         ((stm->Flags() & RT_STREAM_DQS_INTER_CHIP) == 0U)) {
@@ -59,16 +61,17 @@ void StreamSqCqManage::FillStreamAttrDqsInterChip(const Stream * const stm, rtSt
 
     infoEX.body.validFlag |= static_cast<uint64_t>(InfoExValidFlag::INFO_EX_BODY_FLAG_STREAM);
     infoEX.body.streamFlag.bits.dqsInterChip = 1U;
-    RT_LOG(RT_LOG_DEBUG, "Alloc sq cq info, stream_id=%d, dqsInterChip=%u", stm->Id_(),
+    RT_LOG(
+        RT_LOG_DEBUG, "Alloc sq cq info, stream_id=%d, dqsInterChip=%u", stm->Id_(),
         infoEX.body.streamFlag.bits.dqsInterChip);
 }
 
-rtError_t StreamSqCqManage::AllocStreamSqCq(const Stream * const newStm, const uint32_t priority, uint32_t drvFlag,
-                                            uint32_t &sqId, uint32_t &cqId)
+rtError_t StreamSqCqManage::AllocStreamSqCq(
+    const Stream* const newStm, const uint32_t priority, uint32_t drvFlag, uint32_t& sqId, uint32_t& cqId)
 {
     uint32_t info[SQCQ_RTS_INFO_LENGTH] = {};
     const uint32_t streamId = static_cast<uint32_t>(newStm->Id_());
-    rtStreamAllocInfo_t * const infoPtr = RtPtrToPtr<rtStreamAllocInfo_t *>(info);
+    rtStreamAllocInfo_t* const infoPtr = RtPtrToPtr<rtStreamAllocInfo_t*>(info);
     rtStreamInfoExMsg_t infoEx;
     (void)memset_s(&infoEx, sizeof(rtStreamInfoExMsg_t), 0, sizeof(rtStreamInfoExMsg_t));
     infoPtr->streamId = streamId;
@@ -84,8 +87,7 @@ rtError_t StreamSqCqManage::AllocStreamSqCq(const Stream * const newStm, const u
     sqId = 0U;
     cqId = 0U;
     // One-to-one mapping between SQ and CQ for stars, CQ not reuse
-    if ((!(device_->IsStarsPlatform())) &&
-        ((drvFlag & (static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID))) == 0U)) {
+    if ((!(device_->IsStarsPlatform())) && ((drvFlag & (static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID))) == 0U)) {
         if (!streamIdToSqIdMap_.empty()) {
             drvFlag |= (static_cast<uint32_t>(TSDRV_FLAG_REUSE_CQ));
             // cqId reuse exist cq id.
@@ -96,28 +98,31 @@ rtError_t StreamSqCqManage::AllocStreamSqCq(const Stream * const newStm, const u
         (newStm->Device_()->GetVfId() != MAX_UINT32_NUM)) {
         drvFlag |= (static_cast<uint32_t>(TSDRV_FLAG_RANGE_ID));
     }
-    const rtError_t error = Add(streamId, drvFlag, sqId, cqId, info, sizeof(info),
-                                RtPtrToPtr<uint32_t *>(&infoEx), sizeof(rtStreamInfoExMsg_t));
+    const rtError_t error = Add(
+        streamId, drvFlag, sqId, cqId, info, sizeof(info), RtPtrToPtr<uint32_t*>(&infoEx), sizeof(rtStreamInfoExMsg_t));
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_WARNING, "[SqCqManage]Alloc sq cq fail, stream_id=%u, retCode=%#x.",
-            streamId, static_cast<uint32_t>(error));
+        RT_LOG(
+            RT_LOG_WARNING, "[SqCqManage]Alloc sq cq fail, stream_id=%u, retCode=%#x.", streamId,
+            static_cast<uint32_t>(error));
         return error;
     }
     if (((drvFlag & (static_cast<uint32_t>(TSDRV_FLAG_REUSE_CQ))) == 0U) &&
         ((drvFlag & (static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID))) == 0U)) {
         normalCq_ = cqId;
     }
-    RT_LOG(RT_LOG_DEBUG, "Alloc sq cq info: stream_id=%u, sq_id=%u, cq_id=%u, normal_cq_id=%u, drv_flag=%#x.",
-           streamId, sqId, cqId, normalCq_, drvFlag);
+    RT_LOG(
+        RT_LOG_DEBUG, "Alloc sq cq info: stream_id=%u, sq_id=%u, cq_id=%u, normal_cq_id=%u, drv_flag=%#x.", streamId,
+        sqId, cqId, normalCq_, drvFlag);
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamSqCqManage::AllocDavidStreamSqCq(const Stream * const newStm, const uint32_t priority, 
-    uint32_t drvFlag, uint32_t &sqId, uint32_t &cqId, uint64_t &sqAddr)
+rtError_t StreamSqCqManage::AllocDavidStreamSqCq(
+    const Stream* const newStm, const uint32_t priority, uint32_t drvFlag, uint32_t& sqId, uint32_t& cqId,
+    uint64_t& sqAddr)
 {
     uint32_t info[SQCQ_RTS_INFO_LENGTH] = {};
     const uint32_t streamId = static_cast<uint32_t>(newStm->Id_());
-    rtStreamAllocInfo_t * const infoPtr = RtPtrToPtr<rtStreamAllocInfo_t *>(info);
+    rtStreamAllocInfo_t* const infoPtr = RtPtrToPtr<rtStreamAllocInfo_t*>(info);
     rtStreamInfoExMsg_t infoEx;
     (void)memset_s(&infoEx, sizeof(rtStreamInfoExMsg_t), 0, sizeof(rtStreamInfoExMsg_t));
     infoPtr->streamId = streamId;
@@ -146,24 +151,29 @@ rtError_t StreamSqCqManage::AllocDavidStreamSqCq(const Stream * const newStm, co
     if (Runtime::Instance()->GetConnectUbFlag() && (newStm->Flags() & RT_STREAM_CP_PROCESS_USE) == 0U) {
         drvFlag |= (static_cast<uint32_t>(TSDRV_FLAG_PRE_ASYNC_SQ));
     }
-    rtError_t error = Alloc(streamId, drvFlag, sqId, cqId, info, sizeof(info),
-                                  RtPtrToPtr<uint32_t *>(&infoEx), sizeof(rtStreamInfoExMsg_t));
+    rtError_t error = Alloc(
+        streamId, drvFlag, sqId, cqId, info, sizeof(info), RtPtrToPtr<uint32_t*>(&infoEx), sizeof(rtStreamInfoExMsg_t));
     COND_RETURN_WARN((error != RT_ERROR_NONE), error, "NormalSqCqAllocate fail, retCode=%#x.", error);
     error = device_->Driver_()->GetSqAddrInfo(device_->Id_(), device_->DevGetTsId(), sqId, sqAddr);
-    COND_LOG(error != RT_ERROR_NONE, "hal may not support get sq addr info, device_id=%u, retCode=%#x.", device_->Id_(), error);
-    RT_LOG(RT_LOG_DEBUG, "Alloc sq cq: device_id=%u, stream_id=%u, sq_id=%u, cq_id=%u, drv_flag=%#x,"
-           " sq_addr=0x%llx.", device_->Id_(), streamId, sqId, cqId, drvFlag, sqAddr);
+    COND_LOG(
+        error != RT_ERROR_NONE, "hal may not support get sq addr info, device_id=%u, retCode=%#x.", device_->Id_(),
+        error);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "Alloc sq cq: device_id=%u, stream_id=%u, sq_id=%u, cq_id=%u, drv_flag=%#x,"
+        " sq_addr=0x%llx.",
+        device_->Id_(), streamId, sqId, cqId, drvFlag, sqAddr);
     return error;
 }
 
-rtError_t StreamSqCqManage::UpdateStreamSqCq(Stream *newStm)
+rtError_t StreamSqCqManage::UpdateStreamSqCq(Stream* newStm)
 {
     uint32_t info[SQCQ_RTS_INFO_LENGTH] = {};
     const uint32_t streamId = static_cast<uint32_t>(newStm->Id_());
     uint32_t sqId = newStm->GetSqId();
     uint32_t cqId = newStm->GetCqId();
     uint32_t logicCqId = newStm->GetLogicalCqId();
-    rtStreamAllocInfo_t * const infoPtr = RtPtrToPtr<rtStreamAllocInfo_t *>(info);
+    rtStreamAllocInfo_t* const infoPtr = RtPtrToPtr<rtStreamAllocInfo_t*>(info);
     infoPtr->streamId = streamId;
     infoPtr->priority = newStm->GetPriority();
     infoPtr->satMode = (device_->GetSatMode() == RT_OVERFLOW_MODE_INFNAN) ? 1U : 0U;
@@ -180,17 +190,16 @@ rtError_t StreamSqCqManage::UpdateStreamSqCq(Stream *newStm)
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "LogicCqFree fail, retCode=%#x.", error);
 
     drvFlag = (TSDRV_FLAG_RSV_SQ_ID | TSDRV_FLAG_RSV_CQ_ID | remoteFlag);
-    error = device_->Driver_()->NormalSqCqFree(
-        device_->Id_(), device_->DevGetTsId(), drvFlag, sqId, cqId);
+    error = device_->Driver_()->NormalSqCqFree(device_->Id_(), device_->DevGetTsId(), drvFlag, sqId, cqId);
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "NormalSqCqFree fail, retCode=%#x.", error);
 
     rtStreamInfoExMsg_t infoEx;
     (void)memset_s(&infoEx, sizeof(rtStreamInfoExMsg_t), 0, sizeof(rtStreamInfoExMsg_t));
     drvFlag = (TSDRV_FLAG_SPECIFIED_SQ_ID | TSDRV_FLAG_SPECIFIED_CQ_ID | remoteFlag);
     FillStreamInfoEx(newStm, infoEx);
-    error = device_->Driver_()->NormalSqCqAllocate(device_->Id_(),
-        device_->DevGetTsId(), drvFlag, &sqId, &cqId, info, sizeof(info),
-        RtPtrToPtr<uint32_t *>(&infoEx), sizeof(rtStreamInfoExMsg_t));
+    error = device_->Driver_()->NormalSqCqAllocate(
+        device_->Id_(), device_->DevGetTsId(), drvFlag, &sqId, &cqId, info, sizeof(info),
+        RtPtrToPtr<uint32_t*>(&infoEx), sizeof(rtStreamInfoExMsg_t));
 
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "NormalSqCqAllocate fail, retCode=%#x.", error);
 
@@ -215,14 +224,14 @@ rtError_t StreamSqCqManage::UpdateStreamSqCq(Stream *newStm)
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamSqCqManage::ReAllocSqCqId(const Stream * const newStm)
+rtError_t StreamSqCqManage::ReAllocSqCqId(const Stream* const newStm)
 {
     uint32_t info[SQCQ_RTS_INFO_LENGTH] = {};
     const uint32_t streamId = static_cast<uint32_t>(newStm->Id_());
     uint32_t sqId = newStm->GetSqId();
     uint32_t cqId = newStm->GetCqId();
     uint32_t logicCqId = newStm->GetLogicalCqId();
-    rtStreamAllocInfo_t * const infoPtr = RtPtrToPtr<rtStreamAllocInfo_t *>(info);
+    rtStreamAllocInfo_t* const infoPtr = RtPtrToPtr<rtStreamAllocInfo_t*>(info);
     infoPtr->streamId = streamId;
     infoPtr->priority = newStm->GetPriority();
     infoPtr->satMode = (device_->GetSatMode() == RT_OVERFLOW_MODE_INFNAN) ? 1U : 0U;
@@ -235,10 +244,12 @@ rtError_t StreamSqCqManage::ReAllocSqCqId(const Stream * const newStm)
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
     rtStreamInfoExMsg_t infoEx{};
     uint32_t drvFlag = (TSDRV_FLAG_SPECIFIED_SQ_ID | TSDRV_FLAG_SPECIFIED_CQ_ID);
-    rtError_t error = device_->Driver_()->NormalSqCqAllocate(device_->Id_(), device_->DevGetTsId(), drvFlag,
-        &sqId, &cqId, info, sizeof(info), RtPtrToPtr<uint32_t *>(&infoEx), sizeof(rtStreamInfoExMsg_t));
+    rtError_t error = device_->Driver_()->NormalSqCqAllocate(
+        device_->Id_(), device_->DevGetTsId(), drvFlag, &sqId, &cqId, info, sizeof(info),
+        RtPtrToPtr<uint32_t*>(&infoEx), sizeof(rtStreamInfoExMsg_t));
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "NormalSqCqAllocate fail, retCode=%#x.", error);
-    COND_RETURN_ERROR_MSG_INNER(((newStm->GetSqId() != sqId) || (newStm->GetCqId() != cqId)), RT_ERROR_DRV_ERR,
+    COND_RETURN_ERROR_MSG_INNER(
+        ((newStm->GetSqId() != sqId) || (newStm->GetCqId() != cqId)), RT_ERROR_DRV_ERR,
         "The re-applied SQ CQ is inconsistent with the original value, "
         "stream_id=%u, sqId=%u, cqId=%u, tmp_sq_id=%u, tmp_cq_id=%u.",
         streamId, newStm->GetSqId(), newStm->GetCqId(), sqId, cqId);
@@ -246,28 +257,31 @@ rtError_t StreamSqCqManage::ReAllocSqCqId(const Stream * const newStm)
     drvFlag = TSDRV_FLAG_SPECIFIED_CQ_ID;
     error = device_->Driver_()->LogicCqAllocateV2(
         device_->Id_(), device_->DevGetTsId(), streamId, logicCqId, newStm->IsBindDvppGrp(), drvFlag);
-    COND_RETURN_ERROR(((error != RT_ERROR_NONE) || (newStm->GetLogicalCqId() != logicCqId)), error,
-        "LogicCqAllocateV2 fail, stream_id=%u, logicCqId=%u, tmpLogicCqId=%u, retCode=%d.",
-        streamId, newStm->GetLogicalCqId(), logicCqId, error);
+    COND_RETURN_ERROR(
+        ((error != RT_ERROR_NONE) || (newStm->GetLogicalCqId() != logicCqId)), error,
+        "LogicCqAllocateV2 fail, stream_id=%u, logicCqId=%u, tmpLogicCqId=%u, retCode=%d.", streamId,
+        newStm->GetLogicalCqId(), logicCqId, error);
 
     error = device_->Driver_()->StreamBindLogicCq(device_->Id_(), device_->DevGetTsId(), streamId, logicCqId);
-    COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-        "StreamBindLogicCq failed, streamId=%d, deviceId=%u, sqId=%u, logicCqId=%u, ret=%d.",
-        streamId, device_->Id_(), newStm->GetSqId(), logicCqId, error);
+    COND_RETURN_ERROR(
+        (error != RT_ERROR_NONE), error,
+        "StreamBindLogicCq failed, streamId=%d, deviceId=%u, sqId=%u, logicCqId=%u, ret=%d.", streamId, device_->Id_(),
+        newStm->GetSqId(), logicCqId, error);
 
-    RT_LOG(RT_LOG_DEBUG, "ReAllocSqCqId sq cq success: device_id=%u, stream_id=%u, sq_id=%u, cq_id=%u, logicCqId=%u.",
-           device_->Id_(), streamId, sqId, cqId, logicCqId);
+    RT_LOG(
+        RT_LOG_DEBUG, "ReAllocSqCqId sq cq success: device_id=%u, stream_id=%u, sq_id=%u, cq_id=%u, logicCqId=%u.",
+        device_->Id_(), streamId, sqId, cqId, logicCqId);
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamSqCqManage::ReAllocDavidSqCqId(const Stream * const stream)
+rtError_t StreamSqCqManage::ReAllocDavidSqCqId(const Stream* const stream)
 {
     uint32_t info[SQCQ_RTS_INFO_LENGTH] = {};
     const uint32_t streamId = static_cast<uint32_t>(stream->Id_());
     uint32_t sqId = stream->GetSqId();
     uint32_t cqId = stream->GetCqId();
     uint32_t logicCqId = stream->GetLogicalCqId();
-    rtStreamAllocInfo_t * const infoPtr = RtPtrToPtr<rtStreamAllocInfo_t *>(info);
+    rtStreamAllocInfo_t* const infoPtr = RtPtrToPtr<rtStreamAllocInfo_t*>(info);
     rtStreamInfoExMsg_t infoEx;
     (void)memset_s(&infoEx, sizeof(rtStreamInfoExMsg_t), 0, sizeof(rtStreamInfoExMsg_t));
     infoPtr->streamId = streamId;
@@ -282,42 +296,47 @@ rtError_t StreamSqCqManage::ReAllocDavidSqCqId(const Stream * const stream)
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
     FillStreamInfoEx(stream, infoEx);
     uint32_t drvFlag = (TSDRV_FLAG_SPECIFIED_SQ_ID | TSDRV_FLAG_SPECIFIED_CQ_ID);
-    rtError_t error = device_->Driver_()->NormalSqCqAllocate(device_->Id_(), device_->DevGetTsId(), drvFlag,
-        &sqId, &cqId, info, sizeof(info), RtPtrToPtr<uint32_t *>(&infoEx), sizeof(rtStreamInfoExMsg_t));
+    rtError_t error = device_->Driver_()->NormalSqCqAllocate(
+        device_->Id_(), device_->DevGetTsId(), drvFlag, &sqId, &cqId, info, sizeof(info),
+        RtPtrToPtr<uint32_t*>(&infoEx), sizeof(rtStreamInfoExMsg_t));
     COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "NormalSqCqAllocate fail, ret=%#x.", error);
-    COND_RETURN_ERROR(((stream->GetSqId() != sqId) || (stream->GetCqId() != cqId)), RT_ERROR_DRV_ERR,
-        "stream_id=%u, sq_id=%u, cq_id=%u, tmp_sq_id=%u, tmp_cq_id=%u.",
-        streamId, stream->GetSqId(), stream->GetCqId(), sqId, cqId);
+    COND_RETURN_ERROR(
+        ((stream->GetSqId() != sqId) || (stream->GetCqId() != cqId)), RT_ERROR_DRV_ERR,
+        "stream_id=%u, sq_id=%u, cq_id=%u, tmp_sq_id=%u, tmp_cq_id=%u.", streamId, stream->GetSqId(), stream->GetCqId(),
+        sqId, cqId);
 
     drvFlag = TSDRV_FLAG_SPECIFIED_CQ_ID;
     error = device_->Driver_()->LogicCqAllocateV2(
         device_->Id_(), device_->DevGetTsId(), streamId, logicCqId, stream->IsBindDvppGrp(), drvFlag);
-    COND_RETURN_ERROR(((error != RT_ERROR_NONE) || (stream->GetLogicalCqId() != logicCqId)), error,
-        "LogicCqAllocateV2 fail, stream_id=%u, logic_cq_id=%u, tmp_logic_cq_id=%u, ret=%d.",
-        streamId, stream->GetLogicalCqId(), logicCqId, error);
+    COND_RETURN_ERROR(
+        ((error != RT_ERROR_NONE) || (stream->GetLogicalCqId() != logicCqId)), error,
+        "LogicCqAllocateV2 fail, stream_id=%u, logic_cq_id=%u, tmp_logic_cq_id=%u, ret=%d.", streamId,
+        stream->GetLogicalCqId(), logicCqId, error);
 
     error = device_->Driver_()->StreamBindLogicCq(device_->Id_(), device_->DevGetTsId(), streamId, logicCqId);
-    COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-        "StreamBindLogicCq failed, stream_id=%d, device_id=%u, sq_id=%u, logic_cq_id=%u, ret=%d.",
-        streamId, device_->Id_(), stream->GetSqId(), logicCqId, error);
+    COND_RETURN_ERROR(
+        (error != RT_ERROR_NONE), error,
+        "StreamBindLogicCq failed, stream_id=%d, device_id=%u, sq_id=%u, logic_cq_id=%u, ret=%d.", streamId,
+        device_->Id_(), stream->GetSqId(), logicCqId, error);
 
-    RT_LOG(RT_LOG_DEBUG, "ReAllocSqCqId sq cq success: device_id=%u, stream_id=%u, sq_id=%u, cq_id=%u, logic_cq_id=%u.",
-           device_->Id_(), streamId, sqId, cqId, logicCqId);
+    RT_LOG(
+        RT_LOG_DEBUG, "ReAllocSqCqId sq cq success: device_id=%u, stream_id=%u, sq_id=%u, cq_id=%u, logic_cq_id=%u.",
+        device_->Id_(), streamId, sqId, cqId, logicCqId);
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamSqCqManage::Add(const uint32_t streamId, uint32_t drvFlag, uint32_t &sqId, uint32_t &cqId,
-                                uint32_t * const info, const uint32_t len, uint32_t * const msg,
-                                const uint32_t msgLen)
+rtError_t StreamSqCqManage::Add(
+    const uint32_t streamId, uint32_t drvFlag, uint32_t& sqId, uint32_t& cqId, uint32_t* const info, const uint32_t len,
+    uint32_t* const msg, const uint32_t msgLen)
 {
     rtError_t error = Alloc(streamId, drvFlag, sqId, cqId, info, len, msg, msgLen);
     if (error == RT_ERROR_SQID_FULL) {
         // One-to-one mapping between SQ and CQ for stars, reuse not allowed
-        if ((device_->IsStarsPlatform()) ||
-            ((drvFlag & (static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID))) != 0U)) {
+        if ((device_->IsStarsPlatform()) || ((drvFlag & (static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID))) != 0U)) {
             return error;
         }
-        drvFlag |= static_cast<uint32_t>(static_cast<uint32_t>(TSDRV_FLAG_REUSE_CQ) | static_cast<uint32_t>(TSDRV_FLAG_REUSE_SQ));
+        drvFlag |= static_cast<uint32_t>(
+            static_cast<uint32_t>(TSDRV_FLAG_REUSE_CQ) | static_cast<uint32_t>(TSDRV_FLAG_REUSE_SQ));
         if (streamIdToSqIdMap_.empty()) {
             return RT_ERROR_SQ_NO_EXIST_SQ_TO_REUSE;
         }
@@ -343,20 +362,23 @@ rtError_t StreamSqCqManage::Add(const uint32_t streamId, uint32_t drvFlag, uint3
     return error;
 }
 
-rtError_t StreamSqCqManage::Alloc(const uint32_t streamId, const uint32_t drvFlag, uint32_t &sqId, uint32_t &cqId,
-                                  uint32_t * const info, const uint32_t len, uint32_t * const msg,
-                                  const uint32_t msgLen)
+rtError_t StreamSqCqManage::Alloc(
+    const uint32_t streamId, const uint32_t drvFlag, uint32_t& sqId, uint32_t& cqId, uint32_t* const info,
+    const uint32_t len, uint32_t* const msg, const uint32_t msgLen)
 {
     const auto itor = streamIdToSqIdMap_.find(streamId);
     if (unlikely(itor != streamIdToSqIdMap_.end())) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "The SQ and CQ have been applied for the current stream and cannot be applied for again, "
-            "streamId=%u, sqId=%u, cqId=%u.", streamId, itor->second, normalCq_);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR,
+            "The SQ and CQ have been applied for the current stream and cannot be applied for again, "
+            "streamId=%u, sqId=%u, cqId=%u.",
+            streamId, itor->second, normalCq_);
         return RT_ERROR_STREAM_DUPLICATE;
     }
 
     RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, drvFlag=%u", device_->Id_(), device_->DevGetTsId(), drvFlag);
-    const rtError_t error = device_->Driver_()->NormalSqCqAllocate(device_->Id_(),
-        device_->DevGetTsId(), drvFlag, &sqId, &cqId, info, len, msg, msgLen);
+    const rtError_t error = device_->Driver_()->NormalSqCqAllocate(
+        device_->Id_(), device_->DevGetTsId(), drvFlag, &sqId, &cqId, info, len, msg, msgLen);
     if (unlikely(error != RT_ERROR_NONE)) {
         // no log here, may be retry outside
         return error;
@@ -395,8 +417,7 @@ rtError_t StreamSqCqManage::DeAllocStreamSqCq(const uint32_t streamId, const uin
 
     (void)streamIdToSqIdMap_.erase(streamId);
     (void)sqIdToStreamIdMap_.erase(sqId);
-    RT_LOG(RT_LOG_DEBUG, "streamIdToSqIdMap remove:stream_id=%u, sq_id=%u, cq_id=%u.",
-           streamId, sqId, cqId);
+    RT_LOG(RT_LOG_DEBUG, "streamIdToSqIdMap remove:stream_id=%u, sq_id=%u, cq_id=%u.", streamId, sqId, cqId);
 
     for (auto it = streamIdToSqIdMap_.begin(); it != streamIdToSqIdMap_.end(); it++) {
         if (it->second == sqId) {
@@ -421,11 +442,9 @@ rtError_t StreamSqCqManage::DeAllocStreamSqCq(const uint32_t streamId, const uin
 
     if (isSqIdNeedRelease == SQID_NEED_RELEASE) {
         // One-to-one mapping between SQ and CQ for stars, CQ not reuse
-        if ((device_->IsStarsPlatform()) ||
-            ((drvFlag & (static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID))) != 0U)) {
+        if ((device_->IsStarsPlatform()) || ((drvFlag & (static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID))) != 0U)) {
             drvFlag &= (~(static_cast<uint32_t>(TSDRV_FLAG_REUSE_CQ)));
-            RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, drvFlag=%u",
-                device_->Id_(), device_->DevGetTsId(), drvFlag);
+            RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, drvFlag=%u", device_->Id_(), device_->DevGetTsId(), drvFlag);
             cqId = normalCqId;
         }
         if (streamIdToSqIdMap_.empty()) {
@@ -436,17 +455,23 @@ rtError_t StreamSqCqManage::DeAllocStreamSqCq(const uint32_t streamId, const uin
         if (Runtime::Instance()->GetDisableThread()) {
             (void)sqIdMutex_.erase(sqId);
         }
-        RT_LOG(RT_LOG_INFO, "[SqCqManage]success to release sq, sq_id=%u, cq_id=%u, stream_id=%u, "
-            "is_sq_need_release=%u, drvFlag=%#x.", sqId, cqId, streamId, isSqIdNeedRelease, drvFlag);
+        RT_LOG(
+            RT_LOG_INFO,
+            "[SqCqManage]success to release sq, sq_id=%u, cq_id=%u, stream_id=%u, "
+            "is_sq_need_release=%u, drvFlag=%#x.",
+            sqId, cqId, streamId, isSqIdNeedRelease, drvFlag);
     } else {
-        RT_LOG(RT_LOG_INFO, "[SqCqManage]end to release sq, sq is also reuse, sq_id=%u, cq_id=%u, stream_id=%u, "
-            "is_sq_need_release=%u, drv_flag=%#x.", sqId, cqId, streamId, isSqIdNeedRelease, drvFlag);
+        RT_LOG(
+            RT_LOG_INFO,
+            "[SqCqManage]end to release sq, sq is also reuse, sq_id=%u, cq_id=%u, stream_id=%u, "
+            "is_sq_need_release=%u, drv_flag=%#x.",
+            sqId, cqId, streamId, isSqIdNeedRelease, drvFlag);
     }
 
     return RT_ERROR_NONE;
 }
 
-std::mutex *StreamSqCqManage::GetSqMutex(const uint32_t sqId)
+std::mutex* StreamSqCqManage::GetSqMutex(const uint32_t sqId)
 {
     if (Runtime::Instance()->GetDisableThread()) {
         const std::lock_guard<std::mutex> stmLock(streamMapLock_);
@@ -455,7 +480,7 @@ std::mutex *StreamSqCqManage::GetSqMutex(const uint32_t sqId)
     return nullptr;
 }
 
-rtError_t StreamSqCqManage::GetSqId(const uint32_t streamId, uint32_t &sqId)
+rtError_t StreamSqCqManage::GetSqId(const uint32_t streamId, uint32_t& sqId)
 {
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
     const auto itor = streamIdToSqIdMap_.find(streamId);
@@ -467,7 +492,7 @@ rtError_t StreamSqCqManage::GetSqId(const uint32_t streamId, uint32_t &sqId)
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamSqCqManage::GetStreamIdBySqId(const uint32_t sqId, uint32_t &streamId)
+rtError_t StreamSqCqManage::GetStreamIdBySqId(const uint32_t sqId, uint32_t& streamId)
 {
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
     const auto itor = sqIdToStreamIdMap_.find(sqId);
@@ -479,7 +504,7 @@ rtError_t StreamSqCqManage::GetStreamIdBySqId(const uint32_t sqId, uint32_t &str
     return RT_ERROR_NONE;
 }
 
-void StreamSqCqManage::GetDefaultCqId(uint32_t * const cqId)
+void StreamSqCqManage::GetDefaultCqId(uint32_t* const cqId)
 {
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
     if (streamIdToSqIdMap_.empty()) {
@@ -490,25 +515,24 @@ void StreamSqCqManage::GetDefaultCqId(uint32_t * const cqId)
     *cqId = normalCq_;
 }
 
-
-void StreamSqCqManage::GetAllStreamId(std::vector<uint32_t> &streams)
+void StreamSqCqManage::GetAllStreamId(std::vector<uint32_t>& streams)
 {
     const std::lock_guard<std::mutex> stmLock(streamIdToStreamMapLock_);
-    for (auto &item : streams_) {
+    for (auto& item : streams_) {
         streams.emplace_back(item.first);
     }
 }
 
-void StreamSqCqManage::GetAllStream(std::vector<Stream *> &streams)
+void StreamSqCqManage::GetAllStream(std::vector<Stream*>& streams)
 {
     const std::lock_guard<std::mutex> stmLock(streamIdToStreamMapLock_);
-    for (auto &item : streams_) {
+    for (auto& item : streams_) {
         streams.emplace_back(item.second);
     }
 }
 
-rtError_t StreamSqCqManage::GetLogicCqIdWithoutLock(const uint32_t streamId,
-    uint32_t * const logicCqId, bool * const isFastCq)
+rtError_t StreamSqCqManage::GetLogicCqIdWithoutLock(
+    const uint32_t streamId, uint32_t* const logicCqId, bool* const isFastCq)
 {
     const auto it = logicCqIdMap_.find(streamId);
     if (it == logicCqIdMap_.end()) {
@@ -523,12 +547,13 @@ rtError_t StreamSqCqManage::GetLogicCqIdWithoutLock(const uint32_t streamId,
     const auto threadInfo = it->second.find(userId);
     if (threadInfo == it->second.end()) {
         if (Runtime::Instance()->IsDrvBindStreamThread()) {
-            for (const auto &cqInfoIt : it->second) {
+            for (const auto& cqInfoIt : it->second) {
                 if (!cqInfoIt.second.isFastCq) {
                     *logicCqId = cqInfoIt.second.logicCqId;
                     *isFastCq = cqInfoIt.second.isFastCq;
-                    RT_LOG(RT_LOG_DEBUG, "find normal cq, stream_id=%u, isFastCq=%u, logic cq_id=%u.",
-                        streamId, *isFastCq, *logicCqId);
+                    RT_LOG(
+                        RT_LOG_DEBUG, "find normal cq, stream_id=%u, isFastCq=%u, logic cq_id=%u.", streamId, *isFastCq,
+                        *logicCqId);
                     return RT_ERROR_NONE;
                 }
             }
@@ -541,8 +566,9 @@ rtError_t StreamSqCqManage::GetLogicCqIdWithoutLock(const uint32_t streamId,
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamSqCqManage::AllocLogicCq(const uint32_t streamId, const bool isNeedFast, uint32_t &logicCqId,
-                                         bool &isFastCq, const bool isDefaultCq, const uint32_t drvFlag)
+rtError_t StreamSqCqManage::AllocLogicCq(
+    const uint32_t streamId, const bool isNeedFast, uint32_t& logicCqId, bool& isFastCq, const bool isDefaultCq,
+    const uint32_t drvFlag)
 {
     const std::lock_guard<std::mutex> logicLock(logicCqLock_);
     rtError_t error = GetLogicCqIdWithoutLock(streamId, &logicCqId, &isFastCq);
@@ -551,18 +577,18 @@ rtError_t StreamSqCqManage::AllocLogicCq(const uint32_t streamId, const bool isN
     }
 
     if (device_->IsStarsPlatform()) {
-        error = device_->Driver_()->LogicCqAllocateV2(device_->Id_(), device_->DevGetTsId(), streamId,
-            logicCqId, false, drvFlag);
+        error = device_->Driver_()->LogicCqAllocateV2(
+            device_->Id_(), device_->DevGetTsId(), streamId, logicCqId, false, drvFlag);
     } else {
-        error = device_->Driver_()->LogicCqAllocate(device_->Id_(), device_->DevGetTsId(),
-            streamId, isNeedFast, logicCqId, isFastCq, false);
+        error = device_->Driver_()->LogicCqAllocate(
+            device_->Id_(), device_->DevGetTsId(), streamId, isNeedFast, logicCqId, isFastCq, false);
     }
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "Failed to alloc logic cq, stream_id=%u, logicCqId=%u, isFastCq=%u",
-            streamId, logicCqId, static_cast<uint32_t>(isFastCq));
+        RT_LOG(
+            RT_LOG_ERROR, "Failed to alloc logic cq, stream_id=%u, logicCqId=%u, isFastCq=%u", streamId, logicCqId,
+            static_cast<uint32_t>(isFastCq));
         if ((error == RT_ERROR_DRV_NO_RESOURCES) || (error == RT_ERROR_DEVICE_SQCQ_POOL_RESOURCE_FULL)) {
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc Stream resource",
-                "Too many streams are created");
+            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc Stream resource", "Too many streams are created");
         }
         return error;
     }
@@ -572,8 +598,9 @@ rtError_t StreamSqCqManage::AllocLogicCq(const uint32_t streamId, const bool isN
     info.isDefaultCq = isDefaultCq;
     info.isFastCq = isFastCq;
     info.remoteFlag = drvFlag;
-    RT_LOG(RT_LOG_DEBUG, "Succ, stream_id=%u, isNeedFast=%u, cq_id=%u, isFastCq=%u.",
-        streamId, isNeedFast, logicCqId, isFastCq);
+    RT_LOG(
+        RT_LOG_DEBUG, "Succ, stream_id=%u, isNeedFast=%u, cq_id=%u, isFastCq=%u.", streamId, isNeedFast, logicCqId,
+        isFastCq);
 
     if (Runtime::Instance()->IsDrvBindStreamThread()) {
         const auto it = logicCqIdMap_.find(streamId);
@@ -589,10 +616,11 @@ rtError_t StreamSqCqManage::AllocLogicCq(const uint32_t streamId, const bool isN
             return RT_ERROR_NONE;
         }
 
-        for (const auto &cqInfoIt : it->second) {
+        for (const auto& cqInfoIt : it->second) {
             if (!cqInfoIt.second.isFastCq) {
-                RT_LOG(RT_LOG_WARNING, "normal cq just alloc one, stream_id=%u, isNeedFast=%u, cq_id=%u",
-                    streamId, isNeedFast, logicCqId);
+                RT_LOG(
+                    RT_LOG_WARNING, "normal cq just alloc one, stream_id=%u, isNeedFast=%u, cq_id=%u", streamId,
+                    isNeedFast, logicCqId);
                 return RT_ERROR_NONE;
             }
         }
@@ -643,8 +671,8 @@ rtError_t StreamSqCqManage::UnbindandFreeLogicCq(const uint32_t streamId)
     if (device_->IsStarsPlatform()) {
         ret = device_->Driver_()->StreamUnBindLogicCq(device_->Id_(), device_->DevGetTsId(), streamId, info.logicCqId);
         if (ret != RT_ERROR_NONE) {
-            RT_LOG(RT_LOG_ERROR,
-                "Error(%#x), StreamUnBindLogicCq failed, devId(%u), tsId(%u), streamId(%u), cqId(%u)",
+            RT_LOG(
+                RT_LOG_ERROR, "Error(%#x), StreamUnBindLogicCq failed, devId(%u), tsId(%u), streamId(%u), cqId(%u)",
                 static_cast<uint32_t>(ret), device_->Id_(), device_->DevGetTsId(), streamId, info.logicCqId);
             return ret;
         }
@@ -652,7 +680,8 @@ rtError_t StreamSqCqManage::UnbindandFreeLogicCq(const uint32_t streamId)
 
     ret = device_->Driver_()->LogicCqFree(device_->Id_(), device_->DevGetTsId(), info.logicCqId);
     if (ret != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR,
+        RT_LOG(
+            RT_LOG_ERROR,
             "Error(%#x), LogicCqFree failed, threadId(%" PRIu64 "),devId(%u),tsId(%u),cqId(%u), isFastCq(%u)",
             static_cast<uint32_t>(ret), threadId, device_->Id_(), device_->DevGetTsId(), info.logicCqId, info.isFastCq);
         return ret;
@@ -663,7 +692,7 @@ rtError_t StreamSqCqManage::UnbindandFreeLogicCq(const uint32_t streamId)
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamSqCqManage::GetLogicCqId(const uint32_t streamId, uint32_t * const logicCqId, bool * const isFastCq)
+rtError_t StreamSqCqManage::GetLogicCqId(const uint32_t streamId, uint32_t* const logicCqId, bool* const isFastCq)
 {
     const std::lock_guard<std::mutex> logicLock(logicCqLock_);
     return GetLogicCqIdWithoutLock(streamId, logicCqId, isFastCq);
@@ -677,42 +706,46 @@ rtError_t StreamSqCqManage::FreeLogicCq(const uint32_t streamId)
         const std::lock_guard<std::mutex> logicLock(logicCqLock_);
         const auto logicCqOuter = logicCqIdMap_.find(streamId);
         if (logicCqOuter != logicCqIdMap_.end()) {
-            for (auto &logicCqInner : logicCqOuter->second) {
-                (void)tmpLogicCqMap.insert(std::pair<uint64_t, rtLogicCqInfo_t>(logicCqInner.first,
-                                                                                logicCqInner.second));
+            for (auto& logicCqInner : logicCqOuter->second) {
+                (void)tmpLogicCqMap.insert(
+                    std::pair<uint64_t, rtLogicCqInfo_t>(logicCqInner.first, logicCqInner.second));
             }
             (void)logicCqIdMap_.erase(logicCqOuter);
         }
     }
-    for (const auto &logicCq:tmpLogicCqMap) {
+    for (const auto& logicCq : tmpLogicCqMap) {
         const rtLogicCqInfo_t logicCqInfo = logicCq.second;
-        RT_LOG(RT_LOG_INFO, "Return(%#x), threadIdentifier(%" PRIu64 "), devId(%u), tsId(%u), cqId(%u), isFastCq(%u).",
-               ret, logicCq.first, device_->Id_(), device_->DevGetTsId(), logicCqInfo.logicCqId, logicCqInfo.isFastCq);
+        RT_LOG(
+            RT_LOG_INFO, "Return(%#x), threadIdentifier(%" PRIu64 "), devId(%u), tsId(%u), cqId(%u), isFastCq(%u).",
+            ret, logicCq.first, device_->Id_(), device_->DevGetTsId(), logicCqInfo.logicCqId, logicCqInfo.isFastCq);
 
         if (device_->IsStarsPlatform()) {
-            ret = device_->Driver_()->StreamUnBindLogicCq(device_->Id_(), device_->DevGetTsId(), streamId,
-                logicCqInfo.logicCqId, logicCqInfo.remoteFlag);
+            ret = device_->Driver_()->StreamUnBindLogicCq(
+                device_->Id_(), device_->DevGetTsId(), streamId, logicCqInfo.logicCqId, logicCqInfo.remoteFlag);
             if (ret != RT_ERROR_NONE) {
-                RT_LOG(RT_LOG_ERROR,
-                    "Error(%#x), StreamUnBindLogicCq failed, devId(%u), tsId(%u), streamId(%u), cqId(%u)",
+                RT_LOG(
+                    RT_LOG_ERROR, "Error(%#x), StreamUnBindLogicCq failed, devId(%u), tsId(%u), streamId(%u), cqId(%u)",
                     static_cast<uint32_t>(ret), device_->Id_(), device_->DevGetTsId(), streamId, logicCqInfo.logicCqId);
                 break;
             }
         }
 
-        ret = device_->Driver_()->LogicCqFree(device_->Id_(), device_->DevGetTsId(), logicCqInfo.logicCqId,
-            logicCqInfo.remoteFlag);
+        ret = device_->Driver_()->LogicCqFree(
+            device_->Id_(), device_->DevGetTsId(), logicCqInfo.logicCqId, logicCqInfo.remoteFlag);
         if (ret != RT_ERROR_NONE) {
-            RT_LOG(RT_LOG_ERROR, "Error(%#x), LogicCqFree failed, threadIdentifier(%" PRIu64 "), devId(%u), "
-                "tsId(%u), cqId(%u), isFastCq(%u)", static_cast<uint32_t>(ret), logicCq.first, device_->Id_(),
-                device_->DevGetTsId(), logicCqInfo.logicCqId, logicCqInfo.isFastCq);
+            RT_LOG(
+                RT_LOG_ERROR,
+                "Error(%#x), LogicCqFree failed, threadIdentifier(%" PRIu64 "), devId(%u), "
+                "tsId(%u), cqId(%u), isFastCq(%u)",
+                static_cast<uint32_t>(ret), logicCq.first, device_->Id_(), device_->DevGetTsId(), logicCqInfo.logicCqId,
+                logicCqInfo.isFastCq);
             break;
         }
     }
     return ret;
 }
 
-void StreamSqCqManage::SetStreamIdToStream(const uint32_t streamId, Stream * const stm)
+void StreamSqCqManage::SetStreamIdToStream(const uint32_t streamId, Stream* const stm)
 {
     const std::lock_guard<std::mutex> stmLock(streamIdToStreamMapLock_);
     RT_LOG(RT_LOG_DEBUG, "stream_id=%d.", static_cast<int32_t>(streamId));
@@ -731,7 +764,7 @@ void StreamSqCqManage::DelStreamIdToStream(const uint32_t streamId)
     (void)streams_.erase(streamId);
 }
 
-rtError_t StreamSqCqManage::GetStreamById(const uint32_t streamId, Stream **stm)
+rtError_t StreamSqCqManage::GetStreamById(const uint32_t streamId, Stream** stm)
 {
     const std::lock_guard<std::mutex> stmLock(streamIdToStreamMapLock_);
     const auto it = streams_.find(streamId);
@@ -743,7 +776,7 @@ rtError_t StreamSqCqManage::GetStreamById(const uint32_t streamId, Stream **stm)
     return RT_ERROR_STREAM_NULL;
 }
 
-rtError_t StreamSqCqManage::GetStreamSharedPtrById(const uint32_t streamId, std::shared_ptr<Stream> &sharedStm)
+rtError_t StreamSqCqManage::GetStreamSharedPtrById(const uint32_t streamId, std::shared_ptr<Stream>& sharedStm)
 {
     const std::lock_guard<std::mutex> stmLock(streamIdToStreamMapLock_);
     const auto it = streams_.find(streamId);
@@ -754,5 +787,5 @@ rtError_t StreamSqCqManage::GetStreamSharedPtrById(const uint32_t streamId, std:
     return RT_ERROR_STREAM_NULL;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

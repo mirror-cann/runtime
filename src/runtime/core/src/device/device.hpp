@@ -103,15 +103,15 @@ typedef struct {
 
 typedef struct {
     std::mutex mtx;
-    std::map<uint64_t, void *> map;
+    std::map<uint64_t, void*> map;
 } rtBinHandleTable_t;
 
-typedef struct  {
+typedef struct {
     uint32_t sdma_reduce_support; /**< bit for CAP_SDMA_REDUCE_* */
     uint32_t memory_support;      /**< bit for CAP_MEM_SUPPORT_* */
     uint32_t ts_group_number;
     uint32_t sdma_reduce_kind;    /**< bit for CAP_SDMA_REDUCE_KIND_* */
-}rtDevCapabilityInfo;
+} rtDevCapabilityInfo;
 
 enum class DeviceStateCallback : uint8_t {
     RT_DEVICE_STATE_CALLBACK = 0,
@@ -159,10 +159,7 @@ class CtrlSQ;
 // Management of a Davinci device.
 class Device : public NoCopy { // Interface
 public:
-    ~Device() noexcept override
-    {
-        RT_LOG(RT_LOG_INFO, "device destructor.");
-    }
+    ~Device() noexcept override { RT_LOG(RT_LOG_INFO, "device destructor."); }
 
     virtual rtError_t Init() = 0;
 
@@ -174,50 +171,48 @@ public:
 
     // Submit cleanup that must run before context resources are released.
     // Implementations must be idempotent because Stop() may retry the same work.
-    virtual rtError_t PrepareStop()
-    {
-        return RT_ERROR_NONE;
-    }
+    virtual rtError_t PrepareStop() { return RT_ERROR_NONE; }
 
     virtual rtError_t ReOpen() = 0;
     virtual rtError_t ResourceRestore() = 0;
 
-    virtual void PushEvent(Event *const evt) = 0;
-    virtual void RemoveEvent(Event *const evt) = 0;
+    virtual void PushEvent(Event* const evt) = 0;
+    virtual void RemoveEvent(Event* const evt) = 0;
     virtual rtError_t EventsReAllocId(void) = 0;
-    virtual void PushNotify(Notify *const nty) = 0;
-    virtual void RemoveNotify(Notify *const nty) = 0;
+    virtual void PushNotify(Notify* const nty) = 0;
+    virtual void RemoveNotify(Notify* const nty) = 0;
     virtual rtError_t NotifiesReAllocId(void) = 0;
     virtual rtError_t EventExpandingPoolRestore(void) = 0;
     virtual rtError_t CntNotifiesReAllocId(void) = 0;
-    virtual void PushCntNotify(CountNotify * const nty) = 0;
-    virtual void RemoveCntNotify(CountNotify * const nty) = 0;
+    virtual void PushCntNotify(CountNotify* const nty) = 0;
+    virtual void RemoveCntNotify(CountNotify* const nty) = 0;
 
-    virtual Module *ModuleAlloc(Program * const prog) = 0;
-    virtual bool ModuleRetain(Module * const mdl) = 0;
-    virtual bool ModuleRelease(Module *mdl) = 0;
+    virtual Module* ModuleAlloc(Program* const prog) = 0;
+    virtual bool ModuleRetain(Module* const mdl) = 0;
+    virtual bool ModuleRelease(Module* mdl) = 0;
     virtual void TryToRecycleModulesPool(uint32_t latestPoolIdx) = 0;
 
     // 1. for fastlaunch scenarios, pass parameters : taskObj, flipTaskId and timeout.
     // flipTaskId and timeout are optional
     // 2. for non-fastlaunch scenarios, pass parameters : taskObj, callback. callback is optional.
-    virtual rtError_t SubmitTask(TaskInfo * const taskObj, const rtTaskGenCallback callback = nullptr,
-        uint32_t * const flipTaskId = nullptr, int32_t timeout = -1) = 0;
+    virtual rtError_t SubmitTask(
+        TaskInfo* const taskObj, const rtTaskGenCallback callback = nullptr, uint32_t* const flipTaskId = nullptr,
+        int32_t timeout = -1) = 0;
 
-    virtual rtError_t TaskReclaim(const uint32_t streamId, const bool limited, uint32_t &taskId) = 0;
-    virtual rtError_t TaskReclaimAllForNoRes(const bool limited, uint32_t &taskId) = 0;
-    virtual rtError_t RecycleSeparatedStmByFinishedId(Stream * const stm, const uint16_t endTaskId) = 0;
+    virtual rtError_t TaskReclaim(const uint32_t streamId, const bool limited, uint32_t& taskId) = 0;
+    virtual rtError_t TaskReclaimAllForNoRes(const bool limited, uint32_t& taskId) = 0;
+    virtual rtError_t RecycleSeparatedStmByFinishedId(Stream* const stm, const uint16_t endTaskId) = 0;
     virtual uint32_t GetPendingNum() const = 0;
-    virtual rtError_t DvppWaitGroup(DvppGrp *grp, rtDvppGrpCallback callBackFunc, int32_t timeout) = 0;
+    virtual rtError_t DvppWaitGroup(DvppGrp* grp, rtDvppGrpCallback callBackFunc, int32_t timeout) = 0;
 
-    virtual void AddObserver(EngineObserver *observer) = 0;
+    virtual void AddObserver(EngineObserver* observer) = 0;
     virtual void WaitCompletion() = 0;
-    virtual Driver *Driver_() const = 0;
+    virtual Driver* Driver_() const = 0;
 
-    virtual ArgLoader *ArgLoader_() const = 0;
-    virtual UbArgLoader *UbArgLoaderPtr() const = 0;
-    virtual Stream *PrimaryStream_() const = 0;
-    virtual Stream *CtrlStream_() const = 0;
+    virtual ArgLoader* ArgLoader_() const = 0;
+    virtual UbArgLoader* UbArgLoaderPtr() const = 0;
+    virtual Stream* PrimaryStream_() const = 0;
+    virtual Stream* CtrlStream_() const = 0;
     virtual uint32_t Id_() const = 0;
     virtual uint16_t GetTsdQos() const = 0;
     virtual void SetDeviceStatus(rtError_t status) = 0;
@@ -225,86 +220,63 @@ public:
     virtual uint64_t GetTTBR_() const = 0;
     virtual uint32_t GetSSID_() const = 0;
     virtual uint64_t GetTCR_() const = 0;
-    virtual void *GetL2Buffer_() const = 0;
-    virtual void *GetSqVirtualArrBaseAddr_() const = 0;
-    virtual rtError_t AllocSPM(void **dptr, uint64_t size) = 0;
-    virtual rtError_t FreeSPM(const void * const dptr) = 0;
-    virtual bool IsSPM(const void *dptr) = 0;
-    virtual rtError_t AllocPoolEvent(int32_t *eventId) = 0;
-    virtual rtError_t FreeEventIdFromDrv(const int32_t eventId, const uint32_t eventFlag = 0, bool freeSyncFlag = false) = 0;
+    virtual void* GetL2Buffer_() const = 0;
+    virtual void* GetSqVirtualArrBaseAddr_() const = 0;
+    virtual rtError_t AllocSPM(void** dptr, uint64_t size) = 0;
+    virtual rtError_t FreeSPM(const void* const dptr) = 0;
+    virtual bool IsSPM(const void* dptr) = 0;
+    virtual rtError_t AllocPoolEvent(int32_t* eventId) = 0;
+    virtual rtError_t FreeEventIdFromDrv(
+        const int32_t eventId, const uint32_t eventFlag = 0, bool freeSyncFlag = false) = 0;
     virtual rtError_t FreePoolEvent(const int32_t eventId) = 0;
-    virtual rtError_t AllocExpandingPoolEvent(void ** const eventAddr, int32_t *eventId) = 0;
+    virtual rtError_t AllocExpandingPoolEvent(void** const eventAddr, int32_t* eventId) = 0;
     virtual void FreeExpandingPoolEvent(const int32_t eventId) = 0;
     virtual rtChipType_t GetChipType() const = 0;
     virtual void SetChipType(rtChipType_t chipType) = 0;
     virtual std::string GetSocVersion() const = 0;
-    virtual CtrlResEntry *GetCtrlResEntry(void) = 0;
-    virtual rtError_t WriteDevValue(void * const dest, const size_t size, const void * const data) = 0;
-    virtual rtError_t WriteDevString(void * const dest, const size_t max, const char_t * const str) = 0;
+    virtual CtrlResEntry* GetCtrlResEntry(void) = 0;
+    virtual rtError_t WriteDevValue(void* const dest, const size_t size, const void* const data) = 0;
+    virtual rtError_t WriteDevString(void* const dest, const size_t max, const char_t* const str) = 0;
 
     virtual rtError_t AllocCustomerStackPhyBase() = 0;
-    virtual const void *GetCustomerStackPhyBase() const = 0;
-    virtual const void *GetStackPhyBase32k() const = 0;
-    virtual const void *GetStackPhyBase16k() const = 0;
+    virtual const void* GetCustomerStackPhyBase() const = 0;
+    virtual const void* GetStackPhyBase32k() const = 0;
+    virtual const void* GetStackPhyBase16k() const = 0;
     virtual rtError_t AllocStackPhyBase() = 0;
     virtual void FreeStackPhyBase() = 0;
-    virtual rtError_t RegisterAndLaunchDcacheLockOp(Context *ctx) = 0;
+    virtual rtError_t RegisterAndLaunchDcacheLockOp(Context* ctx) = 0;
     virtual rtError_t SendTopicMsgVersionToAicpu() = 0;
     virtual const DevProperties& GetDevProperties(void) const = 0;
     virtual void RefreshDevProperties(const DevProperties& props) = 0;
     virtual rtError_t SetQosCfg(const QosMasterConfigType& qosCfg, uint32_t index) = 0;
-    bool IsStarsPlatform() const
-    {
-        return GetDevProperties().isStars;
-    }
+    bool IsStarsPlatform() const { return GetDevProperties().isStars; }
 
-    bool IsDavidPlatform() const
-    {
-        return GetDevProperties().isStarsV2;
-    }
+    bool IsDavidPlatform() const { return GetDevProperties().isStarsV2; }
 
-    void SetDevType(bool isAddrFlatDev) const
-    {
-        g_isAddrFlatDevice = isAddrFlatDev;
-    }
+    void SetDevType(bool isAddrFlatDev) const { g_isAddrFlatDevice = isAddrFlatDev; }
 
-    bool IsAddrFlatDev() const
-    {
-        return g_isAddrFlatDevice;
-    }
+    bool IsAddrFlatDev() const { return g_isAddrFlatDevice; }
 
-    bool IsDeviceRelease() const
-    {
-        return isDeviceRelease_;
-    }
+    bool IsDeviceRelease() const { return isDeviceRelease_; }
 
-    void SetDeviceRelease()
-    {
-        isDeviceRelease_ = true;
-    }
+    void SetDeviceRelease() { isDeviceRelease_ = true; }
 
-    void SetDevicePageFault(const bool flag)
-    {
-        isPageFault_ = flag;
-    }
+    void SetDevicePageFault(const bool flag) { isPageFault_ = flag; }
 
-    bool IsDevicePageFault(void) const
-    {
-        return isPageFault_;
-    }
+    bool IsDevicePageFault(void) const { return isPageFault_; }
 
     virtual rtError_t DevSetLimit(const rtLimitType_t type, const uint32_t val) = 0;
     virtual rtError_t DevSetTsId(const uint32_t taskSchId) = 0;
     virtual uint32_t DevGetTsId() const = 0;
     virtual rtError_t DevSetOnlineProfStart(const bool profEnable) = 0;
     virtual bool DevGetOnlineProfStart() = 0;
-    virtual rtError_t DatadumpInfoLoad(const void * const dumpInfo, const uint32_t length) = 0;
+    virtual rtError_t DatadumpInfoLoad(const void* const dumpInfo, const uint32_t length) = 0;
     virtual bool IsSupportStopOnStreamError(void) = 0;
     virtual uint64_t GetC2cCtrlAddr(void) = 0;
     virtual uint32_t GetC2cCtrlAddrLen(void) = 0;
     virtual void SetC2cCtrlAddr(const uint64_t addr, const uint32_t addrLen) = 0;
 
-    virtual rtError_t AicpuModelLoad(void * const modelInfo) = 0;
+    virtual rtError_t AicpuModelLoad(void* const modelInfo) = 0;
     virtual rtError_t AicpuModelDestroy(const uint32_t modelId) = 0;
     virtual rtError_t AicpuModelExecute(const uint32_t modelId) = 0;
     virtual rtError_t AicpuModelAbort(const uint32_t modelId) = 0;
@@ -315,26 +287,26 @@ public:
     virtual uint32_t GetPoolIdMax() const = 0;
     virtual uint32_t GetVfId() const = 0;
     virtual rtError_t GroupInfoSetup() = 0;
-    virtual rtError_t GetGroupInfo(const int32_t grpId, rtGroupInfo_t * const info, const uint32_t cnt) = 0;
-    virtual rtError_t GetGroupCount(uint32_t * const cnt) = 0;
+    virtual rtError_t GetGroupInfo(const int32_t grpId, rtGroupInfo_t* const info, const uint32_t cnt) = 0;
+    virtual rtError_t GetGroupCount(uint32_t* const cnt) = 0;
     virtual int32_t DefaultGroup() const = 0;
-    virtual StreamSqCqManage *GetStreamSqCqManage() const = 0;
-    virtual TaskFactory *GetTaskFactory() const = 0;
-    virtual MemoryPoolManager *GetKernelMemoryPool() const = 0;
-    virtual JettyManager *GetJettyManager() const = 0;
+    virtual StreamSqCqManage* GetStreamSqCqManage() const = 0;
+    virtual TaskFactory* GetTaskFactory() const = 0;
+    virtual MemoryPoolManager* GetKernelMemoryPool() const = 0;
+    virtual JettyManager* GetJettyManager() const = 0;
     virtual uint32_t GetTschVersion() const = 0;
     virtual uint32_t IsSupportHcomcpu() const = 0;
     virtual uint64_t GetStarsRegBaseAddr() const = 0;
     virtual void SetTschVersionForCmodel() = 0;
     virtual void SetTschVersion(const uint32_t tschVersion) = 0;
-    virtual uint64_t GetDevProfStatus() const  = 0;
+    virtual uint64_t GetDevProfStatus() const = 0;
     virtual void SetDevProfStatus(uint64_t profConfigType, bool isSet) = 0;
-    virtual rtError_t ProcDeviceErrorInfo(TaskInfo * const taskPtr = nullptr) = 0;
+    virtual rtError_t ProcDeviceErrorInfo(TaskInfo* const taskPtr = nullptr) = 0;
     virtual rtError_t UpdateTimeoutConfig() = 0;
     virtual uint32_t GetShareLogicCqId() const = 0;
     virtual uint32_t GetShareSqId() const = 0;
     virtual rtError_t InitStreamRes(const uint32_t streamId) = 0;
-    virtual rtError_t QueryLatestTaskId(const uint32_t streamId, uint32_t &taskId) = 0;
+    virtual rtError_t QueryLatestTaskId(const uint32_t streamId, uint32_t& taskId) = 0;
     virtual bool GetFastCqFlag() const = 0;
     virtual void SetFastCqFlag(bool flag) = 0;
     virtual rtFloatOverflowMode_t GetSatMode() const = 0;
@@ -346,36 +318,36 @@ public:
     virtual int64_t GetPhyDieId() const = 0;
     virtual int64_t GetBaseTime() const = 0;
     virtual void SetBaseTime() = 0;
-    virtual Stream *GetNextRecycleStream() = 0;
+    virtual Stream* GetNextRecycleStream() = 0;
     virtual bool IsSupportEventPool() = 0;
     virtual bool PopNextPoolFreeEventId() = 0;
     virtual bool IsNeedFreeEventId() = 0;
     virtual void PushNextPoolFreeEventId(int32_t eventId) = 0;
-    virtual bool AddStreamToMessageQueue(Stream *stm) = 0;
-    virtual void DelStreamFromMessageQueue(Stream * const stm) = 0;
+    virtual bool AddStreamToMessageQueue(Stream* stm) = 0;
+    virtual void DelStreamFromMessageQueue(Stream* const stm) = 0;
     virtual void WakeUpRecycleThread() = 0;
-    virtual Stream* GetCtrlStream(Stream * const stream) const = 0;
-    virtual Stream* GetCtrlSQStream(Stream * const stream) const = 0;
+    virtual Stream* GetCtrlStream(Stream* const stream) const = 0;
+    virtual Stream* GetCtrlSQStream(Stream* const stream) const = 0;
     virtual void CtrlTaskReclaimByPos(CtrlStream* const stm, const uint32_t sqPos) = 0;
     virtual void CtrlTaskReclaim(CtrlStream* const stm) = 0;
-    virtual rtError_t AddAddrKernelNameMapTable(rtAddrKernelName_t &mapInfo) = 0;
+    virtual rtError_t AddAddrKernelNameMapTable(rtAddrKernelName_t& mapInfo) = 0;
     virtual std::string LookupKernelNameByAddr(const uint64_t addr) const = 0;
-    virtual void AddAddrBinHandleMapTable(const uint64_t addr, void *const handle) = 0;
-    virtual void *LookupBinHandleByAddr(const uint64_t addr) = 0;
-    virtual rtError_t TaskReclaimByStm(Stream * const stm, const bool limited, uint32_t &taskId) = 0;
+    virtual void AddAddrBinHandleMapTable(const uint64_t addr, void* const handle) = 0;
+    virtual void* LookupBinHandleByAddr(const uint64_t addr) = 0;
+    virtual rtError_t TaskReclaimByStm(Stream* const stm, const bool limited, uint32_t& taskId) = 0;
     virtual bool GetSnapshotFlag() = 0;
     virtual void SetSnapshotFlag(const bool flag) = 0;
     virtual uint32_t GetTsLogToHostFlag() = 0;
     virtual void SetTsLogToHostFlag(const uint32_t flag) = 0;
     virtual bool IsPrintStreamTimeoutSnapshot() = 0;
     virtual rtError_t PrintStreamTimeoutSnapshotInfo() = 0;
-    virtual void *GetSnapshotAddr() = 0;
+    virtual void* GetSnapshotAddr() = 0;
     virtual uint32_t GetSnapshotLen() = 0;
-    virtual rtError_t GetDeviceCapabilities(rtDevCapabilityInfo &capInfo) = 0;
+    virtual rtError_t GetDeviceCapabilities(rtDevCapabilityInfo& capInfo) = 0;
     virtual uint32_t GetDevRunningState() = 0;
     virtual void SetDevStatus(const rtError_t status) = 0;
     virtual rtError_t GetDevStatus(void) = 0;
-    virtual rtError_t ReportRingBuffer(uint16_t *errorStreamId) = 0;
+    virtual rtError_t ReportRingBuffer(uint16_t* errorStreamId) = 0;
     virtual void ProcessReportFastRingBuffer() const = 0;
     virtual rtError_t ProcCleanRingbuffer() = 0;
     virtual void ProcClearFastRingBuffer() const = 0;
@@ -385,7 +357,7 @@ public:
     virtual bool GetHasTaskError(void) = 0;
     virtual void SetDeviceRas(const bool value) = 0;
     virtual bool GetDeviceRas(void) const = 0;
-    virtual SpinLock *GetAiCpuSdLock() = 0;
+    virtual SpinLock* GetAiCpuSdLock() = 0;
     virtual void SetIsAiCpuSdStarted(const bool value) = 0;
     virtual bool IsAiCpuSdStarted() const = 0;
     virtual void SetSupportFlipVersionSwitch() = 0;
@@ -393,7 +365,7 @@ public:
     virtual uint64_t GetChipAddr() const = 0;
     virtual uint64_t GetChipOffset() const = 0;
     virtual uint64_t GetDieOffset() const = 0;
-    virtual bool AllocHcclIndex(uint16_t &hcclIndex, uint16_t stmid) = 0;
+    virtual bool AllocHcclIndex(uint16_t& hcclIndex, uint16_t stmid) = 0;
     virtual void FreeHcclIndex(uint16_t stmid) = 0;
     virtual uint16_t GetHcclStreamIdWithIndex(uint16_t index) = 0;
     virtual void SetAtraceHandle(TraHandle handle) = 0;
@@ -405,13 +377,13 @@ public:
     virtual void SetIsChipSupportEventThread(bool flag) = 0;
     virtual bool GetIsChipSupportEventThread() const = 0;
     virtual void TryFreeAllEventPoolId() = 0;
-    virtual void SetLastUsagePoolTimeStamp() =0;
+    virtual void SetLastUsagePoolTimeStamp() = 0;
     virtual uint32_t GetTaskIdFromStreamShmTaskId(const uint32_t streamId) = 0;
     virtual void PrintExceedLimitHcclStream() = 0;
     virtual void SetDevFailureMode(const uint64_t failureMode) = 0;
     virtual uint64_t GetDevFailureMode() = 0;
     virtual bool CheckFeatureSupport(const uint32_t tsFeature) const = 0;
-    virtual void InitTschCapability(uint8_t *tschCapability, uint32_t tschCapaLen, uint32_t tschCapaDepth) = 0;
+    virtual void InitTschCapability(uint8_t* tschCapability, uint32_t tschCapaLen, uint32_t tschCapaDepth) = 0;
     virtual void SetIsRingbufferGetErr(bool flag) = 0;
     virtual bool GetIsRingbufferGetErr() const = 0;
     virtual void FindAndEraseSyncEventMap(uint16_t id) = 0;
@@ -424,20 +396,20 @@ public:
     virtual uint64_t GetInterCoreSyncAddr() const = 0;
     virtual rtError_t FreeSimtStackPhyBase() = 0;
     virtual rtError_t AllocSimtStackPhyBase(const rtChipType_t chipType) = 0;
-    virtual const void *GetSimtStackPhyBase() const = 0;
-    virtual void SetSimtStackPhyBase(void *simtStackPhyBaseAlign) = 0;
+    virtual const void* GetSimtStackPhyBase() const = 0;
+    virtual void SetSimtStackPhyBase(void* simtStackPhyBaseAlign) = 0;
     virtual uint32_t GetSimtDvgWarpStkSize() const = 0;
     virtual uint32_t GetSimtWarpStkSize() const = 0;
     virtual uint8_t GetDavidDieNum() const = 0;
     virtual rtError_t SetCurGroupInfo() = 0;
-    virtual void GetErrorPcArr(const uint16_t devId, uint64_t **errorPc, uint32_t *cnt) const = 0;
+    virtual void GetErrorPcArr(const uint16_t devId, uint64_t** errorPc, uint32_t* cnt) const = 0;
     virtual uint32_t GetDeviceAllocStackSize() const = 0;
     virtual uint32_t GetDeviceCustomerStackLevel() const = 0;
     virtual void SetDeviceCustomerStackLevel(uint32_t val) = 0;
     virtual void SetRunMode(uint32_t runMode) = 0;
     virtual uint32_t GetRunMode() const = 0;
-    virtual DeviceSqCqPool *GetDeviceSqCqManage() const = 0;
-    virtual SqAddrMemoryOrder *GetSqAddrMemoryManage() const = 0;
+    virtual DeviceSqCqPool* GetDeviceSqCqManage() const = 0;
+    virtual SqAddrMemoryOrder* GetSqAddrMemoryManage() const = 0;
     virtual void InsertResLimit(rtDevResLimitType_t type, uint32_t value) = 0;
     virtual uint32_t GetResInitValue(const rtDevResLimitType_t type) const = 0;
     virtual uint32_t GetResValue(const rtDevResLimitType_t type) const = 0;
@@ -448,7 +420,7 @@ public:
     virtual uint64_t GetPageFaultBaseTime() const = 0;
     virtual void SetDeviceFaultType(const DeviceFaultType type) = 0;
     virtual bool SetDeviceFaultTypeIfNoError(const DeviceFaultType type) = 0;
-    virtual DeviceFaultType GetDeviceFaultType()  const = 0;
+    virtual DeviceFaultType GetDeviceFaultType() const = 0;
     virtual void AddSimtPrintTlvCnt(uint64_t val) const = 0;
     virtual uint64_t GetSimtPrintTlvCnt() const = 0;
     virtual bool GetPrintSimtEnable() const = 0;
@@ -459,16 +431,17 @@ public:
     virtual bool IsSupportUserMem() const = 0;
     virtual rtError_t EnableP2PWithOtherDevice(const uint32_t peerPhyDeviceId) = 0;
     virtual bool IsSupportFeature(RtOptionalFeatureType f) const = 0;
-    virtual IDeviceSnapshotOps *GetDeviceSnapShot(void) = 0;
+    virtual IDeviceSnapshotOps* GetDeviceSnapShot(void) = 0;
     virtual std::map<std::pair<uint32_t, uint32_t>, std::vector<rtExceptionErrRegInfo_t>>& GetExceptionRegMap() = 0;
     virtual std::mutex& GetExceptionRegMutex() = 0;
     virtual rtError_t ParsePrintInfo() = 0;
     virtual rtError_t ParseSimdPrintInfoWithLock() = 0;
     virtual void WaitForParsePrintf() = 0;
     virtual void WakeUpPrintf() = 0;
-    virtual rtError_t GetPrintSimdAddress(uint64_t *const addr) = 0;
-    virtual rtError_t GetPrintFifoAddrAndCreateThread(uint64_t * const addr, const uint32_t model) = 0;
-    virtual rtError_t StoreEndGraphNotifyInfo(const uint32_t streamId, Model* captureModel, uint32_t endGraphNotifyPos) = 0;
+    virtual rtError_t GetPrintSimdAddress(uint64_t* const addr) = 0;
+    virtual rtError_t GetPrintFifoAddrAndCreateThread(uint64_t* const addr, const uint32_t model) = 0;
+    virtual rtError_t StoreEndGraphNotifyInfo(
+        const uint32_t streamId, Model* captureModel, uint32_t endGraphNotifyPos) = 0;
     virtual rtError_t DeleteEndGraphNotifyInfo(
         const uint32_t streamId, Model* captureModel, uint32_t endGraphNotifyPos, const uint32_t errCode) = 0;
     virtual rtError_t ClearEndGraphNotifyInfoByModel(Model* captureModel) = 0;
@@ -480,51 +453,27 @@ public:
     virtual void ProfSwitchEnable() = 0;
     virtual uint64_t GetProfSwitchAddr(void) = 0;
     virtual CtrlSQ& GetCtrlSQ(void) const = 0;
-    virtual void RegisterProgram(Program *prog) = 0;
-    virtual void UnRegisterProgram(Program *prog) = 0;
+    virtual void RegisterProgram(Program* prog) = 0;
+    virtual void UnRegisterProgram(Program* prog) = 0;
     virtual bool ProgramSetMutexTryLock() = 0;
     virtual void ProgramSetMutexUnLock() = 0;
-    virtual void PushFftsPlusArgHandle(void *argHandle) = 0;
+    virtual void PushFftsPlusArgHandle(void* argHandle) = 0;
     virtual void FreeFftsPlusArgHandleCache() = 0;
     virtual rtError_t RestoreSqCqPool() = 0;
 
-    inline std::mutex& GetHcclStreamIndexMutex(void)
-    {
-        return hcclStreamIndexMutex_;
-    }
+    inline std::mutex& GetHcclStreamIndexMutex(void) { return hcclStreamIndexMutex_; }
 
-    inline void ArgStreamMutexLock(void)
-    {
-        argStreamMutex_.lock();
-    }
+    inline void ArgStreamMutexLock(void) { argStreamMutex_.lock(); }
 
-    inline void ArgStreamMutexUnLock(void)
-    {
-        argStreamMutex_.unlock();
-    }
+    inline void ArgStreamMutexUnLock(void) { argStreamMutex_.unlock(); }
 
-    inline std::mutex& GetErrProLock(void)
-    {
-        return devErrProLock_;
-    }
+    inline std::mutex& GetErrProLock(void) { return devErrProLock_; }
 
-    inline void SetArgStreamNum(const uint8_t value)
-    {
-        argStreamNum_ = value;
-    }
+    inline void SetArgStreamNum(const uint8_t value) { argStreamNum_ = value; }
 
-    inline uint8_t GetArgStreamNum(void) const
-    {
-        return argStreamNum_;
-    }
-    bool GetIsDoingRecycling() const
-    {
-        return isDoingRecycling_;
-    }
-    void SetIsDoingRecycling(const bool flag)
-    {
-        isDoingRecycling_ = flag;
-    }
+    inline uint8_t GetArgStreamNum(void) const { return argStreamNum_; }
+    bool GetIsDoingRecycling() const { return isDoingRecycling_; }
+    void SetIsDoingRecycling(const bool flag) { isDoingRecycling_ = flag; }
 
 private:
     bool isPageFault_{false};
@@ -535,7 +484,7 @@ private:
     std::mutex argStreamMutex_;
     std::mutex hcclStreamIndexMutex_; // lock for hcclStreamSize_
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_DEVICE_HPP
+#endif // CCE_RUNTIME_DEVICE_HPP

@@ -17,21 +17,23 @@ namespace runtime {
 
 class ProfCtrlCallbackManager {
 public:
-    static ProfCtrlCallbackManager &Instance();
+    static ProfCtrlCallbackManager& Instance();
     rtError_t RegProfCtrlCallback(const uint32_t moduleId, const rtProfCtrlHandle callback);
-    void Notify(const uint32_t dataType, void * const data, const uint32_t dataLen);
+    void Notify(const uint32_t dataType, void* const data, const uint32_t dataLen);
     void DelAllData();
-    void SaveProfSwitchData(const rtProfCommandHandle_t * const data, const uint32_t len);
+    void SaveProfSwitchData(const rtProfCommandHandle_t* const data, const uint32_t len);
     void NotifyProfInfo(const uint32_t moduleId);
     uint64_t GetSwitchData() const;
+
 private:
     ProfCtrlCallbackManager() = default;
     ~ProfCtrlCallbackManager() = default;
-    ProfCtrlCallbackManager(const ProfCtrlCallbackManager &other) = delete;
-    ProfCtrlCallbackManager &operator=(const ProfCtrlCallbackManager &other) = delete;
-    ProfCtrlCallbackManager(ProfCtrlCallbackManager &&other) = delete;
-    ProfCtrlCallbackManager &operator=(ProfCtrlCallbackManager &&other) = delete;
-    void NotifyOneModule(const uint32_t moduleId, const uint32_t dataType, void * const data, const uint32_t dataLen);
+    ProfCtrlCallbackManager(const ProfCtrlCallbackManager& other) = delete;
+    ProfCtrlCallbackManager& operator=(const ProfCtrlCallbackManager& other) = delete;
+    ProfCtrlCallbackManager(ProfCtrlCallbackManager&& other) = delete;
+    ProfCtrlCallbackManager& operator=(ProfCtrlCallbackManager&& other) = delete;
+    void NotifyOneModule(const uint32_t moduleId, const uint32_t dataType, void* const data, const uint32_t dataLen);
+
 private:
     std::map<std::uint32_t, rtProfCtrlHandle> callbackMap_;
     std::mutex mapMutex_;
@@ -39,7 +41,7 @@ private:
     bool switchIsSet_;
 };
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_PROF_CTRL_CALLBACK_MANAGER_HPP

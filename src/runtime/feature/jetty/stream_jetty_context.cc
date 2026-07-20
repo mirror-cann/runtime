@@ -15,7 +15,7 @@
 
 namespace cce {
 namespace runtime {
-uint8_t *StreamJettyContext::GetNextWqeBuffer() const
+uint8_t* StreamJettyContext::GetNextWqeBuffer() const
 {
     if (filledWqeCount >= capacity) {
         return nullptr;
@@ -31,10 +31,10 @@ uint8_t *StreamJettyContext::GetNextWqeBuffer() const
     return wqeBuffers[idx].get() + off;
 }
 
-rtError_t StreamJettyContext::AllocWqeBuffer(Driver *driver)
+rtError_t StreamJettyContext::AllocWqeBuffer(Driver* driver)
 {
     const uint64_t allocSize = static_cast<uint64_t>(WQE_BUFFER_DEPTH) * WQE_SIZE;
-    void *hostPtr = nullptr;
+    void* hostPtr = nullptr;
     const rtError_t error = driver->HostMemAlloc(&hostPtr, allocSize, 0);
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
 
@@ -42,7 +42,7 @@ rtError_t StreamJettyContext::AllocWqeBuffer(Driver *driver)
         return RT_ERROR_MEMORY_ALLOCATION;
     }
 
-    auto buffer = std::unique_ptr<uint8_t[]>(RtPtrToPtr<uint8_t *>(hostPtr));
+    auto buffer = std::unique_ptr<uint8_t[]>(RtPtrToPtr<uint8_t*>(hostPtr));
     const errno_t rc = memset_s(buffer.get(), allocSize, 0, allocSize);
     if (rc != EOK) {
         (void)driver->HostMemFree(buffer.release());
@@ -53,17 +53,20 @@ rtError_t StreamJettyContext::AllocWqeBuffer(Driver *driver)
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamJettyContext::ExpandCapacity(Driver *driver)
+rtError_t StreamJettyContext::ExpandCapacity(Driver* driver)
 {
     if (driver == nullptr) {
         return RT_ERROR_DRV_NULL;
     }
 
     if (capacity + WQE_BUFFER_DEPTH > JETTY_DEPTH_MAX) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Expanding the capacity",
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE1023, "Expanding the capacity",
             "There are too many asynchronous copy tasks in the ACL Graph. "
-            "1. If the value of numBatches for aclrtMemcpyBatchAsync in the ACL Graph is too large, reduce the value of numBatches. "
-            "2. If the value of height for aclrtMemcpy2dAsync in the ACL Graph is too large, reduce the value of height");
+            "1. If the value of numBatches for aclrtMemcpyBatchAsync in the ACL Graph is too large, reduce the value "
+            "of numBatches. "
+            "2. If the value of height for aclrtMemcpy2dAsync in the ACL Graph is too large, reduce the value of "
+            "height");
         return RT_ERROR_INVALID_VALUE;
     }
 
@@ -73,7 +76,7 @@ rtError_t StreamJettyContext::ExpandCapacity(Driver *driver)
     return RT_ERROR_NONE;
 }
 
-rtError_t StreamJettyContext::RoundUpCapacity(Driver *driver, uint32_t deviceId)
+rtError_t StreamJettyContext::RoundUpCapacity(Driver* driver, uint32_t deviceId)
 {
     if (filledWqeCount == 0 || capacity <= WQE_BUFFER_DEPTH) {
         return RT_ERROR_NONE;
@@ -83,10 +86,13 @@ rtError_t StreamJettyContext::RoundUpCapacity(Driver *driver, uint32_t deviceId)
     while (validDepth < capacity) {
         validDepth *= 2U; // 2 jetty深度限制
         if (validDepth > JETTY_DEPTH_MAX) {
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Rounding up the capacity",
+            RT_LOG_OUTER_MSG_IMPL(
+                ErrorCode::EE1023, "Rounding up the capacity",
                 "There are too many asynchronous copy tasks in the ACL Graph. "
-                "1. If the value of numBatches for aclrtMemcpyBatchAsync in the ACL Graph is too large, reduce the value of numBatches. "
-                "2. If the value of height for aclrtMemcpy2dAsync in the ACL Graph is too large, reduce the value of height");
+                "1. If the value of numBatches for aclrtMemcpyBatchAsync in the ACL Graph is too large, reduce the "
+                "value of numBatches. "
+                "2. If the value of height for aclrtMemcpy2dAsync in the ACL Graph is too large, reduce the value of "
+                "height");
             return RT_ERROR_INVALID_VALUE;
         }
     }
@@ -124,7 +130,7 @@ rtError_t StreamJettyContext::RoundUpCapacity(Driver *driver, uint32_t deviceId)
     return RT_ERROR_NONE;
 }
 
-void StreamJettyContext::ReleaseBuffers(Driver *driver)
+void StreamJettyContext::ReleaseBuffers(Driver* driver)
 {
     if (driver == nullptr) {
         return;

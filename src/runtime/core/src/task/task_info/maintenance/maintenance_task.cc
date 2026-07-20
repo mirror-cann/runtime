@@ -17,10 +17,10 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("MaintenanceTask")
-rtError_t MaintenanceTaskInit(TaskInfo * const taskInfo, const MtType type, const uint32_t id,
-                              bool flag, const uint32_t idType)
+rtError_t MaintenanceTaskInit(
+    TaskInfo* const taskInfo, const MtType type, const uint32_t id, bool flag, const uint32_t idType)
 {
-    MaintenanceTaskInfo *maintenanceTaskInfo = &(taskInfo->u.maintenanceTaskInfo);
+    MaintenanceTaskInfo* maintenanceTaskInfo = &(taskInfo->u.maintenanceTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_MAINTENANCE;
@@ -47,9 +47,9 @@ rtError_t MaintenanceTaskInit(TaskInfo * const taskInfo, const MtType type, cons
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForMaintenanceTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+void ToCommandBodyForMaintenanceTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
-    MaintenanceTaskInfo *maintenanceTaskInfo = &(taskInfo->u.maintenanceTaskInfo);
+    MaintenanceTaskInfo* maintenanceTaskInfo = &(taskInfo->u.maintenanceTaskInfo);
 
     command->u.maintenanceTask.goal = maintenanceTaskInfo->mtType;
     command->u.maintenanceTask.targetID = static_cast<uint16_t>(maintenanceTaskInfo->mtId);
@@ -63,11 +63,10 @@ void ToCommandBodyForMaintenanceTask(TaskInfo * const taskInfo, rtCommand_t *con
 #endif
 
 #if F_DESC("GetDevMsgTask")
-rtError_t GetDevMsgTaskInit(TaskInfo* taskInfo, const void * const devMemAddr,
-                            const uint32_t devMemSize,
-                            const rtGetDevMsgType_t messageType)
+rtError_t GetDevMsgTaskInit(
+    TaskInfo* taskInfo, const void* const devMemAddr, const uint32_t devMemSize, const rtGetDevMsgType_t messageType)
 {
-    GetDevMsgTaskInfo *getDevMsgTask = &(taskInfo->u.getDevMsgTask);
+    GetDevMsgTaskInfo* getDevMsgTask = &(taskInfo->u.getDevMsgTask);
     TaskCommonInfoInit(taskInfo);
     taskInfo->type = TS_TASK_TYPE_GET_DEVICE_MSG;
     taskInfo->typeName = "GET_DEVICE_MSG";
@@ -75,39 +74,41 @@ rtError_t GetDevMsgTaskInit(TaskInfo* taskInfo, const void * const devMemAddr,
     getDevMsgTask->msgBufferLen = devMemSize;
     getDevMsgTask->msgType = messageType;
     getDevMsgTask->offset = MAX_UINT64_NUM;
-    Stream * const stm = taskInfo->stream;
+    Stream* const stm = taskInfo->stream;
 
     if (!stm->Device_()->IsDavidPlatform()) {
         const rtError_t error = taskInfo->stream->Device_()->Driver_()->MemAddressTranslate(
-            static_cast<int32_t>(taskInfo->stream->Device_()->Id_()),
-            RtPtrToValue<void *>(getDevMsgTask->devMem),
+            static_cast<int32_t>(taskInfo->stream->Device_()->Id_()), RtPtrToValue<void*>(getDevMsgTask->devMem),
             &(getDevMsgTask->offset));
-        COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-            "MemAddressTranslate address error=%#x, msg type=%d, msgBuffer length=%u.",
+        COND_RETURN_ERROR(
+            (error != RT_ERROR_NONE), error, "MemAddressTranslate address error=%#x, msg type=%d, msgBuffer length=%u.",
             error, messageType, getDevMsgTask->msgBufferLen);
     }
 
-    RT_LOG(RT_LOG_DEBUG, "Create GetDevMsgTask task,task_id=%hu,task_type=%d(%s),stream_id=%d, "
-           "msgBufferLen=%u,msgType=%d,offset=%" PRIu64, taskInfo->id, taskInfo->type, taskInfo->typeName,
-           taskInfo->stream->Id_(), getDevMsgTask->msgBufferLen, messageType, getDevMsgTask->offset);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "Create GetDevMsgTask task,task_id=%hu,task_type=%d(%s),stream_id=%d, "
+        "msgBufferLen=%u,msgType=%d,offset=%" PRIu64,
+        taskInfo->id, taskInfo->type, taskInfo->typeName, taskInfo->stream->Id_(), getDevMsgTask->msgBufferLen,
+        messageType, getDevMsgTask->offset);
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForGetDevMsgTask(TaskInfo* taskInfo, rtCommand_t * const command)
+void ToCommandBodyForGetDevMsgTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
-    GetDevMsgTaskInfo *getDevMsgTask = &(taskInfo->u.getDevMsgTask);
+    GetDevMsgTaskInfo* getDevMsgTask = &(taskInfo->u.getDevMsgTask);
     command->u.getDevMsgTask.len = getDevMsgTask->msgBufferLen;
-    command->u.getDevMsgTask.devAddr =
-        RtPtrToValue<void *>(getDevMsgTask->devMem);
+    command->u.getDevMsgTask.devAddr = RtPtrToValue<void*>(getDevMsgTask->devMem);
     command->u.getDevMsgTask.offset = getDevMsgTask->offset;
     command->u.getDevMsgTask.type = static_cast<uint16_t>(getDevMsgTask->msgType);
-    RT_LOG(RT_LOG_INFO, "Device message device offset=%#" PRIx64 ",msgType=%d", getDevMsgTask->offset,
+    RT_LOG(
+        RT_LOG_INFO, "Device message device offset=%#" PRIx64 ",msgType=%d", getDevMsgTask->offset,
         getDevMsgTask->msgType);
 }
 #endif
 
 #if F_DESC("StarsVersionTask")
-rtError_t StarsVersionTaskInit(TaskInfo * const taskInfo)
+rtError_t StarsVersionTaskInit(TaskInfo* const taskInfo)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->type = TS_TASK_TYPE_GET_STARS_VERSION;
@@ -121,5 +122,5 @@ rtError_t StarsVersionTaskInit(TaskInfo * const taskInfo)
 }
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

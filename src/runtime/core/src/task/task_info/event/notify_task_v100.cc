@@ -20,10 +20,10 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("NotifyRecordTask")
-static void ConstructNotifySqeForNotifyRecordTask(TaskInfo *taskInfo, rtStarsSqe_t *const command)
+static void ConstructNotifySqeForNotifyRecordTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     Stream* const stream = taskInfo->stream;
-    RtStarsNotifySqe *const sqe = &(command->notifySqe);
+    RtStarsNotifySqe* const sqe = &(command->notifySqe);
     sqe->header.type = RT_STARS_SQE_TYPE_NOTIFY_RECORD;
     sqe->header.ie = RT_STARS_SQE_INT_DIR_NO;
     sqe->header.pre_p = RT_STARS_SQE_INT_DIR_NO;
@@ -41,11 +41,11 @@ static void ConstructNotifySqeForNotifyRecordTask(TaskInfo *taskInfo, rtStarsSqe
     PrintSqe(command, "NotifyRecordTask");
 }
 
-static void ConstructIpcSqeForNotifyRecordTask(TaskInfo *taskInfo, rtStarsSqe_t *const command)
+static void ConstructIpcSqeForNotifyRecordTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     NotifyRecordTaskInfo* notifyRecord = &taskInfo->u.notifyrecordTask;
     Stream* const stream = taskInfo->stream;
-    RtStarsWriteValueSqe *const sqe = &(command->writeValueSqe);
+    RtStarsWriteValueSqe* const sqe = &(command->writeValueSqe);
     sqe->header.type = RT_STARS_SQE_TYPE_WRITE_VALUE;
     sqe->header.ie = RT_STARS_SQE_INT_DIR_NO;
     sqe->header.pre_p = RT_STARS_SQE_INT_DIR_NO;
@@ -111,7 +111,7 @@ static void ConstructIpcSqeForNotifyRecordTask(TaskInfo *taskInfo, rtStarsSqe_t 
     PrintSqe(command, "NotifyRecordTask_Ipc");
 }
 
-void ConstructSqeForNotifyRecordTask(TaskInfo *taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForNotifyRecordTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     NotifyRecordTaskInfo* notifyRecord = &taskInfo->u.notifyrecordTask;
     if (notifyRecord->uInfo.singleBitNtfyInfo.isIpc == true) {
@@ -121,24 +121,26 @@ void ConstructSqeForNotifyRecordTask(TaskInfo *taskInfo, rtStarsSqe_t *const com
     }
 
     Stream* const stream = taskInfo->stream;
-    AtraceParams param = { stream->Device_()->Id_(), static_cast<uint32_t>(stream->Id_()), taskInfo->id,
-        GetCurrentTid(), stream->Device_()->GetAtraceHandle(), {}};
+    AtraceParams param = {stream->Device_()->Id_(), static_cast<uint32_t>(stream->Id_()), taskInfo->id,
+                          GetCurrentTid(),          stream->Device_()->GetAtraceHandle(), {}};
     uintptr_t notifyLowEightAddr = 0;
     if (notifyRecord->uPtr.notify != nullptr) {
-        notifyLowEightAddr = (RtPtrToPtr<uintptr_t, Notify *>(notifyRecord->uPtr.notify)) & 0xFFU;
+        notifyLowEightAddr = (RtPtrToPtr<uintptr_t, Notify*>(notifyRecord->uPtr.notify)) & 0xFFU;
     }
-    param.u.notifyRecordParams = {notifyRecord->notifyId, notifyRecord->deviceId,
+    param.u.notifyRecordParams = {
+        notifyRecord->notifyId, notifyRecord->deviceId,
         static_cast<uint16_t>(notifyRecord->uInfo.singleBitNtfyInfo.isIpc), false, notifyLowEightAddr};
     AtraceSubmitLog(TYPE_NOTIFY_RECORD, param);
-    RT_LOG(RT_LOG_INFO,
-           "notify_record:notify_id=%u,stream_id=%d,task_id=%hu,sq_id=%u,"
-           " device_id=%u,is_ipc=%u,logical remote_device=%u,phy remote_device=%u.",
-           notifyRecord->notifyId, stream->Id_(), taskInfo->id, stream->GetSqId(),
-           stream->Device_()->Id_(), static_cast<uint32_t>(notifyRecord->uInfo.singleBitNtfyInfo.isIpc),
-           notifyRecord->deviceId, notifyRecord->phyId);
+    RT_LOG(
+        RT_LOG_INFO,
+        "notify_record:notify_id=%u,stream_id=%d,task_id=%hu,sq_id=%u,"
+        " device_id=%u,is_ipc=%u,logical remote_device=%u,phy remote_device=%u.",
+        notifyRecord->notifyId, stream->Id_(), taskInfo->id, stream->GetSqId(), stream->Device_()->Id_(),
+        static_cast<uint32_t>(notifyRecord->uInfo.singleBitNtfyInfo.isIpc), notifyRecord->deviceId,
+        notifyRecord->phyId);
 }
 
-static void SetResultForNotifyRecordTask(TaskInfo *const taskInfo, const void *const data, const uint32_t dataSize)
+static void SetResultForNotifyRecordTask(TaskInfo* const taskInfo, const void* const data, const uint32_t dataSize)
 {
     UNUSED(taskInfo);
     UNUSED(dataSize);
@@ -147,11 +149,11 @@ static void SetResultForNotifyRecordTask(TaskInfo *const taskInfo, const void *c
 #endif
 
 #if F_DESC("NotifyWaitTask")
-static void ConstructSqeForNotifyWaitTask(TaskInfo *taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForNotifyWaitTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     NotifyWaitTaskInfo* notifyWaitTask = &(taskInfo->u.notifywaitTask);
     Stream* const stream = taskInfo->stream;
-    RtStarsNotifySqe *const sqe = &(command->notifySqe);
+    RtStarsNotifySqe* const sqe = &(command->notifySqe);
     sqe->header.type = RT_STARS_SQE_TYPE_NOTIFY_WAIT;
     sqe->header.ie = RT_STARS_SQE_INT_DIR_NO;
     sqe->header.pre_p = RT_STARS_SQE_INT_DIR_NO;
@@ -167,9 +169,12 @@ static void ConstructSqeForNotifyWaitTask(TaskInfo *taskInfo, rtStarsSqe_t *cons
     sqe->timeout = notifyWaitTask->timeout;
 
     PrintSqe(command, "NotifyWaitTask");
-    RT_LOG(RT_LOG_INFO, "notify_wait: notify_id=%u, stream_id=%d, task_id=%hu, sq_id=%u, device_id=%u, "
-        "timeout=%us.", notifyWaitTask->notifyId, stream->Id_(), taskInfo->id, stream->GetSqId(),
-        stream->Device_()->Id_(), notifyWaitTask->timeout);
+    RT_LOG(
+        RT_LOG_INFO,
+        "notify_wait: notify_id=%u, stream_id=%d, task_id=%hu, sq_id=%u, device_id=%u, "
+        "timeout=%us.",
+        notifyWaitTask->notifyId, stream->Id_(), taskInfo->id, stream->GetSqId(), stream->Device_()->Id_(),
+        notifyWaitTask->timeout);
 }
 #endif
 
@@ -206,7 +211,7 @@ static bool NotifyTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommon,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_NOTIFY_RECORD, notifyRecordFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_NOTIFY_WAIT, notifyWaitFuncs);
@@ -218,5 +223,5 @@ static bool NotifyTaskRegister()
 
 static bool g_notifyTaskRegister = NotifyTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

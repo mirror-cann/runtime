@@ -14,17 +14,17 @@
 namespace cce {
 namespace runtime {
 
-XpuTaskFailCallBackManager &XpuTaskFailCallBackManager::Instance()
+XpuTaskFailCallBackManager& XpuTaskFailCallBackManager::Instance()
 {
     static XpuTaskFailCallBackManager xpuTaskFailCallBackManager;
     return xpuTaskFailCallBackManager;
 }
 
-void XpuTaskFailCallBackManager::XpuNotify(rtExceptionInfo_t *const exceptionInfo)
+void XpuTaskFailCallBackManager::XpuNotify(rtExceptionInfo_t* const exceptionInfo)
 {
-    RT_LOG(RT_LOG_INFO,
-        "XpuNotify stream_id=%u, task_id=%u, retcode=%u, tid=%u, deviceId=%u.",
-        exceptionInfo->streamid, exceptionInfo->taskid, exceptionInfo->retcode, exceptionInfo->tid, exceptionInfo->deviceid);
+    RT_LOG(
+        RT_LOG_INFO, "XpuNotify stream_id=%u, task_id=%u, retcode=%u, tid=%u, deviceId=%u.", exceptionInfo->streamid,
+        exceptionInfo->taskid, exceptionInfo->retcode, exceptionInfo->tid, exceptionInfo->deviceid);
 
     // Avoid callback function use long time lock,so copy to tmp map to call callback function.
     std::unordered_map<std::string, rtTaskFailCallback> notifyMap;
@@ -33,14 +33,14 @@ void XpuTaskFailCallBackManager::XpuNotify(rtExceptionInfo_t *const exceptionInf
         notifyMap.insert(callbackMap_.begin(), callbackMap_.end());
     }
     RT_LOG(RT_LOG_INFO, "XpuNotify notifyMap map size: [%u].", notifyMap.size());
-    for (const auto &info : notifyMap) {
-            auto callback = info.second;
-            callback(exceptionInfo);
+    for (const auto& info : notifyMap) {
+        auto callback = info.second;
+        callback(exceptionInfo);
         RT_LOG(RT_LOG_DEBUG, "XpuNotify [%s] task end.", info.first.c_str());
     }
 }
 
-rtError_t XpuTaskFailCallBackManager::RegXpuTaskFailCallback(const char_t *regName, void *callback)
+rtError_t XpuTaskFailCallBackManager::RegXpuTaskFailCallback(const char_t* regName, void* callback)
 {
     const std::unique_lock<std::mutex> cbMapLock(mapMutex_);
     std::string tmpName(regName);
@@ -64,5 +64,5 @@ XpuTaskFailCallBackManager::~XpuTaskFailCallBackManager() noexcept
     RT_LOG(RT_LOG_EVENT, "XpuTaskFailCallBackManager Destructor.");
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

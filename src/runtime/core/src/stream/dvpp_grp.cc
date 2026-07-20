@@ -16,10 +16,9 @@
 namespace cce {
 namespace runtime {
 
-DvppGrp::DvppGrp(Device *const dev, const uint32_t flag)
+DvppGrp::DvppGrp(Device* const dev, const uint32_t flag)
     : device_(dev), flag_(flag), logicCq_(UINT32_MAX), context_(nullptr)
-{
-}
+{}
 
 DvppGrp::~DvppGrp() noexcept
 {
@@ -36,14 +35,13 @@ DvppGrp::~DvppGrp() noexcept
 rtError_t DvppGrp::Setup()
 {
     uint32_t logicCqId;
-    rtError_t error = device_->Driver_()->LogicCqAllocateV2(device_->Id_(), device_->DevGetTsId(),
-        RT_MAX_STREAM_ID, logicCqId, true);
+    rtError_t error =
+        device_->Driver_()->LogicCqAllocateV2(device_->Id_(), device_->DevGetTsId(), RT_MAX_STREAM_ID, logicCqId, true);
 
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "Failed to alloc logic cq");
         if ((error == RT_ERROR_DRV_NO_RESOURCES) || (error == RT_ERROR_DEVICE_SQCQ_POOL_RESOURCE_FULL)) {
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc Stream resource",
-                "Too many streams are created");
+            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc Stream resource", "Too many streams are created");
         }
         return error;
     }
@@ -52,5 +50,5 @@ rtError_t DvppGrp::Setup()
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

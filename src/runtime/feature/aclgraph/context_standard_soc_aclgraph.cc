@@ -12,8 +12,8 @@
 namespace cce {
 namespace runtime {
 
-rtError_t Context::TryRecycleCaptureModelResource(const uint32_t allocSqNum, const uint32_t ntfCnt,
-    const CaptureModel * const excludeMdl)
+rtError_t Context::TryRecycleCaptureModelResource(
+    const uint32_t allocSqNum, const uint32_t ntfCnt, const CaptureModel* const excludeMdl)
 {
     UNUSED(excludeMdl);
     rtError_t error = RT_ERROR_NONE;
@@ -23,9 +23,9 @@ rtError_t Context::TryRecycleCaptureModelResource(const uint32_t allocSqNum, con
     uint32_t totalReleaseNtfNum = 0U;
 
     modelLock_.Lock();
-    for (Model *model : models_) {
+    for (Model* model : models_) {
         if ((model != nullptr) && (model->GetModelType() == RT_MODEL_CAPTURE_MODEL)) {
-            CaptureModel *captureMdl = dynamic_cast<CaptureModel *>(model);
+            CaptureModel* captureMdl = dynamic_cast<CaptureModel*>(model);
 
             if ((allocSqNum <= totalReleaseSqNum) && (ntfCnt <= totalReleaseNtfNum)) {
                 break;
@@ -53,7 +53,7 @@ rtError_t Context::TryRecycleCaptureModelResource(const uint32_t allocSqNum, con
     return error;
 }
 
-rtError_t Context::TryRecycleCaptureModelJettyResource(const CaptureModel * const excludeMdl, JettyType type)
+rtError_t Context::TryRecycleCaptureModelJettyResource(const CaptureModel* const excludeMdl, JettyType type)
 {
     if (!Runtime::Instance()->GetConnectUbFlag()) {
         return RT_ERROR_NONE;
@@ -63,9 +63,9 @@ rtError_t Context::TryRecycleCaptureModelJettyResource(const CaptureModel * cons
     uint32_t d2dCount = 0U;
     rtError_t error = RT_ERROR_NONE;
     modelLock_.Lock();
-    for (Model *model : models_) {
+    for (Model* model : models_) {
         if ((model != nullptr) && (model->GetModelType() == RT_MODEL_CAPTURE_MODEL)) {
-            CaptureModel *captureMdl = dynamic_cast<CaptureModel *>(model);
+            CaptureModel* captureMdl = dynamic_cast<CaptureModel*>(model);
             if (totalRelease > 0U) {
                 break;
             }

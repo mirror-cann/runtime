@@ -15,18 +15,18 @@
 
 namespace cce {
 namespace runtime {
-void ToCommandBodyForDynamicProfilingEnableTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-void ToCommandBodyForDynamicProfilingDisableTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-void ToCommandBodyForProfilingEnableTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-void ToCommandBodyForProfilingDisableTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-void ToCommandBodyForOnlineProfEnableTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-void ToCommandBodyForOnlineProfDisableTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-void ToCommandBodyForAdcProfTask(TaskInfo * const taskInfo, rtCommand_t *const command);
-void ToCommandBodyForProfilerTraceTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void ToCommandBodyForProfilerTraceExTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void ConstructSqeForProfilingEnableTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
-void ConstructSqeForProfilingDisableTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command);
-void ConstructSqeForProfilerTraceExTask(TaskInfo* taskInfo, rtStarsSqe_t *const command);
-}  // namespace runtime
-}  // namespace cce
+void ToCommandBodyForDynamicProfilingEnableTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+void ToCommandBodyForDynamicProfilingDisableTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+void ToCommandBodyForProfilingEnableTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+void ToCommandBodyForProfilingDisableTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+void ToCommandBodyForOnlineProfEnableTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+void ToCommandBodyForOnlineProfDisableTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+void ToCommandBodyForAdcProfTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+void ToCommandBodyForProfilerTraceTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void ToCommandBodyForProfilerTraceExTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void ConstructSqeForProfilingEnableTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command);
+void ConstructSqeForProfilingDisableTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command);
+void ConstructSqeForProfilerTraceExTask(TaskInfo* taskInfo, rtStarsSqe_t* const command);
+} // namespace runtime
+} // namespace cce
 #endif

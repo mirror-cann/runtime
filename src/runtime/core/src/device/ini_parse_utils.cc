@@ -50,15 +50,15 @@ static int32_t ReadIniUint32(
     try {
         const uint64_t val64 = std::stoull(strValue);
         if (val64 > UINT32_MAX) {
-            RT_LOG(RT_LOG_WARNING, "ini field[%s] value[%" PRIu64 "] exceeds uint32 max, keep default value.",
-                fieldName, val64);
+            RT_LOG(
+                RT_LOG_WARNING, "ini field[%s] value[%" PRIu64 "] exceeds uint32 max, keep default value.", fieldName,
+                val64);
             return RT_ERROR_NONE;
         }
         value = static_cast<uint32_t>(val64);
         return RT_ERROR_NONE;
     } catch (...) {
-        RT_LOG(RT_LOG_WARNING, "ini field[%s] value[%s] is invalid, keep default value.", fieldName,
-            strValue.c_str());
+        RT_LOG(RT_LOG_WARNING, "ini field[%s] value[%s] is invalid, keep default value.", fieldName, strValue.c_str());
     }
     return RT_ERROR_NONE;
 }
@@ -94,7 +94,8 @@ static void GetStreamSpecFromIniFile(const std::string& socVersion, RtIniAttribu
         }
         if (ret != RT_ERROR_NONE) {
             RT_LOG(
-                RT_LOG_WARNING, "GetSocSpec failed for socVersion[%s], ret=%d, skip ini parse.", socVersion.c_str(), ret);
+                RT_LOG_WARNING, "GetSocSpec failed for socVersion[%s], ret=%d, skip ini parse.", socVersion.c_str(),
+                ret);
             return;
         }
         if (value != 0U) {
@@ -111,18 +112,18 @@ static void GetStreamSpecFromIniFile(const std::string& socVersion, RtIniAttribu
 static void GetArchInfoFromIniFile(const std::string& socVersion, RtIniAttributes& iniAttrs)
 {
     int64_t npuArch = 0;
-    const int32_t ret = ReadIniInt64(socVersion, platform_config::kVersionSection, platform_config::kNpuArchField,
-        npuArch);
+    const int32_t ret =
+        ReadIniInt64(socVersion, platform_config::kVersionSection, platform_config::kNpuArchField, npuArch);
     if (ret == RT_ERROR_NOT_FOUND) {
-        RT_LOG(RT_LOG_WARNING,
-            "GetSocSpec not found for socVersion[%s], section[%s], field[%s], keep default npuArch.",
+        RT_LOG(
+            RT_LOG_WARNING, "GetSocSpec not found for socVersion[%s], section[%s], field[%s], keep default npuArch.",
             socVersion.c_str(), platform_config::kVersionSection, platform_config::kNpuArchField);
         return;
     }
     if (ret != RT_ERROR_NONE) {
         RT_LOG(
-            RT_LOG_WARNING, "GetSocSpec failed for socVersion[%s], ret=%d, skip version ini parse.",
-            socVersion.c_str(), ret);
+            RT_LOG_WARNING, "GetSocSpec failed for socVersion[%s], ret=%d, skip version ini parse.", socVersion.c_str(),
+            ret);
         return;
     }
 

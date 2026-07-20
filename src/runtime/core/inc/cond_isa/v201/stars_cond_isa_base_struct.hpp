@@ -20,14 +20,14 @@ namespace runtime {
 #pragma pack(1)
 
 enum rtStarsCondIsaRegister_t : uint32_t {
-    RT_STARS_COND_ISA_REGISTER_R0 = 0,       // R0 is always zero, can't be destination register
+    RT_STARS_COND_ISA_REGISTER_R0 = 0, // R0 is always zero, can't be destination register
     RT_STARS_COND_ISA_REGISTER_R1 = 1,
     RT_STARS_COND_ISA_REGISTER_R2 = 2,
     RT_STARS_COND_ISA_REGISTER_R3 = 3,
     RT_STARS_COND_ISA_REGISTER_R4 = 4,
     RT_STARS_COND_ISA_REGISTER_R5 = 5,
 
-    RT_STARS_COND_ISA_REGISTER_R6 = 6,       // 1952 add 6~10 destination register
+    RT_STARS_COND_ISA_REGISTER_R6 = 6, // 1952 add 6~10 destination register
     RT_STARS_COND_ISA_REGISTER_R7 = 7,
     RT_STARS_COND_ISA_REGISTER_R8 = 8,
     RT_STARS_COND_ISA_REGISTER_R9 = 9,
@@ -205,7 +205,7 @@ struct RtStarsCondOpLoop {
     uint32_t delayCycle : 13;
 };
 
-//CSR RT_STARS_COND_ISA_OP_CODE_SYSTEM
+// CSR RT_STARS_COND_ISA_OP_CODE_SYSTEM
 struct RtStarsCondOpSystemCsr {
     uint32_t opCode : 7;
     uint32_t rd : 4;
@@ -245,7 +245,7 @@ struct RtStarsCondGqmOp {
     uint32_t command : 6;
     uint32_t wakeUp : 1;
     uint32_t reserved0 : 25; // reserved
-    uint32_t reserved1; // reserved
+    uint32_t reserved1;      // reserved
 };
 
 union RtStarsCondGqmOpFc {
@@ -263,7 +263,6 @@ struct RtStarsSetCsrJumpPc {
     RtStarsCondOpSystemCsr csrrw;
 };
 #pragma pack(pop)
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // __CCE_RUNTIME_STARS_COND_ISA_BASE_STRUCT_HPP__
-

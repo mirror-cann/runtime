@@ -12,23 +12,47 @@
 namespace cce {
 namespace runtime {
 
-rtError_t SnapShotPreProcessBackup(ContextDataManage &ctxMan) { UNUSED(ctxMan); return RT_ERROR_FEATURE_NOT_SUPPORT; }
+rtError_t SnapShotPreProcessBackup(ContextDataManage& ctxMan)
+{
+    UNUSED(ctxMan);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
 
 rtError_t SnapShotDeviceRestore() { return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
-rtError_t SnapShotResourceRestore(ContextDataManage &ctxMan) { UNUSED(ctxMan); return RT_ERROR_FEATURE_NOT_SUPPORT; }
+rtError_t SnapShotResourceRestore(ContextDataManage& ctxMan)
+{
+    UNUSED(ctxMan);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
 
-rtError_t SnapShotAclGraphRestore(Device * const dev) { UNUSED(dev); return RT_ERROR_FEATURE_NOT_SUPPORT; }
+rtError_t SnapShotAclGraphRestore(Device* const dev)
+{
+    UNUSED(dev);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
 
 rtError_t SnapShotProcessBackup() { return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
 rtError_t SnapShotProcessRestore() { return RT_ERROR_FEATURE_NOT_SUPPORT; }
 
-rtError_t ModelBackup(const int32_t devId) { UNUSED(devId); return RT_ERROR_FEATURE_NOT_SUPPORT; }
-
-rtError_t ModelRestore(const int32_t devId) { UNUSED(devId); return RT_ERROR_FEATURE_NOT_SUPPORT; }
-
-rtError_t SinkTaskMemoryBackup(const int32_t devId) { UNUSED(devId); return RT_ERROR_FEATURE_NOT_SUPPORT; }
-
+rtError_t ModelBackup(const int32_t devId)
+{
+    UNUSED(devId);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
+
+rtError_t ModelRestore(const int32_t devId)
+{
+    UNUSED(devId);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
+
+rtError_t SinkTaskMemoryBackup(const int32_t devId)
+{
+    UNUSED(devId);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+} // namespace runtime
+} // namespace cce

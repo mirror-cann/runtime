@@ -23,10 +23,10 @@ public:
     static void SetTsId(const uint32_t inTsId);
 
     static Context* GetCurCtx(void);
-    static void SetCurCtx(Context * const inCurCtx, bool internalAccess = false);
+    static void SetCurCtx(Context* const inCurCtx, bool internalAccess = false);
 
-    static RefObject<Context *>* GetCurRef(void);
-    static void SetCurRef(RefObject<Context *> * const inCurRef, const bool internalAccess = false);
+    static RefObject<Context*>* GetCurRef(void);
+    static void SetCurRef(RefObject<Context*>* const inCurRef, const bool internalAccess = false);
     static bool IsInternalContextAccess(void);
 
     static Device* GetDevice(void);
@@ -53,16 +53,17 @@ public:
     static void SetGlobalErr(const rtError_t errCode);
     static void SetCurrentResLimitStream(const Stream* stm);
     static const Stream* GetCurrentResLimitStream();
+
 private:
-    static void ClearDeletedContextBinding(Context * const deletedCtx);
+    static void ClearDeletedContextBinding(Context* const deletedCtx);
     static void RefreshDevice();
 
     static __THREAD_LOCAL__ uint32_t lastTaskId_;
     static __THREAD_LOCAL__ uint32_t lastStreamId_;
     static __THREAD_LOCAL__ uint32_t tsId_;
-    static __THREAD_LOCAL__ Context *curCtx_;
-    static __THREAD_LOCAL__ RefObject<Context *> *curRef_;
-    static __THREAD_LOCAL__ Device *device_;
+    static __THREAD_LOCAL__ Context* curCtx_;
+    static __THREAD_LOCAL__ RefObject<Context*>* curRef_;
+    static __THREAD_LOCAL__ Device* device_;
 
     static __THREAD_LOCAL__ uint32_t dieId_;
     static __THREAD_LOCAL__ rtStreamCaptureMode threadCaptureMode_;
@@ -70,12 +71,13 @@ private:
     static __THREAD_LOCAL__ std::array<uint32_t, RT_STREAM_CAPTURE_MODE_MAX> threadCaptureModeRefNum_;
     static __THREAD_LOCAL__ uint8_t groupId_;
     static __THREAD_LOCAL__ rtError_t globalError_;
-    static __THREAD_LOCAL__ const Stream* curResLimitStream_; // when destroying this stream, it is essential to ensure that no other threads are using this stream.
+    static __THREAD_LOCAL__ const Stream* curResLimitStream_; // when destroying this stream, it is essential to ensure
+                                                              // that no other threads are using this stream.
     static __THREAD_LOCAL__ bool curCtxInternalAccess_;
     static __THREAD_LOCAL__ bool curRefInternalAccess_;
 };
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 // get last task id and stream id for the thread
 #define GET_THREAD_TASKID_AND_STREAMID(workTask, streamId)                                                     \
@@ -90,4 +92,4 @@ private:
         InnerThreadLocalContainer::SetLastStreamId(static_cast<uint32_t>(streamId)); \
         InnerThreadLocalContainer::SetLastTaskId(taskId);                            \
     } while (false)
-#endif  // RUNTIME_INNER_THREAD_LOCAL_CONTAINER_HPP
+#endif // RUNTIME_INNER_THREAD_LOCAL_CONTAINER_HPP

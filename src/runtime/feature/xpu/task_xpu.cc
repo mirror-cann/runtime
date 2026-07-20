@@ -20,26 +20,27 @@
 
 namespace cce {
 namespace runtime {
-constexpr uint16_t TASK_QUERY_INTERVAL_NUM = 64U;     // Shared memory query interval.
+constexpr uint16_t TASK_QUERY_INTERVAL_NUM = 64U; // Shared memory query interval.
 
-void XpuTaskRollBack(Stream * const stm, uint32_t pos)
+void XpuTaskRollBack(Stream* const stm, uint32_t pos)
 {
-    if ((unlikely(stm == nullptr)) || (unlikely(stm->taskResMang_ == nullptr)) || (pos >= stm->taskResMang_->taskPoolNum_)) {
+    if ((unlikely(stm == nullptr)) || (unlikely(stm->taskResMang_ == nullptr)) ||
+        (pos >= stm->taskResMang_->taskPoolNum_)) {
         RT_LOG(RT_LOG_ERROR, "stream is invalid, pos=%u.", pos);
         return;
     }
-    TaskResManageDavid *taskResMang = RtPtrToPtr<TaskResManageDavid *, TaskResManage *>(stm->taskResMang_);
+    TaskResManageDavid* taskResMang = RtPtrToPtr<TaskResManageDavid*, TaskResManage*>(stm->taskResMang_);
     taskResMang->RollbackTail(pos);
 }
 
-rtError_t XpuAllocTaskInfo(TaskInfo **taskInfo, Stream * const stm, uint32_t &pos, uint32_t sqeNum)
+rtError_t XpuAllocTaskInfo(TaskInfo** taskInfo, Stream* const stm, uint32_t& pos, uint32_t sqeNum)
 {
     if ((taskInfo == nullptr) || (stm == nullptr) || (stm->taskResMang_ == nullptr)) {
         RT_LOG(RT_LOG_ERROR, "stream is invalid.");
         return RT_ERROR_INVALID_VALUE;
     }
 
-    TaskResManageDavid *taskResMang = RtPtrToPtr<TaskResManageDavid *, TaskResManage *>(stm->taskResMang_);
+    TaskResManageDavid* taskResMang = RtPtrToPtr<TaskResManageDavid*, TaskResManage*>(stm->taskResMang_);
     rtError_t error = taskResMang->AllocTaskInfoAndPos(sqeNum, pos, taskInfo);
 
     while (error == RT_ERROR_TASKRES_QUEUE_FULL) {
@@ -53,14 +54,14 @@ rtError_t XpuAllocTaskInfo(TaskInfo **taskInfo, Stream * const stm, uint32_t &po
         error = taskResMang->AllocTaskInfoAndPos(sqeNum, pos, taskInfo, false);
     }
     if (error == RT_ERROR_NONE) {
-        (*taskInfo)->drvErr = static_cast<XpuDevice *>(stm->Device_())->AllocXpuTaskSn();
+        (*taskInfo)->drvErr = static_cast<XpuDevice*>(stm->Device_())->AllocXpuTaskSn();
     }
     return error;
 }
 
-static void XpuSendTaskPostProc(Stream *const stream, uint32_t prePos, uint32_t sqeNum)
+static void XpuSendTaskPostProc(Stream* const stream, uint32_t prePos, uint32_t sqeNum)
 {
-    TaskResManageDavid *taskResMang = dynamic_cast<TaskResManageDavid *>(stream->taskResMang_);
+    TaskResManageDavid* taskResMang = dynamic_cast<TaskResManageDavid*>(stream->taskResMang_);
     if ((stream->GetPendingNum() != 0U) && (((taskResMang->GetAllocNum()) % TASK_QUERY_INTERVAL_NUM) == 0U)) {
         stream->Device_()->WakeUpRecycleThread();
     }
@@ -72,15 +73,15 @@ static void XpuSendTaskPostProc(Stream *const stream, uint32_t prePos, uint32_t 
     return;
 }
 
-rtError_t XpuSendTask(TaskInfo *taskInfo, Stream * const stm)
+rtError_t XpuSendTask(TaskInfo* taskInfo, Stream* const stm)
 {
     TprtSqe_t tprtSqe[SQE_NUM_PER_DAVID_TASK_MAX] = {};
-    TprtSqe_t *sqeAddr = tprtSqe;
+    TprtSqe_t* sqeAddr = tprtSqe;
     const uint16_t pos = taskInfo->id;
-    const Device *dev = stm->Device_();
+    const Device* dev = stm->Device_();
     const uint32_t devId = dev->Id_();
     const uint32_t sqId = stm->GetSqId();
-    if (static_cast<XpuDevice *>(stm->Device_())->GetXpuTaskReportEnable()) {
+    if (static_cast<XpuDevice*>(stm->Device_())->GetXpuTaskReportEnable()) {
         MsprofCompactInfo compactInfo{};
         compactInfo.level = MSPROF_REPORT_RUNTIME_LEVEL;
         compactInfo.type = RT_PROFILE_TYPE_TASK_TRACK;
@@ -97,7 +98,7 @@ rtError_t XpuSendTask(TaskInfo *taskInfo, Stream * const stm)
             kernelNameId = taskInfo->u.aicpuTaskInfo.kernel->GetNameId();
         }
         compactInfo.data.runtimeTrack.kernelName = kernelNameId;
-        
+
         const int32_t ret = MsprofReportCompactInfo(0, &compactInfo, static_cast<uint32_t>(sizeof(MsprofCompactInfo)));
         if (ret != MSPROF_ERROR_NONE) {
             RT_LOG_CALL_MSG(ERR_MODULE_PROFILE, "The Profiling reporter failed to report task_track, ret=%d.", ret);
@@ -115,23 +116,27 @@ rtError_t XpuSendTask(TaskInfo *taskInfo, Stream * const stm)
     TprtTaskSendInfo_t sendInfo = {};
     sendInfo.sqeNum = taskInfo->sqeNum;
     sendInfo.sqId = sqId;
-    sendInfo.sqeAddr = RtPtrToPtr<uint8_t *, TprtSqe_t *>(sqeAddr);
+    sendInfo.sqeAddr = RtPtrToPtr<uint8_t*, TprtSqe_t*>(sqeAddr);
     uint32_t result = TprtSqPushTask(devId, &sendInfo);
     if (result == TPRT_SUCCESS) {
         XpuSendTaskPostProc(stm, pos, taskInfo->sqeNum);
     }
-    RT_LOG(RT_LOG_INFO, "device_id=%u, stream_id=%d, task_id=%hu, latest flip_num=%u, task_type=%u(%s),"
-        " drvRet=%u.", devId, stm->Id_(), taskInfo->id, stm->GetTaskIdFlipNum(), static_cast<uint32_t>(taskInfo->type),
+    RT_LOG(
+        RT_LOG_INFO,
+        "device_id=%u, stream_id=%d, task_id=%hu, latest flip_num=%u, task_type=%u(%s),"
+        " drvRet=%u.",
+        devId, stm->Id_(), taskInfo->id, stm->GetTaskIdFlipNum(), static_cast<uint32_t>(taskInfo->type),
         GetTaskDescByType(taskInfo->type), result);
     return result != TPRT_SUCCESS ? RT_ERROR_DRV_ERR : RT_ERROR_NONE;
 }
 
-rtError_t XpuCheckTaskCanSend(Stream * const stm)
+rtError_t XpuCheckTaskCanSend(Stream* const stm)
 {
-    TaskResManageDavid *taskResManag = RtPtrToPtr<TaskResManageDavid *, TaskResManage *>(stm->taskResMang_);
+    TaskResManageDavid* taskResManag = RtPtrToPtr<TaskResManageDavid*, TaskResManage*>(stm->taskResMang_);
     if (unlikely(taskResManag == nullptr)) {
-        RT_LOG(RT_LOG_WARNING, "device_id=%u stream_id=%d(flags=0x%x) does not support send task.",
-            stm->Device_()->Id_(), stm->Id_(), stm->Flags());
+        RT_LOG(
+            RT_LOG_WARNING, "device_id=%u stream_id=%d(flags=0x%x) does not support send task.", stm->Device_()->Id_(),
+            stm->Id_(), stm->Flags());
         return RT_ERROR_STREAM_INVALID;
     }
 
@@ -140,7 +145,7 @@ rtError_t XpuCheckTaskCanSend(Stream * const stm)
     return RT_ERROR_NONE;
 }
 
-void XpuSaveTaskCommonInfo(TaskInfo *taskInfo, Stream * const stm, uint32_t pos, uint32_t sqeNum)
+void XpuSaveTaskCommonInfo(TaskInfo* taskInfo, Stream* const stm, uint32_t pos, uint32_t sqeNum)
 {
     InitByStream(taskInfo, stm);
     taskInfo->id = pos;
@@ -153,7 +158,7 @@ void XpuSaveTaskCommonInfo(TaskInfo *taskInfo, Stream * const stm, uint32_t pos,
 void XpuSetArgsAicpu(
     const rtAicpuArgsEx_t* const aicpuArgsInfo, TaskInfo* const taskInfo, StarsArgLoaderResult* const result)
 {
-    AicpuTaskInfo *aicpuTask = &(taskInfo->u.aicpuTaskInfo);
+    AicpuTaskInfo* aicpuTask = &(taskInfo->u.aicpuTaskInfo);
     aicpuTask->comm.args = result->kerArgs;
 
     if (aicpuArgsInfo != nullptr) {
@@ -163,10 +168,10 @@ void XpuSetArgsAicpu(
     if (result->handle != nullptr) {
         aicpuTask->comm.argHandle = result->handle;
     }
-    taskInfo->stmArgPos = static_cast<XpuStream *>(taskInfo->stream)->GetArgPos();
+    taskInfo->stmArgPos = static_cast<XpuStream*>(taskInfo->stream)->GetArgPos();
     result->stmArgPos = UINT32_MAX;
     result->handle = nullptr;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -19,9 +19,9 @@ namespace cce {
 namespace runtime {
 
 struct SymbolEntry {
-    void *binHandle;
-    const void *hostVar;
-    const char *deviceVarName;
+    void* binHandle;
+    const void* hostVar;
+    const char* deviceVarName;
     uint32_t deviceSymbolOffset;
     uint32_t deviceSymbolSize;
     uint32_t flags;
@@ -31,14 +31,13 @@ class SymbolTable : public NoCopy {
 public:
     SymbolTable() = default;
 
-    rtError_t Register(void *binHandle, const void *hostVar, const char *deviceVarName,
-                       size_t size, uint32_t flags);
-    rtError_t Lookup(const void *hostVar, SymbolEntry &entry);
-    rtError_t GetDeviceAddress(const void *hostVar, uint32_t deviceId, void **devPtr);
-    rtError_t GetSize(const void *hostVar, size_t *size);
+    rtError_t Register(void* binHandle, const void* hostVar, const char* deviceVarName, size_t size, uint32_t flags);
+    rtError_t Lookup(const void* hostVar, SymbolEntry& entry);
+    rtError_t GetDeviceAddress(const void* hostVar, uint32_t deviceId, void** devPtr);
+    rtError_t GetSize(const void* hostVar, size_t* size);
 
 private:
-    std::map<const void *, SymbolEntry> symbolMap_;
+    std::map<const void*, SymbolEntry> symbolMap_;
     SpinLock symbolMapLock_;
 };
 

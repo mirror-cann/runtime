@@ -16,9 +16,9 @@ namespace cce {
 namespace runtime {
 
 // dqs
-rtError_t ApiImplV201::LaunchDqsTask(Stream * const stm, const rtDqsTaskCfg_t * const taskCfg)
+rtError_t ApiImplV201::LaunchDqsTask(Stream* const stm, const rtDqsTaskCfg_t* const taskCfg)
 {
-    return DqsLaunchTask(stm, taskCfg);    
+    return DqsLaunchTask(stm, taskCfg);
 }
 
 rtError_t ApiImplV201::EventRecord(Event* const evt, Stream* const stm, const uint32_t flag)

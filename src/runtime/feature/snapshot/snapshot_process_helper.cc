@@ -99,23 +99,24 @@ rtError_t SnapShotResourceRestore(ContextDataManage& ctxMan)
     return ret;
 }
 
-static rtError_t ResetJettyForSnapshotRestore(Device * const dev)
+static rtError_t ResetJettyForSnapshotRestore(Device* const dev)
 {
     if (!Runtime::Instance()->GetConnectUbFlag()) {
         return RT_ERROR_NONE;
     }
-    JettyManager * const jettyMgr = dev->GetJettyManager();
+    JettyManager* const jettyMgr = dev->GetJettyManager();
     if (jettyMgr == nullptr) {
         return RT_ERROR_NONE;
     }
     const rtError_t err = jettyMgr->ResetJettyForSnapshotRestore();
-    ERROR_RETURN(err, "Reset jetty for snapshot restore failed, deviceId=%u, retCode=%#x!", dev->Id_(),
+    ERROR_RETURN(
+        err, "Reset jetty for snapshot restore failed, deviceId=%u, retCode=%#x!", dev->Id_(),
         static_cast<uint32_t>(err));
     return RT_ERROR_NONE;
 }
 
-static rtError_t RestoreSoftwareSqCaptureModel(Device * const dev, Driver * const drv, const uint32_t tsId,
-    Model * const mdl)
+static rtError_t RestoreSoftwareSqCaptureModel(
+    Device* const dev, Driver* const drv, const uint32_t tsId, Model* const mdl)
 {
     if (mdl == nullptr) {
         return RT_ERROR_NONE;
@@ -135,11 +136,12 @@ static rtError_t RestoreSoftwareSqCaptureModel(Device * const dev, Driver * cons
 
     const uint32_t deviceId = dev->Id_();
     rtError_t err = drv->ReAllocResourceId(deviceId, tsId, 0U, mdl->Id_(), DRV_MODEL_ID);
-    ERROR_RETURN(err, "Realloc modelId failed, deviceId=%u, tsId=%u, retCode=%#x!", deviceId, tsId,
-        static_cast<uint32_t>(err));
+    ERROR_RETURN(
+        err, "Realloc modelId failed, deviceId=%u, tsId=%u, retCode=%#x!", deviceId, tsId, static_cast<uint32_t>(err));
 
     err = capMdl->RestoreForSoftwareSq(dev);
-    ERROR_RETURN(err, "Restore capture model failed, deviceId=%u, tsId=%u, retCode=%#x!", deviceId, tsId,
+    ERROR_RETURN(
+        err, "Restore capture model failed, deviceId=%u, tsId=%u, retCode=%#x!", deviceId, tsId,
         static_cast<uint32_t>(err));
     return RT_ERROR_NONE;
 }
@@ -156,7 +158,8 @@ rtError_t SnapShotAclGraphRestore(Device* const dev)
     const uint32_t tsId = dev->DevGetTsId();
 
     rtError_t err = ResetJettyForSnapshotRestore(dev);
-    ERROR_RETURN(err, "Reset jetty for snapshot restore failed, deviceId=%u, retCode=%#x!", deviceId,
+    ERROR_RETURN(
+        err, "Reset jetty for snapshot restore failed, deviceId=%u, retCode=%#x!", deviceId,
         static_cast<uint32_t>(err));
 
     for (Context* const ctx : ctxMan.GetSetObj()) {

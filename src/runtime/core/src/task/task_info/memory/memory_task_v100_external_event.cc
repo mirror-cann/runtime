@@ -24,11 +24,11 @@ constexpr uint8_t MEM_WAIT_SQE_INDEX_1 = 1U;
 constexpr uint8_t MEM_WAIT_SQE_INDEX_2 = 2U;
 constexpr uint8_t MEM_WAIT_SQE_INDEX_3 = 3U;
 
-void ConstructLastSqeForExternalWaitTask(TaskInfo* taskInfo, rtStarsSqe_t *const command,
-                                         const RtStarsMemWaitValueInstrFcPara &fcPara)
+void ConstructLastSqeForExternalWaitTask(
+    TaskInfo* taskInfo, rtStarsSqe_t* const command, const RtStarsMemWaitValueInstrFcPara& fcPara)
 {
-    MemWaitValueTaskInfo *memWaitValueTask = &taskInfo->u.memWaitValueTask;
-    RtStarsFunctionCallSqe &sqe = command->fuctionCallSqe;
+    MemWaitValueTaskInfo* memWaitValueTask = &taskInfo->u.memWaitValueTask;
+    RtStarsFunctionCallSqe& sqe = command->fuctionCallSqe;
 
     (void)memset_s(&sqe, sizeof(rtStarsSqe_t), 0, sizeof(rtStarsSqe_t));
     if (memWaitValueTask->funcCallSvmMem2 == nullptr) {
@@ -52,8 +52,9 @@ void ConstructLastSqeForExternalWaitTask(TaskInfo* taskInfo, rtStarsSqe_t *const
     externalPara.sqHeadNext = fcPara.sqHeadNext;
     externalPara.lastSqePos = fcPara.lastSqePos;
     ConstructExternalWaitFuncCall(fc, externalPara);
-    const rtError_t ret = taskInfo->stream->Device_()->Driver_()->MemCopySync(memWaitValueTask->funcCallSvmMem2,
-        memWaitValueTask->funCallMemSize2, &fc, funcCallSize, RT_MEMCPY_HOST_TO_DEVICE);
+    const rtError_t ret = taskInfo->stream->Device_()->Driver_()->MemCopySync(
+        memWaitValueTask->funcCallSvmMem2, memWaitValueTask->funCallMemSize2, &fc, funcCallSize,
+        RT_MEMCPY_HOST_TO_DEVICE);
     if (ret != RT_ERROR_NONE) {
         sqe.sqeHeader.type = RT_STARS_SQE_TYPE_INVALID;
         return;

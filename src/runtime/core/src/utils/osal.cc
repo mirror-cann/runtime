@@ -16,7 +16,7 @@
 namespace {
 constexpr uint32_t PTHREAD_STACK_SIZE_EXT_MAX_TIME = 3U;
 static __THREAD_LOCAL__ uint32_t g_currentTid = 0U;
-}
+} // namespace
 
 namespace cce {
 namespace runtime {
@@ -35,7 +35,7 @@ uint32_t GetCurrentTid(void)
     return g_currentTid;
 }
 
-void *AlignedMalloc(const size_t aligned, const size_t size)
+void* AlignedMalloc(const size_t aligned, const size_t size)
 {
     UNUSED(aligned);
 #ifdef CFG_DEV_PLATFORM_PC
@@ -47,21 +47,18 @@ void *AlignedMalloc(const size_t aligned, const size_t size)
 #endif
 }
 
-void AlignedFree(void * const addr)
-{
-    return free(addr);
-}
+void AlignedFree(void* const addr) { return free(addr); }
 
-bool CompareAndExchange(volatile uint64_t * const addr, const uint64_t currentValue, const uint64_t val)
+bool CompareAndExchange(volatile uint64_t* const addr, const uint64_t currentValue, const uint64_t val)
 {
 #ifndef WIN32
     return __sync_bool_compare_and_swap(addr, currentValue, val);
 #else
-    return currentValue == InterlockedCompareExchange64((volatile LONG64 *)addr, val, currentValue);
+    return currentValue == InterlockedCompareExchange64((volatile LONG64*)addr, val, currentValue);
 #endif
 }
 
-bool CompareAndExchange(volatile uint32_t * const addr, const uint32_t currentValue, const uint32_t val)
+bool CompareAndExchange(volatile uint32_t* const addr, const uint32_t currentValue, const uint32_t val)
 {
 #ifndef WIN32
     return __sync_bool_compare_and_swap(addr, currentValue, val);
@@ -70,22 +67,22 @@ bool CompareAndExchange(volatile uint32_t * const addr, const uint32_t currentVa
 #endif
 }
 
-void FetchAndOr(volatile uint64_t * const addr, const uint64_t val)
+void FetchAndOr(volatile uint64_t* const addr, const uint64_t val)
 {
 #ifndef WIN32
     (void)__sync_fetch_and_or(addr, val);
 #else
     InterlockedOr(addr, val);
-#endif  // !WIN32
+#endif // !WIN32
 }
 
-void FetchAndAnd(volatile uint64_t * const addr, const uint64_t val)
+void FetchAndAnd(volatile uint64_t* const addr, const uint64_t val)
 {
 #ifndef WIN32
     (void)__sync_fetch_and_and(addr, val);
 #else
     InterlockedAnd(addr, val);
-#endif  // !WIN32
+#endif // !WIN32
 }
 
 uint64_t BitScan(const uint64_t val)
@@ -106,23 +103,21 @@ uint64_t BitScan(const uint64_t val)
 
 class LocalThread : public Thread {
 public:
-    LocalThread(const char_t * const thdName, ThreadRunnable * const thdRunnable, void * const thdParam);
+    LocalThread(const char_t* const thdName, ThreadRunnable* const thdRunnable, void* const thdParam);
     ~LocalThread() override;
     int32_t Start() override;
     void Join() override;
     bool IsAlive() override;
 
-    static void *ThreadProc(void * const parameter);
-    uint64_t GetThreadId() override
-    {
-        return threadHandle_;
-    }
+    static void* ThreadProc(void* const parameter);
+    uint64_t GetThreadId() override { return threadHandle_; }
+
 private:
     mmThread interThread_{0U};
 
-    const char_t *name_{nullptr};
-    ThreadRunnable *runnable_{nullptr};
-    void *param_{nullptr};
+    const char_t* name_{nullptr};
+    ThreadRunnable* runnable_{nullptr};
+    void* param_{nullptr};
     mmUserBlock_t userBlock_{nullptr, nullptr};
     uint64_t threadHandle_;
 };
@@ -142,9 +137,9 @@ private:
     mmMutexFC mutex_;
 };
 
-void *LocalThread::ThreadProc(void * const parameter)
+void* LocalThread::ThreadProc(void* const parameter)
 {
-    LocalThread * const self = static_cast<LocalThread *>(parameter);
+    LocalThread* const self = static_cast<LocalThread*>(parameter);
 
     if (self->name_ != nullptr) {
         uint64_t threadHandle;
@@ -163,10 +158,9 @@ void *LocalThread::ThreadProc(void * const parameter)
     return nullptr;
 }
 
-LocalThread::LocalThread(const char_t * const thdName, ThreadRunnable * const thdRunnable, void * const thdParam)
+LocalThread::LocalThread(const char_t* const thdName, ThreadRunnable* const thdRunnable, void* const thdParam)
     : Thread(), name_(thdName), runnable_(thdRunnable), param_(thdParam)
-{
-}
+{}
 
 LocalThread::~LocalThread()
 {
@@ -179,7 +173,7 @@ LocalThread::~LocalThread()
 
 static void GetThreadStackSize(mmThreadAttr& threadAttr)
 {
-    DevProperties  prop;
+    DevProperties prop;
     const rtChipType_t chipType = Runtime::Instance()->GetChipType();
     const rtError_t error = GET_DEV_PROPERTIES(chipType, prop);
     if (error == RT_ERROR_NONE) {
@@ -206,10 +200,9 @@ int32_t LocalThread::Start()
 
     for (uint32_t i = 0U; i < PTHREAD_STACK_SIZE_EXT_MAX_TIME; i++) {
         error = mmCreateTaskWithThreadAttr(&interThread_, &userBlock_, &threadAttr);
-        RT_LOG(RT_LOG_INFO, "mmCreateTaskWithThreadAttr, retCode=%d, name_=%s, i=%u",
-            error, name_, i);
+        RT_LOG(RT_LOG_INFO, "mmCreateTaskWithThreadAttr, retCode=%d, name_=%s, i=%u", error, name_, i);
         if (error == EN_OK) {
-            const Runtime * const runtime = Runtime::Instance();
+            const Runtime* const runtime = Runtime::Instance();
             const bool atexitFlag = runtime->GetThreadGuard()->GetThreadAtexitFlag();
             const std::string threadName = std::string(name_);
             threadHandle_ = static_cast<uint64_t>(interThread_);
@@ -247,11 +240,11 @@ bool LocalThread::IsAlive()
 
 void LocalThread::Join()
 {
-    const Runtime * const runtime = Runtime::Instance();
+    const Runtime* const runtime = Runtime::Instance();
     const bool interThreadExist = runtime->GetThreadGuard()->FindThreadTid(interThread_);
     if (interThreadExist == false) {
         RT_LOG(RT_LOG_WARNING, "mmJoinTask failed, thread=%lu does not exist!", interThread_);
-        return ;
+        return;
     }
 
     const int32_t error = mmJoinTask(&interThread_);
@@ -311,15 +304,9 @@ rtError_t LocalNotifier::Reset()
     return RT_ERROR_NONE;
 }
 
-uint32_t PidTidFetcher::GetCurrentPid(void)
-{
-    return static_cast<uint32_t>(mmGetPid());
-}
+uint32_t PidTidFetcher::GetCurrentPid(void) { return static_cast<uint32_t>(mmGetPid()); }
 
-uint32_t PidTidFetcher::GetCurrentTid(void)
-{
-    return static_cast<uint32_t>(mmGetTid());
-}
+uint32_t PidTidFetcher::GetCurrentTid(void) { return static_cast<uint32_t>(mmGetTid()); }
 
 uint64_t PidTidFetcher::GetCurrentUserTid(void)
 {
@@ -332,30 +319,27 @@ uint64_t PidTidFetcher::GetCurrentUserTid(void)
     return threadId;
 }
 
-Thread *OsalFactory::CreateThread(const char_t * const name, ThreadRunnable * const runnable, void * const param)
+Thread* OsalFactory::CreateThread(const char_t* const name, ThreadRunnable* const runnable, void* const param)
 {
     RT_LOG(RT_LOG_INFO, "Runtime_alloc_size %zu", sizeof(LocalThread));
     return new (std::nothrow) LocalThread(name, runnable, param);
 }
 
-Notifier *OsalFactory::CreateNotifier()
+Notifier* OsalFactory::CreateNotifier()
 {
     RT_LOG(RT_LOG_INFO, "Runtime_alloc_size %zu", sizeof(LocalNotifier));
     return new (std::nothrow) LocalNotifier();
 }
 
-size_t OsalFactory::GetThreadObjectSize()
-{
-    return sizeof(LocalThread);
-}
+size_t OsalFactory::GetThreadObjectSize() { return sizeof(LocalThread); }
 
 void ThreadGuard::ThreadExit()
 {
     RT_LOG(RT_LOG_INFO, "ThreadExit start.");
-    const Runtime * const interRuntime = Runtime::Instance();
+    const Runtime* const interRuntime = Runtime::Instance();
     if (interRuntime == nullptr) {
         RT_LOG(RT_LOG_WARNING, "Runtime::Instance does not exist.");
-        return ;
+        return;
     }
 
     GlobalStateManager::GetInstance().ForceUnlocked();
@@ -376,7 +360,7 @@ void ThreadGuard::ThreadExit()
     return;
 }
 
-void ThreadGuard::SetThreadTid(const mmThread inTid, const std::string &threadName)
+void ThreadGuard::SetThreadTid(const mmThread inTid, const std::string& threadName)
 {
     std::unique_lock<std::mutex> lock(mutex_);
     threadTid_[inTid] = threadName;
@@ -411,24 +395,12 @@ std::vector<std::pair<mmThread, std::string>> ThreadGuard::GetAllThreadTid()
     return res;
 }
 
-void ThreadGuard::SetThreadAtexitFlag(const bool inFlag)
-{
-    threadAtexitFlag_.Set(inFlag);
-}
+void ThreadGuard::SetThreadAtexitFlag(const bool inFlag) { threadAtexitFlag_.Set(inFlag); }
 
-bool ThreadGuard::GetThreadAtexitFlag() const
-{
-    return threadAtexitFlag_.Value();
-}
+bool ThreadGuard::GetThreadAtexitFlag() const { return threadAtexitFlag_.Value(); }
 
-void ThreadGuard::SetMonitorStatus(const bool monitorStatus)
-{
-    monitorStatus_.Set(monitorStatus);
-}
+void ThreadGuard::SetMonitorStatus(const bool monitorStatus) { monitorStatus_.Set(monitorStatus); }
 
-bool ThreadGuard::GetMonitorStatus() const
-{
-    return monitorStatus_.Value();
-}
-}
-}
+bool ThreadGuard::GetMonitorStatus() const { return monitorStatus_.Value(); }
+} // namespace runtime
+} // namespace cce

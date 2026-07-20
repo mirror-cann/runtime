@@ -12,9 +12,9 @@
 namespace cce {
 namespace runtime {
 
-rtError_t Program::XpuSetKernelLiteralNameDevAddr(Kernel *kernel, const uint32_t devId)
+rtError_t Program::XpuSetKernelLiteralNameDevAddr(Kernel* kernel, const uint32_t devId)
 {
-    void *funcPc = nullptr;
+    void* funcPc = nullptr;
 
     if (kernel == nullptr) {
         RT_LOG(RT_LOG_ERROR, "kernel new failed, continue");
@@ -35,11 +35,12 @@ rtError_t Program::XpuSetKernelLiteralNameDevAddr(Kernel *kernel, const uint32_t
     }
 
     kernel->SetKernelLiteralNameDevAddr(nullptr, funcPc, devId);
-    RT_LOG(RT_LOG_INFO, "Get function symbol[%s] in binary file[%s], binHandle: %p, funcPc: %p, devId: %u.",
-                         kernel->Name_().c_str(), binPath.c_str() , binHandle_, funcPc, devId);
+    RT_LOG(
+        RT_LOG_INFO, "Get function symbol[%s] in binary file[%s], binHandle: %p, funcPc: %p, devId: %u.",
+        kernel->Name_().c_str(), binPath.c_str(), binHandle_, funcPc, devId);
 
     return RT_ERROR_NONE;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -23,7 +23,7 @@ rtError_t ApiImpl::SetXpuDevice(const rtXpuDevType devType, const uint32_t devId
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetXpuDevCount(const rtXpuDevType devType, uint32_t *devCount)
+rtError_t ApiImpl::GetXpuDevCount(const rtXpuDevType devType, uint32_t* devCount)
 {
     UNUSED(devType);
     UNUSED(devCount);
@@ -37,7 +37,7 @@ rtError_t ApiImpl::ResetXpuDevice(const rtXpuDevType devType, const uint32_t dev
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::XpuSetTaskFailCallback(const rtXpuDevType devType, const char_t *moduleName, void *callback)
+rtError_t ApiImpl::XpuSetTaskFailCallback(const rtXpuDevType devType, const char_t* moduleName, void* callback)
 {
     UNUSED(devType);
     UNUSED(moduleName);
@@ -45,7 +45,7 @@ rtError_t ApiImpl::XpuSetTaskFailCallback(const rtXpuDevType devType, const char
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::XpuProfilingCommandHandle(uint32_t type, void *data, uint32_t len)
+rtError_t ApiImpl::XpuProfilingCommandHandle(uint32_t type, void* data, uint32_t len)
 {
     UNUSED(type);
     UNUSED(data);
@@ -53,5 +53,5 @@ rtError_t ApiImpl::XpuProfilingCommandHandle(uint32_t type, void *data, uint32_t
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -14,16 +14,15 @@
 
 namespace cce {
 namespace runtime {
-rtError_t ModelMaintainceTaskInit(TaskInfo * const taskInfo, const MmtType mType,
-                                  Model *const modelPtr, Stream *const opStreamPtr,
-                                  const rtModelStreamType_t modelStreamType,
-                                  const uint32_t firstTaskIndex);
-void ToCommandBodyForModelMaintainceTask(TaskInfo * const taskInfo, rtCommand_t * const command);
-void DoCompleteSuccessForModelMaintainceTask(TaskInfo * const taskInfo, const uint32_t devId);
-void PrintErrorInfoForModelMaintainceTask(TaskInfo * const taskInfo, const uint32_t devId);
-uint32_t GetEndGraphNotifyId(Model *mdl);
-uint16_t GetRootExeStreamId(const Model * const mdl);
-uint32_t GetCaptureModelExecutorType(const ModelMaintainceTaskInfo *const maintainceTaskInfo);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_MODEL_MAINTAINCE_TASK_H
+rtError_t ModelMaintainceTaskInit(
+    TaskInfo* const taskInfo, const MmtType mType, Model* const modelPtr, Stream* const opStreamPtr,
+    const rtModelStreamType_t modelStreamType, const uint32_t firstTaskIndex);
+void ToCommandBodyForModelMaintainceTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+void DoCompleteSuccessForModelMaintainceTask(TaskInfo* const taskInfo, const uint32_t devId);
+void PrintErrorInfoForModelMaintainceTask(TaskInfo* const taskInfo, const uint32_t devId);
+uint32_t GetEndGraphNotifyId(Model* mdl);
+uint16_t GetRootExeStreamId(const Model* const mdl);
+uint32_t GetCaptureModelExecutorType(const ModelMaintainceTaskInfo* const maintainceTaskInfo);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_MODEL_MAINTAINCE_TASK_H

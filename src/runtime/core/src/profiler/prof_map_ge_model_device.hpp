@@ -18,18 +18,19 @@ namespace cce {
 namespace runtime {
 class ProfMapGeModelDevice {
 public:
-    static ProfMapGeModelDevice &Instance();
+    static ProfMapGeModelDevice& Instance();
     ~ProfMapGeModelDevice() = default;
     void SetDeviceIdByGeModelIdx(const uint32_t geModelIdx, const uint32_t deviceId);
     void UnsetDeviceIdByGeModelIdx(const uint32_t geModelIdx, const uint32_t deviceId);
-    rtError_t GetDeviceIdByGeModelIdx(const uint32_t geModelIdx, uint32_t * const deviceId);
+    rtError_t GetDeviceIdByGeModelIdx(const uint32_t geModelIdx, uint32_t* const deviceId);
     void DelAllData();
+
 private:
     std::map<const uint32_t, const uint32_t> modelDeviceMap_; // key: geModelId, value: deviceId;
     std::mutex mapMutex_;
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_PROF_MAP_GE_MODEL_DEVICE_HPP
+#endif // CCE_RUNTIME_PROF_MAP_GE_MODEL_DEVICE_HPP

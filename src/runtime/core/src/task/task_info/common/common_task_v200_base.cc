@@ -18,13 +18,12 @@
 namespace cce {
 namespace runtime {
 #if F_DESC("StarsCommonTask")
-void ConstructDavidSqeForStarsCommonTask(TaskInfo * const taskInfo, void *const sqe,
-    const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForStarsCommonTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
-    StarsCommonTaskInfo * const starsCommTask = &(taskInfo->u.starsCommTask);
-    Stream * const stm = taskInfo->stream;
+    StarsCommonTaskInfo* const starsCommTask = &(taskInfo->u.starsCommTask);
+    Stream* const stm = taskInfo->stream;
     starsCommTask->commonStarsSqe.commonDavidSqe.sqeHeader.reserved = 0U;
     starsCommTask->commonStarsSqe.commonDavidSqe.sqeHeader.ie = 0U;
     starsCommTask->commonStarsSqe.commonDavidSqe.sqeHeader.preP = 0U;
@@ -33,32 +32,35 @@ void ConstructDavidSqeForStarsCommonTask(TaskInfo * const taskInfo, void *const 
     starsCommTask->commonStarsSqe.commonDavidSqe.sqeHeader.wrCqe = taskInfo->stream->GetStarsWrCqeFlag();
     starsCommTask->commonStarsSqe.commonDavidSqe.sqeHeader.headUpdate = 0U;
 
-    const errno_t error = memcpy_s(davidSqe, sizeof(rtDavidSqe_t),
-        &starsCommTask->commonStarsSqe.commonDavidSqe, sizeof(starsCommTask->commonStarsSqe.commonDavidSqe));
+    const errno_t error = memcpy_s(
+        davidSqe, sizeof(rtDavidSqe_t), &starsCommTask->commonStarsSqe.commonDavidSqe,
+        sizeof(starsCommTask->commonStarsSqe.commonDavidSqe));
     if (error != EOK) {
         davidSqe->commonSqe.sqeHeader.type = RT_STARS_SQE_TYPE_INVALID;
-        RT_LOG_INNER_MSG(RT_LOG_ERROR,
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR,
             "Failed to call memcpy_s to copy commonStarsSqe.commonDavidSqe, src=%p, dest=%p, dest_max=%lu, "
             "count=%lu, retCode=%#x.",
             &starsCommTask->commonStarsSqe.commonDavidSqe, davidSqe, static_cast<unsigned long>(sizeof(rtDavidSqe_t)),
-            static_cast<unsigned long>(sizeof(starsCommTask->commonStarsSqe.commonDavidSqe)), static_cast<uint32_t>(error));
+            static_cast<unsigned long>(sizeof(starsCommTask->commonStarsSqe.commonDavidSqe)),
+            static_cast<uint32_t>(error));
     }
     ConstructDavidSqeForWordOne(taskInfo, davidSqe);
     PrintDavidSqe(davidSqe, "StarsCommonTask");
-    RT_LOG(RT_LOG_INFO, "StarsCommonTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.",
-        stm->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn);
+    RT_LOG(
+        RT_LOG_INFO, "StarsCommonTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.", stm->Device_()->Id_(),
+        stm->Id_(), taskInfo->id, taskInfo->taskSn);
 }
 #endif
 
 #if F_DESC("WriteValueTask")
-void InitWriteValueSqe(RtDavidStarsWriteValueSqe * const writeValueSqe,
-    const rtWriteValueInfo_t * const writeValueInfo)
+void InitWriteValueSqe(RtDavidStarsWriteValueSqe* const writeValueSqe, const rtWriteValueInfo_t* const writeValueInfo)
 {
     const WriteValueSize awsize = WriteValueSize(static_cast<uint8_t>(writeValueInfo->size) - 1U);
     writeValueSqe->header.type = RT_DAVID_SQE_TYPE_WRITE_VALUE;
     writeValueSqe->awsize = awsize;
     writeValueSqe->snoop = 0U;
-    writeValueSqe->awcache = 2U;  // 2U: 0010 Normal Non-cacheable Non-bufferable
+    writeValueSqe->awcache = 2U; // 2U: 0010 Normal Non-cacheable Non-bufferable
     writeValueSqe->awprot = 0U;
     writeValueSqe->va = 1U;
 
@@ -66,27 +68,27 @@ void InitWriteValueSqe(RtDavidStarsWriteValueSqe * const writeValueSqe,
     writeValueSqe->writeAddrHigh = static_cast<uint32_t>((writeValueInfo->addr >> UINT32_BIT_NUM) & MASK_17_BIT);
 
     const uint32_t writeLen = static_cast<uint32_t>(1U << static_cast<uint32_t>(awsize));
-    uint8_t value[WRITE_VALUE_SIZE_MAX_LEN] = {0U};   // max writen size is 4B*8=32B
+    uint8_t value[WRITE_VALUE_SIZE_MAX_LEN] = {0U}; // max writen size is 4B*8=32B
     for (uint32_t i = 0U; i < writeLen; i++) {
         value[i] = writeValueInfo->value[i];
     }
-    uint32_t *temp = RtPtrToPtr<uint32_t *>(value);
-    for (uint32_t idx = 0U; idx < (WRITE_VALUE_SIZE_MAX_LEN/4U); idx++) { // 4U: sizeof(uint32_t)
+    uint32_t* temp = RtPtrToPtr<uint32_t*>(value);
+    for (uint32_t idx = 0U; idx < (WRITE_VALUE_SIZE_MAX_LEN / 4U); idx++) { // 4U: sizeof(uint32_t)
         writeValueSqe->writeValuePart[idx] = temp[idx];
         RT_LOG(RT_LOG_INFO, "writeValuePart[%u]: %u", idx, writeValueSqe->writeValuePart[idx]);
     }
 
-    PrintDavidSqe(RtPtrToPtr<rtDavidSqe_t *>(writeValueSqe), "WriteValueTask");
+    PrintDavidSqe(RtPtrToPtr<rtDavidSqe_t*>(writeValueSqe), "WriteValueTask");
 
     return;
 }
 
-static void ConstructWriteValueSqePtr(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe, uint64_t sqBaseAddr)
+static void ConstructWriteValueSqePtr(TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe, uint64_t sqBaseAddr)
 {
     UNUSED(sqBaseAddr);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    WriteValueTaskInfo *const writeValTsk = &(taskInfo->u.writeValTask);
-    RtDavidStarsWriteValuePtrSqe * const evSqe = &(davidSqe->writeValuePtrSqe);
+    WriteValueTaskInfo* const writeValTsk = &(taskInfo->u.writeValTask);
+    RtDavidStarsWriteValuePtrSqe* const evSqe = &(davidSqe->writeValuePtrSqe);
 
     evSqe->header.type = RT_DAVID_SQE_TYPE_WRITE_VALUE;
     switch (writeValTsk->cqeFlag) {
@@ -102,7 +104,7 @@ static void ConstructWriteValueSqePtr(TaskInfo * const taskInfo, rtDavidSqe_t *c
     }
 
     evSqe->header.ptrMode = 1U;
-    evSqe->va = 1U;  // va only
+    evSqe->va = 1U; // va only
 
     evSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
 
@@ -110,23 +112,24 @@ static void ConstructWriteValueSqePtr(TaskInfo * const taskInfo, rtDavidSqe_t *c
     evSqe->writeValueNewSqeAddrHigh = static_cast<uint32_t>((writeValTsk->sqeAddr >> UINT32_BIT_NUM) & MASK_17_BIT);
 
     PrintDavidSqe(davidSqe, "WriteValueTaskPtr");
-    RT_LOG(RT_LOG_DEBUG, "WriteValueTaskPtr, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, addr=%#." PRIx64,
+    RT_LOG(
+        RT_LOG_DEBUG, "WriteValueTaskPtr, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, addr=%#." PRIx64,
         taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), taskInfo->id, taskInfo->taskSn,
         writeValTsk->sqeAddr);
 }
 
-void ConstructDavidSqeForWriteValueTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForWriteValueTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
-    WriteValueTaskInfo *const writeValTsk = &(taskInfo->u.writeValTask);
+    WriteValueTaskInfo* const writeValTsk = &(taskInfo->u.writeValTask);
     if (writeValTsk->ptrFlag == 1U) {
         ConstructWriteValueSqePtr(taskInfo, davidSqe, sqBaseAddr);
         return;
     }
 
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsWriteValueSqe * const evSqe = &(davidSqe->writeValueSqe);
+    RtDavidStarsWriteValueSqe* const evSqe = &(davidSqe->writeValueSqe);
     evSqe->header.type = RT_DAVID_SQE_TYPE_WRITE_VALUE;
     switch (writeValTsk->cqeFlag) {
         case TASK_WR_CQE_DEFAULT:
@@ -139,26 +142,28 @@ void ConstructDavidSqeForWriteValueTask(TaskInfo * const taskInfo, void *const s
             evSqe->header.wrCqe = 1U;
             break;
     }
-    evSqe->va = 1U;  // va only
+    evSqe->va = 1U; // va only
 
     evSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
     evSqe->awsize = writeValTsk->awSize;
     evSqe->snoop = 0U;
-    evSqe->awcache = 2U;  // 2U: 0010 Normal Non-cacheable Non-bufferable
+    evSqe->awcache = 2U; // 2U: 0010 Normal Non-cacheable Non-bufferable
     evSqe->awprot = 0U;
 
     evSqe->writeAddrLow = static_cast<uint32_t>(writeValTsk->addr & MASK_32_BIT);
     evSqe->writeAddrHigh = static_cast<uint32_t>((writeValTsk->addr >> UINT32_BIT_NUM) & MASK_17_BIT);
 
-    uint32_t *temp = RtPtrToPtr<uint32_t *>(writeValTsk->value);
-    for (uint32_t idx = 0U; idx < (WRITE_VALUE_SIZE_MAX_LEN/4U); idx++) { // 4U: sizeof(uint32_t)
+    uint32_t* temp = RtPtrToPtr<uint32_t*>(writeValTsk->value);
+    for (uint32_t idx = 0U; idx < (WRITE_VALUE_SIZE_MAX_LEN / 4U); idx++) { // 4U: sizeof(uint32_t)
         evSqe->writeValuePart[idx] = temp[idx];
     }
 
     PrintDavidSqe(davidSqe, "WriteValueTask");
-    RT_LOG(RT_LOG_DEBUG, "WriteValueTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, "
-        "addr=%#." PRIx64, taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(),
-        taskInfo->id, taskInfo->taskSn, writeValTsk->addr);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "WriteValueTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, "
+        "addr=%#." PRIx64,
+        taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), taskInfo->id, taskInfo->taskSn, writeValTsk->addr);
 }
 #endif
 
@@ -209,5 +214,5 @@ static bool CommonTaskRegister()
 
 static bool g_commonTaskRegister = CommonTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

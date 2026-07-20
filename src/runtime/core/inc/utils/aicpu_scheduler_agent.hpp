@@ -15,9 +15,9 @@
 
 namespace cce {
 namespace runtime {
-using FUNC_AICPU_MODEL_LOAD = int32_t (*)(void *);
+using FUNC_AICPU_MODEL_LOAD = int32_t (*)(void*);
 using FUNC_AICPU_MODEL_OPERATE = int32_t (*)(uint32_t);
-using FUNC_AICPU_LOAD_OP_MAPPING_INFO = int32_t(*)(const void *, uint32_t);
+using FUNC_AICPU_LOAD_OP_MAPPING_INFO = int32_t (*)(const void*, uint32_t);
 
 class AicpuSchedulerAgent {
 public:
@@ -29,32 +29,32 @@ public:
 
     void Destroy() noexcept;
 
-    rtError_t AicpuModelLoad(void * const funcArg) const;
+    rtError_t AicpuModelLoad(void* const funcArg) const;
 
     rtError_t AicpuModelDestroy(const uint32_t modelId) const;
 
     rtError_t AicpuModelExecute(const uint32_t modelId) const;
 
-    rtError_t DatadumpInfoLoad(const void * const dumpInfo, const uint32_t length) const;
+    rtError_t DatadumpInfoLoad(const void* const dumpInfo, const uint32_t length) const;
 
     // not support copy and move
-    AicpuSchedulerAgent(const AicpuSchedulerAgent &other) = delete;
+    AicpuSchedulerAgent(const AicpuSchedulerAgent& other) = delete;
 
-    AicpuSchedulerAgent &operator=(const AicpuSchedulerAgent &other) = delete;
+    AicpuSchedulerAgent& operator=(const AicpuSchedulerAgent& other) = delete;
 
-    AicpuSchedulerAgent(AicpuSchedulerAgent &&other) = delete;
+    AicpuSchedulerAgent(AicpuSchedulerAgent&& other) = delete;
 
-    AicpuSchedulerAgent &operator=(AicpuSchedulerAgent &&other) = delete;
+    AicpuSchedulerAgent& operator=(AicpuSchedulerAgent&& other) = delete;
 
 private:
-    void *aicpuSchedulerHandle_ = nullptr;
+    void* aicpuSchedulerHandle_ = nullptr;
     FUNC_AICPU_MODEL_LOAD loadModelFunc_ = nullptr;
     FUNC_AICPU_MODEL_OPERATE modelExecuteFunc_ = nullptr;
     FUNC_AICPU_MODEL_OPERATE modelDestroyFunc_ = nullptr;
     FUNC_AICPU_LOAD_OP_MAPPING_INFO loadOpMappingInfoFunc_ = nullptr;
 };
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_AICPU_SCHEDULER_AGENT_HPP

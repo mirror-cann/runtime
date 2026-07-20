@@ -19,7 +19,6 @@
 #include "inner_thread_local.hpp"
 #include "error_message_manage.hpp"
 
-
 namespace cce {
 namespace runtime {
 
@@ -27,23 +26,24 @@ namespace runtime {
 // Used by RecordFuncCallAddrAndSize() to record virtual addresses for snapshot
 // Each handler extracts task-specific addresses and adds them to the snapshot
 namespace TaskHandlers {
-void HandleModelTaskUpdate(TaskInfo * const task, DeviceSnapshot *snapshot) {
+void HandleModelTaskUpdate(TaskInfo* const task, DeviceSnapshot* snapshot)
+{
     MdlUpdateTaskInfo* info = &(task->u.mdlUpdateTask);
     const size_t size = info->tilingTabLen * sizeof(TilingTablForDavid);
     snapshot->AddOpVirtualAddr(info->tilingTabAddr, size);
     snapshot->AddOpVirtualAddr(RtPtrToPtr<void*>(info->tilingKeyOffset), sizeof(uint64_t));
     snapshot->AddOpVirtualAddr(RtPtrToPtr<void*>(info->blockDimOffset), sizeof(uint64_t));
 }
-}
+} // namespace TaskHandlers
 
-void DeviceSnapshot::RecordOpAddrAndSize(const Stream * const stm)
+void DeviceSnapshot::RecordOpAddrAndSize(const Stream* const stm)
 {
     uint16_t head = 0U;
     uint16_t tail = 0U;
-    static_cast<const DavidStream *>(stm)->GetTaskQueueHeadTail(head, tail);
+    static_cast<const DavidStream*>(stm)->GetTaskQueueHeadTail(head, tail);
 
     RT_LOG(RT_LOG_INFO, "stream_id=%d, head=%hu, tail=%hu.", stm->Id_(), head, tail);
-    TaskInfo *nextTask = nullptr;
+    TaskInfo* nextTask = nullptr;
     uint32_t i = head;
     while (i < tail) {
         nextTask = GetTaskInfo(stm->Device_(), stm->Id_(), i);
@@ -59,21 +59,22 @@ void DeviceSnapshot::RecordOpAddrAndSize(const Stream * const stm)
     }
 }
 
-void DeviceSnapshot::RecordArgsAddrAndSize(TaskInfo * const task)
+void DeviceSnapshot::RecordArgsAddrAndSize(TaskInfo* const task)
 {
     if (task->type == TS_TASK_TYPE_KERNEL_AICORE || task->type == TS_TASK_TYPE_KERNEL_AIVEC) {
-        void *args = task->u.aicTaskInfo.comm.args;
+        void* args = task->u.aicTaskInfo.comm.args;
         const size_t size = task->u.aicTaskInfo.comm.argsSize;
         AddOpVirtualAddr(args, static_cast<size_t>(size));
     } else if (task->type == TS_TASK_TYPE_KERNEL_AICPU) {
-        void *args = task->u.aicpuTaskInfo.comm.args;
+        void* args = task->u.aicpuTaskInfo.comm.args;
         const size_t size = task->u.aicpuTaskInfo.comm.argsSize;
         AddOpVirtualAddr(args, static_cast<size_t>(size));
     } else if (task->type == TS_TASK_TYPE_FUSION_KERNEL) {
-        void *args = task->u.fusionKernelTask.args;
+        void* args = task->u.fusionKernelTask.args;
         const size_t size = task->u.fusionKernelTask.argsSize;
         AddOpVirtualAddr(args, static_cast<size_t>(size));
-    } else {}
+    } else {
+    }
 }
 
 const DeviceSnapshot::TaskHandlerFuncMap& DeviceSnapshot::GetHandlerMap() const
@@ -84,8 +85,7 @@ const DeviceSnapshot::TaskHandlerFuncMap& DeviceSnapshot::GetHandlerMap() const
         {TS_TASK_TYPE_MEM_WAIT_VALUE, &TaskHandlers::HandleMemWaitValue},
         {TS_TASK_TYPE_CAPTURE_WAIT, &TaskHandlers::HandleMemWaitValue},
         {TS_TASK_TYPE_STREAM_ACTIVE, &TaskHandlers::HandleStreamActive},
-        {TS_TASK_TYPE_MODEL_TASK_UPDATE, &TaskHandlers::HandleModelTaskUpdate}
-    };
+        {TS_TASK_TYPE_MODEL_TASK_UPDATE, &TaskHandlers::HandleModelTaskUpdate}};
     return handlerMap;
 }
 

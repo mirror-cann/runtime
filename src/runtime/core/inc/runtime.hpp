@@ -26,10 +26,10 @@
 #include "rt_mem_queue.h"
 
 extern "C" {
-drvError_t __attribute__((weak)) halTsdrvCtl(uint32_t devId, int cmd, void *param, size_t paramSize,
-    void *out, size_t *outSize);
-drvError_t __attribute__((weak)) halGetSocVersion(uint32_t devId, char_t *socVersion, uint32_t len);
-drvError_t __attribute__((weak)) halGetChipInfo(uint32_t devId, halChipInfo *chipInfo);
+drvError_t __attribute__((weak))
+halTsdrvCtl(uint32_t devId, int cmd, void* param, size_t paramSize, void* out, size_t* outSize);
+drvError_t __attribute__((weak)) halGetSocVersion(uint32_t devId, char_t* socVersion, uint32_t len);
+drvError_t __attribute__((weak)) halGetChipInfo(uint32_t devId, halChipInfo* chipInfo);
 void __attribute__((weak)) halSetRuntimeApiVer(int Version);
 };
 
@@ -64,45 +64,46 @@ constexpr uint32_t UB_MEM_NETWORK_EXCEPTION_EVENT_ID = 0x81AFAA06U;
 constexpr uint32_t UB_REMOTE_MEM_DATA_EXCEPTION_EVENT_ID = 0x81AFAA00U;
 constexpr uint32_t UB_REMOTE_MEM_TIMEOUT_EVENT_ID = 0x81AFAA02U;
 
-constexpr uint32_t RAS_QUERY_INTERVAL = 10U; 
+constexpr uint32_t RAS_QUERY_INTERVAL = 10U;
 constexpr uint16_t RAS_QUERY_MAX_COUNT = 50U;
 constexpr uint16_t RT_DSM_EVENT_FILTER_FLAG_EVENT_ID = 1U;
 constexpr uint16_t READ_FAULT_EVENT_TIMEOUT = 1000U; // 1s
-constexpr uint32_t RAS_GET_MAX_NUM_SI = 128U; // single interface max event count
-constexpr uint32_t RAS_GET_MAX_NUM = 256U;    // halGetFaultEvent max 128, halGetNotifyEvent max 128
+constexpr uint32_t RAS_GET_MAX_NUM_SI = 128U;        // single interface max event count
+constexpr uint32_t RAS_GET_MAX_NUM = 256U;           // halGetFaultEvent max 128, halGetNotifyEvent max 128
 
 constexpr size_t NON_CPU_KERNEL_ARGS_ALIGN_SIZE = sizeof(uint64_t);
 constexpr size_t CPU_KERNEL_ARGS_ALIGN_SIZE = 1U;
 constexpr size_t SINGLE_NON_CPU_SYS_PARAM_SIZE = sizeof(uint64_t);
 
-constexpr float64_t RT_HWTS_610LITE_TASK_KERNEL_CREDIT_SCALE_US = 9320.676;    // 2^23 / 900M *1000*1000(us)
-constexpr uint32_t RT_HWTS_BS9SX1AB_DEFAULT_KERNEL_CREDIT_UINT32 = 143U;        // The TS BS9SX1AB reference time is 2665713.209 us.
-constexpr float64_t RT_HWTS_BS9SX1AB_TASK_KERNEL_CREDIT_SCALE_US = 18641.351;  // 2^24 / 900M *1000*1000(us)
-constexpr uint32_t RT_HWTS_610_DEFAULT_KERNEL_CREDIT_UINT32 = 72U;              // The TS 610 reference time is 2415919.104 us.
-constexpr float64_t RT_HWTS_610_TASK_KERNEL_CREDIT_SCALE_US = 33554.432;       // 2^25 / 1000M *1000*1000(us)
+constexpr float64_t RT_HWTS_610LITE_TASK_KERNEL_CREDIT_SCALE_US = 9320.676; // 2^23 / 900M *1000*1000(us)
+constexpr uint32_t RT_HWTS_BS9SX1AB_DEFAULT_KERNEL_CREDIT_UINT32 =
+    143U; // The TS BS9SX1AB reference time is 2665713.209 us.
+constexpr float64_t RT_HWTS_BS9SX1AB_TASK_KERNEL_CREDIT_SCALE_US = 18641.351; // 2^24 / 900M *1000*1000(us)
+constexpr uint32_t RT_HWTS_610_DEFAULT_KERNEL_CREDIT_UINT32 = 72U;       // The TS 610 reference time is 2415919.104 us.
+constexpr float64_t RT_HWTS_610_TASK_KERNEL_CREDIT_SCALE_US = 33554.432; // 2^25 / 1000M *1000*1000(us)
 constexpr float64_t RT_HWTS_310P_TASK_KERNEL_CREDIT_SCALE_US = 2147483.648;    // 2^31 / 1000M *1000*1000(us)
 constexpr float64_t RT_HWTS_910A_TASK_KERNEL_CREDIT_SCALE_US = 68719476.736;   // 2^36 / 1000M *1000*1000(us)
 
-constexpr float64_t RT_STARS_AS31XM1X_TASK_KERNEL_CREDIT_SCALE_US = 33554.432;  // 2^24 / 500M *1000*1000(us)
-constexpr float64_t RT_STARS_TASK_KERNEL_CREDIT_SCALE_US = 4294967.296;  // 2^32 / 1000M *1000*1000(us)
-constexpr float64_t RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN = 0.001F;  // 0.001(us) = 1ns
+constexpr float64_t RT_STARS_AS31XM1X_TASK_KERNEL_CREDIT_SCALE_US = 33554.432; // 2^24 / 500M *1000*1000(us)
+constexpr float64_t RT_STARS_TASK_KERNEL_CREDIT_SCALE_US = 4294967.296;        // 2^32 / 1000M *1000*1000(us)
+constexpr float64_t RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN = 0.001F;            // 0.001(us) = 1ns
 
-constexpr float64_t RT_STARS_OP_TIMEOUT_THRESHOLD = 100000.0F;  // 小于100ms则开启故障快速上报，单位：us
+constexpr float64_t RT_STARS_OP_TIMEOUT_THRESHOLD = 100000.0F; // 小于100ms则开启故障快速上报，单位：us
 
 } // namespace
 
 enum RtMixType : std::uint8_t {
     NO_MIX = 0,
-    MIX_AIC = 1,            /* faked mix, c:v=1:0 */
-    MIX_AIV = 2,            /* faked mix, c:v=0:1 */
+    MIX_AIC = 1, /* faked mix, c:v=1:0 */
+    MIX_AIV = 2, /* faked mix, c:v=0:1 */
     MIX_AIC_AIV_MAIN_AIC = 3,
     MIX_AIC_AIV_MAIN_AIV = 4
 };
 
 enum RtTaskTimeUnitType : std::uint16_t {
-    RT_TIME_UNIT_TYPE_S = 0,    // second
-    RT_TIME_UNIT_TYPE_MS = 1,    // millisecond
-    RT_TIME_UNIT_TYPE_US = 2,    // us
+    RT_TIME_UNIT_TYPE_S = 0,  // second
+    RT_TIME_UNIT_TYPE_MS = 1, // millisecond
+    RT_TIME_UNIT_TYPE_US = 2, // us
 };
 
 enum HbmRasProcStatus : std::uint16_t {
@@ -112,11 +113,11 @@ enum HbmRasProcStatus : std::uint16_t {
     HBM_RAS_END,
 };
 
-struct TaskAbortCallbackInfo{
-    TaskAbortCallbackType       type;
-    rtTaskAbortCallBack         callback;
-    rtsDeviceTaskAbortCallback  callbackV2;
-    void                        *args;
+struct TaskAbortCallbackInfo {
+    TaskAbortCallbackType type;
+    rtTaskAbortCallBack callback;
+    rtsDeviceTaskAbortCallback callbackV2;
+    void* args;
 };
 
 static inline bool IsAbortError(rtError_t error)
@@ -154,39 +155,32 @@ typedef TDT_StatusType (*FUNC_TDT_CLOSE)(uint32_t);
 typedef TDT_StatusType (*FUNC_TDT_CLOSE_EX)(uint32_t, uint32_t);
 typedef TDT_StatusType (*FUNC_TDT_UPDATE)(uint32_t, uint32_t);
 typedef TDT_StatusType (*FUNC_TDT_SET_PROF_CALLBACK)(MsprofReporterCallback callback);
-typedef TDT_StatusType (*FUNC_TDT_INIT_QS)(const uint32_t, const char *);
-typedef TDT_StatusType (*FUNC_TDT_INIT_FLOW_GW)(const uint32_t, const InitFlowGwInfo * const);
-typedef TDT_StatusType (*FUNC_TDT_SET_ATTR)(const char_t * const, const char_t * const);
-typedef TDT_StatusType (*FUNC_TDT_GET_HDC_CON_STA)(const uint32_t logicDeviceId, int32_t *hdcSessStat);
+typedef TDT_StatusType (*FUNC_TDT_INIT_QS)(const uint32_t, const char*);
+typedef TDT_StatusType (*FUNC_TDT_INIT_FLOW_GW)(const uint32_t, const InitFlowGwInfo* const);
+typedef TDT_StatusType (*FUNC_TDT_SET_ATTR)(const char_t* const, const char_t* const);
+typedef TDT_StatusType (*FUNC_TDT_GET_HDC_CON_STA)(const uint32_t logicDeviceId, int32_t* hdcSessStat);
 typedef TDT_StatusType (*FUNC_TDT_GET_QOS)(const int32_t, const int32_t, const uint64_t);
 typedef TDT_StatusType (*FUNC_TDT_OPEN_AICPU_SD)(const uint32_t);
-typedef TDT_StatusType (*FUNC_TDT_OPEN_NET_SERVICE)(const uint32_t, const NetServiceOpenArgs *);
+typedef TDT_StatusType (*FUNC_TDT_OPEN_NET_SERVICE)(const uint32_t, const NetServiceOpenArgs*);
 typedef TDT_StatusType (*FUNC_TDT_CLOSE_NET_SERVICE)(const uint32_t);
 
-Runtime *RuntimeKeeperGetRuntime();
+Runtime* RuntimeKeeperGetRuntime();
 class RuntimeRas : public ThreadRunnable {
-    void Run(const void * const param) override;
+    void Run(const void* const param) override;
 };
 
 // Runtime instance.
 class Runtime : public RuntimeIntf {
 public:
-    enum {
-        AICORE_NUM_LEVEL_AG = 1,
-        AICORE_NUM_LEVEL_PG = 2
-    };
-    enum {
-        AICORE_FREQ_LEVEL_BASE = 1,
-        AICORE_FREQ_LEVEL_PRO = 2,
-        AICORE_FREQ_LEVEL_PREMIUM = 3
-    };
+    enum { AICORE_NUM_LEVEL_AG = 1, AICORE_NUM_LEVEL_PG = 2 };
+    enum { AICORE_FREQ_LEVEL_BASE = 1, AICORE_FREQ_LEVEL_PRO = 2, AICORE_FREQ_LEVEL_PREMIUM = 3 };
 
     Runtime();
     ~Runtime() override;
     rtError_t Init() override;
     void PrepareProcessExitNoThrow();
     // Singleton instance.
-    static Runtime *Instance()
+    static Runtime* Instance()
     {
 #if RUNTIME_API || STATIC_RT_LIB
         if (runtime_ == nullptr) {
@@ -197,136 +191,110 @@ public:
     }
 
     // Get api implement.
-    Api *Api_() const override
-    {
-        return api_;
-    }
+    Api* Api_() const override { return api_; }
 
     // Get apiMbuf implement.
-    ApiMbuf *ApiMbuf_() const override
-    {
-        return apiMbuf_;
-    }
+    ApiMbuf* ApiMbuf_() const override { return apiMbuf_; }
 
-    ApiSoma *ApiSoma_() const override
-    {
-        return apiSoma_;
-    }
+    ApiSoma* ApiSoma_() const override { return apiSoma_; }
 
-    Api *ApiImpl_() const override
-    {
-        return apiImpl_;
-    }
+    Api* ApiImpl_() const override { return apiImpl_; }
 
-    Profiler *Profiler_() const
-    {
-        return profiler_;
-    }
+    Profiler* Profiler_() const { return profiler_; }
 
-    FacadeDriver &FacadeDriver_()
-    {
-        return facadeDriver_;
-    }
-    Device *GetXpuDevice()
-    {
-        return xpuDevice_;
-    }
+    FacadeDriver& FacadeDriver_() { return facadeDriver_; }
+    Device* GetXpuDevice() { return xpuDevice_; }
 
-    Context *GetXpuCtxt()
-    {
-        return xpuCtxt_;
-    }
+    Context* GetXpuCtxt() { return xpuCtxt_; }
 
-    SymbolTable &GetSymbolTable() {
-        return symbolTable_;
-    }
+    SymbolTable& GetSymbolTable() { return symbolTable_; }
 
-    rtError_t MallocProgramAndReg(const rtDevBinary_t *const bin, Program **const newProg) const;
+    rtError_t MallocProgramAndReg(const rtDevBinary_t* const bin, Program** const newProg) const;
     rtKernelAttrType Magic2KernelAttrType(const uint32_t magic) const;
     rtKernelAttrType GetDefaultKernelAttrType(void) const;
-    rtError_t MallocProgramAndRegMixKernel(
-        const void *data, const uint64_t length, Program **const newProg) const;
-    rtError_t ProgramRegister(const rtDevBinary_t *bin, Program **result);
-    rtError_t AddProgramToPool(Program *const prog);
-    bool GetProgram(const Program *const prog);
-    void PutProgram(const Program *const programPtr, bool isUnRegisterApi = false);
-    rtError_t KernelRegister(Program *prog, const void *stubFunc, const char_t *stubName,
-                             const void * const kernelInfoExt, const uint32_t funcMode = 0U);
-    rtError_t AllKernelRegister(Program * const prog) const;
-    rtError_t MixKernelRegister(Program * const prog);
-    rtError_t RegisterKernelByStubFunc(ElfProgram *elfProg, const void *stubFunc, const char_t *stubName,
-        const void * const kernelInfoExt, const uint32_t funcMode, const char_t *kernelName);
-    const Kernel *KernelLookup(const void * const stub);
-    const void *StubFuncLookup(const char_t * const name);
+    rtError_t MallocProgramAndRegMixKernel(const void* data, const uint64_t length, Program** const newProg) const;
+    rtError_t ProgramRegister(const rtDevBinary_t* bin, Program** result);
+    rtError_t AddProgramToPool(Program* const prog);
+    bool GetProgram(const Program* const prog);
+    void PutProgram(const Program* const programPtr, bool isUnRegisterApi = false);
+    rtError_t KernelRegister(
+        Program* prog, const void* stubFunc, const char_t* stubName, const void* const kernelInfoExt,
+        const uint32_t funcMode = 0U);
+    rtError_t AllKernelRegister(Program* const prog) const;
+    rtError_t MixKernelRegister(Program* const prog);
+    rtError_t RegisterKernelByStubFunc(
+        ElfProgram* elfProg, const void* stubFunc, const char_t* stubName, const void* const kernelInfoExt,
+        const uint32_t funcMode, const char_t* kernelName);
+    const Kernel* KernelLookup(const void* const stub);
+    const void* StubFuncLookup(const char_t* const name);
 
-    rtError_t LookupAddrByFun(const void * const stubFunc, Context * const ctx, void ** const addr);
-    rtError_t LookupAddrAndPrefCntWithHandle(const void * const handlePtr, const void * const kernelInfoExt,
-                                             Context * const ctx, void ** const addr, uint32_t * const prefetchCnt);
-    rtError_t LookupAddrAndPrefCnt(const Kernel * const kernel, Context * const ctx,
-                                   void ** const addr, uint32_t * const prefetchCnt);
-    rtError_t LookupAddrAndPrefCnt(const Kernel * const kernel, Context * const ctx,
-                                   rtKernelDetailInfo_t * const kernelInfo);
+    rtError_t LookupAddrByFun(const void* const stubFunc, Context* const ctx, void** const addr);
+    rtError_t LookupAddrAndPrefCntWithHandle(
+        const void* const handlePtr, const void* const kernelInfoExt, Context* const ctx, void** const addr,
+        uint32_t* const prefetchCnt);
+    rtError_t LookupAddrAndPrefCnt(
+        const Kernel* const kernel, Context* const ctx, void** const addr, uint32_t* const prefetchCnt);
+    rtError_t LookupAddrAndPrefCnt(
+        const Kernel* const kernel, Context* const ctx, rtKernelDetailInfo_t* const kernelInfo);
 
-    RefObject<Context *> *PrimaryContextRetain(const uint32_t devId);
-    rtError_t GetPrimaryCtxState(const int32_t devId, uint32_t *flags, int32_t *active);
+    RefObject<Context*>* PrimaryContextRetain(const uint32_t devId);
+    rtError_t GetPrimaryCtxState(const int32_t devId, uint32_t* flags, int32_t* active);
     rtError_t PrimaryContextRelease(const uint32_t devId, const bool isForceReset = false);
 
-    Device *DeviceRetain(const uint32_t devId, const uint32_t tsId);
-    void DeviceRelease(Device *dev, const bool isForceReset = false);
-    Device *GetDevice(const uint32_t devId, const uint32_t tsId, bool polling = true);
+    Device* DeviceRetain(const uint32_t devId, const uint32_t tsId);
+    void DeviceRelease(Device* dev, const bool isForceReset = false);
+    Device* GetDevice(const uint32_t devId, const uint32_t tsId, bool polling = true);
 
     rtError_t ProfilerStop(
-        const uint64_t profConfig, const int32_t numsDev, uint32_t *const deviceList, const uint64_t profSwitchHi = 0) override;
-    rtError_t ProfilerStart(const uint64_t profConfig, const int32_t numsDev, uint32_t *const deviceList,
-        const uint32_t cacheFlag, const uint64_t profSwitchHi = 0) override;
+        const uint64_t profConfig, const int32_t numsDev, uint32_t* const deviceList,
+        const uint64_t profSwitchHi = 0) override;
+    rtError_t ProfilerStart(
+        const uint64_t profConfig, const int32_t numsDev, uint32_t* const deviceList, const uint32_t cacheFlag,
+        const uint64_t profSwitchHi = 0) override;
     rtError_t SetTsdProfCallback(const MsprofReporterCallback profReporterCallback) const;
 
     rtError_t SetExceptCallback(const rtErrorCallback callback) override;
-    rtError_t SetTaskAbortCallBack(const char_t *regName, void *callback, void *args,
-        TaskAbortCallbackType type) override;
+    rtError_t SetTaskAbortCallBack(
+        const char_t* regName, void* callback, void* args, TaskAbortCallbackType type) override;
     rtError_t TaskAbortCallBack(int32_t devId, rtTaskAbortStage_t stage, uint32_t timeout);
-    rtError_t SetAicpuAttr(const char_t * const key, const char_t * const value) const override;
-    rtError_t StartAicpuSd(Device * const device) const;
-    rtError_t OpenNetService(const rtNetServiceOpenArgs *args) const;
+    rtError_t SetAicpuAttr(const char_t* const key, const char_t* const value) const override;
+    rtError_t StartAicpuSd(Device* const device) const;
+    rtError_t OpenNetService(const rtNetServiceOpenArgs* args) const;
     rtError_t CloseNetService() const;
-    rtError_t InitAicpuQS(const uint32_t devId, const char_t * const grpName) const;
-    rtError_t InitAicpuFlowGw(const uint32_t devId, const rtInitFlowGwInfo_t * const initInfo) const;
-    rtError_t GetHdcConctStatus(const uint32_t devId, int32_t &hdcSessStat);
-    rtError_t GetTsdQos(const uint32_t devId, uint16_t &qos) const;
+    rtError_t InitAicpuQS(const uint32_t devId, const char_t* const grpName) const;
+    rtError_t InitAicpuFlowGw(const uint32_t devId, const rtInitFlowGwInfo_t* const initInfo) const;
+    rtError_t GetHdcConctStatus(const uint32_t devId, int32_t& hdcSessStat);
+    rtError_t GetTsdQos(const uint32_t devId, uint16_t& qos) const;
 
-    rtError_t AllocAiCpuStreamId(int32_t &id);
+    rtError_t AllocAiCpuStreamId(int32_t& id);
     void FreeAiCpuStreamId(const int32_t id);
-    rtError_t SubscribeReport(const uint64_t threadId, Stream * const stm, void *evtNotify) override;
-    rtError_t UnSubscribeReport(const uint64_t threadId, Stream * const stm);
-    rtError_t UnSubscribeReport(Stream * const stm) override;
-    void UnSubscribeReportHostOnly(Stream * const stm);
-    rtError_t GetGroupIdByThreadId(const uint64_t threadId, uint32_t * const deviceId, uint32_t * const tsId,
-        uint32_t * const groupId, const bool noLog = false);
-    rtError_t GetGroupIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t * const groupId);
-    rtError_t GetEventByStreamId(const uint32_t devId, const int32_t streamId, Event ** const evt);
-    rtError_t GetNotifyByStreamId(const uint32_t devId, const int32_t streamId, Notify ** const notify);
-    rtError_t GetCqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t * const cqId);
-    rtError_t GetSqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t * const sqId);
-    rtError_t GetThreadIdByStreamId(const uint32_t devId, const int32_t streamId, uint64_t * const threadId);
-    bool IsHostFuncCbReg(const Stream * const stm) const;
-    Context *GetPriCtxByDeviceId(const uint32_t deviceId, uint32_t tsId) override;
-    void SetInternalThreadContext(Context * const ctx);
-    RefObject<Context *> *GetRefPriCtx(const uint32_t deviceId, const uint32_t tsId);
-    rtError_t SetTimeoutConfig(const rtTaskTimeoutType_t type, const uint64_t timeout, const RtTaskTimeUnitType timeUnitType);
-    rtError_t GetElfOffset(void * const elfData, const uint32_t elfLen, uint32_t* offset) const override;
-    rtError_t GetKernelBin(const char_t *const binFileName, char_t **const buffer, uint32_t *length) const override;
-    rtError_t GetBinBuffer(const rtBinHandle binHandle, const rtBinBufferType_t type, void **bin,
-                           uint32_t *binSize) const;
-    rtError_t FreeKernelBin(char_t * const buffer) const override;
-    const RtTimeoutConfig& GetTimeoutConfig() const
-    {
-        return timeoutConfig_;
-    }
+    rtError_t SubscribeReport(const uint64_t threadId, Stream* const stm, void* evtNotify) override;
+    rtError_t UnSubscribeReport(const uint64_t threadId, Stream* const stm);
+    rtError_t UnSubscribeReport(Stream* const stm) override;
+    void UnSubscribeReportHostOnly(Stream* const stm);
+    rtError_t GetGroupIdByThreadId(
+        const uint64_t threadId, uint32_t* const deviceId, uint32_t* const tsId, uint32_t* const groupId,
+        const bool noLog = false);
+    rtError_t GetGroupIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t* const groupId);
+    rtError_t GetEventByStreamId(const uint32_t devId, const int32_t streamId, Event** const evt);
+    rtError_t GetNotifyByStreamId(const uint32_t devId, const int32_t streamId, Notify** const notify);
+    rtError_t GetCqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t* const cqId);
+    rtError_t GetSqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t* const sqId);
+    rtError_t GetThreadIdByStreamId(const uint32_t devId, const int32_t streamId, uint64_t* const threadId);
+    bool IsHostFuncCbReg(const Stream* const stm) const;
+    Context* GetPriCtxByDeviceId(const uint32_t deviceId, uint32_t tsId) override;
+    void SetInternalThreadContext(Context* const ctx);
+    RefObject<Context*>* GetRefPriCtx(const uint32_t deviceId, const uint32_t tsId);
+    rtError_t SetTimeoutConfig(
+        const rtTaskTimeoutType_t type, const uint64_t timeout, const RtTaskTimeUnitType timeUnitType);
+    rtError_t GetElfOffset(void* const elfData, const uint32_t elfLen, uint32_t* offset) const override;
+    rtError_t GetKernelBin(const char_t* const binFileName, char_t** const buffer, uint32_t* length) const override;
+    rtError_t GetBinBuffer(
+        const rtBinHandle binHandle, const rtBinBufferType_t type, void** bin, uint32_t* binSize) const;
+    rtError_t FreeKernelBin(char_t* const buffer) const override;
+    const RtTimeoutConfig& GetTimeoutConfig() const { return timeoutConfig_; }
 
-    bool IsSupportOpTimeoutMs() const
-    {
-        return timeoutConfig_.isOpTimeoutMs;
-    }
+    bool IsSupportOpTimeoutMs() const { return timeoutConfig_.isOpTimeoutMs; }
 
     void RtTimeoutConfigInit()
     {
@@ -337,7 +305,7 @@ public:
     rtError_t SetMsprofReporterCallback(MsprofReporterCallback callback);
 #if RUNTIME_API
     static rtChipType_t GetChipType();
-#else 
+#else
     rtChipType_t GetChipType() const;
 #endif
     bool ChipIsHaveStars() const override;
@@ -346,92 +314,41 @@ public:
 
     std::string GetRawSocVersion() const;
 
-    void SetSocVersion(const std::string& socVersion)
-    {
-        socVersion_ = socVersion;
-    }
+    void SetSocVersion(const std::string& socVersion) { socVersion_ = socVersion; }
 
-    bool GetIsUserSetSocVersion() const
-    {
-        return isUserSetSocVersion_;
-    }
-    uint32_t GetTsNum() const
-    {
-        return tsNum_;
-    }
+    bool GetIsUserSetSocVersion() const { return isUserSetSocVersion_; }
+    uint32_t GetTsNum() const { return tsNum_; }
 
-    int64_t GetAicpuCnt() const override
-    {
-        return aicpuCnt_;
-    }
+    int64_t GetAicpuCnt() const override { return aicpuCnt_; }
 
-    rtFloatOverflowMode_t GetSatMode() const
-    {
-        return satMode_;
-    }
+    rtFloatOverflowMode_t GetSatMode() const { return satMode_; }
 
-    void SetSatMode(rtFloatOverflowMode_t floatOverflowMode)
-    {
-        satMode_ = floatOverflowMode;
-    }
+    void SetSatMode(rtFloatOverflowMode_t floatOverflowMode) { satMode_ = floatOverflowMode; }
 
-    bool IsVirtualMachineMode() const
-    {
-        return isVirtualMode_;
-    }
+    bool IsVirtualMachineMode() const { return isVirtualMode_; }
 
-    bool GetDisableThread() const override
-    {
-        return disableThread_;
-    }
+    bool GetDisableThread() const override { return disableThread_; }
 
-    void SetDisableThread(bool disable)
-    {
-        disableThread_ = disable;
-    }
+    void SetDisableThread(bool disable) { disableThread_ = disable; }
 
-    bool GetSentinelMode() const override
-    {
-        return sentinelMode_;
-    }
+    bool GetSentinelMode() const override { return sentinelMode_; }
 
-    void SetSentinelMode(bool mode)
-    {
-        sentinelMode_ = mode;
-    }
+    void SetSentinelMode(bool mode) { sentinelMode_ = mode; }
 
-    bool IsDrvBindStreamThread() const
-    {
-        return (halCqReportRecv == nullptr) ? false : true;
-    }
+    bool IsDrvBindStreamThread() const { return (halCqReportRecv == nullptr) ? false : true; }
 
-    SpinLock& GetIpcMemNameLock()
-    {
-        return ipcMemNameLock_;
-    }
+    SpinLock& GetIpcMemNameLock() { return ipcMemNameLock_; }
 
-    std::unordered_map<uint64_t, ipcMemInfo_t>& GetIpcMemNameMap()
-    {
-        return ipcMemNameMap_;
-    }
-    bool isRK3588HostCpu() const
-    {
-        return isRk3588Cpu_;
-    }
+    std::unordered_map<uint64_t, ipcMemInfo_t>& GetIpcMemNameMap() { return ipcMemNameMap_; }
+    bool isRK3588HostCpu() const { return isRk3588Cpu_; }
     SpinLock ipcMemNameLock_;
     std::unordered_map<uint64_t, ipcMemInfo_t> ipcMemNameMap_;
     static uint32_t starsPendingMax_;
     static uint32_t maxProgramNum_;
 
-    LabelAllocator *LabelAllocator_() const
-    {
-        return labelAllocator_;
-    }
+    LabelAllocator* LabelAllocator_() const { return labelAllocator_; }
 
-    bool HaveDevice() const
-    {
-        return isHaveDevice_;
-    }
+    bool HaveDevice() const { return isHaveDevice_; }
 
     void LockGroupId(const uint32_t groupId);
     void UnlockGroupId(const uint32_t groupId);
@@ -442,139 +359,83 @@ public:
      * @param exitWhenError if break when once error.
      * @return error code
      */
-    rtError_t ProcessForAllOpenDevice(const std::function<rtError_t(Device *dev)> &processFunc,
-        const bool exitWhenError);
+    rtError_t ProcessForAllOpenDevice(
+        const std::function<rtError_t(Device* dev)>& processFunc, const bool exitWhenError);
 
     rtMemType_t GetTsMemType(rtMemRequestFeature_t featureType, uint64_t memSize) override;
-    static Runtime *runtime_;
-    void SetBiuperfProfFlag(bool flag) override
-    {
-        biuperfProfFlag_ = flag;
-    }
+    static Runtime* runtime_;
+    void SetBiuperfProfFlag(bool flag) override { biuperfProfFlag_ = flag; }
 
-    bool GetBiuperfProfFlag() const
-    {
-        return biuperfProfFlag_;
-    }
+    bool GetBiuperfProfFlag() const { return biuperfProfFlag_; }
 
-    void SetTsVersion(uint32_t tschVersion)
-    {
-        tschVersion_ = tschVersion;
-    }
+    void SetTsVersion(uint32_t tschVersion) { tschVersion_ = tschVersion; }
 
-    uint32_t GetTsVersion() const
-    {
-        return tschVersion_;
-    }
+    uint32_t GetTsVersion() const { return tschVersion_; }
 
-    void SetTilingkeyFlag(uint8_t flag)
-    {
-        tilingKeyFlag_ = flag;
-    }
+    void SetTilingkeyFlag(uint8_t flag) { tilingKeyFlag_ = flag; }
 
-    uint8_t GetTilingkeyFlag() const
-    {
-        return tilingKeyFlag_;
-    }
+    uint8_t GetTilingkeyFlag() const { return tilingKeyFlag_; }
 
-    void SetL2CacheProfFlag(bool flag) override
-    {
-        l2CacheProfFlag_ = flag;
-    }
+    void SetL2CacheProfFlag(bool flag) override { l2CacheProfFlag_ = flag; }
 
-    bool GetL2CacheProfFlag() const
-    {
-        return l2CacheProfFlag_;
-    }
+    bool GetL2CacheProfFlag() const { return l2CacheProfFlag_; }
 
-    bool GetTrackProfFlag() const
-    {
-        return trackProfFlag_;
-    }
+    bool GetTrackProfFlag() const { return trackProfFlag_; }
 
-    void SetWaitTimeout(uint32_t timeout)
-    {
-        waitTimeout_ = timeout;
-    }
+    void SetWaitTimeout(uint32_t timeout) { waitTimeout_ = timeout; }
 
-    uint32_t GetWaitTimeout() override
-    {
-        return waitTimeout_;
-    }
+    uint32_t GetWaitTimeout() override { return waitTimeout_; }
 
-    bool GetNpuCollectFlag() const
-    {
-        return isNpuCollect;
-    }
+    bool GetNpuCollectFlag() const { return isNpuCollect; }
 
-    void SetProfileEnableFlag(bool isEnable) {
+    void SetProfileEnableFlag(bool isEnable)
+    {
         if (isEnable) {
-            profileEnabled_ =1U;
+            profileEnabled_ = 1U;
         } else {
-            profileEnabled_ =0U;
+            profileEnabled_ = 0U;
         }
     }
 
-    uint8_t GetProfileEnableFlag() const
-    {
-        return profileEnabled_;
-    }
+    uint8_t GetProfileEnableFlag() const { return profileEnabled_; }
 
-    rtError_t ChgUserDevIdToDeviceId(const uint32_t userDevId, uint32_t * const deviceId,
-        bool isDeviceSetResetOp = false) const override;
-    rtError_t GetUserDevIdByDeviceId(const uint32_t deviceId, uint32_t * const userDevId,
-        const bool isDeviceSetResetOp = false, const bool ignoredError = false, const bool checkLog = false) const;
+    rtError_t ChgUserDevIdToDeviceId(
+        const uint32_t userDevId, uint32_t* const deviceId, bool isDeviceSetResetOp = false) const override;
+    rtError_t GetUserDevIdByDeviceId(
+        const uint32_t deviceId, uint32_t* const userDevId, const bool isDeviceSetResetOp = false,
+        const bool ignoredError = false, const bool checkLog = false) const;
     void UpdateDevProperties(const rtChipType_t chipTypeValue, const std::string& socVersion) override;
-    rtError_t BinaryLoad(const Device *const device, Program * const prog);
-    rtError_t BinaryGetFunction(const Program * const prog, const uint64_t tilingKey,
-                                Kernel ** const funcHandle) const;
-    rtError_t BinaryGetFunctionByName(const Program * const binHandle, const char *kernelName,
-                                      Kernel ** const funcHandle) const;
-    rtError_t BinaryUnLoad(const Device *const device, Program * const prog) const;
-    rtError_t SetWatchDogDevStatus(const Device *device, rtDeviceStatus deviceStatus);
-    rtError_t GetWatchDogDevStatus(uint32_t deviceId, rtDeviceStatus *deviceStatus);
+    rtError_t BinaryLoad(const Device* const device, Program* const prog);
+    rtError_t BinaryGetFunction(const Program* const prog, const uint64_t tilingKey, Kernel** const funcHandle) const;
+    rtError_t BinaryGetFunctionByName(
+        const Program* const binHandle, const char* kernelName, Kernel** const funcHandle) const;
+    rtError_t BinaryUnLoad(const Device* const device, Program* const prog) const;
+    rtError_t SetWatchDogDevStatus(const Device* device, rtDeviceStatus deviceStatus);
+    rtError_t GetWatchDogDevStatus(uint32_t deviceId, rtDeviceStatus* deviceStatus);
     rtError_t RegKernelLaunchFillFunc(const char* symbol, rtKernelLaunchFillFunc callback) override;
     rtError_t UnRegKernelLaunchFillFunc(const char* symbol) override;
-    rtError_t ExeCallbackFillFunc(std::string symbol, void *cfgAddr, uint32_t size);
-    rtError_t GetKernelBinByFileName(const char_t *const binFileName, char_t **const buffer, uint64_t *length) const;
-    rtError_t GetTilingValue(const std::string &kernelInfoExt, uint64_t &tilingValue) const;
-    std::string GetTilingKeyFromKernel(const std::string &kernelName, uint8_t &mixType) const;
+    rtError_t ExeCallbackFillFunc(std::string symbol, void* cfgAddr, uint32_t size);
+    rtError_t GetKernelBinByFileName(const char_t* const binFileName, char_t** const buffer, uint64_t* length) const;
+    rtError_t GetTilingValue(const std::string& kernelInfoExt, uint64_t& tilingValue) const;
+    std::string GetTilingKeyFromKernel(const std::string& kernelName, uint8_t& mixType) const;
     void ReportSoftwareSqEnableToMsprof(void) const;
 
     void StreamSyncEschedLock(void);
     void StreamSyncEschedUnLock(void);
-    bool IsStreamSyncEsched(void) const
-    {
-        return isStreamSyncEsched_;
-    }
+    bool IsStreamSyncEsched(void) const { return isStreamSyncEsched_; }
 
-    void SetStreamSyncEschedGrpID(const uint32_t id)
-    {
-        grpID_= id;
-    }
+    void SetStreamSyncEschedGrpID(const uint32_t id) { grpID_ = id; }
 
-    uint32_t GetStreamSyncEschedGrpID(void) const
-    {
-        return grpID_;
-    }
+    uint32_t GetStreamSyncEschedGrpID(void) const { return grpID_; }
 
-    bool IsExiting(void) const
-    {
-        return isExiting_;
-    }
+    bool IsExiting(void) const { return isExiting_; }
 
     // During global teardown Runtime::Instance() may already be unavailable.
     // Destructor fast paths must still treat that as process-exit instead of
     // falling back to normal driver/resource release.
-    static bool IsProcessExiting(const Runtime *rt)
-    {
-        return (rt == nullptr) || rt->IsExiting();
-    }
+    static bool IsProcessExiting(const Runtime* rt) { return (rt == nullptr) || rt->IsExiting(); }
 
-    uint8_t GetStarsFftsDefaultKernelCredit() const
-    {
-        return curChipProperties_.starsDefaultKernelCredit;
-    }
+    uint8_t GetStarsFftsDefaultKernelCredit() const { return curChipProperties_.starsDefaultKernelCredit; }
 
     uint32_t GetDefaultKernelCredit() const
     {
@@ -597,41 +458,26 @@ public:
         }
 
         if (std::abs(curChipProperties_.KernelCreditScale - RT_STARS_TASK_KERNEL_CREDIT_SCALE_MIN) <
-                   std::numeric_limits<float>::epsilon()) {
-            return (timeoutConfig_.isInit ? timeoutConfig_.interval :
-                                                        cce::runtime::RT_STARS_TASK_KERNEL_CREDIT_SCALE_US);
+            std::numeric_limits<float>::epsilon()) {
+            return (
+                timeoutConfig_.isInit ? timeoutConfig_.interval : cce::runtime::RT_STARS_TASK_KERNEL_CREDIT_SCALE_US);
         }
 
         return curChipProperties_.KernelCreditScale;
     }
 
-    uint32_t GetMaxKernelCredit() const
-    {
-        return curChipProperties_.MaxKernelCredit;
-    }
+    uint32_t GetMaxKernelCredit() const { return curChipProperties_.MaxKernelCredit; }
 
-    const DevProperties &GetCurChipProperties() const
-    {
-        return curChipProperties_;
-    }
+    const DevProperties& GetCurChipProperties() const { return curChipProperties_; }
 
-    Context *CurrentContext() const override;
+    Context* CurrentContext() const override;
     driverType_t GetDriverType() const;
 
-    ThreadGuard *GetThreadGuard() const
-    {
-        return threadGuard_;
-    }
+    ThreadGuard* GetThreadGuard() const { return threadGuard_; }
 
-    uint32_t GetDefaultDeviceId() const
-    {
-        return defaultDeviceId_;
-    }
+    uint32_t GetDefaultDeviceId() const { return defaultDeviceId_; }
 
-    bool GetSetDefaultDevIdFlag() const
-    {
-        return hasSetDefaultDevId_;
-    }
+    bool GetSetDefaultDevIdFlag() const { return hasSetDefaultDevId_; }
 
     void SetDefaultDeviceId(const int32_t deviceId)
     {
@@ -645,17 +491,11 @@ public:
     }
     void TryToRecyclePool() const;
     void SetGlobalErr(const rtError_t errcode) const override;
-    rtError_t GetNpuDeviceCnt(int32_t &cnt) override;
+    rtError_t GetNpuDeviceCnt(int32_t& cnt) override;
 
-    uint32_t GetRasInfoDevId() const
-    {
-        return rasInfo_.devId;
-    }
+    uint32_t GetRasInfoDevId() const { return rasInfo_.devId; }
 
-    uint64_t GetRasInfoSysCnt() const
-    {
-        return rasInfo_.sysCnt;
-    }
+    uint64_t GetRasInfoSysCnt() const { return rasInfo_.sysCnt; }
 
     void SetRasInfo(uint32_t devId, uint64_t sysCnt)
     {
@@ -663,25 +503,13 @@ public:
         rasInfo_.sysCnt = sysCnt;
     }
 
-    void SetIsSupport1GHugePage(bool flag)
-    {
-        isSupport1GHugePage_ = flag;
-    }
+    void SetIsSupport1GHugePage(bool flag) { isSupport1GHugePage_ = flag; }
 
-    bool GetIsSupport1GHugePage() const
-    {
-        return isSupport1GHugePage_;
-    }
+    bool GetIsSupport1GHugePage() const { return isSupport1GHugePage_; }
 
-    ObjAllocator<RefObject<Program *>> *GetProgramAllocator() const
-    {
-        return programAllocator_;
-    }
+    ObjAllocator<RefObject<Program*>>* GetProgramAllocator() const { return programAllocator_; }
 
-    uint32_t GetLatestPoolIdx() const
-    {
-        return latestPoolIdx_;
-    }
+    uint32_t GetLatestPoolIdx() const { return latestPoolIdx_; }
 
     struct ModuleMemInfo {
         uint32_t devId;
@@ -690,30 +518,30 @@ public:
         Driver* drv;
         uint8_t* hostAddr;
         bool readonly;
-        ModuleMemInfo(uint32_t deviceId, uint64_t memLen, const void* devAddrBase, Driver* driverEntry, bool isReadonly):
-            devId(deviceId), memSize(memLen),devAddr(devAddrBase), drv(driverEntry),
-            hostAddr((memSize != 0U) ? new (std::nothrow) uint8_t[memSize] : nullptr), readonly(isReadonly) {
-        }
-        ModuleMemInfo():devId(UINT32_MAX), memSize(0), devAddr(nullptr), drv(nullptr), hostAddr(nullptr), readonly(false) {
-        }
-        ~ModuleMemInfo() {
-            DELETE_A(hostAddr);
-        }
+        ModuleMemInfo(uint32_t deviceId, uint64_t memLen, const void* devAddrBase, Driver* driverEntry, bool isReadonly)
+            : devId(deviceId),
+              memSize(memLen),
+              devAddr(devAddrBase),
+              drv(driverEntry),
+              hostAddr((memSize != 0U) ? new(std::nothrow) uint8_t[memSize] : nullptr),
+              readonly(isReadonly)
+        {}
+        ModuleMemInfo()
+            : devId(UINT32_MAX), memSize(0), devAddr(nullptr), drv(nullptr), hostAddr(nullptr), readonly(false)
+        {}
+        ~ModuleMemInfo() { DELETE_A(hostAddr); }
     };
 
     std::list<std::unique_ptr<ModuleMemInfo>> moduleBackupList_;
- 
+
     rtError_t SaveModelAllDataToHost(void);
     rtError_t SaveModuleAicpuInfo(const Module* const module, const uint32_t devId, Driver* curDrv);
-    rtError_t SaveModuleDataInfoToList(Program *prog);
+    rtError_t SaveModuleDataInfoToList(Program* prog);
     rtError_t SaveModule(void);
 
     rtError_t RestoreModule(void) const;
     void DeleteModuleBackupPoint(void);
-    const std::vector<char> &GetDcacheLockMixOpData() const
-    {
-        return dcacheLockMixOpData_;
-    }
+    const std::vector<char>& GetDcacheLockMixOpData() const { return dcacheLockMixOpData_; }
 
     DriverFactory driverFactory_;
     FuncSymbolTable funcSymbolTable_;
@@ -730,48 +558,24 @@ public:
     std::map<int32_t, uint32_t> eschedMap_;
     uint32_t lastEschedTid_ = 0U;
 
-    void MonitorNumAdd(uint32_t num)
-    {
-        monitorThreadNum_.Add(num);
-    }
+    void MonitorNumAdd(uint32_t num) { monitorThreadNum_.Add(num); }
 
-    void MonitorNumSub(uint32_t num)
-    {
-        monitorThreadNum_.Sub(num);
-    }
+    void MonitorNumSub(uint32_t num) { monitorThreadNum_.Sub(num); }
 
-    void SetConnectUbFlag(bool flag) {
-        connectUbFlag_ = flag;
-    }
-    bool GetConnectUbFlag() const
-    {
-        return connectUbFlag_;
-    }
-    void SetSimtWarpStkSize(uint64_t simtWarpStkSize) {
-        simtWarpStkSize_ = simtWarpStkSize;
-    }
+    void SetConnectUbFlag(bool flag) { connectUbFlag_ = flag; }
+    bool GetConnectUbFlag() const { return connectUbFlag_; }
+    void SetSimtWarpStkSize(uint64_t simtWarpStkSize) { simtWarpStkSize_ = simtWarpStkSize; }
 
-    uint64_t GetSimtWarpStkSize() const
-    { 
-        return simtWarpStkSize_;
-    }
+    uint64_t GetSimtWarpStkSize() const { return simtWarpStkSize_; }
 
-    void SetSimtDvgWarpStkSize(uint32_t simtDvgWarpStkSize) {
-        simtDvgWarpStkSize_ = simtDvgWarpStkSize;
-    }
-    
-    uint32_t GetSimtDvgWarpStkSize() const
-    {
-        return simtDvgWarpStkSize_;
-    }
+    void SetSimtDvgWarpStkSize(uint32_t simtDvgWarpStkSize) { simtDvgWarpStkSize_ = simtDvgWarpStkSize; }
+
+    uint32_t GetSimtDvgWarpStkSize() const { return simtDvgWarpStkSize_; }
 
     rtError_t CreateReportRasThread();
     void DestroyReportRasThread();
     void ReportRasRun();
-    HbmRasProcStatus GetHbmRasProcFlag() const
-    {
-        return hbmRasProcFlag_;
-    }
+    HbmRasProcStatus GetHbmRasProcFlag() const { return hbmRasProcFlag_; }
 
     // 目前只会在aclInit里面调用一次
     void SetDeviceCustomerStackSize(uint32_t val)
@@ -782,85 +586,56 @@ public:
         }
     }
 
-    uint32_t GetDeviceCustomerStackSize() const
-    {
-        return deviceCustomerStackSize_;
-    }
+    uint32_t GetDeviceCustomerStackSize() const { return deviceCustomerStackSize_; }
 
-    std::mutex& GetSimtStackMutex()
-    {
-        return simtStackMutex_;
-    }
+    std::mutex& GetSimtStackMutex() { return simtStackMutex_; }
 
-    std::mutex& GetSimdFifoMutex()
-    {
-        return simdFifoMutex_;
-    }
+    std::mutex& GetSimdFifoMutex() { return simdFifoMutex_; }
 
-    std::mutex& GetSimtFifoMutex()
-    {
-        return simtFifoMutex_;
-    }
+    std::mutex& GetSimtFifoMutex() { return simtFifoMutex_; }
 
-    std::mutex& GetMemMapSelectedLinkMutex_()
-    {
-        return memMapSelectedLinkMutex_;
-    }
+    std::mutex& GetMemMapSelectedLinkMutex_() { return memMapSelectedLinkMutex_; }
 
     // 目前只会在aclInit里面调用一次
-    rtError_t SetSimdPrintFifoSize(uint32_t val); 
+    rtError_t SetSimdPrintFifoSize(uint32_t val);
 
-    uint32_t GetSimdPrintFifoSize() const
-    {
-        return printblockLen_;
-    }
+    uint32_t GetSimdPrintFifoSize() const { return printblockLen_; }
 
     // 目前只会在aclInit里面调用一次
     rtError_t SetSimtPrintFifoSize(uint32_t val);
 
-    uint32_t GetSimtPrintFifoSize() const
-    {
-        return simtPrintLen_;
-    }
+    uint32_t GetSimtPrintFifoSize() const { return simtPrintLen_; }
 
-    void SetIsUserSetSocVersion(bool flag)
+    void SetIsUserSetSocVersion(bool flag) { isUserSetSocVersion_ = flag; }
+    rtError_t SubscribeCallback(const uint64_t threadId, Stream* stm, void* evtNotify);
+    bool JudgeNeedSubscribe(const uint64_t threadId, Stream* stm, const uint32_t deviceId);
+    void AllocTaskSn(uint32_t& taskSn)
     {
-        isUserSetSocVersion_ = flag;
-    }
-    rtError_t SubscribeCallback(const uint64_t threadId, Stream *stm, void *evtNotify);
-    bool JudgeNeedSubscribe(const uint64_t threadId, Stream *stm, const uint32_t deviceId);
-    void AllocTaskSn(uint32_t &taskSn) {
         taskSn = taskSn_.FetchAndAdd(1U);
         taskSn = taskSn & 0x7FFFFFFFU;
         return;
     }
     rtError_t startAicpuExecutor(const uint32_t devId, const uint32_t tsId);
     rtError_t StopAicpuExecutor(const uint32_t devId, const uint32_t tsId, const bool isQuickClose = false) const;
-    rtError_t InitOpExecTimeout(const Device *dev);
-    Stream *GetCurStream(Stream * const stm) const;
+    rtError_t InitOpExecTimeout(const Device* dev);
+    Stream* GetCurStream(Stream* const stm) const;
     rtError_t PrimaryXpuContextRelease(const uint32_t devId);
 
-    Context *PrimaryXpuContextRetain(const uint32_t devId);
-    Device *XpuDeviceRetain(const uint32_t devId) const;
-    void XpuDeviceRelease(Device *dev) const;
+    Context* PrimaryXpuContextRetain(const uint32_t devId);
+    Device* XpuDeviceRetain(const uint32_t devId) const;
+    void XpuDeviceRelease(Device* dev) const;
 
-    std::mutex &XpuSetDevMutex()
-    {
-        return xpuSetDevMutex_;
-    }
+    std::mutex& XpuSetDevMutex() { return xpuSetDevMutex_; }
 
-    bool IsRuntimeExiting() const
-    {
-        return isRuntimeExiting_;
-    }
+    bool IsRuntimeExiting() const { return isRuntimeExiting_; }
 
 private:
     void UpdateDevPropertiesFromIniAttrs(const rtChipType_t chipTypeValue, const RtIniAttributes& iniAttrs);
     void SocTypeInit(const int64_t aicoreNumLevel, const int64_t aicoreFreqLevel);
     void TsdClientInit();
-    void LoadFunction(void *const handlePtr, const char_t * const libSoName);
-    rtError_t GetAicoreNumByLevel(const rtChipType_t chipTypeValue, int64_t &aicoreNumLevel, uint32_t &aicoreNum);
-    void CheckVirtualMachineMode(uint32_t &aicoreNum, int64_t &vmAicoreNum);
+    void LoadFunction(void* const handlePtr, const char_t* const libSoName);
+    rtError_t GetAicoreNumByLevel(const rtChipType_t chipTypeValue, int64_t& aicoreNumLevel, uint32_t& aicoreNum);
+    void CheckVirtualMachineMode(uint32_t& aicoreNum, int64_t& vmAicoreNum);
     void InitSocTypeFrom910BVersion(int64_t hardwareVersion);
     void InitSocTypeFrom310BVersion(const int64_t hardwareVersion);
     void InitSocTypeFromBS9SX1AXVersion();
@@ -874,8 +649,8 @@ private:
     rtError_t InitChipTypeAndSocVersion();
     rtError_t InitApiImplies();
     rtError_t InitLogger();
-    rtError_t InitApiProfiler(Api * const apiObj);
-    rtError_t InitApiErrorDecorator(Api * const apiObj);
+    rtError_t InitApiProfiler(Api* const apiObj);
+    rtError_t InitApiErrorDecorator(Api* const apiObj);
     rtError_t InitThreadGuard();
     rtError_t InitStreamObserver();
     rtError_t InitAicpuStreamIdBitmap();
@@ -888,61 +663,63 @@ private:
     void NotifyProcWhenNewDevice(const uint32_t devId);
     void NotifyProcWhenReleaseDevice(const uint32_t devId) const;
     void MsProfNotifyWhenSetDevice(const uint32_t devId) const;
-    void InitAtrace(Device* dev, TraHandle &curAtraceHandle) const;
-    void KernelSetDfx(Program * const prog, const void * const kernelInfoExt, Kernel *kernelPtr) const;
-    void PrimaryContextCallBack(const Context * const ctx, const uint32_t devId);
+    void InitAtrace(Device* dev, TraHandle& curAtraceHandle) const;
+    void KernelSetDfx(Program* const prog, const void* const kernelInfoExt, Kernel* kernelPtr) const;
+    void PrimaryContextCallBack(const Context* const ctx, const uint32_t devId);
     void PrimaryContextCallBackAfterTeardown(const uint32_t devId) const;
     bool HasRuntimeExitHostState() const;
-    bool AcquirePrimaryXpuContextForRelease(Context *&ctx);
-    rtError_t FinalizePrimaryXpuContextRelease(Context *ctx);
-    rtError_t StartAicpuExecutorTracked(const uint32_t devId, const uint32_t tsId, bool *aicpuExecutorStarted) const;
+    bool AcquirePrimaryXpuContextForRelease(Context*& ctx);
+    rtError_t FinalizePrimaryXpuContextRelease(Context* ctx);
+    rtError_t StartAicpuExecutorTracked(const uint32_t devId, const uint32_t tsId, bool* aicpuExecutorStarted) const;
     rtError_t PrepareDeviceRetain(
-        const uint32_t devId, const uint32_t tsId, rtError_t &errorTrace, bool &aicpuExecutorStarted) const;
+        const uint32_t devId, const uint32_t tsId, rtError_t& errorTrace, bool& aicpuExecutorStarted) const;
     void RollbackFailedDeviceRetain(
-        RefObject<Device *> &refObj, Device *&dev, const uint32_t devId, const uint32_t tsId,
+        RefObject<Device*>& refObj, Device*& dev, const uint32_t devId, const uint32_t tsId,
         const bool aicpuExecutorStarted) const;
-    void FinalizeDeviceRelease(RefObject<Device *> &refObj, Device *dev, const bool isForceReset);
-    rtError_t ExecutePrimaryTearDown(RefObject<Context *> &refObj, Context * const ctx, const uint32_t devId,
-        const uint32_t tsId, const bool isForceReset, bool &earlyReturn);
-    rtError_t ReleasePrimaryContextSlot(const uint32_t devId, const uint32_t tsId, const bool isForceReset,
-        const bool sentinelMode, bool &ret);
-    Device *DeviceAddObserver(Device *dev);
-    rtError_t RuntimeTrackProfilerStart(const uint64_t profConfig, int32_t numsDev,
-        const uint32_t * const deviceList, const uint32_t cacheFlag);
-    void ReportAllStreamSqInfo(const Device *const dev) const;
-    rtError_t RuntimeApiProfilerStart(const uint64_t profConfig, int32_t numsDev, const uint32_t * const deviceList);
-    rtError_t RuntimeTrackProfilerStop(const uint64_t profConfig, int32_t numsDev, const uint32_t * const deviceList);
-    rtError_t RuntimeApiProfilerStop(const uint64_t profConfig, int32_t numsDev, const uint32_t * const deviceList);
-    rtError_t TsProfilerStart(const uint64_t profConfig, int32_t numsDev, const uint32_t * const deviceList);
-    rtError_t TsProfilerStop(const uint64_t profConfig, int32_t numsDev, const uint32_t * const deviceList);
+    void FinalizeDeviceRelease(RefObject<Device*>& refObj, Device* dev, const bool isForceReset);
+    rtError_t ExecutePrimaryTearDown(
+        RefObject<Context*>& refObj, Context* const ctx, const uint32_t devId, const uint32_t tsId,
+        const bool isForceReset, bool& earlyReturn);
+    rtError_t ReleasePrimaryContextSlot(
+        const uint32_t devId, const uint32_t tsId, const bool isForceReset, const bool sentinelMode, bool& ret);
+    Device* DeviceAddObserver(Device* dev);
+    rtError_t RuntimeTrackProfilerStart(
+        const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList, const uint32_t cacheFlag);
+    void ReportAllStreamSqInfo(const Device* const dev) const;
+    rtError_t RuntimeApiProfilerStart(const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList);
+    rtError_t RuntimeTrackProfilerStop(const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList);
+    rtError_t RuntimeApiProfilerStop(const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList);
+    rtError_t TsProfilerStart(const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList);
+    rtError_t TsProfilerStop(const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList);
     rtError_t AiCpuProfilerStart(
-        const uint64_t profConfig, int32_t numsDev, const uint32_t *const deviceList, const uint64_t profSwitchHi = 0);
+        const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList, const uint64_t profSwitchHi = 0);
     rtError_t AiCpuProfilerStop(
-        const uint64_t profConfig, int32_t numsDev, const uint32_t *const deviceList, const uint64_t profSwitchHi = 0);
+        const uint64_t profConfig, int32_t numsDev, const uint32_t* const deviceList, const uint64_t profSwitchHi = 0);
     rtError_t HandleAiCpuProfiling(
         const uint64_t profConfig, const uint32_t devId, const bool isStart, const uint64_t profSwitchHi = 0) const;
-    rtError_t RuntimeProfileLogStart(const uint64_t profConfig, const int32_t numsDev, uint32_t * const deviceList);
-    rtError_t RuntimeProfileLogStop(const uint64_t profConfig, const int32_t numsDev, const uint32_t * const deviceList);
+    rtError_t RuntimeProfileLogStart(const uint64_t profConfig, const int32_t numsDev, uint32_t* const deviceList);
+    rtError_t RuntimeProfileLogStop(const uint64_t profConfig, const int32_t numsDev, const uint32_t* const deviceList);
     bool isConfigForProfileLog(const uint64_t profConfig) const;
 
-    void OpenDeviceProfiling(const uint32_t devId, Device * const dev);
-    void TsTimelineStop(const uint64_t profConfig, bool &needCloseTimeline, Device *dev) const;
-    void TsTimelineStop(const uint64_t profConfig, uint64_t &type, Device * const dev) const;
-    void AicMetricStop(const uint64_t profConfig, uint64_t &type, const Device * const dev) const;
-    void AivMetricStop(const uint64_t profConfig, uint64_t &type, const Device * const dev) const;
-    void HwtsLogStop(const uint64_t profConfig, uint64_t &type, const Device * const dev) const;
-    void AiCpuTraceStop(const uint64_t profConfig, uint64_t &type, const Device * const dev) const;
-    void AiCpuModelTraceStop(const uint64_t profConfig, uint64_t &type, const Device * const dev) const;
-    void TsTimelineStart(const uint64_t profConfig, uint64_t &type, Device * const dev) const;
-    void TsTimelineStart(const uint64_t profConfig, bool &needOpenTimeline, Device * const dev) const;
-    void AicMetricStart(const uint64_t profConfig, uint64_t &type, const Device * const dev) const;
-    void AivMetricStart(const uint64_t profConfig, uint64_t &type, const Device * const dev) const;
-    void HwtsLogStart(const uint64_t profConfig, uint64_t &type, const Device * const dev) const;
-    void AiCpuTraceStart(const uint64_t profConfig, uint64_t &type, const Device * const dev) const;
-    void AiCpuModelTraceStart(const uint64_t profConfig, uint64_t &type, const Device * const dev) const;
-    rtError_t isOperateAllDevice(int32_t * const numsDev, bool &flag);
-    rtError_t CheckStaticKernelName(const RtKernel * const kernels, const uint32_t kernelCount,
-                                    const bool isHostApiRegister, bool &staticKernel) const;
+    void OpenDeviceProfiling(const uint32_t devId, Device* const dev);
+    void TsTimelineStop(const uint64_t profConfig, bool& needCloseTimeline, Device* dev) const;
+    void TsTimelineStop(const uint64_t profConfig, uint64_t& type, Device* const dev) const;
+    void AicMetricStop(const uint64_t profConfig, uint64_t& type, const Device* const dev) const;
+    void AivMetricStop(const uint64_t profConfig, uint64_t& type, const Device* const dev) const;
+    void HwtsLogStop(const uint64_t profConfig, uint64_t& type, const Device* const dev) const;
+    void AiCpuTraceStop(const uint64_t profConfig, uint64_t& type, const Device* const dev) const;
+    void AiCpuModelTraceStop(const uint64_t profConfig, uint64_t& type, const Device* const dev) const;
+    void TsTimelineStart(const uint64_t profConfig, uint64_t& type, Device* const dev) const;
+    void TsTimelineStart(const uint64_t profConfig, bool& needOpenTimeline, Device* const dev) const;
+    void AicMetricStart(const uint64_t profConfig, uint64_t& type, const Device* const dev) const;
+    void AivMetricStart(const uint64_t profConfig, uint64_t& type, const Device* const dev) const;
+    void HwtsLogStart(const uint64_t profConfig, uint64_t& type, const Device* const dev) const;
+    void AiCpuTraceStart(const uint64_t profConfig, uint64_t& type, const Device* const dev) const;
+    void AiCpuModelTraceStart(const uint64_t profConfig, uint64_t& type, const Device* const dev) const;
+    rtError_t isOperateAllDevice(int32_t* const numsDev, bool& flag);
+    rtError_t CheckStaticKernelName(
+        const RtKernel* const kernels, const uint32_t kernelCount, const bool isHostApiRegister,
+        bool& staticKernel) const;
     rtError_t GetVisibleDevices();
     bool IsNeedChangeDeviceId(const uint32_t userDevId, const bool isDeviceSetResetOp) const;
     void ReadStreamSyncModeFromConfigIni(void);
@@ -951,75 +728,60 @@ private:
     rtError_t InitSocVersion();
     rtError_t InitSocVersionAndChipType(const uint32_t deviceId);
     // Initialize soc info from halGetSocVersion. In user-specified soc mode, keep raw hardware soc separately.
-    rtError_t InitSocVersionByDrvSocVersion(const uint32_t deviceId, const bool isUserSetSocVersion,
-                                            bool &isSocVersionInitialized);
+    rtError_t InitSocVersionByDrvSocVersion(
+        const uint32_t deviceId, const bool isUserSetSocVersion, bool& isSocVersionInitialized);
     // Initialize soc info from hardware version when halGetSocVersion is unavailable or returns no soc name.
     rtError_t InitSocVersionByHardwareVersion(const uint32_t deviceId, const bool isUserSetSocVersion);
     rtError_t GetSocVersionByHardwareVer(int64_t hardwareVersion, int64_t aicoreNumLevel, int64_t vmAicoreNum);
     bool CheckHaveDevice();
     rtError_t WaitMonitorExit() const;
-    rtError_t GetEnvPath(std::string &binaryPath) const;
-    rtError_t GetDcacheLockMixOpPath(std::string &dcacheLockMixOpPath) const;
+    rtError_t GetEnvPath(std::string& binaryPath) const;
+    rtError_t GetDcacheLockMixOpPath(std::string& dcacheLockMixOpPath) const;
     void ReportHBMRasProc();
     void ReportUBMemRasProc();
     void ProcHBMRas(const uint32_t devId);
     void ReportPageFaultProc();
-    void ProcPageFault(Device * const device, const uint32_t value);
+    void ProcPageFault(Device* const device, const uint32_t value);
 
-    void SetChipType(rtChipType_t chipType)
-    {
-        chipType_ = chipType;
-    }
+    void SetChipType(rtChipType_t chipType) { chipType_ = chipType; }
 
-    void SetAicpuCnt(int64_t aicpuCnt)
-    {
-        aicpuCnt_ = aicpuCnt;
-    }
+    void SetAicpuCnt(int64_t aicpuCnt) { aicpuCnt_ = aicpuCnt; }
 
-    void SetTrackProfFlag(bool flag)
-    {
-        trackProfFlag_ = flag;
-    }
+    void SetTrackProfFlag(bool flag) { trackProfFlag_ = flag; }
 
-    void SetNpuCollectFlag(bool flag)
-    {
-        isNpuCollect = flag;
-    }
+    void SetNpuCollectFlag(bool flag) { isNpuCollect = flag; }
 
-    void SetRuntimeExiting(bool flag)
-    {
-        isRuntimeExiting_ = flag;
-    }
+    void SetRuntimeExiting(bool flag) { isRuntimeExiting_ = flag; }
 
     void FindDcacheLockOp();
-    uint32_t *deviceInfo{nullptr};
-    uint32_t *userDeviceInfo{nullptr};
+    uint32_t* deviceInfo{nullptr};
+    uint32_t* userDeviceInfo{nullptr};
     char availableDeviceStr[RT_SET_DEVICE_STR_MAX_LEN + 1] = {0};
     uint32_t workingDev_ = 0U;
 
-    Api *api_;
-    ApiMbuf *apiMbuf_;
-    ApiSoma *apiSoma_;
+    Api* api_;
+    ApiMbuf* apiMbuf_;
+    ApiSoma* apiSoma_;
 
-    Api *apiImpl_;
-    ApiMbuf *apiImplMbuf_;
-    ApiSoma *apiImplSoma_;
+    Api* apiImpl_;
+    ApiMbuf* apiImplMbuf_;
+    ApiSoma* apiImplSoma_;
 
-    RefObject<Context *> priCtxs_[RT_MAX_DEV_NUM][RT_MAX_TS_NUM];
-    RefObject<Device *> devices_[RT_MAX_DEV_NUM + 1][RT_MAX_TS_NUM];  // Last one is stub device
-    uint32_t deviceCustomerStackSize_{KERNEL_STACK_SIZE_32K};  // 全局共享，所有device生效，向上取整到16KB对齐
+    RefObject<Context*> priCtxs_[RT_MAX_DEV_NUM][RT_MAX_TS_NUM];
+    RefObject<Device*> devices_[RT_MAX_DEV_NUM + 1][RT_MAX_TS_NUM]; // Last one is stub device
+    uint32_t deviceCustomerStackSize_{KERNEL_STACK_SIZE_32K}; // 全局共享，所有device生效，向上取整到16KB对齐
     uint32_t printblockLen_{SIMD_FIFO_PER_CORE_SIZE_32K}; // 全局共享
- 	uint32_t simtPrintLen_{SIMT_FIFO_SIZE_2M}; // 全局共享
-    ObjAllocator<RefObject<Program *>> *programAllocator_;
-    Device *xpuDevice_{nullptr};
-    Context *xpuCtxt_{nullptr};
+    uint32_t simtPrintLen_{SIMT_FIFO_SIZE_2M};            // 全局共享
+    ObjAllocator<RefObject<Program*>>* programAllocator_;
+    Device* xpuDevice_{nullptr};
+    Context* xpuCtxt_{nullptr};
 
-    ApiErrorDecorator *apiError_;
-    Logger *logger_;
-    Profiler *profiler_;
-    EngineObserver *streamObserver_;
-    Bitmap *aicpuStreamIdBitmap_;
-    CbSubscribe *cbSubscribe_;
+    ApiErrorDecorator* apiError_;
+    Logger* logger_;
+    Profiler* profiler_;
+    EngineObserver* streamObserver_;
+    Bitmap* aicpuStreamIdBitmap_;
+    CbSubscribe* cbSubscribe_;
     rtChipType_t chipType_;
     std::string socVersion_;
     int64_t aicpuCnt_ = DEFAULT_AICPU_INVALID_NUM;
@@ -1030,28 +792,28 @@ private:
     uint64_t trackProfilingType_;
     uint64_t profileLogType_;
     bool profileLogModeEnable_;
-    uint64_t devNeedSendProf_[RT_MAX_DEV_NUM + 1][RT_MAX_TS_NUM];  // Last one is stub device
-    uint64_t devNeedSendProfSwitchHi_[RT_MAX_DEV_NUM + 1][RT_MAX_TS_NUM];  // Last one is stub device
-    void *tsdClientHandle_;
-    FUNC_TDT_OPEN  tsdOpen_;
-    FUNC_TDT_OPEN_EX  tsdOpenEx_;
+    uint64_t devNeedSendProf_[RT_MAX_DEV_NUM + 1][RT_MAX_TS_NUM];         // Last one is stub device
+    uint64_t devNeedSendProfSwitchHi_[RT_MAX_DEV_NUM + 1][RT_MAX_TS_NUM]; // Last one is stub device
+    void* tsdClientHandle_;
+    FUNC_TDT_OPEN tsdOpen_;
+    FUNC_TDT_OPEN_EX tsdOpenEx_;
     FUNC_TDT_CLOSE tsdClose_;
     FUNC_TDT_CLOSE_EX tsdCloseEx_;
     FUNC_TDT_OPEN_AICPU_SD tsdOpenAicpuSd_;
     FUNC_TDT_INIT_QS tsdInitQs_;
     FUNC_TDT_INIT_FLOW_GW tsdInitFlowGw_;
-    FUNC_TDT_UPDATE tsdHandleAicpuProfiling_; // for open aicpu profiling
+    FUNC_TDT_UPDATE tsdHandleAicpuProfiling_;       // for open aicpu profiling
     FUNC_TDT_SET_PROF_CALLBACK tsdSetProfCallback_; // for set profiling callback
-    FUNC_TDT_SET_ATTR tsdSetAttr_; // for set tsd attr and mode
+    FUNC_TDT_SET_ATTR tsdSetAttr_;                  // for set tsd attr and mode
     FUNC_TDT_GET_HDC_CON_STA tsdGetHdcConctStatus_; // for get hdc connection status
     FUNC_TDT_GET_QOS tsdGetCapability_;
-    FUNC_TDT_OPEN_NET_SERVICE tsdOpenNetService_; // for hccl dlopen
+    FUNC_TDT_OPEN_NET_SERVICE tsdOpenNetService_;   // for hccl dlopen
     FUNC_TDT_CLOSE_NET_SERVICE tsdCloseNetService_;
 
     uint32_t virAicoreNum_;
     bool isVirtualMode_ = false;
     bool isExiting_ = false;
-    LabelAllocator *labelAllocator_;
+    LabelAllocator* labelAllocator_;
     bool disableThread_ = false;
     bool isHaveDevice_ = false;
 
@@ -1062,7 +824,7 @@ private:
     uint32_t waitTimeout_ = 0U; // defualt event wait timeout 0s(never timeout)
     bool disableWaitPrep_ = false;
     uint8_t profileEnabled_ = 0U;
-    bool isNpuCollect = false;  // Corresponding to the environment NPU_COLLECT_PATH
+    bool isNpuCollect = false; // Corresponding to the environment NPU_COLLECT_PATH
 
     uint32_t grpID_ = UINT32_MAX;
     bool isStreamSyncEsched_ = false;
@@ -1075,7 +837,7 @@ private:
     std::mutex taskAbortMutex_;
     uint32_t tschVersion_ = 0U;
     uint8_t tilingKeyFlag_ = UINT8_MAX;
-    ThreadGuard *threadGuard_;
+    ThreadGuard* threadGuard_;
     std::mutex deviceIdMutex_;
     std::mutex xpuSetDevMutex_;
     uint32_t defaultDeviceId_ = 0xFFFFFFFFU;
@@ -1110,7 +872,7 @@ private:
     std::mutex memMapSelectedLinkMutex_;
     bool isRuntimeExiting_{false};
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_RUNTIME_HPP__
+#endif // __CCE_RUNTIME_RUNTIME_HPP__

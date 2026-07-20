@@ -24,10 +24,7 @@ namespace runtime {
 class JettyManager {
 public:
     explicit JettyManager(uint32_t deviceId);
-    ~JettyManager()
-    {
-        Clear();
-    }
+    ~JettyManager() { Clear(); }
 
     /**
      * @brief 为流预留 Jetty(Capture 阶段使用)
@@ -43,7 +40,7 @@ public:
      * @param type Jetty 类型
      * @return rtError_t 错误码
      */
-    rtError_t BindJettyForStream(int32_t streamId, const CaptureModel * const excludeMdl, JettyType type);
+    rtError_t BindJettyForStream(int32_t streamId, const CaptureModel* const excludeMdl, JettyType type);
 
     /**
      * @brief 解绑 Jetty 从流
@@ -82,7 +79,7 @@ public:
      * @param type Jetty 类型
      * @return StreamJettyContext* 上下文指针
      */
-    StreamJettyContext* GetOrCreateStreamJettyContext(const Stream *stream, JettyType type);
+    StreamJettyContext* GetOrCreateStreamJettyContext(const Stream* stream, JettyType type);
 
     /**
      * @brief 获取流的 Capture Jetty 上下文(只读，不创建)
@@ -108,9 +105,9 @@ private:
     std::unique_ptr<JettyPool> jettyPool_;
     std::map<std::pair<uint32_t, JettyType>, std::unique_ptr<StreamJettyContext>> streamJettyContexts_;
     mutable std::recursive_mutex managerLock_;
-    
-    rtError_t AllocJettyWithRetry(JettyType type, int32_t streamId,
-        const CaptureModel * const excludeMdl, JettyInfo& jettyInfo);
+
+    rtError_t AllocJettyWithRetry(
+        JettyType type, int32_t streamId, const CaptureModel* const excludeMdl, JettyInfo& jettyInfo);
 };
 
 } // namespace runtime

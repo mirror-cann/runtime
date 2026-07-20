@@ -13,12 +13,12 @@
 
 // ==================== Platform detection macros ====================
 #if defined(__x86_64__)
-    #define RT_ARCH_X86 1
-    #include <immintrin.h>
-    #include <cpuid.h>
+#define RT_ARCH_X86 1
+#include <immintrin.h>
+#include <cpuid.h>
 #elif defined(__arm__) || defined(__aarch64__)
-    #define RT_ARCH_ARM 1
-    #include <arm_neon.h>
+#define RT_ARCH_ARM 1
+#include <arm_neon.h>
 #endif
 
 namespace cce {
@@ -36,8 +36,7 @@ static inline __attribute__((unused)) void Memset32_Naive(uint32_t* dst, uint32_
 
 // -------------------- x86 SIMD ---------------------------------
 #ifdef RT_ARCH_X86
-__attribute__((target("avx2"))) 
-static inline void Memset32_AVX2(uint32_t* dst, uint32_t value, size_t count)
+__attribute__((target("avx2"))) static inline void Memset32_AVX2(uint32_t* dst, uint32_t value, size_t count)
 {
     __m256i val = _mm256_set1_epi32(static_cast<int>(value));
     size_t i = 0UL;
@@ -51,8 +50,7 @@ static inline void Memset32_AVX2(uint32_t* dst, uint32_t value, size_t count)
 
 // LCOV_EXCL_STOP
 
-__attribute__((target("avx512f")))
-static inline void Memset32_AVX512(uint32_t* dst, uint32_t value, size_t count)
+__attribute__((target("avx512f"))) static inline void Memset32_AVX512(uint32_t* dst, uint32_t value, size_t count)
 {
     __m512i val = _mm512_set1_epi32(static_cast<int>(value));
     size_t i = 0UL;
@@ -129,19 +127,19 @@ void MemsetD32Optimized(uint32_t* dst, uint32_t value, size_t count)
     if (count == 0UL) {
         return;
     }
-    
+
     static Memset32Func optimal_func = GetOptimalMemset32Func();
     const size_t kAlignBytes = 32ULL;
     uintptr_t addr = reinterpret_cast<uintptr_t>(dst);
     size_t offset = 0UL;
-    
+
     // Handle misaligned prefix
     while ((offset < count) && ((addr & (kAlignBytes - 1ULL)) != 0ULL)) {
         dst[offset] = value;
         ++offset;
         addr += sizeof(uint32_t);
     }
-    
+
     // Handle aligned main body
     size_t remaining = count - offset;
     if (remaining > 0UL) {
@@ -149,5 +147,5 @@ void MemsetD32Optimized(uint32_t* dst, uint32_t value, size_t count)
     }
 }
 
-}  // namespace runtime 
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

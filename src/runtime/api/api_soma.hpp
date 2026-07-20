@@ -9,7 +9,7 @@
  */
 #ifndef CCE_RUNTIME_API_SOMA_HPP
 #define CCE_RUNTIME_API_SOMA_HPP
- 
+
 #include "runtime/rt.h"
 #include "base.hpp"
 #include "runtime.hpp"
@@ -17,38 +17,38 @@
 #include "model.hpp"
 #include "label.hpp"
 #include "api.hpp"
- 
+
 namespace cce {
 namespace runtime {
- 
+
 // Runtime interface
 class ApiSoma {
 public:
     ApiSoma() = default;
     virtual ~ApiSoma() = default;
- 
-    ApiSoma(const ApiSoma &) = delete;
-    ApiSoma &operator=(const ApiSoma &) = delete;
-    ApiSoma(ApiSoma &&) = delete;
-    ApiSoma &operator=(ApiSoma &&) = delete;
- 
+
+    ApiSoma(const ApiSoma&) = delete;
+    ApiSoma& operator=(const ApiSoma&) = delete;
+    ApiSoma(ApiSoma&&) = delete;
+    ApiSoma& operator=(ApiSoma&&) = delete;
+
     // Get ApiSoma instance.
-    static ApiSoma *Instance();
- 
+    static ApiSoma* Instance();
+
     // SOMA API
-    virtual rtError_t StreamMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProps *poolProps) = 0;
+    virtual rtError_t StreamMemPoolCreate(rtMemPool_t* memPool, const rtMemPoolProps* poolProps) = 0;
     virtual rtError_t StreamMemPoolDestroy(rtMemPool_t const memPool) = 0;
-    virtual rtError_t StreamMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value) = 0;
-    virtual rtError_t StreamMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value) = 0;
-    virtual rtError_t MemPoolMallocAsync(void **devPtr, const uint64_t size, const rtMemPool_t memPoolId, Stream * const stm) = 0;
- 	virtual rtError_t MemPoolFreeAsync(void * const ptr, Stream * const stm) = 0;
+    virtual rtError_t StreamMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value) = 0;
+    virtual rtError_t StreamMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value) = 0;
+    virtual rtError_t MemPoolMallocAsync(
+        void** devPtr, const uint64_t size, const rtMemPool_t memPoolId, Stream* const stm) = 0;
+    virtual rtError_t MemPoolFreeAsync(void* const ptr, Stream* const stm) = 0;
     virtual rtError_t MemPoolFreeSync(void* const ptr) = 0;
     virtual rtError_t MemPoolTrimTo(rtMemPool_t memPool, uint64_t minBytesToKeep) = 0;
     virtual rtError_t MemPoolTrimImplicit(bool includeGraphPool) = 0;
-    virtual bool InMemPoolRegion(void * const ptr) = 0;
+    virtual bool InMemPoolRegion(void* const ptr) = 0;
 };
-}  // namespace runtime
-}  // namespace cce
- 
- 
-#endif  // CCE_RUNTIME_API_SOMA_HPP
+} // namespace runtime
+} // namespace cce
+
+#endif // CCE_RUNTIME_API_SOMA_HPP

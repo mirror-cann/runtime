@@ -18,9 +18,9 @@ namespace runtime {
 
 #if F_DESC("AddEndGraphTask")
 
-rtError_t AddEndGraphTaskInit(TaskInfo* taskInfo, const uint32_t modelId, const uint32_t exeFlag,
-                              const uint64_t argParam, const uint64_t endGraphName,
-                              const uint8_t flags)
+rtError_t AddEndGraphTaskInit(
+    TaskInfo* taskInfo, const uint32_t modelId, const uint32_t exeFlag, const uint64_t argParam,
+    const uint64_t endGraphName, const uint8_t flags)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->typeName = "MODEL_END_GRAPH";
@@ -30,17 +30,18 @@ rtError_t AddEndGraphTaskInit(TaskInfo* taskInfo, const uint32_t modelId, const 
     taskInfo->u.addEndGraphTask.argptr = argParam;
     taskInfo->u.addEndGraphTask.endGraphNamePtr = endGraphName;
     taskInfo->u.addEndGraphTask.datadumpFlag = flags;
-    RT_LOG(RT_LOG_DEBUG, "Create end graph task,mode_id=%u,executor flag=%u,task_id=%u,task_type=%d(%s),"
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "Create end graph task,mode_id=%u,executor flag=%u,task_id=%u,task_type=%d(%s),"
         "stream_id=%d,datadumpFlag=%u.",
-        modelId, exeFlag, static_cast<uint32_t>(taskInfo->id), static_cast<int32_t>(taskInfo->type),
-        taskInfo->typeName, taskInfo->stream->Id_(),
-        static_cast<uint32_t>(taskInfo->u.addEndGraphTask.datadumpFlag));
+        modelId, exeFlag, static_cast<uint32_t>(taskInfo->id), static_cast<int32_t>(taskInfo->type), taskInfo->typeName,
+        taskInfo->stream->Id_(), static_cast<uint32_t>(taskInfo->u.addEndGraphTask.datadumpFlag));
     return RT_ERROR_NONE;
 }
 
-void ToCmdBodyForAddEndGraphTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCmdBodyForAddEndGraphTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
-    Stream *stm = taskInfo->stream;
+    Stream* stm = taskInfo->stream;
 
     command->u.modelEndGraphTask.modelId = taskInfo->u.addEndGraphTask.modelId;
     command->u.modelEndGraphTask.executorFlag = taskInfo->u.addEndGraphTask.executorFlag;
@@ -58,18 +59,19 @@ void ToCmdBodyForAddEndGraphTask(TaskInfo* taskInfo, rtCommand_t *const command)
 rtError_t AddModelExitTaskInit(TaskInfo* taskInfo, const uint32_t modelId)
 {
     TaskCommonInfoInit(taskInfo);
-    Stream *stm = taskInfo->stream;
+    Stream* stm = taskInfo->stream;
     taskInfo->typeName = "MODEL_EXIT_GRAPH";
     taskInfo->type = TS_TASK_TYPE_MODEL_EXIT_GRAPH;
     taskInfo->u.addModelExitTask.modelId = modelId;
     taskInfo->u.addModelExitTask.streamId = static_cast<uint32_t>(stm->Id_());
-    RT_LOG(RT_LOG_DEBUG, "Create model exit task,mode_id=%u,task_id=%u,task_type=%d(%s),stream_id=%d.",
-        modelId, static_cast<uint32_t>(taskInfo->id), static_cast<int32_t>(taskInfo->type),
-        taskInfo->typeName, static_cast<uint32_t>(taskInfo->stream->Id_()));
+    RT_LOG(
+        RT_LOG_DEBUG, "Create model exit task,mode_id=%u,task_id=%u,task_type=%d(%s),stream_id=%d.", modelId,
+        static_cast<uint32_t>(taskInfo->id), static_cast<int32_t>(taskInfo->type), taskInfo->typeName,
+        static_cast<uint32_t>(taskInfo->stream->Id_()));
     return RT_ERROR_NONE;
 }
 
-void ToCmdBodyForAddModelExitTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCmdBodyForAddModelExitTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     command->u.modelExitTask.modelId = taskInfo->u.addModelExitTask.modelId;
     command->u.modelExitTask.streamId = taskInfo->u.addModelExitTask.streamId;
@@ -78,5 +80,5 @@ void ToCmdBodyForAddModelExitTask(TaskInfo* taskInfo, rtCommand_t *const command
 
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

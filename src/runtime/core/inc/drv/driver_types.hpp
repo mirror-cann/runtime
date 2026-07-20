@@ -46,13 +46,13 @@ struct AsyncSqeUpdateInfo {
 };
 
 struct AsyncDmaWqeInputInfo {
-    void *src;
+    void* src;
     uint64_t size;
     uint32_t sqId;
     uint32_t tsId;
     uint32_t cpyType;
     union {
-        void *destPtr;
+        void* destPtr;
         struct AsyncSqeUpdateInfo info;
     };
 };
@@ -63,7 +63,7 @@ struct AsyncDmaWqeOutputInfo {
             uint16_t dieId;
             uint16_t functionId;
             uint16_t jettyId;
-            uint8_t *wqe;
+            uint8_t* wqe;
             int32_t wqeLen;
             uint32_t pi;
             union {
@@ -80,10 +80,10 @@ struct AsyncDmaWqeDestroyInfo {
     uint32_t sqId;
     union {
         struct {
-            uint8_t *wqe;
+            uint8_t* wqe;
             int32_t size;
         };
-        struct DMA_ADDR *dmaAddr;
+        struct DMA_ADDR* dmaAddr;
     };
 };
 
@@ -92,9 +92,9 @@ struct AsyncDmaWqeInputInfo2D {
     uint32_t tsId;
     uint32_t sqId;
     uint32_t dir;
-    void *dst;
+    void* dst;
     uint64_t dpitch;
-    void *src;
+    void* src;
     uint64_t destAddr;
     uint64_t spitch;
     uint64_t width;
@@ -112,9 +112,9 @@ struct AsyncDmaWqeDestroyInfo2D {
 };
 
 struct AsyncDmaBatchInfo {
-    void **dsts;
-    void **srcs;
-    uint64_t *sizes;
+    void** dsts;
+    void** srcs;
+    uint64_t* sizes;
     uint64_t count;
     uint64_t fixedCnt;
     uint64_t fixedSize;
@@ -125,9 +125,9 @@ struct AsyncDmaWqeInputInfoBatch {
     uint32_t tsId;
     uint32_t sqId;
     uint32_t dir;
-    void **dsts;
-    void **srcs;
-    uint64_t *lens;
+    void** dsts;
+    void** srcs;
+    uint64_t* lens;
     uint64_t count;
     uint64_t fixedCnt;
     std::array<uint32_t, ASYNC_CPY_BATCH_IN_RSV_LEN> rsv;
@@ -142,7 +142,7 @@ struct AsyncDmaWqeDestroyInfoBatch {
 };
 
 struct IpcNotifyOpenPara {
-    const char_t *name;
+    const char_t* name;
     uint32_t flag;
     uint32_t localDevId;
     uint32_t localTsId;
@@ -154,21 +154,21 @@ struct AsyncDmaJettyHandle {
 };
 
 struct AsyncWqeNormalInfo {
-    uint8_t *src;
-    uint8_t *dst;
+    uint8_t* src;
+    uint8_t* dst;
     uint64_t len;
 };
 
 struct AsyncWqeBatchInfo {
-    uint64_t *src;
-    uint64_t *dst;
-    uint64_t *len;
+    uint64_t* src;
+    uint64_t* dst;
+    uint64_t* len;
     uint64_t count;
 };
 
 struct AsyncWqeMatrix2dInfo {
-    uint64_t *src;
-    uint64_t *dst;
+    uint64_t* src;
+    uint64_t* dst;
     uint64_t dpitch;
     uint64_t spitch;
     uint64_t width;
@@ -182,8 +182,8 @@ struct AsyncWqeNopInfo {
 
 struct AsyncWqeInputPara {
     uint32_t wqeType;   /* 见drv_async_dma_type */
-    uint8_t *wqeBuffer; /* 入参buffer, 直接传入wqe buffer地址，不做二次拷贝 */
-    uint32_t size;       /* 入参buffer大小 size */
+    uint8_t* wqeBuffer; /* 入参buffer, 直接传入wqe buffer地址，不做二次拷贝 */
+    uint32_t size;      /* 入参buffer大小 size */
     union {
         AsyncWqeNormalInfo normal;
         AsyncWqeBatchInfo batch;
@@ -195,7 +195,7 @@ struct AsyncWqeInputPara {
 
 struct AsyncWqeOutputPara {
     uint32_t wqeCnt; /* 转化出返回多少个wqe */
-    /* 
+    /*
      * batch: already complete-converted array element;
      * others: 0 for partially-converted, 1 for complete-converted
      */
@@ -211,7 +211,7 @@ struct AsyncWqeOutputPara {
 struct AsyncWqeFillInfo {
     struct AsyncDmaJettyHandle jettyHandle;
     uint32_t offset;
-    void *srcWqe;
+    void* srcWqe;
     uint64_t size;
     uint32_t flag;
     std::array<uint32_t, 16> rsv; // 16 rsv cnt

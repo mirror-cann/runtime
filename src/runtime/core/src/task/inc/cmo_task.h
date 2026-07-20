@@ -15,9 +15,9 @@
 
 namespace cce {
 namespace runtime {
-rtError_t CmoTaskInit(TaskInfo *taskInfo, const rtCmoTaskInfo_t *const cmoTaskInfo, const Stream * const stm,
-                      const uint32_t flag);
-rtError_t CmoAddrTaskInit(TaskInfo *taskInfo, void *cmoAddrInfo, const rtCmoOpCode_t cmoOpCode);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_CMO_TASK_H
+rtError_t CmoTaskInit(
+    TaskInfo* taskInfo, const rtCmoTaskInfo_t* const cmoTaskInfo, const Stream* const stm, const uint32_t flag);
+rtError_t CmoAddrTaskInit(TaskInfo* taskInfo, void* cmoAddrInfo, const rtCmoOpCode_t cmoOpCode);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_CMO_TASK_H

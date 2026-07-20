@@ -19,7 +19,7 @@
 
 namespace cce {
 namespace runtime {
-EventExpandingPool::EventExpandingPool(Device * const dev)
+EventExpandingPool::EventExpandingPool(Device* const dev)
     : NoCopy(), device_(dev), eventIdCount_(EVENT_INIT_VALUE), lastEventId_(0U), poolIndex_(0U)
 {
     for (int i = 0; i < MAX_POOL_CNT; ++i) {
@@ -34,63 +34,71 @@ EventExpandingPool::~EventExpandingPool()
     }
 }
 
-void *EventExpandingPool::MallocBufferForEvent(const size_t size, void * const para)
+void* EventExpandingPool::MallocBufferForEvent(const size_t size, void* const para)
 {
-    void *addr = nullptr;
-    Device * const dev = static_cast<Device *>(para);
+    void* addr = nullptr;
+    Device* const dev = static_cast<Device*>(para);
     rtError_t error = dev->Driver_()->DevMemAlloc(&addr, static_cast<uint64_t>(size), RT_MEMORY_DDR, dev->Id_());
-    COND_RETURN_WARN(error != RT_ERROR_NONE, nullptr, "device mem alloc pool mem failed, "
+    COND_RETURN_WARN(
+        error != RT_ERROR_NONE, nullptr,
+        "device mem alloc pool mem failed, "
         "size=%u(bytes), kind=%d, device_id=%u, retCode=%#x",
         size, RT_MEMORY_DDR, dev->Id_(), static_cast<uint32_t>(error));
     error = dev->Driver_()->MemSetSync(addr, static_cast<uint64_t>(size), 0, static_cast<uint64_t>(size));
-    COND_PROC_RETURN_WARN(error != RT_ERROR_NONE, nullptr, (void)dev->Driver_()->DevMemFree(addr, dev->Id_()), 
-            "device memset sync failed, size=%u(bytes), kind=%d, device_id=%u, retCode=%#x",
-            size, RT_MEMORY_DDR, dev->Id_(), static_cast<uint32_t>(error));
+    COND_PROC_RETURN_WARN(
+        error != RT_ERROR_NONE, nullptr, (void)dev->Driver_()->DevMemFree(addr, dev->Id_()),
+        "device memset sync failed, size=%u(bytes), kind=%d, device_id=%u, retCode=%#x", size, RT_MEMORY_DDR,
+        dev->Id_(), static_cast<uint32_t>(error));
     return addr;
 }
 
-void EventExpandingPool::FreeBufferForEvent(void * const addr, void * const para)
+void EventExpandingPool::FreeBufferForEvent(void* const addr, void* const para)
 {
-    Device * const dev = static_cast<Device *>(para);
+    Device* const dev = static_cast<Device*>(para);
     rtError_t error = dev->Driver_()->DevMemFree(addr, dev->Id_());
-    COND_LOG(error != RT_ERROR_NONE, "device mem free failed, device_id=%u, retCode=%#x!",
-        dev->Id_(), static_cast<uint32_t>(error));
+    COND_LOG(
+        error != RT_ERROR_NONE, "device mem free failed, device_id=%u, retCode=%#x!", dev->Id_(),
+        static_cast<uint32_t>(error));
 }
 
-rtError_t EventExpandingPool::AllocAndInsertEvent(void** const eventAddr, int32_t *eventId)
+rtError_t EventExpandingPool::AllocAndInsertEvent(void** const eventAddr, int32_t* eventId)
 {
     const std::unique_lock<std::mutex> taskLock(EventMapLock_);
-    COND_PROC_RETURN_AND_MSG_OUTER(eventIdCount_ == INT32_MAX, RT_ERROR_DRV_NO_EVENT_RESOURCES, ErrorCode::EE1023,
-        RT_LOG(RT_LOG_ERROR, "Event count is reaching the maximum."),
-        "Alloc Event resource",
+    COND_PROC_RETURN_AND_MSG_OUTER(
+        eventIdCount_ == INT32_MAX, RT_ERROR_DRV_NO_EVENT_RESOURCES, ErrorCode::EE1023,
+        RT_LOG(RT_LOG_ERROR, "Event count is reaching the maximum."), "Alloc Event resource",
         "Too many events are created");
     int32_t currentEventId = -1;
- 	const uint16_t oriPoolIndex = poolIndex_;
- 	do {
- 	    if (eventAllocator_[poolIndex_] == nullptr) {
-  	        eventAllocator_[poolIndex_] = new (std::nothrow) BufferAllocator(sizeof(uint8_t), EVENT_INIT_CNT, PER_POOL_CNT,
-            BufferAllocator::LINEAR, &MallocBufferForEvent, &FreeBufferForEvent, device_);
-            COND_RETURN_AND_MSG_OUTER(eventAllocator_[poolIndex_] == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-            ErrorCode::EE1013, std::to_string(sizeof(BufferAllocator)).c_str(), "new");
- 	        RT_LOG(RT_LOG_INFO, "Init EventExpandingPool success, poolIndex=%hu.", poolIndex_);
- 	    }
-  	 
- 	    currentEventId = eventAllocator_[poolIndex_]->AllocIdWithoutRetry(false);
- 	    if (currentEventId >= 0) {
- 	        break;
- 	    }
- 	    poolIndex_ = (poolIndex_ + 1U) % MAX_POOL_CNT;
- 	} while (oriPoolIndex != poolIndex_); // only one loop
-    COND_PROC_RETURN_AND_MSG_OUTER(currentEventId < 0, RT_ERROR_DRV_NO_EVENT_RESOURCES, ErrorCode::EE1023,
-        RT_LOG(RT_LOG_ERROR, "Failed to allocate event ID from event pool."),
-        "Alloc Event resource",
+    const uint16_t oriPoolIndex = poolIndex_;
+    do {
+        if (eventAllocator_[poolIndex_] == nullptr) {
+            eventAllocator_[poolIndex_] = new (std::nothrow) BufferAllocator(
+                sizeof(uint8_t), EVENT_INIT_CNT, PER_POOL_CNT, BufferAllocator::LINEAR, &MallocBufferForEvent,
+                &FreeBufferForEvent, device_);
+            COND_RETURN_AND_MSG_OUTER(
+                eventAllocator_[poolIndex_] == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+                std::to_string(sizeof(BufferAllocator)).c_str(), "new");
+            RT_LOG(RT_LOG_INFO, "Init EventExpandingPool success, poolIndex=%hu.", poolIndex_);
+        }
+
+        currentEventId = eventAllocator_[poolIndex_]->AllocIdWithoutRetry(false);
+        if (currentEventId >= 0) {
+            break;
+        }
+        poolIndex_ = (poolIndex_ + 1U) % MAX_POOL_CNT;
+    } while (oriPoolIndex != poolIndex_); // only one loop
+    COND_PROC_RETURN_AND_MSG_OUTER(
+        currentEventId < 0, RT_ERROR_DRV_NO_EVENT_RESOURCES, ErrorCode::EE1023,
+        RT_LOG(RT_LOG_ERROR, "Failed to allocate event ID from event pool."), "Alloc Event resource",
         "Too many events are created");
- 	lastEventId_ = EVENT_INIT_VALUE + (PER_POOL_CNT * poolIndex_) + currentEventId; // (init:65536) + (PER_POOL_CNT * index)  + cur
- 	*eventAddr = eventAllocator_[poolIndex_]->GetItemById(currentEventId, false);
+    lastEventId_ =
+        EVENT_INIT_VALUE + (PER_POOL_CNT * poolIndex_) + currentEventId; // (init:65536) + (PER_POOL_CNT * index)  + cur
+    *eventAddr = eventAllocator_[poolIndex_]->GetItemById(currentEventId, false);
     *eventId = lastEventId_;
     eventIdCount_++;
-    RT_LOG(RT_LOG_INFO, "get event id, event_id=%d, lastEventId=%d, poolIndex=%d, currentEventId=%d.",
-        *eventId, lastEventId_, poolIndex_, currentEventId);
+    RT_LOG(
+        RT_LOG_INFO, "get event id, event_id=%d, lastEventId=%d, poolIndex=%d, currentEventId=%d.", *eventId,
+        lastEventId_, poolIndex_, currentEventId);
     return RT_ERROR_NONE;
 }
 
@@ -98,9 +106,9 @@ void EventExpandingPool::FreeEventId(int32_t eventId)
 {
     const std::unique_lock<std::mutex> taskLock(EventMapLock_);
     uint16_t poolIndex = (eventId - EVENT_INIT_VALUE) / PER_POOL_CNT;
- 	int32_t id = (eventId - EVENT_INIT_VALUE) % PER_POOL_CNT;
- 	COND_RETURN_VOID(poolIndex >= MAX_POOL_CNT, "Free event id failed, event_id=%d, poolIndex=%u.", eventId, poolIndex);
- 	eventAllocator_[poolIndex]->FreeById(id);
+    int32_t id = (eventId - EVENT_INIT_VALUE) % PER_POOL_CNT;
+    COND_RETURN_VOID(poolIndex >= MAX_POOL_CNT, "Free event id failed, event_id=%d, poolIndex=%u.", eventId, poolIndex);
+    eventAllocator_[poolIndex]->FreeById(id);
     eventIdCount_--;
 }
 
@@ -112,11 +120,11 @@ rtError_t EventExpandingPool::ResetBufferForEvent()
         if (allocator == nullptr) {
             continue;
         }
-        
+
         const rtError_t error = allocator->MemsetBuffers(device_, 0U);
         ERROR_RETURN(error, "Failed to reset event buffer, poolIdx=%zu", poolIdx);
     }
     return RT_ERROR_NONE;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

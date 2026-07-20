@@ -15,10 +15,10 @@
 
 namespace cce {
 namespace runtime {
-Api *CreateImplAndGet();
-ApiMbuf *CreateImplMbufAndGet();
-ApiSoma *CreateImplSomaAndGet();
-}  // namespace runtime
-}  // namespace cce
+Api* CreateImplAndGet();
+ApiMbuf* CreateImplMbufAndGet();
+ApiSoma* CreateImplSomaAndGet();
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_API_IMPL_CREATOR_C_HPP__

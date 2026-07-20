@@ -19,7 +19,7 @@ namespace runtime {
 
 class CtrlSQ : public NoCopy {
 public:
-    explicit CtrlSQ(Device * const dev);
+    explicit CtrlSQ(Device* const dev);
     ~CtrlSQ() noexcept override;
 
     rtError_t Setup();
@@ -30,61 +30,65 @@ public:
         in: param
         out: msgId
      */
-    rtError_t CreateCtrlMsg(RtCtrlMsgType msgType, const RtCtrlMsgParam &param, uint32_t * const msgId = nullptr);
+    rtError_t CreateCtrlMsg(RtCtrlMsgType msgType, const RtCtrlMsgParam& param, uint32_t* const msgId = nullptr);
 
     /**
         wait ctrl msg complete
      */
     rtError_t WaitComplete(const bool isNeedWaitSyncCq = false, int32_t timeout = -1);
 
-    rtError_t SendStreamClearMsg(const Stream * const stm, rtClearStep_t step, rtTaskGenCallback callback);
+    rtError_t SendStreamClearMsg(const Stream* const stm, rtClearStep_t step, rtTaskGenCallback callback);
 
-    rtError_t SendStreamRecycleMsg(const RtMaintainceParam &maintenanceParam, TaskInfo *&task);
+    rtError_t SendStreamRecycleMsg(const RtMaintainceParam& maintenanceParam, TaskInfo*& task);
 
     rtError_t SendNotifyResetMsg(uint32_t notifyId);
-    rtError_t SendNotifyResetV200Msg(const uint32_t notifyIndex, const SingleBitNotifyRecordInfo * const singleInfo, void * const notify);
+    rtError_t SendNotifyResetV200Msg(
+        const uint32_t notifyIndex, const SingleBitNotifyRecordInfo* const singleInfo, void* const notify);
 
-    rtError_t SendModelUnbindMsg(Model * const mdl, Stream * const streamIn, const bool force);
+    rtError_t SendModelUnbindMsg(Model* const mdl, Stream* const streamIn, const bool force);
 
-    rtError_t SendModelUnbindMsgOnly(Model * const mdl, Stream * const streamIn);
+    rtError_t SendModelUnbindMsgOnly(Model* const mdl, Stream* const streamIn);
 
-    rtError_t SendModelBindMsg(Model * const mdl, Stream * const streamIn, const uint32_t flag);
+    rtError_t SendModelBindMsg(Model* const mdl, Stream* const streamIn, const uint32_t flag);
 
-    rtError_t SendModelBindMsgOnly(Model * const mdl, Stream * const streamIn, const uint32_t flag);
+    rtError_t SendModelBindMsgOnly(Model* const mdl, Stream* const streamIn, const uint32_t flag);
 
-    rtError_t SendModelAbortMsg(Model * const mdl);
+    rtError_t SendModelAbortMsg(Model* const mdl);
 
-    rtError_t SendModelLoadCompleteMsg(const Model * const mdl, uint32_t firstTaskId);
+    rtError_t SendModelLoadCompleteMsg(const Model* const mdl, uint32_t firstTaskId);
 
-    rtError_t SendAicpuModelMsg(RtCtrlMsgType msgType, const RtAicpuModelParam &aicpuModelParam);
+    rtError_t SendAicpuModelMsg(RtCtrlMsgType msgType, const RtAicpuModelParam& aicpuModelParam);
 
     rtError_t SendDataDumpLoadInfoMsg(
-    RtCtrlMsgType msgType, const RtDataDumpLoadInfoParam &datadumpLoadInfoParam, rtTaskGenCallback callback);
+        RtCtrlMsgType msgType, const RtDataDumpLoadInfoParam& datadumpLoadInfoParam, rtTaskGenCallback callback);
 
     rtError_t SendAicpuInfoLoadMsg(
-        RtCtrlMsgType msgType, const RtAicpuInfoLoadParam &aicpuInfoLoadParam, rtTaskGenCallback callback);
+        RtCtrlMsgType msgType, const RtAicpuInfoLoadParam& aicpuInfoLoadParam, rtTaskGenCallback callback);
 
-    rtError_t SendDebugRegisterMsg(RtCtrlMsgType msgType, const RtDebugRegisterParam &debugRegisterParam,
-        rtTaskGenCallback callback, uint32_t *const flipTaskId);
+    rtError_t SendDebugRegisterMsg(
+        RtCtrlMsgType msgType, const RtDebugRegisterParam& debugRegisterParam, rtTaskGenCallback callback,
+        uint32_t* const flipTaskId);
 
     rtError_t SendDebugUnRegisterMsg(
-        RtCtrlMsgType msgType, const RtDebugUnRegisterParam &debugUnRegisterParam, rtTaskGenCallback callback);
+        RtCtrlMsgType msgType, const RtDebugUnRegisterParam& debugUnRegisterParam, rtTaskGenCallback callback);
 
-    rtError_t SendOverflowSwitchSetMsg(RtCtrlMsgType msgType, const RtOverflowSwitchSetParam &overflowSwitchSetParam,
-        rtTaskGenCallback callback, uint32_t *const flipTaskId);
+    rtError_t SendOverflowSwitchSetMsg(
+        RtCtrlMsgType msgType, const RtOverflowSwitchSetParam& overflowSwitchSetParam, rtTaskGenCallback callback,
+        uint32_t* const flipTaskId);
 
-    rtError_t SendSetStreamTagMsg(RtCtrlMsgType msgType, const RtSetStreamTagParam &setStreamTagParam, rtTaskGenCallback callback, uint32_t *const flipTaskId);
+    rtError_t SendSetStreamTagMsg(
+        RtCtrlMsgType msgType, const RtSetStreamTagParam& setStreamTagParam, rtTaskGenCallback callback,
+        uint32_t* const flipTaskId);
 
-    Stream *GetStream() const
-    {
-        return stream_;
-    }
+    Stream* GetStream() const { return stream_; }
+
 private:
-    rtError_t CreateDavidCtrlMsg(RtCtrlMsgType msgType, const RtCtrlMsgParam &param, uint32_t * const msgId = nullptr) const;
+    rtError_t CreateDavidCtrlMsg(
+        RtCtrlMsgType msgType, const RtCtrlMsgParam& param, uint32_t* const msgId = nullptr) const;
     void RegCtrlMsgInitFunc(void) const;
     Device* device_;
     Stream* stream_{nullptr}; // 内部下任务对应的stream
 };
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 #endif

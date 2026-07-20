@@ -15,6 +15,6 @@ namespace runtime {
 bool RtIsHeterogenous(void);
 int32_t RtGetHeterogenous(void);
 int32_t ReadHeterogenousModeFromConfigIni(void);
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

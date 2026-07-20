@@ -22,15 +22,15 @@ namespace runtime {
 
 #if F_DESC("ModelExecuteTask")
 
-static void ConstructDavidSqeForModelExecuteTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+static void ConstructDavidSqeForModelExecuteTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
-    ModelExecuteTaskInfo * const modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    ModelExecuteTaskInfo* const modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
+    RtDavidStarsFunctionCallSqe& fnCallSqe = davidSqe->fuctionCallSqe;
     fnCallSqe.header.type = RT_DAVID_SQE_TYPE_COND;
     fnCallSqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
     fnCallSqe.header.postP = RT_STARS_SQE_INT_DIR_TO_TSCPU;
@@ -47,7 +47,8 @@ static void ConstructDavidSqeForModelExecuteTask(TaskInfo * const taskInfo, void
     ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "ModelExecuteTask");
-    RT_LOG(RT_LOG_INFO, "ModelExecuteTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, model_id=%hu.",
+    RT_LOG(
+        RT_LOG_INFO, "ModelExecuteTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, model_id=%hu.",
         taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id, taskInfo->taskSn, fnCallSqe.reserved0);
 }
 
@@ -66,7 +67,7 @@ static bool ModelExecuteTaskRegister()
         .setStarsResultFunc = &SetStarsResultForModelExecuteTask,
     };
 
-    const auto &chips = GetDavidChips();
+    const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_EXECUTE, funcs);
     }
@@ -77,5 +78,5 @@ static bool ModelExecuteTaskRegister()
 
 static bool g_modelExecuteTaskRegister = ModelExecuteTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

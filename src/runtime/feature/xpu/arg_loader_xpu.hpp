@@ -20,31 +20,32 @@ class XpuDevice;
 constexpr uint32_t XPU_ARG_ADDR_ALIGN_LEN = 8U;
 
 struct XpuHandle {
-    void *kerArgs;              // 记录申请到host地址
-    bool isFreeArgs;              // 是否需要释放资源
-    H2HCopyMgr *argsAlloc;      // 记录分配器
+    void* kerArgs;         // 记录申请到host地址
+    bool isFreeArgs;       // 是否需要释放资源
+    H2HCopyMgr* argsAlloc; // 记录分配器
 };
 
 class XpuArgLoader final : public NoCopy {
 public:
-    explicit XpuArgLoader(XpuDevice * const dev);
+    explicit XpuArgLoader(XpuDevice* const dev);
     ~XpuArgLoader() override;
     rtError_t Init();
-    rtError_t Release(void * const argHandle) const;
-    rtError_t AllocCopyPtr(const uint32_t size, ArgLoaderResult * const result) const;
+    rtError_t Release(void* const argHandle) const;
+    rtError_t AllocCopyPtr(const uint32_t size, ArgLoaderResult* const result) const;
+
 protected:
-    XpuDevice *device_;
+    XpuDevice* device_;
 
 private:
-    H2HCopyMgr *argAllocator_{nullptr};
+    H2HCopyMgr* argAllocator_{nullptr};
     BufferAllocator* handleAllocator_{nullptr};
-    H2HCopyMgr *randomAllocator_{nullptr};
-    void ReleaseDevArgPool(XpuHandle * const argHandle);
-    rtError_t AllocDevArgPool(const uint32_t size, XpuHandle * const argHandle);
+    H2HCopyMgr* randomAllocator_{nullptr};
+    void ReleaseDevArgPool(XpuHandle* const argHandle);
+    rtError_t AllocDevArgPool(const uint32_t size, XpuHandle* const argHandle);
     uint32_t itemSize_;
 };
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif

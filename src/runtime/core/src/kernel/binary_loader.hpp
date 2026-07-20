@@ -17,38 +17,36 @@ namespace cce {
 namespace runtime {
 class BinaryLoader {
 public:
-    BinaryLoader(const char_t * const binPath, const rtLoadBinaryConfig_t * const optionalCfg);
-    BinaryLoader(const void * const data, const uint64_t length, const rtLoadBinaryConfig_t * const optionalCfg);
-    rtError_t Load(Program **prog);
-    std::string GetBinPath() const
-    {
-        return binPath_;
-    }
+    BinaryLoader(const char_t* const binPath, const rtLoadBinaryConfig_t* const optionalCfg);
+    BinaryLoader(const void* const data, const uint64_t length, const rtLoadBinaryConfig_t* const optionalCfg);
+    rtError_t Load(Program** prog);
+    std::string GetBinPath() const { return binPath_; }
+
 private:
     ElfProgram* LoadProgram();
     ElfProgram* LoadFromFile();
     ElfProgram* LoadFromData() const;
     rtError_t ParseLoadOptions();
     rtError_t ReadBinaryFile();
-    rtError_t ParseKernelJsonFile(ElfProgram * const prog) const;
+    rtError_t ParseKernelJsonFile(ElfProgram* const prog) const;
     // load cpu kernel and get program
-    rtError_t LoadCpu(Program **prog);
+    rtError_t LoadCpu(Program** prog);
     // load non cpu kernel (such as : aic / aiv ...) and get program
-    rtError_t LoadNonCpu(Program **prog);
-    PlainProgram *LoadCpuKernelFromData();
-    PlainProgram *LoadCpuKernelFromFile();
-    PlainProgram *LoadCpuMode0Program();
-    PlainProgram *LoadCpuMode1Program();
-    PlainProgram *ParseJsonAndRegisterCpuKernel();
-    rtError_t SetCpuBinInfo(const rtLoadBinaryOptionValue_t &option);
+    rtError_t LoadNonCpu(Program** prog);
+    PlainProgram* LoadCpuKernelFromData();
+    PlainProgram* LoadCpuKernelFromFile();
+    PlainProgram* LoadCpuMode0Program();
+    PlainProgram* LoadCpuMode1Program();
+    PlainProgram* ParseJsonAndRegisterCpuKernel();
+    rtError_t SetCpuBinInfo(const rtLoadBinaryOptionValue_t& option);
     std::string GenerateSoNameFromData();
 
     std::string binPath_;
     std::string binRealPath_;
-    const rtLoadBinaryConfig_t * const loadOptions_;
+    const rtLoadBinaryConfig_t* const loadOptions_;
     bool isLoadFromFile_ = false;
 
-    void *binaryBuffer_ = nullptr;
+    void* binaryBuffer_ = nullptr;
     uint64_t binarySize_ = 0;
     uint32_t magic_ = 0;
     bool isLazyLoad_ = false;
@@ -58,6 +56,6 @@ private:
     int32_t cpuKernelMode_ = -1;
     std::string soName_;
 };
-}
-}
-#endif  // __CCE_RUNTIME_BINARY_LOADER_HPP__
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_BINARY_LOADER_HPP__

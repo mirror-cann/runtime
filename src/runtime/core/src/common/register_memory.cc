@@ -18,8 +18,7 @@ static std::map<uint64_t, uint64_t> g_mappedHost;
 static std::map<uint64_t, uint64_t> g_mappedPair; /* pHost + pDevice */
 
 static std::map<uint64_t, uint64_t>::const_iterator FindRegisteredMemory(
-    const std::map<uint64_t, uint64_t> &data,
-    const uint64_t value)
+    const std::map<uint64_t, uint64_t>& data, const uint64_t value)
 {
     if (data.empty()) {
         return data.end();
@@ -41,102 +40,102 @@ static std::map<uint64_t, uint64_t>::const_iterator FindRegisteredMemory(
 }
 
 static std::map<uint64_t, uint64_t>::const_iterator FindOverlappingMemory(
- 	    const std::map<uint64_t, uint64_t>& data, uint64_t start, uint64_t end)
+    const std::map<uint64_t, uint64_t>& data, uint64_t start, uint64_t end)
 {
- 	if (data.empty()) {
- 	    return data.end();
- 	}
- 	const auto it = data.lower_bound(start);
- 	if (it != data.end() && it->first <= end) {
- 	    return it;
- 	}
- 	if (it != data.begin()) {
- 	    const auto prev = std::prev(it);
- 	    if (prev->second >= start) {
- 	        return prev;
- 	    }
- 	}
- 	return data.end();
+    if (data.empty()) {
+        return data.end();
+    }
+    const auto it = data.lower_bound(start);
+    if (it != data.end() && it->first <= end) {
+        return it;
+    }
+    if (it != data.begin()) {
+        const auto prev = std::prev(it);
+        if (prev->second >= start) {
+            return prev;
+        }
+    }
+    return data.end();
 }
 
-rtError_t CheckMemoryRangeRegistered(const void *ptr, const uint64_t size)
+rtError_t CheckMemoryRangeRegistered(const void* ptr, const uint64_t size)
 {
- 	std::lock_guard<std::mutex> lock(g_registeredMutex);
- 	const uint64_t memoryStart = RtPtrToValue(ptr);
- 	const uint64_t memoryEnd =  memoryStart + size - 1U;
- 	if ((FindOverlappingMemory(g_pinnedHost, memoryStart, memoryEnd) != g_pinnedHost.cend()) ||
- 	    (FindOverlappingMemory(g_mappedHost, memoryStart, memoryEnd) != g_mappedHost.cend())) {
- 	    RT_LOG(RT_LOG_ERROR,
+    std::lock_guard<std::mutex> lock(g_registeredMutex);
+    const uint64_t memoryStart = RtPtrToValue(ptr);
+    const uint64_t memoryEnd = memoryStart + size - 1U;
+    if ((FindOverlappingMemory(g_pinnedHost, memoryStart, memoryEnd) != g_pinnedHost.cend()) ||
+        (FindOverlappingMemory(g_mappedHost, memoryStart, memoryEnd) != g_mappedHost.cend())) {
+        RT_LOG(
+            RT_LOG_ERROR,
             "the memory range has already been registered, "
- 	        "base=%#" PRIx64 ", end=%#" PRIx64 ", size=%#" PRIx64 ".", 
-            memoryStart, 
-            memoryEnd, 
-            size);
- 	    return RT_ERROR_HOST_MEMORY_ALREADY_REGISTERED;
- 	}
- 	return RT_ERROR_NONE;
+            "base=%#" PRIx64 ", end=%#" PRIx64 ", size=%#" PRIx64 ".",
+            memoryStart, memoryEnd, size);
+        return RT_ERROR_HOST_MEMORY_ALREADY_REGISTERED;
+    }
+    return RT_ERROR_NONE;
 }
 
-void InsertPinnedMemory(const void *ptr, const uint64_t size)
+void InsertPinnedMemory(const void* ptr, const uint64_t size)
 {
     std::lock_guard<std::mutex> lock(g_registeredMutex);
     const uint64_t start = RtPtrToValue(ptr);
     const uint64_t end = start + size - 1U;
     (void)g_pinnedHost.insert({start, end});
-    RT_LOG(RT_LOG_INFO, "base=%#" PRIx64 ", end=%#" PRIx64 ", size=%#" PRIx64 ", cnt=%zu.",
-        start, end, size, g_pinnedHost.size());
+    RT_LOG(
+        RT_LOG_INFO, "base=%#" PRIx64 ", end=%#" PRIx64 ", size=%#" PRIx64 ", cnt=%zu.", start, end, size,
+        g_pinnedHost.size());
 }
 
-void InsertMappedMemory(const void *ptr, const uint64_t size, const void *devPtr)
+void InsertMappedMemory(const void* ptr, const uint64_t size, const void* devPtr)
 {
     std::lock_guard<std::mutex> lock(g_registeredMutex);
     const uint64_t hostValue = RtPtrToValue(ptr);
-    const uint64_t hostEnd =  hostValue + size - 1U;
+    const uint64_t hostEnd = hostValue + size - 1U;
     const uint64_t devValue = RtPtrToValue(devPtr);
     (void)g_mappedHost.insert({hostValue, hostEnd});
     (void)g_mappedPair.insert({hostValue, devValue});
-    RT_LOG(RT_LOG_INFO, "hostBase=%#" PRIx64 ", hostEnd=%#" PRIx64 ", "
+    RT_LOG(
+        RT_LOG_INFO,
+        "hostBase=%#" PRIx64 ", hostEnd=%#" PRIx64 ", "
         "size=%#" PRIx64 ", deviceBase=%#" PRIx64 ", mappedMemoryCnt=%zu, memoryPairCnt=%zu.",
         hostValue, hostEnd, size, devValue, g_mappedHost.size(), g_mappedPair.size());
 }
 
-bool IsRegisteredMemory(const void *ptr)
+bool IsRegisteredMemory(const void* ptr)
 {
     std::lock_guard<std::mutex> lock(g_registeredMutex);
     const uint64_t value = RtPtrToValue(ptr);
-    if ((!g_pinnedHost.empty()) &&
-        (FindRegisteredMemory(g_pinnedHost, value) != g_pinnedHost.cend())) {
+    if ((!g_pinnedHost.empty()) && (FindRegisteredMemory(g_pinnedHost, value) != g_pinnedHost.cend())) {
         return true;
     }
-    if ((!g_mappedHost.empty()) &&
-        (FindRegisteredMemory(g_mappedHost, value) != g_mappedHost.cend())) {
+    if ((!g_mappedHost.empty()) && (FindRegisteredMemory(g_mappedHost, value) != g_mappedHost.cend())) {
         return true;
     }
     return false;
 }
 
-bool IsPinnedMemoryBase(const void *ptr)
+bool IsPinnedMemoryBase(const void* ptr)
 {
     std::lock_guard<std::mutex> lock(g_registeredMutex);
     const uint64_t key = RtPtrToValue(ptr);
     return (g_pinnedHost.find(key) != g_pinnedHost.end());
 }
 
-bool IsMappedMemoryBase(const void *ptr)
+bool IsMappedMemoryBase(const void* ptr)
 {
     std::lock_guard<std::mutex> lock(g_registeredMutex);
     const uint64_t key = RtPtrToValue(ptr);
     return (g_mappedHost.find(key) != g_mappedHost.end());
 }
 
-void ErasePinnedMemory(const void *ptr)
+void ErasePinnedMemory(const void* ptr)
 {
     std::lock_guard<std::mutex> lock(g_registeredMutex);
     (void)g_pinnedHost.erase(RtPtrToValue(ptr));
     RT_LOG(RT_LOG_INFO, "pinnedMemoryCnt=%zu.", g_pinnedHost.size());
 }
 
-void EraseMappedMemory(const void *ptr)
+void EraseMappedMemory(const void* ptr)
 {
     std::lock_guard<std::mutex> lock(g_registeredMutex);
     const uint64_t value = RtPtrToValue(ptr);
@@ -145,17 +144,17 @@ void EraseMappedMemory(const void *ptr)
     RT_LOG(RT_LOG_INFO, "mappedMemoryCnt=%zu, memoryPairCnt=%zu.", g_mappedHost.size(), g_mappedPair.size());
 }
 
-void* GetMappedDevicePointer(const void *ptr)
+void* GetMappedDevicePointer(const void* ptr)
 {
     std::lock_guard<std::mutex> lock(g_registeredMutex);
     const uint64_t key = RtPtrToValue(ptr);
     if (g_mappedHost.find(key) != g_mappedHost.end()) {
-        const auto &iter = g_mappedPair.find(key);
+        const auto& iter = g_mappedPair.find(key);
         if (iter != g_mappedPair.end()) {
-            return RtValueToPtr<void *>(iter->second);
+            return RtValueToPtr<void*>(iter->second);
         }
     }
     return nullptr;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

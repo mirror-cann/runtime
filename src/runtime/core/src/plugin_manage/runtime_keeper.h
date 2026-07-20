@@ -17,32 +17,32 @@ namespace runtime {
 class RuntimeKeeper : public NoCopy {
 public:
     static constexpr uint32_t BOOT_INIT = 0U;
-    static constexpr uint32_t BOOT_ON   = 1U;
+    static constexpr uint32_t BOOT_ON = 1U;
     static constexpr uint32_t BOOT_DONE = 2U;
 
     RuntimeKeeper();
     ~RuntimeKeeper() override;
 
-    Runtime *BootRuntime();
+    Runtime* BootRuntime();
 
 private:
 #ifndef CFG_DEV_PLATFORM_PC
-    static ErrorManager &errManager_;
+    static ErrorManager& errManager_;
 #endif
-    Runtime *runtime_;
+    Runtime* runtime_;
     Atomic<uint32_t> bootStage_{BOOT_INIT};
     void* soHandle_{nullptr};
 };
 
 struct RtChipTypeEntry {
     rtChipType_t type;
-    const char *libSoName;
+    const char* libSoName;
     constexpr RtChipTypeEntry() noexcept : type(rtChipType_t::CHIP_END), libSoName("") {}
     constexpr RtChipTypeEntry(rtChipType_t type, const char* name) noexcept : type(type), libSoName(name) {}
 };
 
 bool IsRuntimeKeeperExiting(void);
-rtError_t GetDeviceType(int64_t *hwVersion);
+rtError_t GetDeviceType(int64_t* hwVersion);
 } // namespace runtime
 } // namespace cce
 
@@ -51,8 +51,8 @@ extern "C" {
 #endif
 
 cce::runtime::Runtime* ConstructRuntimeImpl();
-void DestructorRuntimeImpl(cce::runtime::Runtime *rt);
-void PrepareRuntimeProcessExitImpl(cce::runtime::Runtime *rt);
+void DestructorRuntimeImpl(cce::runtime::Runtime* rt);
+void PrepareRuntimeProcessExitImpl(cce::runtime::Runtime* rt);
 void DestroyPoolRegistryImpl();
 
 #if defined(__cplusplus)

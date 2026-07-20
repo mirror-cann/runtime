@@ -10,11 +10,11 @@
 #include "device_error_proc.hpp"
 #include "stream.hpp"
 #include "context.hpp"
- 
+
 namespace cce {
 namespace runtime {
- 
-void UpdateDeviceErrorProcFunc(std::map<uint64_t, DeviceErrorProc::StarsErrorInfoProc> &funcMap)
+
+void UpdateDeviceErrorProcFunc(std::map<uint64_t, DeviceErrorProc::StarsErrorInfoProc>& funcMap)
 {
     static const std::map<uint64_t, DeviceErrorProc::StarsErrorInfoProc> starsFuncMap = {
         {AICORE_ERROR, &DeviceErrorProc::ProcessStarsCoreErrorInfo},
@@ -31,21 +31,14 @@ void UpdateDeviceErrorProcFunc(std::map<uint64_t, DeviceErrorProc::StarsErrorInf
         {FFTS_PLUS_DSA_ERROR, &DeviceErrorProc::ProcessStarsDsaErrorInfo},
         {SQE_ERROR, &DeviceErrorProc::ProcessStarsSqeErrorInfo},
         {HCCL_FFTSPLUS_TIMEOUT_ERROR, &DeviceErrorProc::ProcessStarsHcclFftsPlusTimeoutErrorInfo},
-        {AICORE_TIMEOUT_DFX, &DeviceErrorProc::ProcessStarsCoreTimeoutDfxInfo}
-    };
+        {AICORE_TIMEOUT_DFX, &DeviceErrorProc::ProcessStarsCoreTimeoutDfxInfo}};
     funcMap = starsFuncMap;
     return;
 }
 
-uint16_t GetMteErrWaitCount()
-{
-    return 120U;
-}
+uint16_t GetMteErrWaitCount() { return 120U; }
 
-uint32_t GetRingbufferElementNum()
-{
-    return RINGBUFFER_LEN;
-}
+uint32_t GetRingbufferElementNum() { return RINGBUFFER_LEN; }
 
 // fast ringbuffer(4k): DevRingBufferCtlInfo + RingBufferElementInfo + StarsOpExceptionInfo
 void DeviceErrorProc::ProcessReportFastRingBuffer()
@@ -55,28 +48,29 @@ void DeviceErrorProc::ProcessReportFastRingBuffer()
         return; // not support fast ringbuffer
     }
 
-    DevRingBufferCtlInfo *ctrlInfo = RtPtrToPtr<DevRingBufferCtlInfo *>(fastRingBufferAddr_);
+    DevRingBufferCtlInfo* ctrlInfo = RtPtrToPtr<DevRingBufferCtlInfo*>(fastRingBufferAddr_);
     COND_PROC((ctrlInfo->magic != RINGBUFFER_MAGIC), return); // no error return
     StarsOpExceptionInfo report;
     {
         const std::lock_guard<std::mutex> lk(fastRingbufferMutex_);
-        StarsOpExceptionInfo *starsReport = RtValueToPtr<StarsOpExceptionInfo *>(RtPtrToValue(fastRingBufferAddr_) +
-        sizeof(DevRingBufferCtlInfo) + sizeof(RingBufferElementInfo));
+        StarsOpExceptionInfo* starsReport = RtValueToPtr<StarsOpExceptionInfo*>(
+            RtPtrToValue(fastRingBufferAddr_) + sizeof(DevRingBufferCtlInfo) + sizeof(RingBufferElementInfo));
         report = *starsReport;
         __sync_synchronize(); // 最后置标记位, 防止指令重排
         ctrlInfo->magic = 0U; // 释放fast ring buffer, 以下不要使用
     }
     ConvertErrorCodeForFastReport(&report);
-    TaskInfo *tsk = device_->GetTaskFactory()->GetTask(static_cast<int32_t>(report.streamId), report.taskId);
+    TaskInfo* tsk = device_->GetTaskFactory()->GetTask(static_cast<int32_t>(report.streamId), report.taskId);
     if (tsk == nullptr) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "The fast ring buffer reports an error,"
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR,
+            "The fast ring buffer reports an error,"
             " device_id=%u, stream_id=%u, task_id=%u, sqe_type=%u, error_code=%#x, kernel_name=none.",
             device_->Id_(), report.streamId, report.taskId, report.sqeType, report.errorCode);
-        RT_LOG(RT_LOG_ERROR, "The task has been recycled, stream_id=%u, task_id=%u.",
-            report.streamId, report.taskId);
+        RT_LOG(RT_LOG_ERROR, "The task has been recycled, stream_id=%u, task_id=%u.", report.streamId, report.taskId);
         return;
     }
-    const char *errMsg = "a kernel task";
+    const char* errMsg = "a kernel task";
     uint8_t errModule = ERR_MODULE_TBE;
     if (tsk->type == TS_TASK_TYPE_KERNEL_AIVEC) {
         errMsg = "a Vector Core task";
@@ -88,7 +82,9 @@ void DeviceErrorProc::ProcessReportFastRingBuffer()
     } else {
         errModule = ERR_MODULE_RTS;
     }
-    RT_LOG_CALL_MSG(errModule, "The fast ring buffer reports %s error,"
+    RT_LOG_CALL_MSG(
+        errModule,
+        "The fast ring buffer reports %s error,"
         " device_id=%u, stream_id=%u, task_id=%u, sqe_type=%u, error_code=%#x, kernel_name=%s.",
         errMsg, device_->Id_(), report.streamId, report.taskId, report.sqeType, report.errorCode,
         GetTaskKernelName(tsk).c_str());
@@ -117,14 +113,11 @@ void DeviceErrorProc::ProcClearFastRingBuffer() const
     if (fastRingBufferAddr_ == nullptr) {
         return;
     }
-    DevRingBufferCtlInfo *ctrlInfo = RtPtrToPtr<DevRingBufferCtlInfo *>(fastRingBufferAddr_);
+    DevRingBufferCtlInfo* ctrlInfo = RtPtrToPtr<DevRingBufferCtlInfo*>(fastRingBufferAddr_);
     ctrlInfo->magic = 0U;
 }
 
-void InitFastRingBuffer(void* fastRingBufferAddr)
-{
-    UNUSED(fastRingBufferAddr); 
-}
+void InitFastRingBuffer(void* fastRingBufferAddr) { UNUSED(fastRingBufferAddr); }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

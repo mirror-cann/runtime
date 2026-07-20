@@ -18,7 +18,7 @@ namespace cce {
 namespace runtime {
 void XpuStreamLaunchKernelRecycleAicpu(StarsArgLoaderResult& result, TaskInfo*& recycleTask, Stream* stm);
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_STREAM_XPU_C_HPP__

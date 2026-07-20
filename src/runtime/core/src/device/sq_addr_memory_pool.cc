@@ -27,26 +27,17 @@ constexpr uint32_t SQ_ADDR_MAX_ITEM_256K = 32768U;
 constexpr uint32_t SQ_ADDR_MAX_ITEM_512K = 16384U;
 constexpr uint32_t SQ_ADDR_MAX_ITEM_1M = 8192U;
 constexpr uint32_t SQ_ADDR_MAX_ITEM_2M = 4096U;
-}
+} // namespace
 
 namespace cce {
 namespace runtime {
 
 static uint32_t g_orderMemSizes[SQ_ADDR_MEM_ORDER_TYPE_MAX] = {
-    SQ_ADDR_ITEM_SIZE_32K,
-    SQ_ADDR_ITEM_SIZE_64K,
-    SQ_ADDR_ITEM_SIZE_128K,
-    SQ_ADDR_ITEM_SIZE_256K,
-    SQ_ADDR_ITEM_SIZE_512K,
-    SQ_ADDR_ITEM_SIZE_1M,
-    SQ_ADDR_ITEM_SIZE_2M,
+    SQ_ADDR_ITEM_SIZE_32K,  SQ_ADDR_ITEM_SIZE_64K, SQ_ADDR_ITEM_SIZE_128K, SQ_ADDR_ITEM_SIZE_256K,
+    SQ_ADDR_ITEM_SIZE_512K, SQ_ADDR_ITEM_SIZE_1M,  SQ_ADDR_ITEM_SIZE_2M,
 };
 
-SqAddrMemoryOrder::SqAddrMemoryOrder(Device * const dev)
-    : NoCopy(),
-      device_(dev)
-{
-}
+SqAddrMemoryOrder::SqAddrMemoryOrder(Device* const dev) : NoCopy(), device_(dev) {}
 SqAddrMemoryOrder::~SqAddrMemoryOrder()
 {
     RT_LOG(RT_LOG_DEBUG, "free sq addr order");
@@ -59,10 +50,7 @@ SqAddrMemoryOrder::~SqAddrMemoryOrder()
     device_ = nullptr;
 }
 
-rtError_t SqAddrMemoryOrder::Init() const
-{
-    return RT_ERROR_NONE;
-}
+rtError_t SqAddrMemoryOrder::Init() const { return RT_ERROR_NONE; }
 
 uint32_t SqAddrMemoryOrder::GetMemOrderTypeByMemSize(const uint32_t memSize) const
 {
@@ -77,7 +65,9 @@ uint32_t SqAddrMemoryOrder::GetMemOrderTypeByMemSize(const uint32_t memSize) con
     }
 
     if (memOrderType >= SQ_ADDR_MEM_ORDER_TYPE_MAX) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "GetMemOrderTypeByMemSize failed because value %u for memOrderType is invalid. Expected value: [%u, %u).",
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR,
+            "GetMemOrderTypeByMemSize failed because value %u for memOrderType is invalid. Expected value: [%u, %u).",
             memOrderType, SQ_ADDR_MEM_ORDER_TYPE_32K, SQ_ADDR_MEM_ORDER_TYPE_MAX);
     }
 
@@ -90,15 +80,16 @@ uint32_t SqAddrMemoryOrder::GetMemOrderSizeByMemOrderType(const uint32_t memOrde
         RT_LOG(RT_LOG_ERROR, "invalid memOrderType=%u", memOrderType);
         return UINT32_MAX;
     }
- 
+
     return g_orderMemSizes[memOrderType];
 }
 
 BufferAllocator* SqAddrMemoryOrder::FindSqMemPoolByMemOrderType(const uint32_t memOrderType)
 {
     std::lock_guard<std::mutex> lock(sqAddrAllocatorsMutex_);
-    auto it = std::find_if(sqAddrAllocators_.begin(), sqAddrAllocators_.end(),
-        [memOrderType](const auto& pair) { return pair.first == memOrderType; });
+    auto it = std::find_if(sqAddrAllocators_.begin(), sqAddrAllocators_.end(), [memOrderType](const auto& pair) {
+        return pair.first == memOrderType;
+    });
     if (it != sqAddrAllocators_.end()) {
         RT_LOG(RT_LOG_DEBUG, "Find memOrderType=%u, it=%p", memOrderType, it->second);
         return it->second;
@@ -110,25 +101,25 @@ BufferAllocator* SqAddrMemoryOrder::FindSqMemPoolByMemOrderType(const uint32_t m
 }
 BufferAllocator* SqAddrMemoryOrder::SetUp(const uint32_t memOrderType)
 {
-    static SqAddrMemoryOrder_t memOrderTypeList[SQ_ADDR_MEM_ORDER_TYPE_MAX] =
-        {{SQ_ADDR_ITEM_SIZE_32K, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_32K, SQ_ADDR_MAX_ITEM_32K},
-         {SQ_ADDR_ITEM_SIZE_64K, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_64K, SQ_ADDR_MAX_ITEM_64K},
-         {SQ_ADDR_ITEM_SIZE_128K, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_128K, SQ_ADDR_MAX_ITEM_128K},
-         {SQ_ADDR_ITEM_SIZE_256K, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_256K, SQ_ADDR_MAX_ITEM_256K},
-         {SQ_ADDR_ITEM_SIZE_512K, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_512K, SQ_ADDR_MAX_ITEM_512K},
-         {SQ_ADDR_ITEM_SIZE_1M, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_1M, SQ_ADDR_MAX_ITEM_1M},
-         {SQ_ADDR_ITEM_SIZE_2M, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_2M, SQ_ADDR_MAX_ITEM_2M}};
+    static SqAddrMemoryOrder_t memOrderTypeList[SQ_ADDR_MEM_ORDER_TYPE_MAX] = {
+        {SQ_ADDR_ITEM_SIZE_32K, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_32K, SQ_ADDR_MAX_ITEM_32K},
+        {SQ_ADDR_ITEM_SIZE_64K, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_64K, SQ_ADDR_MAX_ITEM_64K},
+        {SQ_ADDR_ITEM_SIZE_128K, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_128K, SQ_ADDR_MAX_ITEM_128K},
+        {SQ_ADDR_ITEM_SIZE_256K, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_256K, SQ_ADDR_MAX_ITEM_256K},
+        {SQ_ADDR_ITEM_SIZE_512K, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_512K, SQ_ADDR_MAX_ITEM_512K},
+        {SQ_ADDR_ITEM_SIZE_1M, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_1M, SQ_ADDR_MAX_ITEM_1M},
+        {SQ_ADDR_ITEM_SIZE_2M, SQ_ADDR_ITEM_HUGE_PAGE_SIZE / SQ_ADDR_ITEM_SIZE_2M, SQ_ADDR_MAX_ITEM_2M}};
 
     RT_LOG(RT_LOG_DEBUG, "SetUp sq addr memory order memOrderType=%u", memOrderType);
     if (memOrderType >= SQ_ADDR_MEM_ORDER_TYPE_MAX) {
         return nullptr;
     }
 
-    BufferAllocator *sqAddrAllocator = new (std::nothrow) BufferAllocator(memOrderTypeList[memOrderType].sqAddrItemSize, 
-        memOrderTypeList[memOrderType].sqAddrInitCount, memOrderTypeList[memOrderType].sqAddrMaxCount,
-        BufferAllocator::LINEAR, &DrvAllocSqAddr, &DrvFreeSqAddr, device_);
-    COND_RETURN_AND_MSG_OUTER(sqAddrAllocator == nullptr, nullptr, ErrorCode::EE1013,
-        sizeof(BufferAllocator), "new");
+    BufferAllocator* sqAddrAllocator = new (std::nothrow) BufferAllocator(
+        memOrderTypeList[memOrderType].sqAddrItemSize, memOrderTypeList[memOrderType].sqAddrInitCount,
+        memOrderTypeList[memOrderType].sqAddrMaxCount, BufferAllocator::LINEAR, &DrvAllocSqAddr, &DrvFreeSqAddr,
+        device_);
+    COND_RETURN_AND_MSG_OUTER(sqAddrAllocator == nullptr, nullptr, ErrorCode::EE1013, sizeof(BufferAllocator), "new");
 
     sqAddrAllocators_.emplace_back(static_cast<SQ_ADDR_MEM_ORDER_TYPE>(memOrderType), sqAddrAllocator);
     RT_LOG(RT_LOG_DEBUG, "new BufferAllocator ok.");
@@ -136,41 +127,45 @@ BufferAllocator* SqAddrMemoryOrder::SetUp(const uint32_t memOrderType)
     return sqAddrAllocator;
 }
 
-void *SqAddrMemoryOrder::DrvAllocSqAddr(const size_t size, void * const para)
+void* SqAddrMemoryOrder::DrvAllocSqAddr(const size_t size, void* const para)
 {
     COND_RETURN_WARN(para == nullptr, nullptr, "para is null");
     COND_RETURN_WARN(size == 0U, nullptr, "size is 0");
 
-    Device * const device = RtPtrToPtr<Device *, void *>(para);
-    void *addr = nullptr;
-    const rtError_t error = device->Driver_()->DevMemAlloc(&addr, static_cast<uint64_t>(size),
-        RT_MEMORY_P2P_HBM, device->Id_(), MODULEID_RUNTIME, false, false, false, false, false);
-    COND_RETURN_WARN(error != RT_ERROR_NONE, nullptr, "device mem alloc sqAddr order failed, "
-             "size=%u(bytes), kind=%d, id=%u, retCode=%#x", size, RT_MEMORY_P2P_HBM, device->Id_(), static_cast<uint32_t>(error));
+    Device* const device = RtPtrToPtr<Device*, void*>(para);
+    void* addr = nullptr;
+    const rtError_t error = device->Driver_()->DevMemAlloc(
+        &addr, static_cast<uint64_t>(size), RT_MEMORY_P2P_HBM, device->Id_(), MODULEID_RUNTIME, false, false, false,
+        false, false);
+    COND_RETURN_WARN(
+        error != RT_ERROR_NONE, nullptr,
+        "device mem alloc sqAddr order failed, "
+        "size=%u(bytes), kind=%d, id=%u, retCode=%#x",
+        size, RT_MEMORY_P2P_HBM, device->Id_(), static_cast<uint32_t>(error));
 
     return addr;
 }
 
-void SqAddrMemoryOrder::DrvFreeSqAddr(void * const addr, void * const para)
+void SqAddrMemoryOrder::DrvFreeSqAddr(void* const addr, void* const para)
 {
     COND_RETURN_WARN(addr == nullptr, , "addr is null");
     COND_RETURN_WARN(para == nullptr, , "para is null");
-    Device * const device = RtPtrToPtr<Device *, void *>(para);
+    Device* const device = RtPtrToPtr<Device*, void*>(para);
     const rtError_t error = device->Driver_()->DevMemFree(addr, device->Id_());
     COND_LOG(error != RT_ERROR_NONE, "device mem free sqAddr failed, retCode=%#x", static_cast<uint32_t>(error));
 }
 
-rtError_t SqAddrMemoryOrder::AllocSqAddr(const uint32_t memOrderType, uint64_t **sqAddr)
+rtError_t SqAddrMemoryOrder::AllocSqAddr(const uint32_t memOrderType, uint64_t** sqAddr)
 {
     RT_LOG(RT_LOG_DEBUG, "memOrderType=%d", memOrderType);
     if ((sqAddr == nullptr) || (memOrderType >= SQ_ADDR_MEM_ORDER_TYPE_MAX)) {
         return RT_ERROR_INVALID_VALUE;
     }
 
-    BufferAllocator *sqAddrAllocator = FindSqMemPoolByMemOrderType(memOrderType);
+    BufferAllocator* sqAddrAllocator = FindSqMemPoolByMemOrderType(memOrderType);
     COND_RETURN_WARN(sqAddrAllocator == nullptr, RT_ERROR_INVALID_VALUE, "invalid memOrderType=%u.", memOrderType);
 
-    *sqAddr = RtPtrToPtr<uint64_t *, void *>(sqAddrAllocator->AllocItem());
+    *sqAddr = RtPtrToPtr<uint64_t*, void*>(sqAddrAllocator->AllocItem());
     if (*sqAddr == nullptr) {
         return RT_ERROR_MEMORY_ALLOCATION;
     }
@@ -180,17 +175,17 @@ rtError_t SqAddrMemoryOrder::AllocSqAddr(const uint32_t memOrderType, uint64_t *
     return RT_ERROR_NONE;
 }
 
-rtError_t SqAddrMemoryOrder::FreeSqAddr(const uint64_t *sqAddr, const uint32_t memOrderType)
+rtError_t SqAddrMemoryOrder::FreeSqAddr(const uint64_t* sqAddr, const uint32_t memOrderType)
 {
     RT_LOG(RT_LOG_DEBUG, "memOrderType=%d", memOrderType);
     if ((sqAddr == nullptr) || (memOrderType >= SQ_ADDR_MEM_ORDER_TYPE_MAX)) {
         return RT_ERROR_INVALID_VALUE;
     }
 
-    BufferAllocator *sqAddrAllocator = FindSqMemPoolByMemOrderType(memOrderType);
+    BufferAllocator* sqAddrAllocator = FindSqMemPoolByMemOrderType(memOrderType);
     COND_RETURN_WARN(sqAddrAllocator == nullptr, RT_ERROR_INVALID_VALUE, "invalid memOrderType=%u.", memOrderType);
 
-    const int32_t id = sqAddrAllocator->GetIdByItem(RtPtrToPtr<const void *const, const uint64_t *>(sqAddr));
+    const int32_t id = sqAddrAllocator->GetIdByItem(RtPtrToPtr<const void* const, const uint64_t*>(sqAddr));
     if (id < 0) {
         RT_LOG(RT_LOG_EVENT, "need check sq addr, sqAddr=%p, id=%d, memOrderType=%u.", sqAddr, id, memOrderType);
         return RT_ERROR_INVALID_VALUE;
@@ -200,5 +195,5 @@ rtError_t SqAddrMemoryOrder::FreeSqAddr(const uint64_t *sqAddr, const uint32_t m
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

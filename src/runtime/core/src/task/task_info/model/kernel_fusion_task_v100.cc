@@ -28,7 +28,7 @@ static bool KernelFusionTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommon,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_FUSION_ISSUE, funcs);
     }
@@ -38,5 +38,5 @@ static bool KernelFusionTaskRegister()
 
 static bool g_kernelFusionTaskRegister = KernelFusionTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

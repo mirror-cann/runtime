@@ -12,7 +12,7 @@
 #include "api_profile_decorator.hpp"
 namespace cce {
 namespace runtime {
-rtError_t ApiProfileDecorator::UbDbSend(rtUbDbInfo_t * const dbInfo, Stream * const stm)
+rtError_t ApiProfileDecorator::UbDbSend(rtUbDbInfo_t* const dbInfo, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_UB_DB_SEND);
     const rtError_t error = impl_->UbDbSend(dbInfo, stm);
@@ -20,7 +20,7 @@ rtError_t ApiProfileDecorator::UbDbSend(rtUbDbInfo_t * const dbInfo, Stream * co
     return error;
 }
 
-rtError_t ApiProfileDecorator::UbDirectSend(rtUbWqeInfo_t * const wqeInfo, Stream * const stm)
+rtError_t ApiProfileDecorator::UbDirectSend(rtUbWqeInfo_t* const wqeInfo, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_UB_DIRECT_SEND);
     const rtError_t error = impl_->UbDirectSend(wqeInfo, stm);
@@ -28,8 +28,8 @@ rtError_t ApiProfileDecorator::UbDirectSend(rtUbWqeInfo_t * const wqeInfo, Strea
     return error;
 }
 
-rtError_t ApiProfileDecorator::CntNotifyCreate(const int32_t deviceId, CountNotify ** const retCntNotify,
-                                               const uint32_t flag)
+rtError_t ApiProfileDecorator::CntNotifyCreate(
+    const int32_t deviceId, CountNotify** const retCntNotify, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_COUNT_NOTIFY_CREATE);
     const rtError_t error = impl_->CntNotifyCreate(deviceId, retCntNotify, flag);
@@ -37,7 +37,7 @@ rtError_t ApiProfileDecorator::CntNotifyCreate(const int32_t deviceId, CountNoti
     return error;
 }
 
-rtError_t ApiProfileDecorator::CntNotifyDestroy(CountNotify * const inCntNotify)
+rtError_t ApiProfileDecorator::CntNotifyDestroy(CountNotify* const inCntNotify)
 {
     CallApiBegin(RT_PROF_API_COUNT_NOTIFY_DESTROY);
     const rtError_t error = impl_->CntNotifyDestroy(inCntNotify);
@@ -45,8 +45,8 @@ rtError_t ApiProfileDecorator::CntNotifyDestroy(CountNotify * const inCntNotify)
     return error;
 }
 
-rtError_t ApiProfileDecorator::CntNotifyRecord(CountNotify * const inCntNotify, Stream * const stm,
-                                               const rtCntNtyRecordInfo_t * const info)
+rtError_t ApiProfileDecorator::CntNotifyRecord(
+    CountNotify* const inCntNotify, Stream* const stm, const rtCntNtyRecordInfo_t* const info)
 {
     CallApiBegin(RT_PROF_API_COUNT_NOTIFY_RECORD);
     const rtError_t error = impl_->CntNotifyRecord(inCntNotify, stm, info);
@@ -54,8 +54,8 @@ rtError_t ApiProfileDecorator::CntNotifyRecord(CountNotify * const inCntNotify, 
     return error;
 }
 
-rtError_t ApiProfileDecorator::CntNotifyWaitWithTimeout(CountNotify * const inCntNotify, Stream * const stm,
-                                                        const rtCntNtyWaitInfo_t * const info)
+rtError_t ApiProfileDecorator::CntNotifyWaitWithTimeout(
+    CountNotify* const inCntNotify, Stream* const stm, const rtCntNtyWaitInfo_t* const info)
 {
     CallApiBegin(RT_PROF_API_COUNT_NOTIFY_WAIT);
     const rtError_t error = impl_->CntNotifyWaitWithTimeout(inCntNotify, stm, info);
@@ -63,7 +63,7 @@ rtError_t ApiProfileDecorator::CntNotifyWaitWithTimeout(CountNotify * const inCn
     return error;
 }
 
-rtError_t ApiProfileDecorator::CntNotifyReset(CountNotify * const inCntNotify, Stream * const stm)
+rtError_t ApiProfileDecorator::CntNotifyReset(CountNotify* const inCntNotify, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_GET_COUNT_NOTIFY_RESET);
     const rtError_t error = impl_->CntNotifyReset(inCntNotify, stm);
@@ -71,8 +71,8 @@ rtError_t ApiProfileDecorator::CntNotifyReset(CountNotify * const inCntNotify, S
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetCntNotifyAddress(CountNotify * const inCntNotify, uint64_t * const cntNotifyAddress,
-                                                   rtNotifyType_t const regType)
+rtError_t ApiProfileDecorator::GetCntNotifyAddress(
+    CountNotify* const inCntNotify, uint64_t* const cntNotifyAddress, rtNotifyType_t const regType)
 {
     CallApiBegin(RT_PROF_API_GET_COUNT_NOTIFY_ADDR);
     const rtError_t error = impl_->GetCntNotifyAddress(inCntNotify, cntNotifyAddress, regType);
@@ -80,7 +80,7 @@ rtError_t ApiProfileDecorator::GetCntNotifyAddress(CountNotify * const inCntNoti
     return error;
 }
 
-rtError_t ApiProfileDecorator::WriteValue(rtWriteValueInfo_t * const info, Stream * const stm)
+rtError_t ApiProfileDecorator::WriteValue(rtWriteValueInfo_t* const info, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_WRITE_VALUE);
     const rtError_t error = impl_->WriteValue(info, stm);
@@ -88,7 +88,7 @@ rtError_t ApiProfileDecorator::WriteValue(rtWriteValueInfo_t * const info, Strea
     return error;
 }
 
-rtError_t ApiProfileDecorator::CCULaunch(rtCcuTaskInfo_t *taskInfo,  Stream * const stm)
+rtError_t ApiProfileDecorator::CCULaunch(rtCcuTaskInfo_t* taskInfo, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_CCU_LAUNCH);
     const rtError_t error = impl_->CCULaunch(taskInfo, stm);
@@ -96,8 +96,7 @@ rtError_t ApiProfileDecorator::CCULaunch(rtCcuTaskInfo_t *taskInfo,  Stream * co
     return error;
 }
 
-rtError_t ApiProfileDecorator::FusionLaunch(void * const fusionInfo, Stream * const stm,
-    rtFusionArgsEx_t *argsInfo)
+rtError_t ApiProfileDecorator::FusionLaunch(void* const fusionInfo, Stream* const stm, rtFusionArgsEx_t* argsInfo)
 {
     CallApiBegin(RT_PROF_API_FUSION_KERNEL_LAUNCH);
     const rtError_t error = impl_->FusionLaunch(fusionInfo, stm, argsInfo);
@@ -105,8 +104,8 @@ rtError_t ApiProfileDecorator::FusionLaunch(void * const fusionInfo, Stream * co
     return error;
 }
 
-rtError_t ApiProfileDecorator::FftsPlusTaskLaunch(const rtFftsPlusTaskInfo_t * const fftsPlusTaskInfo,
-    Stream * const stm, const uint32_t flag)
+rtError_t ApiProfileDecorator::FftsPlusTaskLaunch(
+    const rtFftsPlusTaskInfo_t* const fftsPlusTaskInfo, Stream* const stm, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_FFTS_PLUS_TASK_LAUNCH);
     const rtError_t error = impl_->FftsPlusTaskLaunch(fftsPlusTaskInfo, stm, flag);
@@ -114,7 +113,7 @@ rtError_t ApiProfileDecorator::FftsPlusTaskLaunch(const rtFftsPlusTaskInfo_t * c
     return error;
 }
 
-rtError_t ApiProfileDecorator::RDMASend(const uint32_t sqIndex, const uint32_t wqeIndex, Stream * const stm)
+rtError_t ApiProfileDecorator::RDMASend(const uint32_t sqIndex, const uint32_t wqeIndex, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_RDMASend);
     const rtError_t error = impl_->RDMASend(sqIndex, wqeIndex, stm);
@@ -122,7 +121,7 @@ rtError_t ApiProfileDecorator::RDMASend(const uint32_t sqIndex, const uint32_t w
     return error;
 }
 
-rtError_t ApiProfileDecorator::RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Stream * const stm)
+rtError_t ApiProfileDecorator::RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_RdmaDbSend);
     const rtError_t error = impl_->RdmaDbSend(dbIndex, dbInfo, stm);
@@ -130,5 +129,5 @@ rtError_t ApiProfileDecorator::RdmaDbSend(const uint32_t dbIndex, const uint64_t
     return error;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

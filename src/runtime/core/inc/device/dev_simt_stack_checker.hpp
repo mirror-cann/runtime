@@ -15,7 +15,7 @@
 namespace cce {
 namespace runtime {
 
-bool IsNeedAllocSimtStack(Device * const dev);
+bool IsNeedAllocSimtStack(Device* const dev);
 } // namespace runtime
 } // namespace cce
 #endif // CCE_RUNTIME_DEV_SIMT_STACK_CHECKER_HPP

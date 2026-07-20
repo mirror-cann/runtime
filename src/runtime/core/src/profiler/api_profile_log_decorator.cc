@@ -13,24 +13,23 @@
 
 namespace cce {
 namespace runtime {
-ApiProfileLogDecorator::ApiProfileLogDecorator(Api * const impl,
-    Profiler * const prof) : ApiDecorator(impl), profiler_(prof)
-{
-}
+ApiProfileLogDecorator::ApiProfileLogDecorator(Api* const impl, Profiler* const prof)
+    : ApiDecorator(impl), profiler_(prof)
+{}
 
-rtError_t ApiProfileLogDecorator::DevBinaryRegister(const rtDevBinary_t * const bin, Program ** const prog)
+rtError_t ApiProfileLogDecorator::DevBinaryRegister(const rtDevBinary_t* const bin, Program** const prog)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_DEVBINARY_REGISTER, profiler_);
     const rtError_t error = impl_->DevBinaryRegister(bin, prog);
     record.SaveRecord();
     return error;
 }
-rtError_t ApiProfileLogDecorator::GetNotifyAddress(Notify * const notify, uint64_t * const notifyAddress)
+rtError_t ApiProfileLogDecorator::GetNotifyAddress(Notify* const notify, uint64_t* const notifyAddress)
 {
     const rtError_t error = impl_->GetNotifyAddress(notify, notifyAddress);
     return error;
 }
-rtError_t ApiProfileLogDecorator::RegisterAllKernel(const rtDevBinary_t * const bin, Program ** const prog)
+rtError_t ApiProfileLogDecorator::RegisterAllKernel(const rtDevBinary_t* const bin, Program** const prog)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_ALLKERNEL_REGISTER, profiler_);
     const rtError_t error = impl_->RegisterAllKernel(bin, prog);
@@ -38,7 +37,7 @@ rtError_t ApiProfileLogDecorator::RegisterAllKernel(const rtDevBinary_t * const 
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::DevBinaryUnRegister(Program * const prog)
+rtError_t ApiProfileLogDecorator::DevBinaryUnRegister(Program* const prog)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_DEVBINARY_UNREGISTER, profiler_);
     const rtError_t error = impl_->DevBinaryUnRegister(prog);
@@ -46,18 +45,19 @@ rtError_t ApiProfileLogDecorator::DevBinaryUnRegister(Program * const prog)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MetadataRegister(Program * const prog, const char_t * const metadata)
+rtError_t ApiProfileLogDecorator::MetadataRegister(Program* const prog, const char_t* const metadata)
 {
     return impl_->MetadataRegister(prog, metadata);
 }
 
-rtError_t ApiProfileLogDecorator::DependencyRegister(Program * const mProgram, Program * const sProgram)
+rtError_t ApiProfileLogDecorator::DependencyRegister(Program* const mProgram, Program* const sProgram)
 {
     return impl_->DependencyRegister(mProgram, sProgram);
 }
 
-rtError_t ApiProfileLogDecorator::FunctionRegister(Program * const prog, const void * const stubFunc,
-    const char_t * const stubName, const void * const kernelInfoExt, const uint32_t funcMode)
+rtError_t ApiProfileLogDecorator::FunctionRegister(
+    Program* const prog, const void* const stubFunc, const char_t* const stubName, const void* const kernelInfoExt,
+    const uint32_t funcMode)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_FUNCTION_REGISTER, profiler_);
     const rtError_t error = impl_->FunctionRegister(prog, stubFunc, stubName, kernelInfoExt, funcMode);
@@ -65,7 +65,7 @@ rtError_t ApiProfileLogDecorator::FunctionRegister(Program * const prog, const v
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::KernelFusionStart(Stream * const stm)
+rtError_t ApiProfileLogDecorator::KernelFusionStart(Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_KERNEL_FUSION_START, profiler_);
     const rtError_t error = impl_->KernelFusionStart(stm);
@@ -73,7 +73,7 @@ rtError_t ApiProfileLogDecorator::KernelFusionStart(Stream * const stm)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::KernelFusionEnd(Stream * const stm)
+rtError_t ApiProfileLogDecorator::KernelFusionEnd(Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_KERNEL_FUSION_END, profiler_);
     const rtError_t error = impl_->KernelFusionEnd(stm);
@@ -81,8 +81,9 @@ rtError_t ApiProfileLogDecorator::KernelFusionEnd(Stream * const stm)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::BuffGetInfo(const rtBuffGetCmdType type, const void * const inBuff,
-    const uint32_t inLen, void * const outBuff, uint32_t * const outLen)
+rtError_t ApiProfileLogDecorator::BuffGetInfo(
+    const rtBuffGetCmdType type, const void* const inBuff, const uint32_t inLen, void* const outBuff,
+    uint32_t* const outLen)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_BUFF_GET_INFO, profiler_);
     const rtError_t error = impl_->BuffGetInfo(type, inBuff, inLen, outBuff, outLen);
@@ -90,14 +91,13 @@ rtError_t ApiProfileLogDecorator::BuffGetInfo(const rtBuffGetCmdType type, const
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::KernelLaunch(const void * const stubFunc, const uint32_t coreDim,
-    const rtArgsEx_t * const argsInfo, Stream * const stm,
-    const rtTaskCfgInfo_t * const cfgInfo, const bool isLaunchVec)
+rtError_t ApiProfileLogDecorator::KernelLaunch(
+    const void* const stubFunc, const uint32_t coreDim, const rtArgsEx_t* const argsInfo, Stream* const stm,
+    const rtTaskCfgInfo_t* const cfgInfo, const bool isLaunchVec)
 {
     if (profiler_->GetProfLogEnable()) {
         ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_KERNEL_LAUNCH, profiler_);
-        const rtError_t error = impl_->KernelLaunch(stubFunc, coreDim,
-            argsInfo, stm, cfgInfo, isLaunchVec);
+        const rtError_t error = impl_->KernelLaunch(stubFunc, coreDim, argsInfo, stm, cfgInfo, isLaunchVec);
         record.SaveRecord();
         return error;
     } else {
@@ -105,24 +105,24 @@ rtError_t ApiProfileLogDecorator::KernelLaunch(const void * const stubFunc, cons
     }
 }
 
-rtError_t ApiProfileLogDecorator::KernelLaunchWithHandle(void * const hdl, const uint64_t tilingKey,
-    const uint32_t coreDim, const rtArgsEx_t * const argsInfo, Stream * const stm,
-    const rtTaskCfgInfo_t * const cfgInfo, const bool isLaunchVec)
+rtError_t ApiProfileLogDecorator::KernelLaunchWithHandle(
+    void* const hdl, const uint64_t tilingKey, const uint32_t coreDim, const rtArgsEx_t* const argsInfo,
+    Stream* const stm, const rtTaskCfgInfo_t* const cfgInfo, const bool isLaunchVec)
 {
     if (profiler_->GetProfLogEnable()) {
         ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE, profiler_);
-        const rtError_t error = impl_->KernelLaunchWithHandle(hdl, tilingKey, coreDim, argsInfo,
-            stm, cfgInfo, isLaunchVec);
+        const rtError_t error =
+            impl_->KernelLaunchWithHandle(hdl, tilingKey, coreDim, argsInfo, stm, cfgInfo, isLaunchVec);
         record.SaveRecord();
         return error;
     } else {
-        return impl_->KernelLaunchWithHandle(hdl, tilingKey, coreDim, argsInfo,
-            stm, cfgInfo, isLaunchVec);
+        return impl_->KernelLaunchWithHandle(hdl, tilingKey, coreDim, argsInfo, stm, cfgInfo, isLaunchVec);
     }
 }
 
-rtError_t ApiProfileLogDecorator::KernelLaunchEx(const char_t * const opName, const void * const args,
-    const uint32_t argsSize, const uint32_t flags, Stream * const stm)
+rtError_t ApiProfileLogDecorator::KernelLaunchEx(
+    const char_t* const opName, const void* const args, const uint32_t argsSize, const uint32_t flags,
+    Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_KERNEL_LAUNCH, profiler_);
     const rtError_t error = impl_->KernelLaunchEx(opName, args, argsSize, flags, stm);
@@ -130,7 +130,7 @@ rtError_t ApiProfileLogDecorator::KernelLaunchEx(const char_t * const opName, co
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::GetServerIDBySDID(uint32_t sdid, uint32_t *srvId)
+rtError_t ApiProfileLogDecorator::GetServerIDBySDID(uint32_t sdid, uint32_t* srvId)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_GetServerIDBySDID, profiler_);
     const rtError_t error = impl_->GetServerIDBySDID(sdid, srvId);
@@ -138,9 +138,9 @@ rtError_t ApiProfileLogDecorator::GetServerIDBySDID(uint32_t sdid, uint32_t *srv
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::CpuKernelLaunch(const rtKernelLaunchNames_t * const launchNames,
-    const uint32_t coreDim, const rtArgsEx_t * const argsInfo,
-    Stream * const stm, const uint32_t flag)
+rtError_t ApiProfileLogDecorator::CpuKernelLaunch(
+    const rtKernelLaunchNames_t* const launchNames, const uint32_t coreDim, const rtArgsEx_t* const argsInfo,
+    Stream* const stm, const uint32_t flag)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_CpuKernelLaunch, profiler_);
     const rtError_t error = impl_->CpuKernelLaunch(launchNames, coreDim, argsInfo, stm, flag);
@@ -148,19 +148,18 @@ rtError_t ApiProfileLogDecorator::CpuKernelLaunch(const rtKernelLaunchNames_t * 
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::CpuKernelLaunchExWithArgs(const char_t * const opName,
-    const uint32_t coreDim, const rtAicpuArgsEx_t * const argsInfo,
-    Stream * const stm, const uint32_t flag, const uint32_t kernelType)
+rtError_t ApiProfileLogDecorator::CpuKernelLaunchExWithArgs(
+    const char_t* const opName, const uint32_t coreDim, const rtAicpuArgsEx_t* const argsInfo, Stream* const stm,
+    const uint32_t flag, const uint32_t kernelType)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_CpuKernelLaunch, profiler_);
-    const rtError_t error = impl_->CpuKernelLaunchExWithArgs(opName, coreDim, argsInfo, stm, flag,
-                                                             kernelType);
+    const rtError_t error = impl_->CpuKernelLaunchExWithArgs(opName, coreDim, argsInfo, stm, flag, kernelType);
     record.SaveRecord();
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MultipleTaskInfoLaunch(const rtMultipleTaskInfo_t * const taskInfo,
-    Stream * const stm, const uint32_t flag)
+rtError_t ApiProfileLogDecorator::MultipleTaskInfoLaunch(
+    const rtMultipleTaskInfo_t* const taskInfo, Stream* const stm, const uint32_t flag)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_TaskInfoLaunch, profiler_);
     const rtError_t error = impl_->MultipleTaskInfoLaunch(taskInfo, stm, flag);
@@ -168,7 +167,7 @@ rtError_t ApiProfileLogDecorator::MultipleTaskInfoLaunch(const rtMultipleTaskInf
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::BinaryLoad(const rtDevBinary_t * const bin, Program ** const prog)
+rtError_t ApiProfileLogDecorator::BinaryLoad(const rtDevBinary_t* const bin, Program** const prog)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_BINARY_LOAD, profiler_);
     const rtError_t error = impl_->BinaryLoad(bin, prog);
@@ -176,8 +175,8 @@ rtError_t ApiProfileLogDecorator::BinaryLoad(const rtDevBinary_t * const bin, Pr
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::BinaryGetFunction(const Program * const prog, const uint64_t tilingKey,
-                                                    Kernel ** const funcHandle)
+rtError_t ApiProfileLogDecorator::BinaryGetFunction(
+    const Program* const prog, const uint64_t tilingKey, Kernel** const funcHandle)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_BINARY_GET_FUNCTION, profiler_);
     const rtError_t error = impl_->BinaryGetFunction(prog, tilingKey, funcHandle);
@@ -185,8 +184,8 @@ rtError_t ApiProfileLogDecorator::BinaryGetFunction(const Program * const prog, 
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::BinaryLoadWithoutTilingKey(const void *data, const uint64_t length,
-                                                             Program ** const prog)
+rtError_t ApiProfileLogDecorator::BinaryLoadWithoutTilingKey(
+    const void* data, const uint64_t length, Program** const prog)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_BINARY_LOAD_WITHOUT_TILING_KEY, profiler_);
     const rtError_t error = impl_->BinaryLoadWithoutTilingKey(data, length, prog);
@@ -194,8 +193,8 @@ rtError_t ApiProfileLogDecorator::BinaryLoadWithoutTilingKey(const void *data, c
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::BinaryGetFunctionByName(const Program * const binHandle, const char_t *kernelName,
-                                                          Kernel ** const funcHandle)
+rtError_t ApiProfileLogDecorator::BinaryGetFunctionByName(
+    const Program* const binHandle, const char_t* kernelName, Kernel** const funcHandle)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_BINARY_GET_FUNCTION_BY_NAME, profiler_);
     const rtError_t error = impl_->BinaryGetFunctionByName(binHandle, kernelName, funcHandle);
@@ -203,7 +202,7 @@ rtError_t ApiProfileLogDecorator::BinaryGetFunctionByName(const Program * const 
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::BinaryUnLoad(Program * const binHandle)
+rtError_t ApiProfileLogDecorator::BinaryUnLoad(Program* const binHandle)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_BINARY_UNLOAD, profiler_);
     const rtError_t error = impl_->BinaryUnLoad(binHandle);
@@ -211,17 +210,19 @@ rtError_t ApiProfileLogDecorator::BinaryUnLoad(Program * const binHandle)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::LaunchKernel(Kernel * const kernel, uint32_t blockDim,
-    const rtArgsEx_t * const argsInfo, Stream * const stm, const rtTaskCfgInfo_t * const cfgInfo)
+rtError_t ApiProfileLogDecorator::LaunchKernel(
+    Kernel* const kernel, uint32_t blockDim, const rtArgsEx_t* const argsInfo, Stream* const stm,
+    const rtTaskCfgInfo_t* const cfgInfo)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_LAUNCH_KERNEL, profiler_);
-    const rtError_t error = impl_->LaunchKernel(kernel, blockDim,  argsInfo, stm, cfgInfo);
+    const rtError_t error = impl_->LaunchKernel(kernel, blockDim, argsInfo, stm, cfgInfo);
     record.SaveRecord();
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim, const RtArgsWithType * const argsWithType,
-    Stream * const stm, const rtKernelLaunchCfg_t * const cfg)
+rtError_t ApiProfileLogDecorator::LaunchKernelV2(
+    Kernel* const kernel, uint32_t blockDim, const RtArgsWithType* const argsWithType, Stream* const stm,
+    const rtKernelLaunchCfg_t* const cfg)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_LAUNCH_KERNEL, profiler_);
     const rtError_t error = impl_->LaunchKernelV2(kernel, blockDim, argsWithType, stm, cfg);
@@ -229,19 +230,19 @@ rtError_t ApiProfileLogDecorator::LaunchKernelV2(Kernel * const kernel, uint32_t
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::DatadumpInfoLoad(const void * const dumpInfo,
-    const uint32_t length, const uint32_t flag)
+rtError_t ApiProfileLogDecorator::DatadumpInfoLoad(
+    const void* const dumpInfo, const uint32_t length, const uint32_t flag)
 {
     return impl_->DatadumpInfoLoad(dumpInfo, length, flag);
 }
 
-rtError_t ApiProfileLogDecorator::AicpuInfoLoad(const void * const aicpuInfo, const uint32_t length)
+rtError_t ApiProfileLogDecorator::AicpuInfoLoad(const void* const aicpuInfo, const uint32_t length)
 {
     return impl_->AicpuInfoLoad(aicpuInfo, length);
 }
 
-rtError_t ApiProfileLogDecorator::StreamCreate(Stream ** const stm, const int32_t priority, const uint32_t flags,
-    DvppGrp *grp)
+rtError_t ApiProfileLogDecorator::StreamCreate(
+    Stream** const stm, const int32_t priority, const uint32_t flags, DvppGrp* grp)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_STREAM_CREATE, profiler_);
     const rtError_t error = impl_->StreamCreate(stm, priority, flags, grp);
@@ -249,7 +250,7 @@ rtError_t ApiProfileLogDecorator::StreamCreate(Stream ** const stm, const int32_
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::StreamDestroy(Stream * const stm, bool flag)
+rtError_t ApiProfileLogDecorator::StreamDestroy(Stream* const stm, bool flag)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_STREAM_DESTROY, profiler_);
     const rtError_t error = impl_->StreamDestroy(stm, flag);
@@ -257,7 +258,7 @@ rtError_t ApiProfileLogDecorator::StreamDestroy(Stream * const stm, bool flag)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::StreamSynchronize(Stream * const stm, const int32_t timeout)
+rtError_t ApiProfileLogDecorator::StreamSynchronize(Stream* const stm, const int32_t timeout)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_STREAM_SYNCHRONIZE, profiler_);
     const rtError_t error = impl_->StreamSynchronize(stm, timeout);
@@ -265,14 +266,14 @@ rtError_t ApiProfileLogDecorator::StreamSynchronize(Stream * const stm, const in
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::StreamSetMode(Stream * const stm, const uint64_t stmMode)
+rtError_t ApiProfileLogDecorator::StreamSetMode(Stream* const stm, const uint64_t stmMode)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_STREAM_SET_MODE, profiler_);
     const rtError_t error = impl_->StreamSetMode(stm, stmMode);
     record.SaveRecord();
     return error;
 }
-rtError_t ApiProfileLogDecorator::StreamGetMode(const Stream * const stm, uint64_t * const stmMode)
+rtError_t ApiProfileLogDecorator::StreamGetMode(const Stream* const stm, uint64_t* const stmMode)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_STREAM_GET_MODE, profiler_);
     const rtError_t error = impl_->StreamGetMode(stm, stmMode);
@@ -280,7 +281,7 @@ rtError_t ApiProfileLogDecorator::StreamGetMode(const Stream * const stm, uint64
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::EventCreate(Event ** const evt, const uint64_t flag)
+rtError_t ApiProfileLogDecorator::EventCreate(Event** const evt, const uint64_t flag)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_EVENT_CREATE, profiler_);
     const rtError_t error = impl_->EventCreate(evt, flag);
@@ -288,7 +289,7 @@ rtError_t ApiProfileLogDecorator::EventCreate(Event ** const evt, const uint64_t
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::EventCreateEx(Event ** const evt, const uint64_t flag)
+rtError_t ApiProfileLogDecorator::EventCreateEx(Event** const evt, const uint64_t flag)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_EVENT_CREATE_EX, profiler_);
     const rtError_t error = impl_->EventCreateEx(evt, flag);
@@ -296,7 +297,7 @@ rtError_t ApiProfileLogDecorator::EventCreateEx(Event ** const evt, const uint64
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::GetEventID(Event * const evt, uint32_t * const evtId)
+rtError_t ApiProfileLogDecorator::GetEventID(Event* const evt, uint32_t* const evtId)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_GetEventID, profiler_);
     const rtError_t error = impl_->GetEventID(evt, evtId);
@@ -304,7 +305,7 @@ rtError_t ApiProfileLogDecorator::GetEventID(Event * const evt, uint32_t * const
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::EventDestroy(Event * evt)
+rtError_t ApiProfileLogDecorator::EventDestroy(Event* evt)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_EVENT_DESTROY, profiler_);
     const rtError_t error = impl_->EventDestroy(evt);
@@ -312,7 +313,7 @@ rtError_t ApiProfileLogDecorator::EventDestroy(Event * evt)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::EventRecord(Event * const evt, Stream * const stm, const uint32_t flag)
+rtError_t ApiProfileLogDecorator::EventRecord(Event* const evt, Stream* const stm, const uint32_t flag)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_EVENT_RECORD, profiler_);
     const rtError_t error = impl_->EventRecord(evt, stm, flag);
@@ -320,7 +321,7 @@ rtError_t ApiProfileLogDecorator::EventRecord(Event * const evt, Stream * const 
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::EventSynchronize(Event * const evt, const int32_t timeout)
+rtError_t ApiProfileLogDecorator::EventSynchronize(Event* const evt, const int32_t timeout)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_EVENT_SYNCHRONIZE, profiler_);
     const rtError_t error = impl_->EventSynchronize(evt, timeout);
@@ -328,8 +329,8 @@ rtError_t ApiProfileLogDecorator::EventSynchronize(Event * const evt, const int3
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::DevMalloc(void ** const devPtr, const uint64_t size, const rtMemType_t type,
-    const uint16_t moduleId)
+rtError_t ApiProfileLogDecorator::DevMalloc(
+    void** const devPtr, const uint64_t size, const rtMemType_t type, const uint16_t moduleId)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_DEV_MALLOC, profiler_);
     const rtError_t error = impl_->DevMalloc(devPtr, size, type, moduleId);
@@ -337,7 +338,7 @@ rtError_t ApiProfileLogDecorator::DevMalloc(void ** const devPtr, const uint64_t
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::DevFree(void * const devPtr)
+rtError_t ApiProfileLogDecorator::DevFree(void* const devPtr)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_DEV_FREE, profiler_);
     const rtError_t error = impl_->DevFree(devPtr);
@@ -345,8 +346,8 @@ rtError_t ApiProfileLogDecorator::DevFree(void * const devPtr)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::DevMallocCached(void ** const devPtr, const uint64_t size, const rtMemType_t type,
-    const uint16_t moduleId)
+rtError_t ApiProfileLogDecorator::DevMallocCached(
+    void** const devPtr, const uint64_t size, const rtMemType_t type, const uint16_t moduleId)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_CAHCEDMEM_ALLOC, profiler_);
     const rtError_t error = impl_->DevMallocCached(devPtr, size, type, moduleId);
@@ -354,8 +355,8 @@ rtError_t ApiProfileLogDecorator::DevMallocCached(void ** const devPtr, const ui
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::DevDvppMalloc(void ** const devPtr, const uint64_t size, const uint32_t flag,
-    const uint16_t moduleId)
+rtError_t ApiProfileLogDecorator::DevDvppMalloc(
+    void** const devPtr, const uint64_t size, const uint32_t flag, const uint16_t moduleId)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_DEV_MALLOC, profiler_);
     const rtError_t error = impl_->DevDvppMalloc(devPtr, size, flag, moduleId);
@@ -363,8 +364,8 @@ rtError_t ApiProfileLogDecorator::DevDvppMalloc(void ** const devPtr, const uint
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::GetDevArgsAddr(Stream * const stm, rtArgsEx_t * const argsInfo,
-    void ** const devArgsAddr, void ** const argsHandle)
+rtError_t ApiProfileLogDecorator::GetDevArgsAddr(
+    Stream* const stm, rtArgsEx_t* const argsInfo, void** const devArgsAddr, void** const argsHandle)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_GET_DEV_ARG_ADDR, profiler_);
     const rtError_t error = impl_->GetDevArgsAddr(stm, argsInfo, devArgsAddr, argsHandle);
@@ -372,7 +373,7 @@ rtError_t ApiProfileLogDecorator::GetDevArgsAddr(Stream * const stm, rtArgsEx_t 
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::DevDvppFree(void * const devPtr)
+rtError_t ApiProfileLogDecorator::DevDvppFree(void* const devPtr)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_DEV_FREE, profiler_);
     const rtError_t error = impl_->DevDvppFree(devPtr);
@@ -380,7 +381,7 @@ rtError_t ApiProfileLogDecorator::DevDvppFree(void * const devPtr)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::HostMalloc(void ** const hostPtr, const uint64_t size, const uint16_t moduleId)
+rtError_t ApiProfileLogDecorator::HostMalloc(void** const hostPtr, const uint64_t size, const uint16_t moduleId)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_HOST_MALLOC, profiler_);
     const rtError_t error = impl_->HostMalloc(hostPtr, size, moduleId);
@@ -388,7 +389,7 @@ rtError_t ApiProfileLogDecorator::HostMalloc(void ** const hostPtr, const uint64
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::HostFree(void * const hostPtr)
+rtError_t ApiProfileLogDecorator::HostFree(void* const hostPtr)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_HOST_FREE, profiler_);
     const rtError_t error = impl_->HostFree(hostPtr);
@@ -396,8 +397,8 @@ rtError_t ApiProfileLogDecorator::HostFree(void * const hostPtr)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ManagedMemAlloc(void ** const ptr, const uint64_t size, const uint32_t flag,
-    const uint16_t moduleId)
+rtError_t ApiProfileLogDecorator::ManagedMemAlloc(
+    void** const ptr, const uint64_t size, const uint32_t flag, const uint16_t moduleId)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MANAGEDMEM_ALLOC, profiler_);
     const rtError_t error = impl_->ManagedMemAlloc(ptr, size, flag, moduleId);
@@ -405,7 +406,7 @@ rtError_t ApiProfileLogDecorator::ManagedMemAlloc(void ** const ptr, const uint6
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ManagedMemFree(const void * const ptr)
+rtError_t ApiProfileLogDecorator::ManagedMemFree(const void* const ptr)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MANAGEDMEM_FREE, profiler_);
     const rtError_t error = impl_->ManagedMemFree(ptr);
@@ -419,8 +420,9 @@ rtError_t ApiProfileLogDecorator::MemAdvise(void* devPtr, uint64_t count, uint32
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemCopySync(void * const dst, const uint64_t destMax, const void * const src,
-    const uint64_t cnt, const rtMemcpyKind_t kind, const uint32_t checkKind)
+rtError_t ApiProfileLogDecorator::MemCopySync(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind_t kind,
+    const uint32_t checkKind)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MEM_CPY, profiler_);
     const rtError_t error = impl_->MemCopySync(dst, destMax, src, cnt, kind, checkKind);
@@ -428,9 +430,10 @@ rtError_t ApiProfileLogDecorator::MemCopySync(void * const dst, const uint64_t d
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemcpyAsync(void * const dst, const uint64_t destMax, const void * const src,
-    const uint64_t cnt, const rtMemcpyKind_t kind, Stream * const stm, const rtTaskCfgInfo_t * const cfgInfo,
-    const rtD2DAddrCfgInfo_t * const addrCfg, bool checkKind, const rtMemcpyConfig_t * const memcpyConfig)
+rtError_t ApiProfileLogDecorator::MemcpyAsync(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind_t kind,
+    Stream* const stm, const rtTaskCfgInfo_t* const cfgInfo, const rtD2DAddrCfgInfo_t* const addrCfg, bool checkKind,
+    const rtMemcpyConfig_t* const memcpyConfig)
 {
     UNUSED(checkKind);
     UNUSED(memcpyConfig);
@@ -440,8 +443,9 @@ rtError_t ApiProfileLogDecorator::MemcpyAsync(void * const dst, const uint64_t d
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemCopy2DSync(void * const dst, const uint64_t dstPitch, const void * const src,
-    const uint64_t srcPitch, const uint64_t width, const uint64_t height, const rtMemcpyKind_t kind, const rtMemcpyKind newkind)
+rtError_t ApiProfileLogDecorator::MemCopy2DSync(
+    void* const dst, const uint64_t dstPitch, const void* const src, const uint64_t srcPitch, const uint64_t width,
+    const uint64_t height, const rtMemcpyKind_t kind, const rtMemcpyKind newkind)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MEM_CPY2D, profiler_);
     const rtError_t error = impl_->MemCopy2DSync(dst, dstPitch, src, srcPitch, width, height, kind, newkind);
@@ -449,9 +453,9 @@ rtError_t ApiProfileLogDecorator::MemCopy2DSync(void * const dst, const uint64_t
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemCopy2DAsync(void * const dst, const uint64_t dstPitch, const void * const src,
-    const uint64_t srcPitch, const uint64_t width, const uint64_t height, Stream * const stm,
-    const rtMemcpyKind_t kind, const rtMemcpyKind newkind)
+rtError_t ApiProfileLogDecorator::MemCopy2DAsync(
+    void* const dst, const uint64_t dstPitch, const void* const src, const uint64_t srcPitch, const uint64_t width,
+    const uint64_t height, Stream* const stm, const rtMemcpyKind_t kind, const rtMemcpyKind newkind)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MEM_CPY2D_ASYNC, profiler_);
     const rtError_t error = impl_->MemCopy2DAsync(dst, dstPitch, src, srcPitch, width, height, stm, kind, newkind);
@@ -459,8 +463,9 @@ rtError_t ApiProfileLogDecorator::MemCopy2DAsync(void * const dst, const uint64_
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemcpyHostTask(void * const dst, const uint64_t destMax, const void * const src,
-    const uint64_t cnt, const rtMemcpyKind_t kind, Stream * const stm)
+rtError_t ApiProfileLogDecorator::MemcpyHostTask(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind_t kind,
+    Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_HOST_TASK_MEMCPY, profiler_);
     const rtError_t error = impl_->MemcpyHostTask(dst, destMax, src, cnt, kind, stm);
@@ -468,9 +473,9 @@ rtError_t ApiProfileLogDecorator::MemcpyHostTask(void * const dst, const uint64_
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ReduceAsync(void * const dst, const void * const src, const uint64_t cnt,
-    const rtRecudeKind_t kind, const rtDataType_t type, Stream * const stm,
-    const rtTaskCfgInfo_t * const cfgInfo)
+rtError_t ApiProfileLogDecorator::ReduceAsync(
+    void* const dst, const void* const src, const uint64_t cnt, const rtRecudeKind_t kind, const rtDataType_t type,
+    Stream* const stm, const rtTaskCfgInfo_t* const cfgInfo)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_ReduceAsync, profiler_);
     const rtError_t error = impl_->ReduceAsync(dst, src, cnt, kind, type, stm, cfgInfo);
@@ -478,15 +483,16 @@ rtError_t ApiProfileLogDecorator::ReduceAsync(void * const dst, const void * con
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ReduceAsyncV2(void * const dst, const void * const src, const uint64_t cnt,
-    const rtRecudeKind_t kind, const rtDataType_t type, Stream * const stm, void * const overflowAddr)
+rtError_t ApiProfileLogDecorator::ReduceAsyncV2(
+    void* const dst, const void* const src, const uint64_t cnt, const rtRecudeKind_t kind, const rtDataType_t type,
+    Stream* const stm, void* const overflowAddr)
 {
     const rtError_t error = impl_->ReduceAsyncV2(dst, src, cnt, kind, type, stm, overflowAddr);
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemSetSync(const void * const devPtr, const uint64_t destMax, const uint32_t val,
-    const uint64_t cnt)
+rtError_t ApiProfileLogDecorator::MemSetSync(
+    const void* const devPtr, const uint64_t destMax, const uint32_t val, const uint64_t cnt)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_Memset, profiler_);
     const rtError_t error = impl_->MemSetSync(devPtr, destMax, val, cnt);
@@ -494,8 +500,8 @@ rtError_t ApiProfileLogDecorator::MemSetSync(const void * const devPtr, const ui
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemsetAsync(void * const ptr, const uint64_t destMax, const uint32_t val,
-                                              const uint64_t cnt, Stream * const stm)
+rtError_t ApiProfileLogDecorator::MemsetAsync(
+    void* const ptr, const uint64_t destMax, const uint32_t val, const uint64_t cnt, Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MemsetAsync, profiler_);
     const rtError_t error = impl_->MemsetAsync(ptr, destMax, val, cnt, stm);
@@ -535,7 +541,7 @@ rtError_t ApiProfileLogDecorator::DeviceSynchronize(const int32_t timeout)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ContextCreate(Context ** const inCtx, const int32_t devId)
+rtError_t ApiProfileLogDecorator::ContextCreate(Context** const inCtx, const int32_t devId)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_CONTEXT_CREATE, profiler_);
     const rtError_t error = impl_->ContextCreate(inCtx, devId);
@@ -543,7 +549,7 @@ rtError_t ApiProfileLogDecorator::ContextCreate(Context ** const inCtx, const in
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ContextDestroy(Context * const inCtx)
+rtError_t ApiProfileLogDecorator::ContextDestroy(Context* const inCtx)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_CONTEXT_DESTROY, profiler_);
     const rtError_t error = impl_->ContextDestroy(inCtx);
@@ -551,7 +557,7 @@ rtError_t ApiProfileLogDecorator::ContextDestroy(Context * const inCtx)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ContextSetCurrent(Context * const inCtx)
+rtError_t ApiProfileLogDecorator::ContextSetCurrent(Context* const inCtx)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_CONTEXT_SETCURRENT, profiler_);
     const rtError_t error = impl_->ContextSetCurrent(inCtx);
@@ -559,7 +565,7 @@ rtError_t ApiProfileLogDecorator::ContextSetCurrent(Context * const inCtx)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::NameStream(Stream * const stm, const char_t * const name)
+rtError_t ApiProfileLogDecorator::NameStream(Stream* const stm, const char_t* const name)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(stm, RT_ERROR_INVALID_VALUE, "Setting the stream name");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(name, RT_ERROR_INVALID_VALUE, "Setting the stream name");
@@ -573,7 +579,7 @@ rtError_t ApiProfileLogDecorator::NameStream(Stream * const stm, const char_t * 
     return impl_->NameStream(stm, name);
 }
 
-rtError_t ApiProfileLogDecorator::ModelCreate(Model ** const mdl, const uint32_t flag)
+rtError_t ApiProfileLogDecorator::ModelCreate(Model** const mdl, const uint32_t flag)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MODEL_CREATE, profiler_);
     const rtError_t error = impl_->ModelCreate(mdl, flag);
@@ -581,7 +587,7 @@ rtError_t ApiProfileLogDecorator::ModelCreate(Model ** const mdl, const uint32_t
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ModelSetExtId(Model * const mdl, const uint32_t extId)
+rtError_t ApiProfileLogDecorator::ModelSetExtId(Model* const mdl, const uint32_t extId)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MODEL_SET_EXT_ID, profiler_);
     const rtError_t error = impl_->ModelSetExtId(mdl, extId);
@@ -589,7 +595,7 @@ rtError_t ApiProfileLogDecorator::ModelSetExtId(Model * const mdl, const uint32_
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ModelDestroy(Model * const mdl)
+rtError_t ApiProfileLogDecorator::ModelDestroy(Model* const mdl)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MODEL_DESTROY, profiler_);
     const rtError_t error = impl_->ModelDestroy(mdl);
@@ -597,7 +603,7 @@ rtError_t ApiProfileLogDecorator::ModelDestroy(Model * const mdl)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ModelBindStream(Model * const mdl, Stream * const stm, const uint32_t flag)
+rtError_t ApiProfileLogDecorator::ModelBindStream(Model* const mdl, Stream* const stm, const uint32_t flag)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MODEL_BIND_STREAM, profiler_);
     const rtError_t error = impl_->ModelBindStream(mdl, stm, flag);
@@ -605,7 +611,7 @@ rtError_t ApiProfileLogDecorator::ModelBindStream(Model * const mdl, Stream * co
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ModelUnbindStream(Model * const mdl, Stream * const stm)
+rtError_t ApiProfileLogDecorator::ModelUnbindStream(Model* const mdl, Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MODEL_UNBIND_STREAM, profiler_);
     const rtError_t error = impl_->ModelUnbindStream(mdl, stm);
@@ -613,7 +619,8 @@ rtError_t ApiProfileLogDecorator::ModelUnbindStream(Model * const mdl, Stream * 
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ModelExecute(Model * const mdl, Stream * const stm, const uint32_t flag, int32_t timeout)
+rtError_t ApiProfileLogDecorator::ModelExecute(
+    Model* const mdl, Stream* const stm, const uint32_t flag, int32_t timeout)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MODEL_EXECUTE, profiler_);
     const rtError_t error = impl_->ModelExecute(mdl, stm, flag, timeout);
@@ -621,7 +628,7 @@ rtError_t ApiProfileLogDecorator::ModelExecute(Model * const mdl, Stream * const
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ModelExecuteSync(Model * const mdl, int32_t timeout)
+rtError_t ApiProfileLogDecorator::ModelExecuteSync(Model* const mdl, int32_t timeout)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MODEL_EXECUTE_SYNC, profiler_);
     const rtError_t error = impl_->ModelExecuteSync(mdl, timeout);
@@ -629,7 +636,7 @@ rtError_t ApiProfileLogDecorator::ModelExecuteSync(Model * const mdl, int32_t ti
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ModelExecuteAsync(Model * const mdl, Stream * const stm)
+rtError_t ApiProfileLogDecorator::ModelExecuteAsync(Model* const mdl, Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MODEL_EXECUTE_ASYNC, profiler_);
     const rtError_t error = impl_->ModelExecuteAsync(mdl, stm);
@@ -637,7 +644,7 @@ rtError_t ApiProfileLogDecorator::ModelExecuteAsync(Model * const mdl, Stream * 
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::NotifyCreate(const int32_t deviceId, Notify ** const retNotify, uint64_t flag)
+rtError_t ApiProfileLogDecorator::NotifyCreate(const int32_t deviceId, Notify** const retNotify, uint64_t flag)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_NotifyCreate, profiler_);
     const rtError_t error = impl_->NotifyCreate(deviceId, retNotify, flag);
@@ -645,7 +652,7 @@ rtError_t ApiProfileLogDecorator::NotifyCreate(const int32_t deviceId, Notify **
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::NotifyDestroy(Notify * const inNotify)
+rtError_t ApiProfileLogDecorator::NotifyDestroy(Notify* const inNotify)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_NotifyDestroy, profiler_);
     const rtError_t error = impl_->NotifyDestroy(inNotify);
@@ -653,7 +660,7 @@ rtError_t ApiProfileLogDecorator::NotifyDestroy(Notify * const inNotify)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::NotifyRecord(Notify * const inNotify, Stream * const stm)
+rtError_t ApiProfileLogDecorator::NotifyRecord(Notify* const inNotify, Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_NotifyRecord, profiler_);
     const rtError_t error = impl_->NotifyRecord(inNotify, stm);
@@ -661,7 +668,7 @@ rtError_t ApiProfileLogDecorator::NotifyRecord(Notify * const inNotify, Stream *
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::NotifyReset(Notify * const inNotify)
+rtError_t ApiProfileLogDecorator::NotifyReset(Notify* const inNotify)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_NOTIFY_RESET, profiler_);
     const rtError_t error = impl_->NotifyReset(inNotify);
@@ -669,7 +676,7 @@ rtError_t ApiProfileLogDecorator::NotifyReset(Notify * const inNotify)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::NotifyWait(Notify * const inNotify, Stream * const stm, const uint32_t timeOut)
+rtError_t ApiProfileLogDecorator::NotifyWait(Notify* const inNotify, Stream* const stm, const uint32_t timeOut)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_NotifyWait, profiler_);
     const rtError_t error = impl_->NotifyWait(inNotify, stm, timeOut);
@@ -677,7 +684,7 @@ rtError_t ApiProfileLogDecorator::NotifyWait(Notify * const inNotify, Stream * c
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::IpcOpenNotify(Notify ** const retNotify, const char_t * const name, uint32_t flag)
+rtError_t ApiProfileLogDecorator::IpcOpenNotify(Notify** const retNotify, const char_t* const name, uint32_t flag)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_IpcOpenNotify, profiler_);
     const rtError_t error = impl_->IpcOpenNotify(retNotify, name, flag);
@@ -685,7 +692,7 @@ rtError_t ApiProfileLogDecorator::IpcOpenNotify(Notify ** const retNotify, const
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ModelSetSchGroupId(Model * const mdl, const int16_t schGrpId)
+rtError_t ApiProfileLogDecorator::ModelSetSchGroupId(Model* const mdl, const int16_t schGrpId)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MODEL_SET_SCH_GROUP_ID, profiler_);
     const rtError_t error = impl_->ModelSetSchGroupId(mdl, schGrpId);
@@ -693,8 +700,8 @@ rtError_t ApiProfileLogDecorator::ModelSetSchGroupId(Model * const mdl, const in
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::ModelTaskUpdate(Stream *desStm, uint32_t desTaskId, Stream *sinkStm,
-                                                  rtMdlTaskUpdateInfo_t *para)
+rtError_t ApiProfileLogDecorator::ModelTaskUpdate(
+    Stream* desStm, uint32_t desTaskId, Stream* sinkStm, rtMdlTaskUpdateInfo_t* para)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MODEL_TASK_UPDATE, profiler_);
     const rtError_t error = impl_->ModelTaskUpdate(desStm, desTaskId, sinkStm, para);
@@ -702,7 +709,7 @@ rtError_t ApiProfileLogDecorator::ModelTaskUpdate(Stream *desStm, uint32_t desTa
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::SubscribeReport(const uint64_t threadId, Stream * const stm)
+rtError_t ApiProfileLogDecorator::SubscribeReport(const uint64_t threadId, Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_rtSubscribeReport, profiler_);
     const rtError_t error = impl_->SubscribeReport(threadId, stm);
@@ -710,8 +717,8 @@ rtError_t ApiProfileLogDecorator::SubscribeReport(const uint64_t threadId, Strea
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::CallbackLaunch(const rtCallback_t callBackFunc, void * const fnData,
-    Stream * const stm, const bool isBlock)
+rtError_t ApiProfileLogDecorator::CallbackLaunch(
+    const rtCallback_t callBackFunc, void* const fnData, Stream* const stm, const bool isBlock)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_rtCallbackLaunch, profiler_);
     const rtError_t error = impl_->CallbackLaunch(callBackFunc, fnData, stm, isBlock);
@@ -727,7 +734,7 @@ rtError_t ApiProfileLogDecorator::ProcessReport(const int32_t timeout, const boo
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::UnSubscribeReport(const uint64_t threadId, Stream * const stm)
+rtError_t ApiProfileLogDecorator::UnSubscribeReport(const uint64_t threadId, Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_rtUnSubscribeReport, profiler_);
     const rtError_t error = impl_->UnSubscribeReport(threadId, stm);
@@ -735,7 +742,7 @@ rtError_t ApiProfileLogDecorator::UnSubscribeReport(const uint64_t threadId, Str
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::GetRunMode(rtRunMode * const runMode)
+rtError_t ApiProfileLogDecorator::GetRunMode(rtRunMode* const runMode)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_rtGetRunMode, profiler_);
     const rtError_t error = impl_->GetRunMode(runMode);
@@ -743,8 +750,8 @@ rtError_t ApiProfileLogDecorator::GetRunMode(rtRunMode * const runMode)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::LabelSwitchByIndex(void * const ptr, const uint32_t maxVal, void * const labelInfoPtr,
-    Stream * const stm)
+rtError_t ApiProfileLogDecorator::LabelSwitchByIndex(
+    void* const ptr, const uint32_t maxVal, void* const labelInfoPtr, Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_LabelSwitchByIndex, profiler_);
     const rtError_t error = impl_->LabelSwitchByIndex(ptr, maxVal, labelInfoPtr, stm);
@@ -752,7 +759,7 @@ rtError_t ApiProfileLogDecorator::LabelSwitchByIndex(void * const ptr, const uin
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::LabelGotoEx(Label * const lbl, Stream * const stm)
+rtError_t ApiProfileLogDecorator::LabelGotoEx(Label* const lbl, Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_LabelGotoEx, profiler_);
     const rtError_t error = impl_->LabelGotoEx(lbl, stm);
@@ -760,8 +767,8 @@ rtError_t ApiProfileLogDecorator::LabelGotoEx(Label * const lbl, Stream * const 
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::LabelListCpy(Label ** const lbl, const uint32_t labelNumber, void * const dst,
-    const uint32_t dstMax)
+rtError_t ApiProfileLogDecorator::LabelListCpy(
+    Label** const lbl, const uint32_t labelNumber, void* const dst, const uint32_t dstMax)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_Label2Content, profiler_);
     const rtError_t error = impl_->LabelListCpy(lbl, labelNumber, dst, dstMax);
@@ -769,8 +776,8 @@ rtError_t ApiProfileLogDecorator::LabelListCpy(Label ** const lbl, const uint32_
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::StreamWaitEvent(Stream * const stm, Event * const evt, const uint32_t timeout,
-    const uint32_t flag)
+rtError_t ApiProfileLogDecorator::StreamWaitEvent(
+    Stream* const stm, Event* const evt, const uint32_t timeout, const uint32_t flag)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_STREAM_WAITEVENT, profiler_);
     const rtError_t error = impl_->StreamWaitEvent(stm, evt, timeout, flag);
@@ -786,7 +793,7 @@ rtError_t ApiProfileLogDecorator::CtxSetSysParamOpt(const rtSysParamOpt configOp
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::CtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t * const configVal)
+rtError_t ApiProfileLogDecorator::CtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t* const configVal)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_CtxGetSysParamOpt, profiler_);
     const rtError_t error = impl_->CtxGetSysParamOpt(configOpt, configVal);
@@ -794,7 +801,7 @@ rtError_t ApiProfileLogDecorator::CtxGetSysParamOpt(const rtSysParamOpt configOp
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::CtxGetOverflowAddr(void ** const overflowAddr)
+rtError_t ApiProfileLogDecorator::CtxGetOverflowAddr(void** const overflowAddr)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_CtxGetOverflowAddr, profiler_);
     const rtError_t error = impl_->CtxGetOverflowAddr(overflowAddr);
@@ -802,8 +809,8 @@ rtError_t ApiProfileLogDecorator::CtxGetOverflowAddr(void ** const overflowAddr)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::GetDeviceSatStatus(void * const outputAddrPtr, const uint64_t outputSize,
-    Stream * const stm)
+rtError_t ApiProfileLogDecorator::GetDeviceSatStatus(
+    void* const outputAddrPtr, const uint64_t outputSize, Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_GetDeviceSatStatus, profiler_);
     const rtError_t error = impl_->GetDeviceSatStatus(outputAddrPtr, outputSize, stm);
@@ -811,7 +818,7 @@ rtError_t ApiProfileLogDecorator::GetDeviceSatStatus(void * const outputAddrPtr,
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::CleanDeviceSatStatus(Stream * const stm)
+rtError_t ApiProfileLogDecorator::CleanDeviceSatStatus(Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_CleanDeviceSatStatus, profiler_);
     const rtError_t error = impl_->CleanDeviceSatStatus(stm);
@@ -819,7 +826,7 @@ rtError_t ApiProfileLogDecorator::CleanDeviceSatStatus(Stream * const stm)
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::StreamClear(Stream * const stm, rtClearStep_t step)
+rtError_t ApiProfileLogDecorator::StreamClear(Stream* const stm, rtClearStep_t step)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_STREAM_CLEAR, profiler_);
     const rtError_t error = impl_->StreamClear(stm, step);
@@ -827,13 +834,13 @@ rtError_t ApiProfileLogDecorator::StreamClear(Stream * const stm, rtClearStep_t 
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::GetVisibleDeviceIdByLogicDeviceId(const int32_t logicDeviceId,
-    int32_t * const visibleDeviceId)
+rtError_t ApiProfileLogDecorator::GetVisibleDeviceIdByLogicDeviceId(
+    const int32_t logicDeviceId, int32_t* const visibleDeviceId)
 {
     return impl_->GetVisibleDeviceIdByLogicDeviceId(logicDeviceId, visibleDeviceId);
 }
 
-rtError_t ApiProfileLogDecorator::GetLogicDevIdByUserDevId(const int32_t userDevId, int32_t * const logicDevId)
+rtError_t ApiProfileLogDecorator::GetLogicDevIdByUserDevId(const int32_t userDevId, int32_t* const logicDevId)
 {
     ProfileLogRecord record(RT_PROF_API_USER_TO_LOGIC_ID, profiler_);
     const rtError_t error = impl_->GetLogicDevIdByUserDevId(userDevId, logicDevId);
@@ -841,7 +848,7 @@ rtError_t ApiProfileLogDecorator::GetLogicDevIdByUserDevId(const int32_t userDev
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::GetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t * const userDevId)
+rtError_t ApiProfileLogDecorator::GetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t* const userDevId)
 {
     ProfileLogRecord record(RT_PROF_API_LOGIC_TO_USER_ID, profiler_);
     const rtError_t error = impl_->GetUserDevIdByLogicDevId(logicDevId, userDevId);
@@ -849,7 +856,8 @@ rtError_t ApiProfileLogDecorator::GetUserDevIdByLogicDevId(const int32_t logicDe
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemWriteValue(const void * const devAddr, const uint64_t value, const uint32_t flag, Stream * const stm)
+rtError_t ApiProfileLogDecorator::MemWriteValue(
+    const void* const devAddr, const uint64_t value, const uint32_t flag, Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MEM_WRITE_VALUE, profiler_);
     const rtError_t error = impl_->MemWriteValue(devAddr, value, flag, stm);
@@ -857,7 +865,8 @@ rtError_t ApiProfileLogDecorator::MemWriteValue(const void * const devAddr, cons
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemWaitValue(const void * const devAddr, const uint64_t value, const uint32_t flag, Stream * const stm)
+rtError_t ApiProfileLogDecorator::MemWaitValue(
+    const void* const devAddr, const uint64_t value, const uint32_t flag, Stream* const stm)
 {
     ProfileLogRecord record(PROFILE_RECORD_TYPE_RT_CALL_RT, RT_PROF_API_MEM_WAIT_VALUE, profiler_);
     const rtError_t error = impl_->MemWaitValue(devAddr, value, flag, stm);
@@ -865,8 +874,9 @@ rtError_t ApiProfileLogDecorator::MemWaitValue(const void * const devAddr, const
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemcpyBatch(void **dsts, void **srcs, size_t *sizes, size_t count,
-    rtMemcpyBatchAttr *attrs, size_t *attrsIdxs, size_t numAttrs, size_t *failIdx)
+rtError_t ApiProfileLogDecorator::MemcpyBatch(
+    void** dsts, void** srcs, size_t* sizes, size_t count, rtMemcpyBatchAttr* attrs, size_t* attrsIdxs, size_t numAttrs,
+    size_t* failIdx)
 {
     ProfileLogRecord record(RT_PROF_API_MEMCPY_BATCH, profiler_);
     const rtError_t error = impl_->MemcpyBatch(dsts, srcs, sizes, count, attrs, attrsIdxs, numAttrs, failIdx);
@@ -874,18 +884,19 @@ rtError_t ApiProfileLogDecorator::MemcpyBatch(void **dsts, void **srcs, size_t *
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::MemcpyBatchAsync(void** const dsts, const size_t* const destMaxs, void** const srcs, const size_t* const sizes,
-    const size_t count, const rtMemcpyBatchAttr* const attrs, const size_t* const attrsIdxs, const size_t numAttrs, size_t* const failIdx,
+rtError_t ApiProfileLogDecorator::MemcpyBatchAsync(
+    void** const dsts, const size_t* const destMaxs, void** const srcs, const size_t* const sizes, const size_t count,
+    const rtMemcpyBatchAttr* const attrs, const size_t* const attrsIdxs, const size_t numAttrs, size_t* const failIdx,
     Stream* const stm)
 {
     ProfileLogRecord record(RT_PROF_API_MEMCPY_ASYNC_BATCH, profiler_);
-    const rtError_t error = 
+    const rtError_t error =
         impl_->MemcpyBatchAsync(dsts, destMaxs, srcs, sizes, count, attrs, attrsIdxs, numAttrs, failIdx, stm);
     record.SaveRecord();
     return error;
 }
 
-rtError_t ApiProfileLogDecorator::CacheLastTaskOpInfo(const void * const infoPtr, const size_t infoSize)
+rtError_t ApiProfileLogDecorator::CacheLastTaskOpInfo(const void* const infoPtr, const size_t infoSize)
 {
     ProfileLogRecord record(RT_PROF_API_CACHE_LAST_TASK_OP_INFO, profiler_);
     const rtError_t error = impl_->CacheLastTaskOpInfo(infoPtr, infoSize);
@@ -912,5 +923,5 @@ rtError_t ApiProfileLogDecorator::GetP2PAtomicCapabilities(
     return error;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

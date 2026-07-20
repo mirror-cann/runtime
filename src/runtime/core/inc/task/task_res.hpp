@@ -24,8 +24,8 @@ constexpr uint32_t SHOW_DFX_INFO_TASK_NUM = 6U;
 
 struct TaskRes {
     TaskInfo taskInfo;
-    void* copyDev;       // lite pcie_bar, null for other
-} ;
+    void* copyDev; // lite pcie_bar, null for other
+};
 
 class TaskResManage {
 public:
@@ -33,31 +33,32 @@ public:
     virtual ~TaskResManage();
     virtual TaskInfo* GetTaskInfo(uint32_t taskId) const;
     virtual void ResetTaskRes();
-    TaskInfo *GetHeadTaskInfo() const;
+    TaskInfo* GetHeadTaskInfo() const;
     void RecycleResHead();
     uint16_t GetResHead() const;
     virtual bool CreateTaskRes(Stream* stm);
     void ReleaseTaskResource(Stream* stm);
     void ReleaseHostStateOnExit();
-    void *MallocPcieBarBuffer(const uint32_t size, Device * const dev, bool isLogError=true) const;
+    void* MallocPcieBarBuffer(const uint32_t size, Device* const dev, bool isLogError = true) const;
 
-    bool AllocTaskResId(uint32_t &taskResId);
+    bool AllocTaskResId(uint32_t& taskResId);
     bool RecycleTaskInfoOn(uint32_t taskId);
     bool RecycleTaskInfoO1(uint32_t taskId);
-    TaskInfo* AllocTaskInfoByTaskResId(Stream *stm, uint32_t taskResId, uint16_t taskId, tsTaskType_t taskType);
-    rtError_t LoadInputOutputArgs(const Stream * const stm, void *&kerArgs,uint32_t taskResId,
-        const uint32_t size, const void * const args, const rtArgsEx_t * const argsInfo) const;
-    rtError_t LoadInputOutputArgs(const Stream * const stm, void *&kerArgs, uint32_t taskResId,
-        const uint32_t size, const void * const args, const rtAicpuArgsEx_t * const argsInfo) const;
+    TaskInfo* AllocTaskInfoByTaskResId(Stream* stm, uint32_t taskResId, uint16_t taskId, tsTaskType_t taskType);
+    rtError_t LoadInputOutputArgs(
+        const Stream* const stm, void*& kerArgs, uint32_t taskResId, const uint32_t size, const void* const args,
+        const rtArgsEx_t* const argsInfo) const;
+    rtError_t LoadInputOutputArgs(
+        const Stream* const stm, void*& kerArgs, uint32_t taskResId, const uint32_t size, const void* const args,
+        const rtAicpuArgsEx_t* const argsInfo) const;
 
-    void SetResult(void *const kerArgs, struct ArgLoaderResult * const result) const;
-    template<typename T>
-    rtError_t Load(const T *argsInfo, uint32_t taskResId,
-                   Stream * const stm, struct ArgLoaderResult * const result) const
+    void SetResult(void* const kerArgs, struct ArgLoaderResult* const result) const;
+    template <typename T>
+    rtError_t Load(const T* argsInfo, uint32_t taskResId, Stream* const stm, struct ArgLoaderResult* const result) const
     {
-        void *kerArgs = static_cast<void *>(argsInfo->args);
+        void* kerArgs = static_cast<void*>(argsInfo->args);
         const uint32_t size = argsInfo->argsSize;
-        void * const args = argsInfo->args;
+        void* const args = argsInfo->args;
 
         if (taskRes_[taskResId].copyDev == nullptr || size > RTS_LITE_PCIE_BAR_COPY_SIZE_NEW) {
             RT_LOG(RT_LOG_INFO, "unsupported, size=%u.", size);
@@ -74,10 +75,7 @@ public:
 
         return RT_ERROR_NONE;
     }
-    uint16_t GetTaskPoolNum() const
-    {
-        return taskPoolNum_;
-    }
+    uint16_t GetTaskPoolNum() const { return taskPoolNum_; }
 
     virtual void ShowDfxInfo(void) const;
 
@@ -88,33 +86,31 @@ public:
         }
     }
 
-    uint8_t *GetTaskResBaseAddr() const
-    {
-        return taskResBaseAddr_;
-    }
+    uint8_t* GetTaskResBaseAddr() const { return taskResBaseAddr_; }
 
 public:
     TaskRes* taskRes_{nullptr};
     uint16_t taskResHead_ = 0U; // recycle
     uint16_t taskResTail_ = 0U; // alloc
-	uint16_t taskPoolNum_ {1024U};
+    uint16_t taskPoolNum_{1024U};
     // dfx
-    int32_t streamId_ {0xFFFF};
-    uint32_t deviceId_ {0xFFFFU};
+    int32_t streamId_{0xFFFF};
+    uint32_t deviceId_{0xFFFFU};
+
 private:
     uint8_t* taskResBaseAddr_{nullptr};
     uint8_t* pcieBaseAddr_{nullptr};
     std::mutex taskHeadMutex_;
     std::mutex taskTailMutex_;
-    
+
     // pcie bar manager
     uint16_t GetTaskPoolSizeByChipType(const rtChipType_t chipType) const;
-    void FreePcieBarBuffer(void *addr, Device *para) const;
+    void FreePcieBarBuffer(void* addr, Device* para) const;
 
 protected:
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_TASK_RES_HPP__
+#endif // __CCE_RUNTIME_TASK_RES_HPP__

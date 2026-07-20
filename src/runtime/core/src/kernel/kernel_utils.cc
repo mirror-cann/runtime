@@ -20,7 +20,7 @@
 
 namespace cce {
 namespace runtime {
-void ComputeRatio(uint16_t ratio[2], uint32_t mixType, uint32_t taskRatio) 
+void ComputeRatio(uint16_t ratio[2], uint32_t mixType, uint32_t taskRatio)
 {
     ratio[0] = 0U;
     ratio[1] = 0U;
@@ -63,21 +63,25 @@ void ComputeRatio(uint16_t ratio[2], uint32_t mixType, uint32_t taskRatio)
     }
 }
 
-rtError_t ConvertTaskType(const TaskInfo * const task, rtTaskType *type)
+rtError_t ConvertTaskType(const TaskInfo* const task, rtTaskType* type)
 {
-    COND_RETURN_ERROR((task->stream == nullptr), RT_ERROR_INVALID_VALUE,
+    COND_RETURN_ERROR(
+        (task->stream == nullptr), RT_ERROR_INVALID_VALUE,
         "The stream associated with the task does not exist, taskId=%u.", task->id);
 
     rtTaskType taskType = rtTaskType::RT_TASK_DEFAULT;
     if (task->taskOwner == static_cast<uint8_t>(TaskOwner::RT_TASK_INNER)) {
         *type = taskType;
-        RT_LOG(RT_LOG_INFO, "end to get task type, streamId=%d, taskId=%u, alloc taskType=%d, taskName=%s, taskOwner=%d, convert to rtTaskType=%d.",
+        RT_LOG(
+            RT_LOG_INFO,
+            "end to get task type, streamId=%d, taskId=%u, alloc taskType=%d, taskName=%s, taskOwner=%d, convert to "
+            "rtTaskType=%d.",
             task->stream->Id_(), task->id, task->type, task->typeName, static_cast<int32_t>(task->taskOwner), *type);
         return RT_ERROR_NONE;
     }
 
-    switch(task->type) {
-        case TS_TASK_TYPE_KERNEL_AICORE: 
+    switch (task->type) {
+        case TS_TASK_TYPE_KERNEL_AICORE:
         case TS_TASK_TYPE_KERNEL_AIVEC:
             taskType = RT_TASK_KERNEL;
             break;
@@ -105,7 +109,9 @@ rtError_t ConvertTaskType(const TaskInfo * const task, rtTaskType *type)
             break;
     }
     *type = taskType;
-    RT_LOG(RT_LOG_INFO, "end to get task type, streamId=%d, taskId=%u, alloc taskType=%d, taskName=%s, convert to rtTaskType=%d.",
+    RT_LOG(
+        RT_LOG_INFO,
+        "end to get task type, streamId=%d, taskId=%u, alloc taskType=%d, taskName=%s, convert to rtTaskType=%d.",
         task->stream->Id_(), task->id, task->type, task->typeName, taskType);
     return RT_ERROR_NONE;
 }
@@ -114,7 +120,7 @@ rtError_t GetKernelTaskParams(const TaskInfo* const taskInfo, rtTaskParams* cons
 {
     const AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
     rtKernelTaskParams* kernelTaskParams = &(params->kernelTaskParams);
-    Kernel * const kernel = aicTaskInfo->kernel;
+    Kernel* const kernel = aicTaskInfo->kernel;
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(kernel, RT_ERROR_INVALID_VALUE, "Obtaining kernel task parameters");
     kernelTaskParams->funcHandle = kernel->GetInnerHandle();
     kernelTaskParams->cfg = nullptr;
@@ -126,8 +132,9 @@ rtError_t GetKernelTaskParams(const TaskInfo* const taskInfo, rtTaskParams* cons
     Stream* stm = taskInfo->stream;
     Model* mdl = stm->Model_();
     NULL_PTR_RETURN(mdl, RT_ERROR_MODEL_NULL);
-    COND_RETURN_AND_MSG_OUTER(mdl->GetModelType() != RT_MODEL_CAPTURE_MODEL, RT_ERROR_FEATURE_NOT_SUPPORT, 
-        ErrorCode::EE1016, "Obtaining kernel task parameters", "Non ACL Graph mode is not supported");
+    COND_RETURN_AND_MSG_OUTER(
+        mdl->GetModelType() != RT_MODEL_CAPTURE_MODEL, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016,
+        "Obtaining kernel task parameters", "Non ACL Graph mode is not supported");
     CaptureModel* captureModel = dynamic_cast<CaptureModel*>(mdl);
     const TaskGroup* taskGroup = captureModel->GetTaskGroup(stm->Id_(), taskInfo->id);
     params->taskGrp = static_cast<void*>(RtPtrToUnConstPtr<TaskGroup*>(taskGroup));
@@ -170,8 +177,9 @@ static rtError_t UpdateKernelTaskInfoWithArgsAndCfg(
     bool isNeedAllocSqeDevBuf = false;
     AicTaskInit(taskInfo, kernel, kernelAttrType, static_cast<uint16_t>(blockDim), taskCfg, isNeedAllocSqeDevBuf);
     error = CheckDynSizeValid(taskInfo, kernel);
-    ERROR_RETURN(error, "Failed to check shared memory size, retCode=%#x, device_id=%u, stream_id=%d, task_id=%hu.",
-        error, dev->Id_(), stm->Id_(), taskInfo->id);
+    ERROR_RETURN(
+        error, "Failed to check shared memory size, retCode=%#x, device_id=%u, stream_id=%d, task_id=%hu.", error,
+        dev->Id_(), stm->Id_(), taskInfo->id);
 
     AicTaskInfo* aicTask = &(taskInfo->u.aicTaskInfo);
     aicTask->kernel = kernel;
@@ -206,25 +214,31 @@ static rtError_t UpdateKernelTaskInfoWithArgsAndCfg(
 rtError_t UpdateKernelParams(TaskInfo* const taskInfo, rtTaskParams* const params)
 {
     if ((taskInfo->type != TS_TASK_TYPE_KERNEL_AICORE) && (taskInfo->type != TS_TASK_TYPE_KERNEL_AIVEC)) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1017, __func__, "task",
-            "The input task must be a compute task on the Cube Core or Vector Core. Before calling aclmdlRITaskSetParams, "
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE1017, __func__, "task",
+            "The input task must be a compute task on the Cube Core or Vector Core. Before calling "
+            "aclmdlRITaskSetParams, "
             "use aclmdlRITaskGetType to obtain the task type and check whether the task type is correct");
         RT_LOG(RT_LOG_ERROR, "Invalid taskInfo type(%d), expect 0(AI core) or 66(AI vector)", taskInfo->type);
         return RT_ERROR_INVALID_VALUE;
     }
-    COND_RETURN_AND_MSG_OUTER((params->taskGrp != nullptr),
-        RT_ERROR_INVALID_VALUE, ErrorCode::EE1003, "rtModelTaskSetParams", params->taskGrp, "params->taskGrp", "NULL pointer");
+    COND_RETURN_AND_MSG_OUTER(
+        (params->taskGrp != nullptr), RT_ERROR_INVALID_VALUE, ErrorCode::EE1003, "rtModelTaskSetParams",
+        params->taskGrp, "params->taskGrp", "NULL pointer");
 
     const rtKernelTaskParams* kernelTaskParams = &(params->kernelTaskParams);
-    Kernel *kernel = nullptr;
+    Kernel* kernel = nullptr;
     rtError_t error = GetValidatedObject<Kernel>(kernelTaskParams->funcHandle, kernel);
     ERROR_RETURN(error, "Failed to validate funcHandle, retCode=%#x.", static_cast<uint32_t>(error));
-    COND_RETURN_AND_MSG_OUTER((kernel == nullptr),
-        RT_ERROR_INVALID_VALUE, ErrorCode::EE1004, "rtModelTaskSetParams", "params->kernelTaskParams->funcHandle");
-    COND_RETURN_AND_MSG_OUTER((kernelTaskParams->args == nullptr),
-        RT_ERROR_INVALID_VALUE, ErrorCode::EE1004, "rtModelTaskSetParams", "params->kernelTaskParams->args");
-    COND_RETURN_AND_MSG_OUTER((kernelTaskParams->argsSize == 0U),
-        RT_ERROR_INVALID_VALUE, ErrorCode::EE1003, "rtModelTaskSetParams", kernelTaskParams->argsSize, "params->kernelTaskParams->argsSize", "greater than 0");
+    COND_RETURN_AND_MSG_OUTER(
+        (kernel == nullptr), RT_ERROR_INVALID_VALUE, ErrorCode::EE1004, "rtModelTaskSetParams",
+        "params->kernelTaskParams->funcHandle");
+    COND_RETURN_AND_MSG_OUTER(
+        (kernelTaskParams->args == nullptr), RT_ERROR_INVALID_VALUE, ErrorCode::EE1004, "rtModelTaskSetParams",
+        "params->kernelTaskParams->args");
+    COND_RETURN_AND_MSG_OUTER(
+        (kernelTaskParams->argsSize == 0U), RT_ERROR_INVALID_VALUE, ErrorCode::EE1003, "rtModelTaskSetParams",
+        kernelTaskParams->argsSize, "params->kernelTaskParams->argsSize", "greater than 0");
 
     TaskCfg taskCfg = {};
     error = ConvertLaunchCfgToTaskCfg(taskCfg, kernelTaskParams->cfg);
@@ -242,8 +256,9 @@ rtError_t UpdateKernelParams(TaskInfo* const taskInfo, rtTaskParams* const param
     Stream* stm = taskInfo->stream;
     Model* mdl = stm->Model_();
     NULL_PTR_RETURN(mdl, RT_ERROR_MODEL_NULL);
-    COND_RETURN_AND_MSG_OUTER(mdl->GetModelType() != RT_MODEL_CAPTURE_MODEL, RT_ERROR_FEATURE_NOT_SUPPORT, 
-        ErrorCode::EE1016, "Updating kernel parameters", "Non ACL Graph mode is not supported");
+    COND_RETURN_AND_MSG_OUTER(
+        mdl->GetModelType() != RT_MODEL_CAPTURE_MODEL, RT_ERROR_FEATURE_NOT_SUPPORT, ErrorCode::EE1016,
+        "Updating kernel parameters", "Non ACL Graph mode is not supported");
     CaptureModel* captureModel = dynamic_cast<CaptureModel*>(mdl);
 
     if (params->opInfoPtr != nullptr && params->opInfoSize != 0) {
@@ -261,10 +276,10 @@ rtError_t UpdateKernelParams(TaskInfo* const taskInfo, rtTaskParams* const param
 // 永不超时       0        全F          0
 // 默认超时     不配置      0         实际超时
 // 其他超时     其他值    其他值       实际超时
-static rtError_t ConvertTimeoutByAttrId(uint64_t timeout, rtLaunchKernelAttrId attrId,
-    rtLaunchKernelAttrVal_t *attrValue)
+static rtError_t ConvertTimeoutByAttrId(
+    uint64_t timeout, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t* attrValue)
 {
-    uint64_t realTimeout;  // us
+    uint64_t realTimeout; // us
     RT_LOG(RT_LOG_INFO, "timeout(us) in config=%llu", timeout);
     if (timeout == MAX_UINT64_NUM) {
         realTimeout = 0ULL;
@@ -287,12 +302,14 @@ static rtError_t ConvertTimeoutByAttrId(uint64_t timeout, rtLaunchKernelAttrId a
     return RT_ERROR_NONE;
 }
 
-rtError_t GetKernelAttribute(const TaskInfo* const taskInfo, rtLaunchKernelAttrId attrId,
-    rtLaunchKernelAttrVal_t *attrValue)
+rtError_t GetKernelAttribute(
+    const TaskInfo* const taskInfo, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t* attrValue)
 {
     if ((taskInfo->type != TS_TASK_TYPE_KERNEL_AICORE) && (taskInfo->type != TS_TASK_TYPE_KERNEL_AIVEC)) {
-        RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1017, __func__, "task",
-            "The input task must be a compute task on the Cube Core or Vector Core. Before calling aclmdlRIKernelTaskGetAttribute, "
+        RT_LOG_OUTER_MSG_IMPL(
+            ErrorCode::EE1017, __func__, "task",
+            "The input task must be a compute task on the Cube Core or Vector Core. Before calling "
+            "aclmdlRIKernelTaskGetAttribute, "
             "use aclmdlRITaskGetType to obtain the task type and check whether the task type is correct");
         RT_LOG(RT_LOG_ERROR, "Invalid taskInfo type(%d), expect 0(AI core) or 66(AI vector)", taskInfo->type);
         return RT_ERROR_INVALID_VALUE;
@@ -310,8 +327,8 @@ rtError_t GetKernelAttribute(const TaskInfo* const taskInfo, rtLaunchKernelAttrI
             } else {
                 attrValue->schemMode = aicTaskInfo->schemMode;
             }
-            RT_LOG(RT_LOG_INFO, "config schemMode=%u, current schemMode=%u",
-                aicTaskInfo->schemMode, attrValue->schemMode);
+            RT_LOG(
+                RT_LOG_INFO, "config schemMode=%u, current schemMode=%u", aicTaskInfo->schemMode, attrValue->schemMode);
             break;
         case RT_LAUNCH_KERNEL_ATTR_DYN_UBUF_SIZE:
             attrValue->dynUBufSize = aicTaskInfo->dynamicShareMemSize;
@@ -327,30 +344,32 @@ rtError_t GetKernelAttribute(const TaskInfo* const taskInfo, rtLaunchKernelAttrI
         case RT_LAUNCH_KERNEL_ATTR_ENGINE_TYPE:
         case RT_LAUNCH_KERNEL_ATTR_BLOCKDIM_OFFSET:
         case RT_LAUNCH_KERNEL_ATTR_BLOCK_TASK_PREFETCH:
-            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, "Obtaining kernel function attributes", attrId, "attrId",
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+                ErrorCode::EE1003, "Obtaining kernel function attributes", attrId, "attrId",
                 "not equal (" + std::to_string(RT_LAUNCH_KERNEL_ATTR_ENGINE_TYPE) + ", " +
-                std::to_string(RT_LAUNCH_KERNEL_ATTR_BLOCKDIM_OFFSET) + ", " +
-                std::to_string(RT_LAUNCH_KERNEL_ATTR_BLOCK_TASK_PREFETCH) + ")");
+                    std::to_string(RT_LAUNCH_KERNEL_ATTR_BLOCKDIM_OFFSET) + ", " +
+                    std::to_string(RT_LAUNCH_KERNEL_ATTR_BLOCK_TASK_PREFETCH) + ")");
             ret = RT_ERROR_INVALID_VALUE;
             break;
         default:
-            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, "Obtaining kernel function attributes", attrId, "attrId",
+            RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+                ErrorCode::EE1003, "Obtaining kernel function attributes", attrId, "attrId",
                 "[ " + std::to_string(RT_LAUNCH_KERNEL_ATTR_SCHEM_MODE) + ", " +
-                std::to_string(RT_LAUNCH_KERNEL_ATTR_MAX) + ")");
+                    std::to_string(RT_LAUNCH_KERNEL_ATTR_MAX) + ")");
             ret = RT_ERROR_INVALID_VALUE;
             break;
     }
     return ret;
 }
 
-rtError_t GetOpExecuteMsTimeout(uint32_t *const timeout, uint64_t *customTimeout)
+rtError_t GetOpExecuteMsTimeout(uint32_t* const timeout, uint64_t* customTimeout)
 {
     *timeout = 0U;
     float64_t timeoutUs = 0.0F;
-    Runtime *const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     NULL_PTR_RETURN_MSG(rtInstance, RT_ERROR_INSTANCE_NULL);
 
-    const RtTimeoutConfig &timeoutCfg = rtInstance->GetTimeoutConfig();
+    const RtTimeoutConfig& timeoutCfg = rtInstance->GetTimeoutConfig();
     const float64_t kernelCreditScaleUS = rtInstance->GetKernelCreditScaleUS();
     const uint32_t defaultKernelCredit = rtInstance->GetDefaultKernelCredit();
     const float64_t maxKernelCredit = static_cast<float64_t>(rtInstance->GetMaxKernelCredit());
@@ -379,7 +398,8 @@ rtError_t GetOpExecuteMsTimeout(uint32_t *const timeout, uint64_t *customTimeout
             timeoutUs = kernelCreditScaleUS * maxKernelCredit;
         } else {
             // Round up to get the hardware effective time.
-            const uint64_t kernelCreditTmp = static_cast<uint64_t>((timeoutTmpUs + kernelCreditScaleUS - 1) / kernelCreditScaleUS);
+            const uint64_t kernelCreditTmp =
+                static_cast<uint64_t>((timeoutTmpUs + kernelCreditScaleUS - 1) / kernelCreditScaleUS);
             timeoutUs = kernelCreditScaleUS * static_cast<float64_t>(kernelCreditTmp);
         }
     } else {
@@ -387,8 +407,7 @@ rtError_t GetOpExecuteMsTimeout(uint32_t *const timeout, uint64_t *customTimeout
         timeoutUs = kernelCreditScaleUS * static_cast<float64_t>(defaultKernelCredit);
     }
 
-    if ((timeoutCfg.isOpTimeoutMs) && (timeoutCfg.isCfgOpExcTaskTimeout) &&
-        (timeoutCfg.opExcTaskTimeout == 0UL)) {
+    if ((timeoutCfg.isOpTimeoutMs) && (timeoutCfg.isCfgOpExcTaskTimeout) && (timeoutCfg.opExcTaskTimeout == 0UL)) {
         *timeout = UINT32_MAX; // never timeout
     } else {
         *timeout = static_cast<uint32_t>(ceil(timeoutUs / static_cast<float64_t>(RT_TIMEOUT_MS_TO_US)));
@@ -397,7 +416,7 @@ rtError_t GetOpExecuteMsTimeout(uint32_t *const timeout, uint64_t *customTimeout
     return RT_ERROR_NONE;
 }
 
-void SetKernelLaunchParams(const Stream *const stm, const rtArgsEx_t *const argsInfo, TaskInfo &task)
+void SetKernelLaunchParams(const Stream* const stm, const rtArgsEx_t* const argsInfo, TaskInfo& task)
 {
     // 非capture模式下，不需要设置
     if (stm->GetCaptureStatus() == RT_STREAM_CAPTURE_STATUS_NONE) {
@@ -407,10 +426,10 @@ void SetKernelLaunchParams(const Stream *const stm, const rtArgsEx_t *const args
     if ((task.type != TS_TASK_TYPE_KERNEL_AICORE) && (task.type != TS_TASK_TYPE_KERNEL_AIVEC)) {
         return;
     }
-    LaunchParam &launchParam = task.u.aicTaskInfo.launchParam;
+    LaunchParam& launchParam = task.u.aicTaskInfo.launchParam;
     // 若当前task已存在placeHoderPtr，应该先释放后置null
     if (launchParam.placeHoderPtr != nullptr) {
-        delete [](launchParam.placeHoderPtr);
+        delete[] (launchParam.placeHoderPtr);
         launchParam.placeHoderPtr = nullptr;
         launchParam.placeHoderNum = 0U;
     }
@@ -430,7 +449,7 @@ void SetKernelLaunchParams(const Stream *const stm, const rtArgsEx_t *const args
     }
     launchParam.placeHoderNum = placeHoderNum;
     size_t idx = 0;
-    for (;idx < static_cast<size_t>(argsInfo->hostInputInfoNum); ++idx) {
+    for (; idx < static_cast<size_t>(argsInfo->hostInputInfoNum); ++idx) {
         launchParam.placeHoderPtr[idx].addrOffset = argsInfo->hostInputInfoPtr[idx].addrOffset;
         launchParam.placeHoderPtr[idx].dataOffset = argsInfo->hostInputInfoPtr[idx].dataOffset;
     }
@@ -440,31 +459,33 @@ void SetKernelLaunchParams(const Stream *const stm, const rtArgsEx_t *const args
     }
 }
 
-rtError_t CopyKernelParamsToBuffer(const Kernel *kernel, void **argsArray, void *dest)
+rtError_t CopyKernelParamsToBuffer(const Kernel* kernel, void** argsArray, void* dest)
 {
     if (kernel == nullptr || argsArray == nullptr || dest == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Invalid parameters, kernel=%p, argsArray=%p, dest=%p.", kernel, argsArray, dest);
         return RT_ERROR_INVALID_VALUE;
     }
-    
+
     uint32_t paramCount = kernel->GetParamCount();
     for (uint32_t i = 0U; i < paramCount; i++) {
         uint32_t offset = 0U;
         uint32_t size = 0U;
-        COND_RETURN_AND_MSG_OUTER(argsArray[i] == nullptr,
-            RT_ERROR_INVALID_VALUE, ErrorCode::EE1004, "Copying kernel parameters to a buffer", std::string("argsArray[") + std::to_string(i) + std::string("]"));
+        COND_RETURN_AND_MSG_OUTER(
+            argsArray[i] == nullptr, RT_ERROR_INVALID_VALUE, ErrorCode::EE1004, "Copying kernel parameters to a buffer",
+            std::string("argsArray[") + std::to_string(i) + std::string("]"));
         rtError_t error = kernel->GetParamInfo(i, &offset, &size);
-        COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-                       "GetParamInfo failed, index=%u, retCode=%#x.", i, static_cast<uint32_t>(error));        
-        
-        void *destAddr = static_cast<uint8_t *>(dest) + offset;
-        const errno_t ret = memcpy_s(destAddr, static_cast<size_t>(size), 
-                                     argsArray[i], static_cast<size_t>(size));
-        COND_RETURN_ERROR_MSG_INNER((ret != EOK), RT_ERROR_SEC_HANDLE,
-                        "Failed to call memcpy_s to copy argsArray[%u], dest=%p, dest_max=%zu, src=%p, count=%zu, retCode=%d.",
-                        i, destAddr, static_cast<size_t>(size), argsArray[i], static_cast<size_t>(size), ret);     
+        COND_RETURN_ERROR(
+            (error != RT_ERROR_NONE), error, "GetParamInfo failed, index=%u, retCode=%#x.", i,
+            static_cast<uint32_t>(error));
+
+        void* destAddr = static_cast<uint8_t*>(dest) + offset;
+        const errno_t ret = memcpy_s(destAddr, static_cast<size_t>(size), argsArray[i], static_cast<size_t>(size));
+        COND_RETURN_ERROR_MSG_INNER(
+            (ret != EOK), RT_ERROR_SEC_HANDLE,
+            "Failed to call memcpy_s to copy argsArray[%u], dest=%p, dest_max=%zu, src=%p, count=%zu, retCode=%d.", i,
+            destAddr, static_cast<size_t>(size), argsArray[i], static_cast<size_t>(size), ret);
     }
     return RT_ERROR_NONE;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

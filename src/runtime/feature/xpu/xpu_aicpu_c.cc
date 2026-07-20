@@ -20,33 +20,34 @@
 namespace cce {
 namespace runtime {
 
-rtError_t XpuLaunchKernel(const Kernel * const kernel, const uint32_t coreDim, const rtAicpuArgsEx_t * const argsInfo,
-    Stream * const stm, const TaskCfg * const taskCfg)
+rtError_t XpuLaunchKernel(
+    const Kernel* const kernel, const uint32_t coreDim, const rtAicpuArgsEx_t* const argsInfo, Stream* const stm,
+    const TaskCfg* const taskCfg)
 {
-    COND_RETURN_AND_MSG_OUTER(kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_NON_CPU,
-        RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Launching XPU kernel", "kernel",
-        "XPU kernel launch only supports AICPU operators");
-    COND_RETURN_AND_MSG_OUTER(taskCfg->base.dumpflag != 0,
-        RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Launching XPU kernel", "taskCfg",
+    COND_RETURN_AND_MSG_OUTER(
+        kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_NON_CPU, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017,
+        "Launching XPU kernel", "kernel", "XPU kernel launch only supports AICPU operators");
+    COND_RETURN_AND_MSG_OUTER(
+        taskCfg->base.dumpflag != 0, RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Launching XPU kernel", "taskCfg",
         "XPU kernel launch does not support dump");
-    
-    RT_LOG(RT_LOG_DEBUG,
-        "xpu launch kernel, device_id=%u, stream_id=%d, blockDim=%u.",
-        stm->Device_()->Id_(),
-        stm->Id_(),
+
+    RT_LOG(
+        RT_LOG_DEBUG, "xpu launch kernel, device_id=%u, stream_id=%d, blockDim=%u.", stm->Device_()->Id_(), stm->Id_(),
         coreDim);
 
     constexpr uint32_t flag = RT_KERNEL_DEFAULT;
     const int32_t streamId = stm->Id_();
     StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
-    TaskInfo *kernelTask = nullptr;
+    TaskInfo* kernelTask = nullptr;
     rtError_t error = XpuCheckTaskCanSend(stm);
     ERROR_RETURN_MSG_INNER(error, "stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
-    XpuStream *xpuStm = static_cast<XpuStream *>(stm);
-    Kernel *newKernel =  new (std::nothrow) Kernel(kernel->GetCpuKernelSo(), kernel->GetCpuFuncName(), kernel->GetCpuOpType());
-    COND_RETURN_AND_MSG_OUTER(newKernel == nullptr, RT_ERROR_KERNEL_NEW,
-        ErrorCode::EE1013, std::to_string(sizeof(Kernel)), "new");
-    newKernel->SetKernelLiteralNameDevAddr(nullptr, kernel->GetFuncNameDevAddr(stm->Device_()->Id_()), stm->Device_()->Id_());
+    XpuStream* xpuStm = static_cast<XpuStream*>(stm);
+    Kernel* newKernel =
+        new (std::nothrow) Kernel(kernel->GetCpuKernelSo(), kernel->GetCpuFuncName(), kernel->GetCpuOpType());
+    COND_RETURN_AND_MSG_OUTER(
+        newKernel == nullptr, RT_ERROR_KERNEL_NEW, ErrorCode::EE1013, std::to_string(sizeof(Kernel)), "new");
+    newKernel->SetKernelLiteralNameDevAddr(
+        nullptr, kernel->GetFuncNameDevAddr(stm->Device_()->Id_()), stm->Device_()->Id_());
 
     bool useArgPool = true;
     if ((!xpuStm->GetIsHasArgPool()) || (argsInfo->argsSize > XPU_ARG_POOL_COPY_SIZE)) {
@@ -62,31 +63,34 @@ rtError_t XpuLaunchKernel(const Kernel * const kernel, const uint32_t coreDim, c
     error = XpuAllocTaskInfo(&kernelTask, stm, pos);
     ScopeGuard tskErrRecycle(errRecycle);
     ERROR_PROC_RETURN_MSG_INNER(error, DELETE_O(newKernel);, "stream_id=%d alloc task failed, retCode=%#x.", stm->Id_(),
-        static_cast<uint32_t>(error));
+                                                           static_cast<uint32_t>(error));
     XpuSaveTaskCommonInfo(kernelTask, stm, pos);
     AicpuTaskInit(kernelTask, static_cast<uint16_t>(coreDim), flag);
     error = xpuStm->LoadArgsInfo(argsInfo, useArgPool, &result);
-    ERROR_PROC_RETURN_MSG_INNER(error, DELETE_O(newKernel);, "Failed to load args, stream_id=%d, useArgPool=%u, retCode=%#x.",
-        streamId, useArgPool, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, DELETE_O(newKernel);
+                                , "Failed to load args, stream_id=%d, useArgPool=%u, retCode=%#x.", streamId,
+                                useArgPool, static_cast<uint32_t>(error));
 
     XpuSetArgsAicpu(argsInfo, kernelTask, &result);
     // new kernel need post proc
     kernelTask->needPostProc = true;
-    AicpuTaskInfo *aicpuTask = &(kernelTask->u.aicpuTaskInfo);
+    AicpuTaskInfo* aicpuTask = &(kernelTask->u.aicpuTaskInfo);
     aicpuTask->kernel = newKernel;
     aicpuTask->aicpuFlags = flag;
     aicpuTask->aicpuKernelType = static_cast<uint8_t>(kernel->GetAicpuKernelType_());
     aicpuTask->timeout = ConvertAicpuTimeout(argsInfo, taskCfg, flag);
-    RT_LOG(RT_LOG_INFO, "kernel type=%u, flag=0x%x, timeout=%hus, kernelFlag=0x%x, blkdim=%u, argsSize=%u.",
-           kernel->GetAicpuKernelType_(),
-           flag, aicpuTask->timeout, aicpuTask->comm.kernelFlag, aicpuTask->comm.dim, argsInfo->argsSize);
+    RT_LOG(
+        RT_LOG_INFO, "kernel type=%u, flag=0x%x, timeout=%hus, kernelFlag=0x%x, blkdim=%u, argsSize=%u.",
+        kernel->GetAicpuKernelType_(), flag, aicpuTask->timeout, aicpuTask->comm.kernelFlag, aicpuTask->comm.dim,
+        argsInfo->argsSize);
     error = XpuSendTask(kernelTask, stm);
-    ERROR_RETURN_MSG_INNER(error, "stream_id=%d submit task failed, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "stream_id=%d submit task failed, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(stm->Id_(), kernelTask->drvErr);
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

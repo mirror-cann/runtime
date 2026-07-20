@@ -32,21 +32,21 @@ TIMESTAMP_EXTERN(rtStreamDestroyForce);
 TIMESTAMP_EXTERN(rtStreamSynchronize);
 TIMESTAMP_EXTERN(rtStreamSynchronizeWithTimeout);
 TIMESTAMP_EXTERN(rtStreamCreateByGrp);
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamCreate(rtStream_t *stm, int32_t priority)
+rtError_t rtStreamCreate(rtStream_t* stm, int32_t priority)
 {
     return rtStreamCreateWithFlags(stm, priority, RT_STREAM_DEFAULT);
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsStreamCreate(rtStream_t *stream, rtStreamCreateConfig_t *config) 
+rtError_t rtsStreamCreate(rtStream_t* stream, rtStreamCreateConfig_t* config)
 {
     int32_t priority = RT_STREAM_PRIORITY_DEFAULT;
     uint32_t flags = RT_STREAM_DEFAULT;
@@ -61,9 +61,10 @@ rtError_t rtsStreamCreate(rtStream_t *stream, rtStreamCreateConfig_t *config)
                     priority = config->attrs[i].value.priority;
                     break;
                 default:
-                    RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1003, config->attrs[i].id,
-                        "config->attrs[" + std::to_string(i) + "].id",
-                        "[" + std::to_string(RT_STREAM_CREATE_ATTR_FLAGS) + ", " + std::to_string(RT_STREAM_CREATE_ATTR_MAX) + ")");
+                    RT_LOG_OUTER_MSG_WITH_FUNC(
+                        ErrorCode::EE1003, config->attrs[i].id, "config->attrs[" + std::to_string(i) + "].id",
+                        "[" + std::to_string(RT_STREAM_CREATE_ATTR_FLAGS) + ", " +
+                            std::to_string(RT_STREAM_CREATE_ATTR_MAX) + ")");
                     return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_INVALID_VALUE);
             }
         }
@@ -72,18 +73,18 @@ rtError_t rtsStreamCreate(rtStream_t *stream, rtStreamCreateConfig_t *config)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamCreateWithFlags(rtStream_t *stm, int32_t priority, uint32_t flags)
+rtError_t rtStreamCreateWithFlags(rtStream_t* stm, int32_t priority, uint32_t flags)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
 
     TIMESTAMP_BEGIN(rtStreamCreate);
-    const rtError_t ret = apiInstance->StreamCreate(RtPtrToPtr<Stream **>(stm), priority, flags, nullptr);
+    const rtError_t ret = apiInstance->StreamCreate(RtPtrToPtr<Stream**>(stm), priority, flags, nullptr);
     TIMESTAMP_END(rtStreamCreate);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
-    Stream *realStream = RtPtrToPtr<Stream *>(*stm);
+    Stream* realStream = RtPtrToPtr<Stream*>(*stm);
     *stm = ExportEmbeddedHandle<rtStream_t>(realStream);
     return ACL_RT_SUCCESS;
 }
@@ -92,7 +93,7 @@ VISIBILITY_DEFAULT
 rtError_t rtStreamDestroy(rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
 
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
@@ -107,7 +108,7 @@ VISIBILITY_DEFAULT
 rtError_t rtStreamDestroyForce(rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
 
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
@@ -124,7 +125,7 @@ rtError_t rtStreamWaitEvent(rtStream_t stm, rtEvent_t evt)
     GLOBAL_STATE_WAIT_IF_LOCKED();
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     RT_VALIDATE_AND_UNWRAP_OBJECT(evt, Event, waitEvent);
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(Runtime::Instance());
     rtError_t ret;
@@ -143,12 +144,12 @@ rtError_t rtStreamWaitEvent(rtStream_t stm, rtEvent_t evt)
 VISIBILITY_DEFAULT
 rtError_t rtStreamSynchronize(rtStream_t stm)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtStreamSynchronize);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->StreamSynchronize(exeStream);
-    COND_RETURN_WITH_NOLOG(error == RT_ERROR_END_OF_SEQUENCE, ACL_ERROR_RT_END_OF_SEQUENCE); // special state
+    COND_RETURN_WITH_NOLOG(error == RT_ERROR_END_OF_SEQUENCE, ACL_ERROR_RT_END_OF_SEQUENCE);       // special state
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_MODEL_ABORT_NORMAL, ACL_ERROR_RT_MODEL_ABORT_NORMAL); // special state
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_TSFW_AICORE_OVER_FLOW_FAIL, ACL_ERROR_RT_AICORE_OVER_FLOW);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_TSFW_AIVEC_OVER_FLOW_FAIL, ACL_ERROR_RT_AIVEC_OVER_FLOW);
@@ -164,12 +165,12 @@ rtError_t rtStreamSynchronize(rtStream_t stm)
 VISIBILITY_DEFAULT
 rtError_t rtStreamSynchronizeWithTimeout(rtStream_t stm, int32_t timeout)
 {
-    Api *const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtStreamSynchronizeWithTimeout);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->StreamSynchronize(exeStream, timeout);
-    COND_RETURN_WITH_NOLOG(error == RT_ERROR_END_OF_SEQUENCE, ACL_ERROR_RT_END_OF_SEQUENCE); // special state
+    COND_RETURN_WITH_NOLOG(error == RT_ERROR_END_OF_SEQUENCE, ACL_ERROR_RT_END_OF_SEQUENCE);       // special state
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_MODEL_ABORT_NORMAL, ACL_ERROR_RT_MODEL_ABORT_NORMAL); // special state
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_TSFW_AICORE_OVER_FLOW_FAIL, ACL_ERROR_RT_AICORE_OVER_FLOW);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_TSFW_AIVEC_OVER_FLOW_FAIL, ACL_ERROR_RT_AIVEC_OVER_FLOW);
@@ -189,7 +190,7 @@ rtError_t rtStreamSynchronizeWithTimeout(rtStream_t stm, int32_t timeout)
 VISIBILITY_DEFAULT
 rtError_t rtStreamQuery(rtStream_t stm)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->StreamQuery(exeStream);
@@ -199,9 +200,9 @@ rtError_t rtStreamQuery(rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetStreamId(rtStream_t stm, int32_t *streamId)
+rtError_t rtGetStreamId(rtStream_t stm, int32_t* streamId)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->GetStreamId(exeStream, streamId);
@@ -210,9 +211,9 @@ rtError_t rtGetStreamId(rtStream_t stm, int32_t *streamId)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamGetPriority(const rtStream_t stm, uint32_t *priority)
+rtError_t rtStreamGetPriority(const rtStream_t stm, uint32_t* priority)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->StreamGetPriority(exeStream, priority);
@@ -221,9 +222,9 @@ rtError_t rtStreamGetPriority(const rtStream_t stm, uint32_t *priority)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamGetFlags(const rtStream_t stm, uint32_t *flags)
+rtError_t rtStreamGetFlags(const rtStream_t stm, uint32_t* flags)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->StreamGetFlags(exeStream, flags);
@@ -232,9 +233,9 @@ rtError_t rtStreamGetFlags(const rtStream_t stm, uint32_t *flags)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamGetSqid(const rtStream_t stm, uint32_t *sqId)
+rtError_t rtStreamGetSqid(const rtStream_t stm, uint32_t* sqId)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->GetSqId(exeStream, sqId);
@@ -243,9 +244,9 @@ rtError_t rtStreamGetSqid(const rtStream_t stm, uint32_t *sqId)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamGetCqid(const rtStream_t stm, uint32_t *cqId, uint32_t *logicCqId)
+rtError_t rtStreamGetCqid(const rtStream_t stm, uint32_t* cqId, uint32_t* logicCqId)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->GetCqId(exeStream, cqId, logicCqId);
@@ -254,9 +255,9 @@ rtError_t rtStreamGetCqid(const rtStream_t stm, uint32_t *cqId, uint32_t *logicC
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetMaxStreamAndTask(uint32_t streamType, uint32_t *maxStrCount, uint32_t *maxTaskCount)
+rtError_t rtGetMaxStreamAndTask(uint32_t streamType, uint32_t* maxStrCount, uint32_t* maxTaskCount)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t ret = apiInstance->GetMaxStreamAndTask(streamType, maxStrCount, maxTaskCount);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -265,9 +266,9 @@ rtError_t rtGetMaxStreamAndTask(uint32_t streamType, uint32_t *maxStrCount, uint
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetAvailStreamNum(const uint32_t streamType, uint32_t * const streamCount)
+rtError_t rtGetAvailStreamNum(const uint32_t streamType, uint32_t* const streamCount)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t ret = apiInstance->GetAvailStreamNum(streamType, streamCount);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
@@ -275,9 +276,9 @@ rtError_t rtGetAvailStreamNum(const uint32_t streamType, uint32_t * const stream
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetTaskIdAndStreamID(uint32_t *taskId, uint32_t *streamId)
+rtError_t rtGetTaskIdAndStreamID(uint32_t* taskId, uint32_t* streamId)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t ret = apiInstance->GetTaskIdAndStreamID(taskId, streamId);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
@@ -288,13 +289,13 @@ VISIBILITY_DEFAULT
 rtError_t rtStreamSetMode(rtStream_t stm, const uint64_t stmMode)
 {
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_DOT_SET_MODE)) {
         RT_LOG_OUTER_MSG_WITH_FUNC(ErrorCode::EE1005);
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->StreamSetMode(exeStream, stmMode);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -303,10 +304,10 @@ rtError_t rtStreamSetMode(rtStream_t stm, const uint64_t stmMode)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamGetMode(rtStream_t const stm, uint64_t * const stmMode)
+rtError_t rtStreamGetMode(rtStream_t const stm, uint64_t* const stmMode)
 {
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->StreamGetMode(exeStream, stmMode);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -314,43 +315,45 @@ rtError_t rtStreamGetMode(rtStream_t const stm, uint64_t * const stmMode)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamSwitchEx(void *ptr, rtCondition_t condition, void *valuePtr, rtStream_t trueStream,
-                           rtStream_t stm, rtSwitchDataType_t dataType)
+rtError_t rtStreamSwitchEx(
+    void* ptr, rtCondition_t condition, void* valuePtr, rtStream_t trueStream, rtStream_t stm,
+    rtSwitchDataType_t dataType)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(trueStream, Stream, trueExeStream);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    const rtError_t error = apiInstance->StreamSwitchEx(ptr, condition, valuePtr, trueExeStream,
-        exeStream, dataType);
+    const rtError_t error = apiInstance->StreamSwitchEx(ptr, condition, valuePtr, trueExeStream, exeStream, dataType);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
 
     return ACL_RT_SUCCESS;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamSwitchN(void *ptr, uint32_t size, void *valuePtr, rtStream_t *trueStreamPtr,
-                          uint32_t elementSize, rtStream_t stm, rtSwitchDataType_t dataType)
+rtError_t rtStreamSwitchN(
+    void* ptr, uint32_t size, void* valuePtr, rtStream_t* trueStreamPtr, uint32_t elementSize, rtStream_t stm,
+    rtSwitchDataType_t dataType)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(trueStreamPtr, RT_ERROR_INVALID_VALUE);
     COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM((size == 0U), RT_ERROR_INVALID_VALUE, size, "not equal to 0");
-    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM((elementSize == 0U),
-        RT_ERROR_INVALID_VALUE, elementSize, "not equal to 0");
-    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER(((INVALID_UINT32 / size) <= elementSize),
-        RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, __func__, std::to_string(elementSize), "elementSize",
+    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(
+        (elementSize == 0U), RT_ERROR_INVALID_VALUE, elementSize, "not equal to 0");
+    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER(
+        ((INVALID_UINT32 / size) <= elementSize), RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, __func__,
+        std::to_string(elementSize), "elementSize",
         "elementSize should be less than INVALID_UINT32 / size to avoid total data size overflow");
-    std::vector<Stream *> realTrueStreams(elementSize);
+    std::vector<Stream*> realTrueStreams(elementSize);
     for (uint32_t i = 0U; i < elementSize; ++i) {
         RT_VALIDATE_AND_UNWRAP_OBJECT(trueStreamPtr[i], Stream, trueExeStream);
         realTrueStreams[i] = trueExeStream;
     }
-    const rtError_t error = apiInstance->StreamSwitchN(ptr, size, valuePtr, realTrueStreams.data(),
-        elementSize, exeStream, dataType);
+    const rtError_t error =
+        apiInstance->StreamSwitchN(ptr, size, valuePtr, realTrueStreams.data(), elementSize, exeStream, dataType);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
@@ -359,7 +362,7 @@ VISIBILITY_DEFAULT
 rtError_t rtStreamActive(rtStream_t activeStream, rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(activeStream, Stream, activeExeStream);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
@@ -369,28 +372,27 @@ rtError_t rtStreamActive(rtStream_t activeStream, rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsSwitchStream(void *leftValue, rtCondition_t cond, void *rightValue, rtSwitchDataType_t dataType,
-                          rtStream_t trueStream, rtStream_t falseStream, rtStream_t stream)
+rtError_t rtsSwitchStream(
+    void* leftValue, rtCondition_t cond, void* rightValue, rtSwitchDataType_t dataType, rtStream_t trueStream,
+    rtStream_t falseStream, rtStream_t stream)
 {
-    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM((falseStream != nullptr), RT_ERROR_INVALID_VALUE, falseStream, "nullptr");
+    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(
+        (falseStream != nullptr), RT_ERROR_INVALID_VALUE, falseStream, "nullptr");
     return rtStreamSwitchEx(leftValue, cond, rightValue, trueStream, stream, dataType);
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsActiveStream(rtStream_t activeStream, rtStream_t stream)
-{
-    return rtStreamActive(activeStream, stream);
-}
+rtError_t rtsActiveStream(rtStream_t activeStream, rtStream_t stream) { return rtStreamActive(activeStream, stream); }
 
 VISIBILITY_DEFAULT
 rtError_t rtStreamWaitEventWithTimeout(rtStream_t stm, rtEvent_t evt, uint32_t timeout)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     RT_VALIDATE_AND_UNWRAP_OBJECT(evt, Event, waitEvent);
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     uint32_t work_timeout = 0;
     DevProperties properties;
@@ -418,7 +420,7 @@ rtError_t rtStreamWaitEventWithFlag(rtStream_t stm, rtEvent_t evt, uint32_t time
     GLOBAL_STATE_WAIT_IF_LOCKED();
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     RT_VALIDATE_AND_UNWRAP_OBJECT(evt, Event, waitEvent);
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(
         flag == RT_EVENT_WAIT_EXTERNAL && (timeout != 0U), RT_ERROR_INVALID_VALUE, timeout,
@@ -431,27 +433,31 @@ rtError_t rtStreamWaitEventWithFlag(rtStream_t stm, rtEvent_t evt, uint32_t time
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsStreamSetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t *attrValue)
+rtError_t rtsStreamSetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t* attrValue)
 {
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(attrValue, RT_ERROR_INVALID_VALUE);
     rtError_t error;
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
 
     switch (stmAttrId) {
         case RT_STREAM_ATTR_FAILURE_MODE: {
-            COND_RETURN_WARN(!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(),
-                RtOptionalFeatureType::RT_FEATURE_STREAM_ATTR_FAILURE_MODE), ACL_ERROR_RT_FEATURE_NOT_SUPPORT,
-                "chip type(%d) does not support.", static_cast<int32_t>(rtInstance->GetChipType()));
+            COND_RETURN_WARN(
+                !IS_SUPPORT_CHIP_FEATURE(
+                    rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_ATTR_FAILURE_MODE),
+                ACL_ERROR_RT_FEATURE_NOT_SUPPORT, "chip type(%d) does not support.",
+                static_cast<int32_t>(rtInstance->GetChipType()));
             error = apiInstance->StreamSetMode(exeStream, attrValue->failureMode);
             break;
         }
         case RT_STREAM_ATTR_FLOAT_OVERFLOW_CHECK: {
-            if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_ATTR_OVERFLOW_CHECK)) {
-                RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support, return success.",
+            if (!IS_SUPPORT_CHIP_FEATURE(
+                    rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_ATTR_OVERFLOW_CHECK)) {
+                RT_LOG(
+                    RT_LOG_WARNING, "chip type(%d) does not support, return success.",
                     static_cast<int32_t>(rtInstance->GetChipType()));
                 return ACL_RT_SUCCESS;
             }
@@ -459,8 +465,11 @@ rtError_t rtsStreamSetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStream
             break;
         }
         case RT_STREAM_ATTR_USER_CUSTOM_TAG: {
-            if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_ATTR_USER_CUSTOM_TAG)) {
-                RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support, return success.", static_cast<int32_t>(rtInstance->GetChipType()));
+            if (!IS_SUPPORT_CHIP_FEATURE(
+                    rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_ATTR_USER_CUSTOM_TAG)) {
+                RT_LOG(
+                    RT_LOG_WARNING, "chip type(%d) does not support, return success.",
+                    static_cast<int32_t>(rtInstance->GetChipType()));
                 return ACL_RT_SUCCESS;
             }
             error = apiInstance->SetStreamTag(exeStream, attrValue->userCustomTag);
@@ -474,9 +483,10 @@ rtError_t rtsStreamSetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStream
             error = apiInstance->SetStreamPriorityValue(exeStream, attrValue->streamPriority);
             break;
         }
-        default: 
-            RT_LOG_OUTER_MSG_INVALID_PARAM(stmAttrId,
-               "[" + std::to_string(RT_STREAM_ATTR_FAILURE_MODE) + ", " + std::to_string(RT_STREAM_ATTR_MAX) + ")");
+        default:
+            RT_LOG_OUTER_MSG_INVALID_PARAM(
+                stmAttrId,
+                "[" + std::to_string(RT_STREAM_ATTR_FAILURE_MODE) + ", " + std::to_string(RT_STREAM_ATTR_MAX) + ")");
             error = RT_ERROR_INVALID_VALUE;
             break;
     }
@@ -485,15 +495,15 @@ rtError_t rtsStreamSetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStream
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsStreamGetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t *attrValue)
+rtError_t rtsStreamGetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStreamAttrValue_t* attrValue)
 {
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(attrValue, RT_ERROR_INVALID_VALUE);
     rtError_t error;
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-	RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
+    RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
 
     switch (stmAttrId) {
         case RT_STREAM_ATTR_FAILURE_MODE: {
@@ -505,8 +515,11 @@ rtError_t rtsStreamGetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStream
             break;
         }
         case RT_STREAM_ATTR_USER_CUSTOM_TAG: {
-            if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_ATTR_USER_CUSTOM_TAG)) {
-                RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support, return success.", static_cast<int32_t>(rtInstance->GetChipType()));
+            if (!IS_SUPPORT_CHIP_FEATURE(
+                    rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_ATTR_USER_CUSTOM_TAG)) {
+                RT_LOG(
+                    RT_LOG_WARNING, "chip type(%d) does not support, return success.",
+                    static_cast<int32_t>(rtInstance->GetChipType()));
                 return ACL_RT_SUCCESS;
             }
             error = apiInstance->GetStreamTag(exeStream, &attrValue->userCustomTag);
@@ -520,8 +533,9 @@ rtError_t rtsStreamGetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStream
             error = apiInstance->GetStreamPriorityValue(exeStream, &attrValue->streamPriority);
             break;
         }
-        default: 
-            RT_LOG_OUTER_MSG_INVALID_PARAM(stmAttrId,
+        default:
+            RT_LOG_OUTER_MSG_INVALID_PARAM(
+                stmAttrId,
                 "[" + std::to_string(RT_STREAM_ATTR_FAILURE_MODE) + ", " + std::to_string(RT_STREAM_ATTR_MAX) + ")");
             error = RT_ERROR_INVALID_VALUE;
             break;
@@ -533,14 +547,16 @@ rtError_t rtsStreamGetAttribute(rtStream_t stm, rtStreamAttr stmAttrId, rtStream
 VISIBILITY_DEFAULT
 RTS_API rtError_t rtSetStreamOverflowSwitch(rtStream_t stm, uint32_t flags)
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
-    if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_ATTR_OVERFLOW_CHECK)) {
-        RT_LOG(RT_LOG_INFO, "chip type(%d) does not support, return success.",
-               static_cast<int32_t>(rtInstance->GetChipType()));
+    if (!IS_SUPPORT_CHIP_FEATURE(
+            rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_ATTR_OVERFLOW_CHECK)) {
+        RT_LOG(
+            RT_LOG_INFO, "chip type(%d) does not support, return success.",
+            static_cast<int32_t>(rtInstance->GetChipType()));
         return ACL_RT_SUCCESS;
     }
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, targetStm);
     const rtError_t ret = apiInstance->SetStreamOverflowSwitch(targetStm, flags);
@@ -549,9 +565,9 @@ RTS_API rtError_t rtSetStreamOverflowSwitch(rtStream_t stm, uint32_t flags)
 }
 
 VISIBILITY_DEFAULT
-RTS_API rtError_t rtGetStreamOverflowSwitch(rtStream_t stm, uint32_t *flags)
+RTS_API rtError_t rtGetStreamOverflowSwitch(rtStream_t stm, uint32_t* flags)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, targetStm);
     const rtError_t ret = apiInstance->GetStreamOverflowSwitch(targetStm, flags);
@@ -560,34 +576,34 @@ RTS_API rtError_t rtGetStreamOverflowSwitch(rtStream_t stm, uint32_t *flags)
 }
 
 VISIBILITY_DEFAULT
-RTS_API rtError_t rtStreamCreateByGrp(rtStream_t *stm, int32_t priority, uint32_t flags, rtDvppGrp_t grp)
+RTS_API rtError_t rtStreamCreateByGrp(rtStream_t* stm, int32_t priority, uint32_t flags, rtDvppGrp_t grp)
 {
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(grp, RT_ERROR_INVALID_VALUE);
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
 
     TIMESTAMP_BEGIN(rtStreamCreateByGrp);
-    const rtError_t ret = apiInstance->StreamCreate(RtPtrToPtr<Stream **>(stm), priority, flags,
-        RtPtrToPtr<DvppGrp *>(grp));
+    const rtError_t ret =
+        apiInstance->StreamCreate(RtPtrToPtr<Stream**>(stm), priority, flags, RtPtrToPtr<DvppGrp*>(grp));
     TIMESTAMP_END(rtStreamCreateByGrp);
     COND_RETURN_WITH_NOLOG(ret == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT)
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
-    Stream *realStream = RtPtrToPtr<Stream *>(*stm);
+    Stream* realStream = RtPtrToPtr<Stream*>(*stm);
     *stm = ExportEmbeddedHandle<rtStream_t>(realStream);
     return ACL_RT_SUCCESS;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetStreamTag(rtStream_t stm, uint32_t *geOpTag)
+rtError_t rtGetStreamTag(rtStream_t stm, uint32_t* geOpTag)
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     if (!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_TAG)) {
         RT_LOG(RT_LOG_DEBUG, "chip type(%d) does not support.", static_cast<int32_t>(rtInstance->GetChipType()));
         return ACL_RT_SUCCESS;
     }
 
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, streamPtr);
     const rtError_t error = apiInstance->GetStreamTag(streamPtr, geOpTag);
@@ -599,7 +615,7 @@ VISIBILITY_DEFAULT
 rtError_t rtSetStreamSqLock(rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->SetStreamSqLockUnlock(exeStream, true);
@@ -611,7 +627,7 @@ VISIBILITY_DEFAULT
 rtError_t rtSetStreamSqUnlock(rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->SetStreamSqLockUnlock(exeStream, false);
@@ -623,7 +639,7 @@ VISIBILITY_DEFAULT
 rtError_t rtStreamAbort(rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
 
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
@@ -637,25 +653,23 @@ rtError_t rtsStreamDestroy(rtStream_t stm, uint64_t flags)
 {
     constexpr uint64_t STREAM_DESTROY_VALID_FLAGS = (RT_STREAM_DESTORY_FLAG_DEFAULT | RT_STREAM_DESTORY_FLAG_FORCE);
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((flags & (~STREAM_DESTROY_VALID_FLAGS)) != 0U, ACL_ERROR_RT_PARAM_INVALID,
-        flags, "RT_STREAM_DESTORY_FLAG_DEFAULT(0x0ULL) or RT_STREAM_DESTORY_FLAG_FORCE(0x1ULL)");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+        (flags & (~STREAM_DESTROY_VALID_FLAGS)) != 0U, ACL_ERROR_RT_PARAM_INVALID, flags,
+        "RT_STREAM_DESTORY_FLAG_DEFAULT(0x0ULL) or RT_STREAM_DESTORY_FLAG_FORCE(0x1ULL)");
     if ((flags & RT_STREAM_DESTORY_FLAG_FORCE) != 0U) {
         return rtStreamDestroyForce(stm);
-    }  
+    }
     return rtStreamDestroy(stm);
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsStreamAbort(rtStream_t stm)
-{
-    return rtStreamAbort(stm);
-}
+rtError_t rtsStreamAbort(rtStream_t stm) { return rtStreamAbort(stm); }
 
 VISIBILITY_DEFAULT
 rtError_t rtsStreamSynchronize(rtStream_t stm, int32_t timeout)
 {
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM((timeout < -1) || (timeout == 0), ACL_ERROR_RT_PARAM_INVALID, 
-        timeout, "equal to -1 or greater than 0");
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+        (timeout < -1) || (timeout == 0), ACL_ERROR_RT_PARAM_INVALID, timeout, "equal to -1 or greater than 0");
     if (timeout == -1) {
         return rtStreamSynchronize(stm);
     }
@@ -663,20 +677,18 @@ rtError_t rtsStreamSynchronize(rtStream_t stm, int32_t timeout)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsStreamQuery(rtStream_t stm)
-{
-    return rtStreamQuery(stm);
-}
+rtError_t rtsStreamQuery(rtStream_t stm) { return rtStreamQuery(stm); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsStreamGetAvailableNum(uint32_t *streamCount)
+rtError_t rtsStreamGetAvailableNum(uint32_t* streamCount)
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_PTR_RETURN_MSG(rtInstance, RT_ERROR_INSTANCE_NULL);
-    COND_RETURN_WARN(!IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_GET_AVILIABLE_NUM),
+    COND_RETURN_WARN(
+        !IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_STREAM_GET_AVILIABLE_NUM),
         ACL_ERROR_RT_FEATURE_NOT_SUPPORT, "feature does not support");
 
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t ret = apiInstance->GetFreeStreamNum(streamCount);
     ERROR_RETURN_WITH_EXT_ERRCODE(ret);
@@ -684,28 +696,24 @@ rtError_t rtsStreamGetAvailableNum(uint32_t *streamCount)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsStreamGetId(rtStream_t stm, int32_t *streamId)
-{
-    return rtGetStreamId(stm, streamId);
-}
+rtError_t rtsStreamGetId(rtStream_t stm, int32_t* streamId) { return rtGetStreamId(stm, streamId); }
 
 VISIBILITY_DEFAULT
-rtError_t rtsStreamEndTaskGrp(rtStream_t stm, rtTaskGrp_t *handle)
+rtError_t rtsStreamEndTaskGrp(rtStream_t stm, rtTaskGrp_t* handle)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     const rtChipType_t chipType = rtInstance->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_MODEL_ACL_GRAPH)) {
-        RT_LOG(RT_LOG_WARNING, "chip type(%d) or ctx gen mode does not support.",
-            static_cast<int32_t>(chipType));
+        RT_LOG(RT_LOG_WARNING, "chip type(%d) or ctx gen mode does not support.", static_cast<int32_t>(chipType));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
 
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    const rtError_t error = apiInstance->StreamEndTaskGrp(exeStream, RtPtrToPtr<TaskGroup **>(handle));
+    const rtError_t error = apiInstance->StreamEndTaskGrp(exeStream, RtPtrToPtr<TaskGroup**>(handle));
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
@@ -714,16 +722,15 @@ VISIBILITY_DEFAULT
 rtError_t rtsStreamEndTaskUpdate(rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     const rtChipType_t chipType = rtInstance->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_MODEL_ACL_GRAPH)) {
-        RT_LOG(RT_LOG_WARNING, "chip type(%d) or ctx gen mode does not support.",
-            static_cast<int32_t>(chipType));
+        RT_LOG(RT_LOG_WARNING, "chip type(%d) or ctx gen mode does not support.", static_cast<int32_t>(chipType));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
 
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->StreamEndTaskUpdate(exeStream);
@@ -734,7 +741,7 @@ rtError_t rtsStreamEndTaskUpdate(rtStream_t stm)
 VISIBILITY_DEFAULT
 rtError_t rtsSetStreamResLimit(rtStream_t stm, const rtDevResLimitType_t type, const uint32_t value)
 {
-    Api *const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->SetStreamResLimit(exeStream, type, value);
@@ -745,7 +752,7 @@ rtError_t rtsSetStreamResLimit(rtStream_t stm, const rtDevResLimitType_t type, c
 VISIBILITY_DEFAULT
 rtError_t rtsResetStreamResLimit(rtStream_t stm)
 {
-    Api *const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->ResetStreamResLimit(exeStream);
@@ -754,9 +761,9 @@ rtError_t rtsResetStreamResLimit(rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsGetStreamResLimit(const rtStream_t stm, const rtDevResLimitType_t type, uint32_t *const value)
+rtError_t rtsGetStreamResLimit(const rtStream_t stm, const rtDevResLimitType_t type, uint32_t* const value)
 {
-    Api *const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->GetStreamResLimit(exeStream, type, value);
@@ -765,8 +772,9 @@ rtError_t rtsGetStreamResLimit(const rtStream_t stm, const rtDevResLimitType_t t
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsUseStreamResInCurrentThread(const rtStream_t stm) {
-    Api *const apiInstance = Api::Instance();
+rtError_t rtsUseStreamResInCurrentThread(const rtStream_t stm)
+{
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->UseStreamResInCurrentThread(exeStream);
@@ -775,8 +783,9 @@ rtError_t rtsUseStreamResInCurrentThread(const rtStream_t stm) {
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsNotUseStreamResInCurrentThread(const rtStream_t stm) {
-    Api *const apiInstance = Api::Instance();
+rtError_t rtsNotUseStreamResInCurrentThread(const rtStream_t stm)
+{
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->NotUseStreamResInCurrentThread(exeStream);
@@ -785,8 +794,9 @@ rtError_t rtsNotUseStreamResInCurrentThread(const rtStream_t stm) {
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsGetResInCurrentThread(const rtDevResLimitType_t type, uint32_t *const value) {
-    Api *const apiInstance = Api::Instance();
+rtError_t rtsGetResInCurrentThread(const rtDevResLimitType_t type, uint32_t* const value)
+{
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->GetResInCurrentThread(type, value);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);

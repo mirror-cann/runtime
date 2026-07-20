@@ -27,18 +27,20 @@ MemoryList::~MemoryList() noexcept
 }
 
 // 添加内存块到链表
-rtError_t MemoryList::AddBlock(void *address, size_t size)
+rtError_t MemoryList::AddBlock(void* address, size_t size)
 {
     rtError_t error = RT_ERROR_NONE;
     MemoryBlock* block = new (std::nothrow) MemoryBlock;
-    COND_RETURN_AND_MSG_OUTER(block == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        std::to_string(sizeof(MemoryBlock)).c_str(), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        block == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(MemoryBlock)).c_str(),
+        "new");
     block->address = address;
     block->size = size;
 
     ListNode* node = new (std::nothrow) ListNode;
-    COND_GOTO_MSG_OUTER(node == nullptr, BLOCK_FREE, error,
-        RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, std::to_string(sizeof(ListNode)).c_str(), "new");
+    COND_GOTO_MSG_OUTER(
+        node == nullptr, BLOCK_FREE, error, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+        std::to_string(sizeof(ListNode)).c_str(), "new");
     node->block = block;
     node->next = nullptr;
 
@@ -69,7 +71,7 @@ void* MemoryList::GetBlock(size_t size)
                 RemoveNode(node);
             } else {
                 // 更新链表中的地址
-                node->block->address = RtPtrToPtr<void *>(RtPtrToPtr<uint8_t *>(node->block->address) + size);
+                node->block->address = RtPtrToPtr<void*>(RtPtrToPtr<uint8_t*>(node->block->address) + size);
                 node->block->size -= size;
             }
             return address;
@@ -105,7 +107,7 @@ void MemoryList::RemoveNode(ListNode* node)
 bool MemoryList::ContainsAddress(void* address) const
 {
     ListNode* current = head_;
-    
+
     while (current != nullptr) {
         // 使用指针比较来检查地址是否在当前内存块范围内
         int8_t* blockStart = static_cast<int8_t*>(current->block->address);
@@ -116,8 +118,8 @@ bool MemoryList::ContainsAddress(void* address) const
         }
         current = current->next;
     }
-    
+
     return false; // 没有找到地址
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -22,20 +22,20 @@ rtError_t NpuDriver::UpdateAddrVA2PA(uint64_t devAddr, uint64_t len)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(halUpdateAddress == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halUpdateAddress does not exist");
+    COND_RETURN_WARN(
+        halUpdateAddress == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halUpdateAddress does not exist");
 
     drvRet = halUpdateAddress(devAddr, len);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halUpdateAddress does not support.");
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halUpdateAddress does not support.");
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halUpdateAddress failed, drvRetCode=%d.",
-            static_cast<int32_t>(drvRet));
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halUpdateAddress failed, drvRetCode=%d.", static_cast<int32_t>(drvRet));
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
     return RT_GET_DRV_ERRCODE(drvRet);
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

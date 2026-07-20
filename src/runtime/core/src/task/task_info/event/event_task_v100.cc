@@ -21,35 +21,35 @@
 
 namespace cce {
 namespace runtime {
-uint16_t GetSqeEventId(const rtStarsSqe_t *sqe)
-{
-    return sqe->eventSqe.eventId;
-}
+uint16_t GetSqeEventId(const rtStarsSqe_t* sqe) { return sqe->eventSqe.eventId; }
 
 #if F_DESC("EventRecordTask")
-static void SetResultForEventRecordTask(TaskInfo * const taskInfo, const void *const data, const uint32_t dataSize)
+static void SetResultForEventRecordTask(TaskInfo* const taskInfo, const void* const data, const uint32_t dataSize)
 {
     UNUSED(dataSize);
-    EventRecordTaskInfo *eventRecordTaskInfo = &(taskInfo->u.eventRecordTaskInfo);
+    EventRecordTaskInfo* eventRecordTaskInfo = &(taskInfo->u.eventRecordTaskInfo);
 
-    const auto *const tsData = static_cast<const uint32_t *>(data);
-    eventRecordTaskInfo->timestamp = static_cast<uint64_t>(tsData[0]) |
-        (static_cast<uint64_t>(tsData[1]) << 32U); // shift 32 bit
+    const auto* const tsData = static_cast<const uint32_t*>(data);
+    eventRecordTaskInfo->timestamp =
+        static_cast<uint64_t>(tsData[0]) | (static_cast<uint64_t>(tsData[1]) << 32U); // shift 32 bit
 }
 
-static void ConstructSqeForEventRecordTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForEventRecordTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    EventRecordTaskInfo *eventRecordTaskInfo = &(taskInfo->u.eventRecordTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    EventRecordTaskInfo* eventRecordTaskInfo = &(taskInfo->u.eventRecordTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
-    RtStarsEventSqe *sqe = &(command->eventSqe);
-    sqe->header.type = eventRecordTaskInfo->event->IsEventWithoutWaitTask() ?
-            RT_STARS_SQE_TYPE_PLACE_HOLDER : RT_STARS_SQE_TYPE_EVENT_RECORD;
+    RtStarsEventSqe* sqe = &(command->eventSqe);
+    sqe->header.type = eventRecordTaskInfo->event->IsEventWithoutWaitTask() ? RT_STARS_SQE_TYPE_PLACE_HOLDER :
+                                                                              RT_STARS_SQE_TYPE_EVENT_RECORD;
     sqe->header.ie = RT_STARS_SQE_INT_DIR_NO;
     sqe->header.pre_p = RT_STARS_SQE_INT_DIR_NO;
     sqe->header.post_p = RT_STARS_SQE_INT_DIR_NO;
-    sqe->header.wr_cqe = (((eventRecordTaskInfo->event->GetEventFlag() & RT_EVENT_TIME_LINE) != 0U) ||
-            static_cast<bool>((taskInfo->isCqeNeedConcern)) ? 1U : 0U); // 1: set wr_cqe
+    sqe->header.wr_cqe =
+        (((eventRecordTaskInfo->event->GetEventFlag() & RT_EVENT_TIME_LINE) != 0U) ||
+                 static_cast<bool>((taskInfo->isCqeNeedConcern)) ?
+             1U :
+             0U); // 1: set wr_cqe
     sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT;
 
     uint16_t streamId = static_cast<uint16_t>(stream->Id_());
@@ -64,11 +64,11 @@ static void ConstructSqeForEventRecordTask(TaskInfo * const taskInfo, rtStarsSqe
     sqe->res2 = 0U;
     sqe->res3 = 0U;
 
-    AtraceParams param = { stream->Device_()->Id_(), static_cast<uint32_t>(stream->Id_()), taskInfo->id,
-        GetCurrentTid(), stream->Device_()->GetAtraceHandle(), {}};
-    param.u.eventRecordParams = { eventRecordTaskInfo->eventid, static_cast<uint32_t>(eventRecordTaskInfo->waitCqflag),
-        eventRecordTaskInfo->waitCqId, false,
-        ((RtPtrToValue(eventRecordTaskInfo->event)) & 0xFFULL)};
+    AtraceParams param = {stream->Device_()->Id_(), static_cast<uint32_t>(stream->Id_()), taskInfo->id,
+                          GetCurrentTid(),          stream->Device_()->GetAtraceHandle(), {}};
+    param.u.eventRecordParams = {
+        eventRecordTaskInfo->eventid, static_cast<uint32_t>(eventRecordTaskInfo->waitCqflag),
+        eventRecordTaskInfo->waitCqId, false, ((RtPtrToValue(eventRecordTaskInfo->event)) & 0xFFULL)};
 
     AtraceSubmitLog(TYPE_EVENT_RECORD, param);
     eventRecordTaskInfo->event->InsertRecordResetToMap(taskInfo);
@@ -76,19 +76,20 @@ static void ConstructSqeForEventRecordTask(TaskInfo * const taskInfo, rtStarsSqe
         RecordTaskInfo latestRecord = {taskInfo->stream->Id_(), taskInfo->id, RECORDING};
         eventRecordTaskInfo->event->UpdateLatestRecord(latestRecord, eventRecordTaskInfo->eventid);
     }
-    RT_LOG(RT_LOG_INFO, "event_record: device_id=%u, stream_id=%d, task_id=%hu, event_id=%u, sq_id=%u.",
+    RT_LOG(
+        RT_LOG_INFO, "event_record: device_id=%u, stream_id=%d, task_id=%hu, event_id=%u, sq_id=%u.",
         stream->Device_()->Id_(), stream->Id_(), taskInfo->id, eventRecordTaskInfo->eventid, stream->GetSqId());
     PrintSqe(command, "EventRecordTask");
 }
 #endif
 
 #if F_DESC("EventResetTask")
-static void ConstructSqeForEventResetTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForEventResetTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    EventResetTaskInfo *eventResetTaskInfo = &(taskInfo->u.eventResetTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    EventResetTaskInfo* eventResetTaskInfo = &(taskInfo->u.eventResetTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
-    RtStarsWriteValueSqe *evSqe = &(command->writeValueSqe);
+    RtStarsWriteValueSqe* evSqe = &(command->writeValueSqe);
     evSqe->header.type = RT_STARS_SQE_TYPE_WRITE_VALUE;
     evSqe->header.ie = RT_STARS_SQE_INT_DIR_NO;
     evSqe->header.pre_p = RT_STARS_SQE_INT_DIR_NO;
@@ -121,20 +122,19 @@ static void ConstructSqeForEventResetTask(TaskInfo * const taskInfo, rtStarsSqe_
     evSqe->write_value_part6 = 0U;
     evSqe->write_value_part7 = 0U;
 
-    const uint64_t eventTableId =
-        static_cast<uint64_t>(eventResetTaskInfo->eventid) / STARS_EVENT_NUM_OF_SINGLE_TABLE;
+    const uint64_t eventTableId = static_cast<uint64_t>(eventResetTaskInfo->eventid) / STARS_EVENT_NUM_OF_SINGLE_TABLE;
 
     /* same as eventid % STARS_EVENT_NUM_OF_SINGLE_TABLE */
     const uint64_t eventNum = (static_cast<uint64_t>(eventResetTaskInfo->eventid)) & 0xFFFUL;
     uint64_t base = static_cast<uint64_t>(taskInfo->stream->Device_()->GetDevProperties().eventBase);
-    if (taskInfo->stream->Device_()->GetDevProperties().starsResourceAddrCalculateMethod == 
+    if (taskInfo->stream->Device_()->GetDevProperties().starsResourceAddrCalculateMethod ==
         StarsResourceAddrCalculateMethod::STARS_RESOURCE_ADDR_CALCULATE_BY_DEVICE_INFO) {
         const uint64_t chipAddr = taskInfo->stream->Device_()->GetChipAddr();
         const uint64_t chipOffset = taskInfo->stream->Device_()->GetChipOffset();
-        const uint64_t dieOffset  = taskInfo->stream->Device_()->GetDieOffset();
+        const uint64_t dieOffset = taskInfo->stream->Device_()->GetDieOffset();
         base = base + static_cast<uint64_t>(
-            (chipOffset * static_cast<uint64_t>(stream->Device_()->GetPhyChipId())) +
-            (dieOffset * static_cast<uint64_t>(stream->Device_()->GetPhyDieId())) + chipAddr);
+                          (chipOffset * static_cast<uint64_t>(stream->Device_()->GetPhyChipId())) +
+                          (dieOffset * static_cast<uint64_t>(stream->Device_()->GetPhyDieId())) + chipAddr);
     }
     const uint64_t addr = base + (eventTableId * STARS_EVENT_TABLE_OFFSET) + (eventNum * STARS_EVENT_OFFSET);
     evSqe->write_addr_low = static_cast<uint32_t>(addr & MASK_32_BIT);
@@ -143,37 +143,38 @@ static void ConstructSqeForEventResetTask(TaskInfo * const taskInfo, rtStarsSqe_
     COND_RETURN_VOID(eventResetTaskInfo->event == nullptr, "event is nullptr");
     eventResetTaskInfo->event->InsertRecordResetToMap(taskInfo);
 
-    AtraceParams param = { stream->Device_()->Id_(), static_cast<uint32_t>(stream->Id_()), taskInfo->id,
-        GetCurrentTid(), stream->Device_()->GetAtraceHandle(), {}};
-    param.u.eventResetParams = {eventResetTaskInfo->eventid,
-        static_cast<uint16_t>(eventResetTaskInfo->isNotify),
+    AtraceParams param = {stream->Device_()->Id_(), static_cast<uint32_t>(stream->Id_()), taskInfo->id,
+                          GetCurrentTid(),          stream->Device_()->GetAtraceHandle(), {}};
+    param.u.eventResetParams = {
+        eventResetTaskInfo->eventid, static_cast<uint16_t>(eventResetTaskInfo->isNotify),
         ((RtPtrToValue(eventResetTaskInfo->event)) & 0xFFULL)};
     AtraceSubmitLog(TYPE_EVENT_RESET, param);
-    RT_LOG(RT_LOG_INFO, "event_reset: device_id=%u, stream_id=%d, task_id=%hu, sq_id=%u, event_id=%d, base=0x%llx.",
+    RT_LOG(
+        RT_LOG_INFO, "event_reset: device_id=%u, stream_id=%d, task_id=%hu, sq_id=%u, event_id=%d, base=0x%llx.",
         stream->Device_()->Id_(), stream->Id_(), taskInfo->id, stream->GetSqId(), eventResetTaskInfo->eventid, base);
 }
 #endif
 
 #if F_DESC("RemoteEventWaitTask")
-static void DoCompleteSuccessForRemoteEventWaitTask(TaskInfo * const taskInfo, const uint32_t devId)
+static void DoCompleteSuccessForRemoteEventWaitTask(TaskInfo* const taskInfo, const uint32_t devId)
 {
     UNUSED(devId);
-    RemoteEventWaitTaskInfo *remoteEventWaitTaskInfo = &(taskInfo->u.remoteEventWaitTaskInfo);
-    Stream * const stream = taskInfo->stream;
-    COND_RETURN_VOID(remoteEventWaitTaskInfo->event == nullptr,
-                     "event is nullptr, device_id=%u", stream->Device_()->Id_());
+    RemoteEventWaitTaskInfo* remoteEventWaitTaskInfo = &(taskInfo->u.remoteEventWaitTaskInfo);
+    Stream* const stream = taskInfo->stream;
+    COND_RETURN_VOID(
+        remoteEventWaitTaskInfo->event == nullptr, "event is nullptr, device_id=%u", stream->Device_()->Id_());
     remoteEventWaitTaskInfo->event->DeleteWaitFromMap(taskInfo);
     TryToFreeEventIdAndDestroyEvent(&(remoteEventWaitTaskInfo->event), remoteEventWaitTaskInfo->eventId, false);
 }
 #endif
 
 #if F_DESC("EventWaitTask")
-static void ConstructSqeForEventWaitTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForEventWaitTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    EventWaitTaskInfo *eventWaitTaskInfo = &(taskInfo->u.eventWaitTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    EventWaitTaskInfo* eventWaitTaskInfo = &(taskInfo->u.eventWaitTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
-    RtStarsEventSqe *evSqe = &(command->eventSqe);
+    RtStarsEventSqe* evSqe = &(command->eventSqe);
     evSqe->header.type = RT_STARS_SQE_TYPE_EVENT_WAIT;
     evSqe->header.ie = RT_STARS_SQE_INT_DIR_NO;
     evSqe->header.pre_p = RT_STARS_SQE_INT_DIR_NO;
@@ -196,11 +197,12 @@ static void ConstructSqeForEventWaitTask(TaskInfo * const taskInfo, rtStarsSqe_t
     }
 
     PrintSqe(command, "EventWaitTask");
-    AtraceParams param = { stream->Device_()->Id_(), static_cast<uint32_t>(stream->Id_()), taskInfo->id,
-        GetCurrentTid(), stream->Device_()->GetAtraceHandle(), {}};
-    param.u.eventWaitParams = { eventWaitTaskInfo->eventId, false, eventLowEightAddr};
+    AtraceParams param = {stream->Device_()->Id_(), static_cast<uint32_t>(stream->Id_()), taskInfo->id,
+                          GetCurrentTid(),          stream->Device_()->GetAtraceHandle(), {}};
+    param.u.eventWaitParams = {eventWaitTaskInfo->eventId, false, eventLowEightAddr};
     AtraceSubmitLog(TYPE_EVENT_WAIT, param);
-    RT_LOG(RT_LOG_INFO, "event_wait: device_id=%u, stream_id=%d, task_id=%hu, event_id=%d, sq_id=%u, timeout=%us.",
+    RT_LOG(
+        RT_LOG_INFO, "event_wait: device_id=%u, stream_id=%d, task_id=%hu, event_id=%d, sq_id=%u, timeout=%us.",
         stream->Device_()->Id_(), stream->Id_(), taskInfo->id, eventWaitTaskInfo->eventId, stream->GetSqId(),
         eventWaitTaskInfo->timeout);
 }
@@ -249,7 +251,7 @@ static bool EventTaskRegister()
         .setStarsResultFunc = &SetStarsResultForEventWaitTask,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_EVENT_RECORD, eventRecordFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_EVENT_RESET, eventResetFuncs);
@@ -261,5 +263,5 @@ static bool EventTaskRegister()
 }
 
 static bool g_eventTaskRegister = EventTaskRegister();
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

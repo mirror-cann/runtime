@@ -21,14 +21,9 @@ namespace cce {
 namespace runtime {
 using PfnCtrlMsgInit = rtError_t (*)(TaskInfo* taskInfo, const RtCtrlMsgParam& param);
 static PfnCtrlMsgInit ctrlMsgHandlerArr[static_cast<uint32_t>(RtCtrlMsgType::RT_CTRL_MSG_MAX)] = {};
-CtrlSQ::CtrlSQ(Device * const dev): NoCopy(), device_(dev)
-{
-}
+CtrlSQ::CtrlSQ(Device* const dev) : NoCopy(), device_(dev) {}
 
-CtrlSQ::~CtrlSQ() noexcept
-{
-    (void)DeleteStream(stream_);
-}
+CtrlSQ::~CtrlSQ() noexcept { (void)DeleteStream(stream_); }
 
 rtError_t CtrlSQ::Setup()
 {
@@ -39,13 +34,12 @@ rtError_t CtrlSQ::Setup()
     RT_LOG(RT_LOG_INFO, "CtrlSQ create success, stream_id=%d.", stream_->Id_());
     stream_->SetCtrlSQStream();
     const rtError_t error = stream_->Setup();
-    ERROR_PROC_RETURN_MSG_INNER(error, DeleteStream(stream_);,
-        "CtrlSQ setup failed, retCode=%#x.", error);
+    ERROR_PROC_RETURN_MSG_INNER(error, DeleteStream(stream_);, "CtrlSQ setup failed, retCode=%#x.", error);
     RT_LOG(RT_LOG_INFO, "CtrlSQ setup success, stream_id=%d.", stream_->Id_());
     return error;
 }
 
-rtError_t CtrlSQ::CreateCtrlMsg(RtCtrlMsgType msgType, const RtCtrlMsgParam &param, uint32_t * const msgId)
+rtError_t CtrlSQ::CreateCtrlMsg(RtCtrlMsgType msgType, const RtCtrlMsgParam& param, uint32_t* const msgId)
 {
     NULL_PTR_RETURN_MSG(stream_, RT_ERROR_STREAM_NULL);
     // 根据type找到对应的setupFunc
@@ -59,52 +53,50 @@ rtError_t CtrlSQ::CreateCtrlMsg(RtCtrlMsgType msgType, const RtCtrlMsgParam &par
     }
     TaskInfo submitTask = {};
     rtError_t error;
-    TaskInfo *taskInfo = stream_->AllocTask(&submitTask, param.taskType, error);
+    TaskInfo* taskInfo = stream_->AllocTask(&submitTask, param.taskType, error);
     NULL_PTR_RETURN_MSG(taskInfo, error);
     RT_LOG(RT_LOG_INFO, "taskInfo type, type=%u, taskType=%u.", taskInfo->type, param.taskType);
 
     error = ctrlMsgHandlerArr[idx](taskInfo, param);
-    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)device_->GetTaskFactory()->Recycle(taskInfo),
+    COND_PROC_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, (void)device_->GetTaskFactory()->Recycle(taskInfo),
         "Failed to set up ctrl msg, msg_type=%u, error=%#x.", idx, static_cast<uint32_t>(error));
 
     error = device_->SubmitTask(taskInfo, param.sendParam.callback, msgId, param.sendParam.timeout);
-    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)device_->GetTaskFactory()->Recycle(taskInfo),
+    COND_PROC_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, (void)device_->GetTaskFactory()->Recycle(taskInfo),
         "Failed to submit task, msg_type=%u, error=%#x.", idx, static_cast<uint32_t>(error));
-    
+
     RT_LOG(RT_LOG_INFO, "Ctrl msg send success, msgType=%u.", idx);
     return error;
 }
 
-rtError_t CtrlSQ::CreateDavidCtrlMsg(RtCtrlMsgType msgType, const RtCtrlMsgParam &param, uint32_t * const msgId) const
+rtError_t CtrlSQ::CreateDavidCtrlMsg(RtCtrlMsgType msgType, const RtCtrlMsgParam& param, uint32_t* const msgId) const
 {
-    TaskInfo *taskInfo = nullptr;
+    TaskInfo* taskInfo = nullptr;
     rtError_t error = CheckTaskCanSend(stream_);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream %d, retCode=%#x.", stream_->Id_(),
-        static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream %d, retCode=%#x.", stream_->Id_(), static_cast<uint32_t>(error));
     // 根据type找到对应的setupFunc
     const uint32_t idx = static_cast<uint32_t>(msgType);
     uint32_t pos = 0xFFFFU;
     stream_->StreamLock();
     error = AllocTaskInfo(&taskInfo, stream_, pos);
     ERROR_PROC_RETURN_MSG_INNER(error, stream_->StreamUnLock();, "Failed to alloc task, stream_id=%d, retCode=%#x.",
-        stream_->Id_(), static_cast<uint32_t>(error));
+                                                               stream_->Id_(), static_cast<uint32_t>(error));
     RT_LOG(RT_LOG_INFO, "taskInfo type, type=%u, taskType=%u.", taskInfo->type, param.taskType);
 
     SaveTaskCommonInfo(taskInfo, stream_, pos);
     // 根据type找到对应的setupFunc
     error = ctrlMsgHandlerArr[idx](taskInfo, param);
-    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error,
-                            TaskUnInitProc(taskInfo);
-                            TaskRollBack(stream_, pos);
-                            stream_->StreamUnLock();,
-                            "Failed to set up ctrl msg, msg_type=%u, error=%#x.", idx, static_cast<uint32_t>(error));
+    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, TaskUnInitProc(taskInfo); TaskRollBack(stream_, pos);
+                           stream_->StreamUnLock();
+                           , "Failed to set up ctrl msg, msg_type=%u, error=%#x.", idx, static_cast<uint32_t>(error));
 
     error = DavidSendTask(taskInfo, stream_);
-    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error,
-                            TaskUnInitProc(taskInfo);
-                            TaskRollBack(stream_, pos);
-                            stream_->StreamUnLock();,
-                            "Failed to submit task, msg_type=%u, error=%#x.", idx, static_cast<uint32_t>(error));
+    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, TaskUnInitProc(taskInfo); TaskRollBack(stream_, pos);
+                           stream_->StreamUnLock();
+                           , "Failed to submit task, msg_type=%u, error=%#x.", idx, static_cast<uint32_t>(error));
     stream_->StreamUnLock();
     if (msgId != nullptr && taskInfo != nullptr) {
         *msgId = taskInfo->taskSn;
@@ -134,18 +126,20 @@ void CtrlSQ::RegCtrlMsgInitFunc(void) const
     ctrlMsgHandlerArr[static_cast<uint32_t>(RtCtrlMsgType::RT_CTRL_MSG_AICPU_INFOLOAD)] = &CtrlMsgAicpuInfoLoadInit;
     ctrlMsgHandlerArr[static_cast<uint32_t>(RtCtrlMsgType::RT_CTRL_MSG_DEBUG_REGISTER)] = &CtrlMsgDebugRegisteInit;
     ctrlMsgHandlerArr[static_cast<uint32_t>(RtCtrlMsgType::RT_CTRL_MSG_DEBUG_UNREGISTER)] = &CtrlMsgDebugUnRegisteInit;
-    ctrlMsgHandlerArr[static_cast<uint32_t>(RtCtrlMsgType::RT_CTRL_MSG_SET_OVERFLOW_SWITCH)] = &CtrlMsgOverflowSwitchSetInit;
+    ctrlMsgHandlerArr[static_cast<uint32_t>(RtCtrlMsgType::RT_CTRL_MSG_SET_OVERFLOW_SWITCH)] =
+        &CtrlMsgOverflowSwitchSetInit;
     ctrlMsgHandlerArr[static_cast<uint32_t>(RtCtrlMsgType::RT_CTRL_MSG_AICPU_MODEL_DESTROY)] = &CtrlMsgAicpuModelInit;
     ctrlMsgHandlerArr[static_cast<uint32_t>(RtCtrlMsgType::RT_CTRL_MSG_SET_STREAM_TAG)] = &CtrlMsgSetStreamTagInit;
-    ctrlMsgHandlerArr[static_cast<uint32_t>(RtCtrlMsgType::RT_CTRL_MSG_NOTIFY_RESET_V200)] = &CtrlMsgNotifyResetV200Init;
+    ctrlMsgHandlerArr[static_cast<uint32_t>(RtCtrlMsgType::RT_CTRL_MSG_NOTIFY_RESET_V200)] =
+        &CtrlMsgNotifyResetV200Init;
 }
 
-rtError_t CtrlSQ::SendStreamClearMsg(const Stream * const stm, rtClearStep_t step, rtTaskGenCallback callback)
+rtError_t CtrlSQ::SendStreamClearMsg(const Stream* const stm, rtClearStep_t step, rtTaskGenCallback callback)
 {
     const uint32_t streamId = static_cast<uint32_t>(stm->Id_());
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_COMMON_CMD;
-    param.commonCmdParam = { PhCmdType::CMD_STREAM_CLEAR, streamId, step, 0U};
+    param.commonCmdParam = {PhCmdType::CMD_STREAM_CLEAR, streamId, step, 0U};
     param.sendParam.callback = callback;
     rtError_t error = CreateCtrlMsg(RtCtrlMsgType::RT_CTRL_MSG_STREAM_CLEAR, param);
     ERROR_RETURN_MSG_INNER(error, "Failed to send ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
@@ -155,7 +149,7 @@ rtError_t CtrlSQ::SendStreamClearMsg(const Stream * const stm, rtClearStep_t ste
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendStreamRecycleMsg(const RtMaintainceParam &maintenanceParam, TaskInfo *&task)
+rtError_t CtrlSQ::SendStreamRecycleMsg(const RtMaintainceParam& maintenanceParam, TaskInfo*& task)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_MAINTENANCE;
@@ -182,8 +176,8 @@ rtError_t CtrlSQ::SendNotifyResetMsg(uint32_t notifyId)
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendNotifyResetV200Msg(const uint32_t notifyIndex,
-    const SingleBitNotifyRecordInfo * const singleInfo, void * const notify)
+rtError_t CtrlSQ::SendNotifyResetV200Msg(
+    const uint32_t notifyIndex, const SingleBitNotifyRecordInfo* const singleInfo, void* const notify)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_NOTIFY_RECORD;
@@ -198,11 +192,11 @@ rtError_t CtrlSQ::SendNotifyResetV200Msg(const uint32_t notifyIndex,
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendModelUnbindMsgOnly(Model * const mdl, Stream * const streamIn)
+rtError_t CtrlSQ::SendModelUnbindMsgOnly(Model* const mdl, Stream* const streamIn)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_MODEL_MAINTAINCE;
-    param.modelMaintenanceParam = { MMT_STREAM_DEL, mdl, streamIn, RT_MODEL_HEAD_STREAM, 0U };
+    param.modelMaintenanceParam = {MMT_STREAM_DEL, mdl, streamIn, RT_MODEL_HEAD_STREAM, 0U};
     rtError_t error = CreateCtrlMsg(RtCtrlMsgType::RT_CTRL_MSG_MODEL_UNBIND_STREAM, param);
     ERROR_RETURN_MSG_INNER(error, "Failed to send ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
     error = WaitComplete();
@@ -210,11 +204,11 @@ rtError_t CtrlSQ::SendModelUnbindMsgOnly(Model * const mdl, Stream * const strea
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendModelUnbindMsg(Model * const mdl, Stream * const streamIn, const bool force)
+rtError_t CtrlSQ::SendModelUnbindMsg(Model* const mdl, Stream* const streamIn, const bool force)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_MODEL_MAINTAINCE;
-    param.modelMaintenanceParam = { MMT_STREAM_DEL, mdl, streamIn, RT_MODEL_HEAD_STREAM, 0U };
+    param.modelMaintenanceParam = {MMT_STREAM_DEL, mdl, streamIn, RT_MODEL_HEAD_STREAM, 0U};
     rtError_t error = CreateCtrlMsg(RtCtrlMsgType::RT_CTRL_MSG_MODEL_UNBIND_STREAM, param);
     if ((!force) && (error != RT_ERROR_NONE)) {
         mdl->ModelPushFrontStream(streamIn);
@@ -230,14 +224,14 @@ rtError_t CtrlSQ::SendModelUnbindMsg(Model * const mdl, Stream * const streamIn,
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendModelBindMsgOnly(Model * const mdl, Stream * const streamIn, const uint32_t flag)
+rtError_t CtrlSQ::SendModelBindMsgOnly(Model* const mdl, Stream* const streamIn, const uint32_t flag)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_MODEL_MAINTAINCE;
     const rtModelStreamType_t streamType =
         (flag == static_cast<uint32_t>(RT_HEAD_STREAM)) ? RT_MODEL_HEAD_STREAM : RT_MODEL_WAIT_ACTIVE_STREAM;
 
-    param.modelMaintenanceParam = { MMT_STREAM_ADD, mdl, streamIn, streamType, 0U };
+    param.modelMaintenanceParam = {MMT_STREAM_ADD, mdl, streamIn, streamType, 0U};
     rtError_t error = CreateCtrlMsg(RtCtrlMsgType::RT_CTRL_MSG_MODEL_BIND_STREAM, param);
     ERROR_RETURN_MSG_INNER(error, "Failed to send ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
     error = WaitComplete();
@@ -245,16 +239,17 @@ rtError_t CtrlSQ::SendModelBindMsgOnly(Model * const mdl, Stream * const streamI
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendModelBindMsg(Model * const mdl, Stream * const streamIn, const uint32_t flag)
+rtError_t CtrlSQ::SendModelBindMsg(Model* const mdl, Stream* const streamIn, const uint32_t flag)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_MODEL_MAINTAINCE;
     const rtModelStreamType_t streamType =
         (flag == static_cast<uint32_t>(RT_HEAD_STREAM)) ? RT_MODEL_HEAD_STREAM : RT_MODEL_WAIT_ACTIVE_STREAM;
 
-    param.modelMaintenanceParam = { MMT_STREAM_ADD, mdl, streamIn, streamType, 0U };
+    param.modelMaintenanceParam = {MMT_STREAM_ADD, mdl, streamIn, streamType, 0U};
     rtError_t error = CreateCtrlMsg(RtCtrlMsgType::RT_CTRL_MSG_MODEL_BIND_STREAM, param);
-    if ((error != RT_ERROR_NONE) && device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_ALLOC_FROM_STREAM_POOL)) {
+    if ((error != RT_ERROR_NONE) &&
+        device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_ALLOC_FROM_STREAM_POOL)) {
         mdl->ModelRemoveStream(streamIn);
     }
     ERROR_RETURN_MSG_INNER(error, "Failed to send ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
@@ -265,12 +260,12 @@ rtError_t CtrlSQ::SendModelBindMsg(Model * const mdl, Stream * const streamIn, c
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendModelAbortMsg(Model * const mdl)
+rtError_t CtrlSQ::SendModelAbortMsg(Model* const mdl)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_MODEL_MAINTAINCE;
-    param.modelMaintenanceParam = { MMT_MODEL_ABORT, mdl, GetStream(), RT_MODEL_HEAD_STREAM, 0U };
-    
+    param.modelMaintenanceParam = {MMT_MODEL_ABORT, mdl, GetStream(), RT_MODEL_HEAD_STREAM, 0U};
+
     rtError_t error = CreateCtrlMsg(RtCtrlMsgType::RT_CTRL_MSG_MODEL_ABORT, param);
     ERROR_RETURN_MSG_INNER(error, "Failed to send ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
 
@@ -279,24 +274,25 @@ rtError_t CtrlSQ::SendModelAbortMsg(Model * const mdl)
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendModelLoadCompleteMsg(const Model * const mdl, uint32_t firstTaskId)
+rtError_t CtrlSQ::SendModelLoadCompleteMsg(const Model* const mdl, uint32_t firstTaskId)
 {
     RtCtrlMsgParam param = {};
     GetStream()->SetLatestModlId(static_cast<int32_t>(mdl->Id_()));
     param.taskType = TS_TASK_TYPE_MODEL_MAINTAINCE;
-    param.modelMaintenanceParam = { MMT_MODEL_PRE_PROC, RtPtrToUnConstPtr<Model *>(mdl), GetStream(), RT_MODEL_HEAD_STREAM, firstTaskId };
-    
+    param.modelMaintenanceParam = {
+        MMT_MODEL_PRE_PROC, RtPtrToUnConstPtr<Model*>(mdl), GetStream(), RT_MODEL_HEAD_STREAM, firstTaskId};
+
     const rtError_t error = CreateCtrlMsg(RtCtrlMsgType::RT_CTRL_MSG_MODEL_LOAD_COMPLETE, param);
     ERROR_RETURN_MSG_INNER(error, "Failed to send ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendAicpuModelMsg(RtCtrlMsgType msgType, const RtAicpuModelParam &aicpuModelParam)
+rtError_t CtrlSQ::SendAicpuModelMsg(RtCtrlMsgType msgType, const RtAicpuModelParam& aicpuModelParam)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_MODEL_TO_AICPU;
     param.aicpuModelParam = aicpuModelParam;
-    
+
     rtError_t error = CreateCtrlMsg(msgType, param);
     ERROR_RETURN_MSG_INNER(error, "Failed to send ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
 
@@ -307,7 +303,7 @@ rtError_t CtrlSQ::SendAicpuModelMsg(RtCtrlMsgType msgType, const RtAicpuModelPar
 }
 
 rtError_t CtrlSQ::SendDataDumpLoadInfoMsg(
-    RtCtrlMsgType msgType, const RtDataDumpLoadInfoParam &datadumpLoadInfoParam, rtTaskGenCallback callback)
+    RtCtrlMsgType msgType, const RtDataDumpLoadInfoParam& datadumpLoadInfoParam, rtTaskGenCallback callback)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_DATADUMP_LOADINFO;
@@ -323,7 +319,7 @@ rtError_t CtrlSQ::SendDataDumpLoadInfoMsg(
 }
 
 rtError_t CtrlSQ::SendAicpuInfoLoadMsg(
-    RtCtrlMsgType msgType, const RtAicpuInfoLoadParam &aicpuInfoLoadParam, rtTaskGenCallback callback)
+    RtCtrlMsgType msgType, const RtAicpuInfoLoadParam& aicpuInfoLoadParam, rtTaskGenCallback callback)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_AICPU_INFO_LOAD;
@@ -338,8 +334,9 @@ rtError_t CtrlSQ::SendAicpuInfoLoadMsg(
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendDebugRegisterMsg(RtCtrlMsgType msgType, const RtDebugRegisterParam &debugRegisterParam,
-    rtTaskGenCallback callback, uint32_t *const flipTaskId)
+rtError_t CtrlSQ::SendDebugRegisterMsg(
+    RtCtrlMsgType msgType, const RtDebugRegisterParam& debugRegisterParam, rtTaskGenCallback callback,
+    uint32_t* const flipTaskId)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_DEBUG_REGISTER;
@@ -356,7 +353,7 @@ rtError_t CtrlSQ::SendDebugRegisterMsg(RtCtrlMsgType msgType, const RtDebugRegis
 }
 
 rtError_t CtrlSQ::SendDebugUnRegisterMsg(
-    RtCtrlMsgType msgType, const RtDebugUnRegisterParam &debugUnRegisterParam, rtTaskGenCallback callback)
+    RtCtrlMsgType msgType, const RtDebugUnRegisterParam& debugUnRegisterParam, rtTaskGenCallback callback)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_DEBUG_UNREGISTER;
@@ -371,8 +368,9 @@ rtError_t CtrlSQ::SendDebugUnRegisterMsg(
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendOverflowSwitchSetMsg(RtCtrlMsgType msgType, const RtOverflowSwitchSetParam &overflowSwitchSetParam,
-    rtTaskGenCallback callback, uint32_t *const flipTaskId)
+rtError_t CtrlSQ::SendOverflowSwitchSetMsg(
+    RtCtrlMsgType msgType, const RtOverflowSwitchSetParam& overflowSwitchSetParam, rtTaskGenCallback callback,
+    uint32_t* const flipTaskId)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_SET_OVERFLOW_SWITCH;
@@ -383,7 +381,9 @@ rtError_t CtrlSQ::SendOverflowSwitchSetMsg(RtCtrlMsgType msgType, const RtOverfl
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlSQ::SendSetStreamTagMsg(RtCtrlMsgType msgType, const RtSetStreamTagParam &setStreamTagParam, rtTaskGenCallback callback, uint32_t *const flipTaskId)
+rtError_t CtrlSQ::SendSetStreamTagMsg(
+    RtCtrlMsgType msgType, const RtSetStreamTagParam& setStreamTagParam, rtTaskGenCallback callback,
+    uint32_t* const flipTaskId)
 {
     RtCtrlMsgParam param = {};
     param.taskType = TS_TASK_TYPE_SET_STREAM_GE_OP_TAG;
@@ -395,5 +395,5 @@ rtError_t CtrlSQ::SendSetStreamTagMsg(RtCtrlMsgType msgType, const RtSetStreamTa
     ERROR_RETURN_MSG_INNER(error, "Failed to wait for ctrl msg, retCode=%#x.", static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

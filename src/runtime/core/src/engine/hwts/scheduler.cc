@@ -11,13 +11,13 @@
 
 namespace cce {
 namespace runtime {
-void Scheduler::TaskCompleted(TaskInfo * const tsk) const
+void Scheduler::TaskCompleted(TaskInfo* const tsk) const
 {
     UNUSED(tsk);
     // default, we do nothing for task complete
 }
 
-rtError_t FifoScheduler::PushTask(TaskInfo * const tsk)
+rtError_t FifoScheduler::PushTask(TaskInfo* const tsk)
 {
     const std::unique_lock<std::mutex> queueLock(taskQueMutex_);
     taskQueue_.push(tsk);
@@ -28,7 +28,7 @@ rtError_t FifoScheduler::PushTask(TaskInfo * const tsk)
 }
 
 TIMESTAMP_EXTERN(PopTask);
-TaskInfo *FifoScheduler::PopTask()
+TaskInfo* FifoScheduler::PopTask()
 {
     std::unique_lock<std::mutex> queueLock(taskQueMutex_);
 
@@ -38,10 +38,10 @@ TaskInfo *FifoScheduler::PopTask()
     }
 
     TIMESTAMP_BEGIN(PopTask);
-    TaskInfo * const frontTask = taskQueue_.front();
+    TaskInfo* const frontTask = taskQueue_.front();
     taskQueue_.pop();
     TIMESTAMP_END(PopTask);
     return frontTask;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

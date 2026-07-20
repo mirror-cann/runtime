@@ -26,8 +26,14 @@ constexpr uint32_t MAX_STREAM_NUM = 64;
 constexpr uint32_t MAX_STREAM_DEPTH = 1024;
 
 XpuDevice::XpuDevice(const uint32_t devId)
-    : RawDevice(devId), ThreadRunnable(), xpuArgLoader_(nullptr),
-      deviceId_(devId), driver_(nullptr), streamIdBitmap_(nullptr), streamSqCqManage_(nullptr) {}
+    : RawDevice(devId),
+      ThreadRunnable(),
+      xpuArgLoader_(nullptr),
+      deviceId_(devId),
+      driver_(nullptr),
+      streamIdBitmap_(nullptr),
+      streamSqCqManage_(nullptr)
+{}
 
 XpuDevice::~XpuDevice() noexcept
 {
@@ -40,7 +46,7 @@ XpuDevice::~XpuDevice() noexcept
     DELETE_O(streamSqCqManage_);
 }
 
-static rtError_t ParseXpuConfigInfoFromFile(XpuConfigInfo *configInfo, const std::string &fileName)
+static rtError_t ParseXpuConfigInfoFromFile(XpuConfigInfo* configInfo, const std::string& fileName)
 {
     std::string key("ver=");
     double version = 0.0;
@@ -82,7 +88,7 @@ static rtError_t ParseXpuConfigInfoFromFile(XpuConfigInfo *configInfo, const std
 
 rtError_t XpuDevice::ParseXpuConfigInfo()
 {
-    const char_t *env = nullptr;
+    const char_t* env = nullptr;
     MM_SYS_GET_ENV(MM_ENV_ASCEND_HOME_PATH, env);
     if ((env == nullptr) || (*env == '\0')) {
         RT_LOG(RT_LOG_ERROR, "Can not read ASCEND_HOME_PATH!");
@@ -91,24 +97,29 @@ rtError_t XpuDevice::ParseXpuConfigInfo()
     const std::string rtCfgFile("/conf/RuntimeConfig.ini");
     const std::string path(env);
     const std::string fileName = path + rtCfgFile;
-    
+
     const std::string realFileName = RealPath(fileName);
     if (realFileName.empty()) {
-        RT_LOG(RT_LOG_ERROR, "The RuntimeConfig.ini file does not exist or cannot be accessed, path=[%s]", realFileName.c_str());
+        RT_LOG(
+            RT_LOG_ERROR, "The RuntimeConfig.ini file does not exist or cannot be accessed, path=[%s]",
+            realFileName.c_str());
         return RT_ERROR_INVALID_VALUE;
     }
 
     rtError_t ret = ParseXpuConfigInfoFromFile(&configInfo_, fileName);
     COND_RETURN_ERROR(ret != RT_ERROR_NONE, ret, "Failed to parse xpu config info, file name=%s", fileName.c_str());
-    RT_LOG(RT_LOG_INFO, "xpu config info: ver=%f, max_stream_num=%u, max_stream_depth=%u, timeout_monitor_granularity=%u, "
-            "default_task_exec_timeout=%u", configInfo_.version, configInfo_.maxStreamNum, configInfo_.maxStreamDepth, 
-            configInfo_.timeoutMonitorGranularity, configInfo_.defaultTaskExeTimeout);
+    RT_LOG(
+        RT_LOG_INFO,
+        "xpu config info: ver=%f, max_stream_num=%u, max_stream_depth=%u, timeout_monitor_granularity=%u, "
+        "default_task_exec_timeout=%u",
+        configInfo_.version, configInfo_.maxStreamNum, configInfo_.maxStreamDepth,
+        configInfo_.timeoutMonitorGranularity, configInfo_.defaultTaskExeTimeout);
     return RT_ERROR_NONE;
 }
 
 rtError_t XpuDevice::InitStreamIdBitmap()
 {
-    streamIdBitmap_ = new(std::nothrow) Bitmap(configInfo_.maxStreamNum);
+    streamIdBitmap_ = new (std::nothrow) Bitmap(configInfo_.maxStreamNum);
     if (streamIdBitmap_ == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Init streamid bitmap failed, maxStreamNum=%u", configInfo_.maxStreamNum);
         return RT_ERROR_MEMORY_ALLOCATION;
@@ -173,16 +184,13 @@ rtError_t XpuDevice::Stop()
 
 rtError_t XpuDevice::InitXpuDriver()
 {
-    Runtime *const rt = Runtime::Instance();
-    XpuDriver *const devDrv = static_cast<XpuDriver*>(rt->driverFactory_.GetDriver(XPU_DRIVER));
+    Runtime* const rt = Runtime::Instance();
+    XpuDriver* const devDrv = static_cast<XpuDriver*>(rt->driverFactory_.GetDriver(XPU_DRIVER));
     NULL_PTR_RETURN_MSG(devDrv, RT_ERROR_DRV_NULL);
 
     TprtCfgInfo_t deviceCfgInfo = {
-        configInfo_.maxStreamNum,
-        configInfo_.maxStreamDepth,
-        configInfo_.timeoutMonitorGranularity,
-        configInfo_.defaultTaskExeTimeout
-    };
+        configInfo_.maxStreamNum, configInfo_.maxStreamDepth, configInfo_.timeoutMonitorGranularity,
+        configInfo_.defaultTaskExeTimeout};
     rtError_t error = devDrv->XpuDriverDeviceOpen(deviceId_, &deviceCfgInfo);
     ERROR_RETURN_MSG_INNER(
         error, "Failed to open device, retCode=%#x, deviceId=%u.", static_cast<uint32_t>(error), deviceId_);
@@ -196,7 +204,7 @@ void XpuDevice::FreeStreamIdBitmap(const int32_t id)
         RT_LOG(RT_LOG_DEBUG, "Stream id is not allocted, no need to free.");
         return;
     }
-    
+
     if (static_cast<uint32_t>(id) < configInfo_.maxStreamNum) {
         streamIdBitmap_->FreeId(id);
     } else {
@@ -204,10 +212,7 @@ void XpuDevice::FreeStreamIdBitmap(const int32_t id)
     }
 }
 
-int32_t XpuDevice::AllocStreamId() const
-{
-    return streamIdBitmap_->AllocId();
-}
+int32_t XpuDevice::AllocStreamId() const { return streamIdBitmap_->AllocId(); }
 
 void XpuDevice::WakeUpRecycleThread(void)
 {
@@ -238,7 +243,7 @@ void XpuDevice::RecycleThreadDo(void) const
     if (streamIdList.empty()) {
         return;
     }
-    for (const auto &id: streamIdList) {
+    for (const auto& id : streamIdList) {
         rtError_t ret = GetStreamSqCqManage()->GetStreamSharedPtrById(id, stream);
         COND_PROC(((ret != RT_ERROR_NONE) || (stream == nullptr)), continue);
         COND_PROC(((stream->GetPendingNum() == 0U)), continue);
@@ -263,20 +268,17 @@ void XpuDevice::RecycleThreadRun(void)
     return;
 }
 
-void XpuDevice::Run(const void * param)
+void XpuDevice::Run(const void* param)
 {
     UNUSED(param);
     RecycleThreadRun();
 }
 
-rtChipType_t XpuDevice::GetChipType() const
-{
-    return CHIP_XPU;
-}
+rtChipType_t XpuDevice::GetChipType() const { return CHIP_XPU; }
 
 rtError_t XpuDevice::CreateRecycleThread()
 {
-    void * const xpuRecycle = RtValueToPtr<void *>(static_cast<uint64_t>(XpuThreadType::XPU_THREAD_RECYCLE));
+    void* const xpuRecycle = RtValueToPtr<void*>(static_cast<uint64_t>(XpuThreadType::XPU_THREAD_RECYCLE));
     recycleThread_ = OsalFactory::CreateThread("DPU_RECYCLE", this, xpuRecycle);
     if (recycleThread_ == nullptr) {
         RT_LOG(RT_LOG_ERROR, "create dpu recycle thread failed");
@@ -301,5 +303,5 @@ rtError_t XpuDevice::CreateRecycleThread()
     return RT_ERROR_NONE;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -15,7 +15,7 @@
 
 namespace cce {
 namespace runtime {
-    void SetCpuKernelAttr(Kernel *kernel, const CpuKernelInfo &kernelInfo, const std::string &opType);
-}  // namespace runtime
-}  // namespace cce
-#endif  // __CCE_RUNTIME_TASK_DAVID_HPP__
+void SetCpuKernelAttr(Kernel* kernel, const CpuKernelInfo& kernelInfo, const std::string& opType);
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_TASK_DAVID_HPP__

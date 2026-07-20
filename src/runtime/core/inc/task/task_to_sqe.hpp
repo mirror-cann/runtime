@@ -14,14 +14,14 @@
 #include <rt_preload_task.h>
 #include "task.hpp"
 
-namespace cce{
+namespace cce {
 namespace runtime {
 
 #pragma pack(push)
-#pragma pack (1)
+#pragma pack(1)
 /* preload sqe struct info */
 
-struct rtStaticSqe_t{
+struct rtStaticSqe_t {
     /* word0 */
     uint16_t type : 3;
     uint16_t pre_p : 1;
@@ -72,7 +72,7 @@ union rtTotalSqe_t {
     rtPrefetchSqe_t PrefetchSqe;
 };
 
-struct rtPreLoadSqe_t{
+struct rtPreLoadSqe_t {
     /* word0 - 1 */
     uint32_t argOffsetAddrLow;
     uint32_t argOffsetAddrHigh;
@@ -85,11 +85,7 @@ inline uint32_t get_high_32_addr(uint64_t addr)
     return ((addr) >> 32U) & 0xFFFFFFFFU; // 取高32位
 }
 
-inline uint32_t get_low_32_addr(uint64_t addr)
-{
-    return (addr) & 0xFFFFFFFFU;
-}
-
+inline uint32_t get_low_32_addr(uint64_t addr) { return (addr)&0xFFFFFFFFU; }
 
 class SqeInfo {
 public:
@@ -101,24 +97,24 @@ class PreLoadStaticSqe : public SqeInfo {
 public:
     using SqeInfo::SqeInfo;
     ~PreLoadStaticSqe() override = default;
-    static rtError_t ConstructSqe(const rtHwtsStaticTaskDesc_t& hwtsTaskDesc, uint64_t argOffset,
-                                  rtStaticSqe_t* staticSqe, uint32_t* taskLen);
+    static rtError_t ConstructSqe(
+        const rtHwtsStaticTaskDesc_t& hwtsTaskDesc, uint64_t argOffset, rtStaticSqe_t* staticSqe, uint32_t* taskLen);
 };
 
 class PreLoadDynamicSqe : public SqeInfo {
 public:
     using SqeInfo::SqeInfo;
     ~PreLoadDynamicSqe() override = default;
-    static rtError_t ConstructSqe(const rtHwtsDynamicTaskDesc_t& hwtsDynamicTaskDesc,
-                                  rtDynamicSqe_t* dynamicSqe, uint32_t* taskLen);
+    static rtError_t ConstructSqe(
+        const rtHwtsDynamicTaskDesc_t& hwtsDynamicTaskDesc, rtDynamicSqe_t* dynamicSqe, uint32_t* taskLen);
 };
 
 class PreLoadPrefetchSqe : public SqeInfo {
 public:
     using SqeInfo::SqeInfo;
     ~PreLoadPrefetchSqe() override = default;
-    static rtError_t ConstructSqe(const rtParamBufDesc_t& paramBufDesc, rtPrefetchSqe_t* prefetchSqe,
-                                  uint32_t bufferLen, uint32_t* taskLen);
+    static rtError_t ConstructSqe(
+        const rtParamBufDesc_t& paramBufDesc, rtPrefetchSqe_t* prefetchSqe, uint32_t bufferLen, uint32_t* taskLen);
 };
 
 rtError_t ConstructAicoreStaticSqe(const rtTaskInput_t* const taskInput, uint32_t* taskLen);
@@ -128,6 +124,6 @@ rtError_t ConstructHostFuncDynamicSqe(const rtTaskInput_t* const taskInput, uint
 rtError_t ConstructAicoreParamSqe(const rtTaskInput_t* const taskInput, uint32_t* taskLen);
 rtError_t ConstructHostFuncParamSqe(const rtTaskInput_t* const taskInput, uint32_t* taskLen);
 rtError_t ConstructSqeByTaskInput(const rtTaskInput_t* const taskInput, uint32_t* taskLen);
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

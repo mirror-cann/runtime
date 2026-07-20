@@ -25,7 +25,7 @@ const char_t* SnapshotCallbackManager::GetStageString(rtSnapShotStage stage)
     return "UNKNOWN";
 }
 
-rtError_t SnapshotCallbackManager::RegisterCallback(rtSnapShotStage stage, rtSnapShotCallBack callback, void *args)
+rtError_t SnapshotCallbackManager::RegisterCallback(rtSnapShotStage stage, rtSnapShotCallBack callback, void* args)
 {
     UNUSED(stage);
     UNUSED(callback);
@@ -46,5 +46,5 @@ rtError_t SnapshotCallbackManager::InvokeCallbacks(rtSnapShotStage stage)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

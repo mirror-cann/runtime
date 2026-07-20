@@ -14,14 +14,16 @@
 namespace cce {
 namespace runtime {
 
-void TriggerMemoryCorruptionCheck(rtExceptionInfo_t *const exceptionInfo, const Device *dev, uint32_t realDeviceId,
-    rtBinHandle binHandle, rtExceptionArgsInfo_t *kernelInfo)
+void TriggerMemoryCorruptionCheck(
+    rtExceptionInfo_t* const exceptionInfo, const Device* dev, uint32_t realDeviceId, rtBinHandle binHandle,
+    rtExceptionArgsInfo_t* kernelInfo)
 {
     if (exceptionInfo != nullptr) {
         if (exceptionInfo->expandInfo.type == RT_EXCEPTION_AICORE) {
             binHandle = exceptionInfo->expandInfo.u.aicoreInfo.exceptionArgs.exceptionKernelInfo.bin;
             kernelInfo = &(exceptionInfo->expandInfo.u.aicoreInfo.exceptionArgs);
-        } else if (exceptionInfo->expandInfo.type == RT_EXCEPTION_FUSION &&
+        } else if (
+            exceptionInfo->expandInfo.type == RT_EXCEPTION_FUSION &&
             exceptionInfo->expandInfo.u.fusionInfo.type == RT_FUSION_AICORE_CCU) {
             binHandle = exceptionInfo->expandInfo.u.fusionInfo.u.aicoreCcuInfo.exceptionArgs.exceptionKernelInfo.bin;
             kernelInfo = &(exceptionInfo->expandInfo.u.fusionInfo.u.aicoreCcuInfo.exceptionArgs);
@@ -29,25 +31,26 @@ void TriggerMemoryCorruptionCheck(rtExceptionInfo_t *const exceptionInfo, const 
     }
 
     if (binHandle != nullptr) {
-        Program *program = nullptr;
+        Program* program = nullptr;
         const rtError_t ret = GetValidatedObject<Program>(binHandle, program);
         if ((ret != RT_ERROR_NONE) || (program == nullptr)) {
-            RT_LOG(RT_LOG_WARNING, "Trigger memory corruption check failed, invalid binHandle=%p, retCode=%#x.",
-                binHandle, ret);
+            RT_LOG(
+                RT_LOG_WARNING, "Trigger memory corruption check failed, invalid binHandle=%p, retCode=%#x.", binHandle,
+                ret);
             return;
         }
         CheckKernelMemoryCorruption(program, dev, realDeviceId, kernelInfo);
     }
 }
 
-void TaskFailCallBackNotify(rtExceptionInfo_t *const exceptionInfo)
+void TaskFailCallBackNotify(rtExceptionInfo_t* const exceptionInfo)
 {
     const uint32_t realDeviceId = exceptionInfo->deviceid;
     (void)Runtime::Instance()->GetUserDevIdByDeviceId(realDeviceId, &exceptionInfo->deviceid);
     TaskFailCallBackManager::Instance().Notify(exceptionInfo);
     OpTaskFailCallbackNotify(exceptionInfo);
 
-    Device *dev = Runtime::Instance()->GetDevice(realDeviceId, 0, false);
+    Device* dev = Runtime::Instance()->GetDevice(realDeviceId, 0, false);
     COND_RETURN_VOID(dev == nullptr, "dev is nullptr");
 
     uint32_t timeout = 0U;
@@ -68,60 +71,62 @@ void TaskFailCallBackNotify(rtExceptionInfo_t *const exceptionInfo)
     TriggerMemoryCorruptionCheck(exceptionInfo, dev, realDeviceId);
 }
 
-rtError_t TaskFailCallBackReg(const char_t *regName, void *callback, void *args,
-    TaskFailCallbackType type)
+rtError_t TaskFailCallBackReg(const char_t* regName, void* callback, void* args, TaskFailCallbackType type)
 {
     return TaskFailCallBackManager::Instance().RegTaskFailCallback(regName, callback, args, type);
 }
 
-rtError_t XpuTaskFailCallbackReg(const char_t *regName, void *callback)
+rtError_t XpuTaskFailCallbackReg(const char_t* regName, void* callback)
 {
     return XpuTaskFailCallBackManager::Instance().RegXpuTaskFailCallback(regName, callback);
 }
 
-static void ExecuteOpExceptionCallback(Program * const program, rtExceptionInfo_t * const exceptionInfo)
+static void ExecuteOpExceptionCallback(Program* const program, rtExceptionInfo_t* const exceptionInfo)
 {
     if (program == nullptr) {
-        RT_LOG(RT_LOG_DEBUG, "Skip binary exception callback because program is nullptr, exception_type=%d, "
-            "stream_id=%u, task_id=%u.", exceptionInfo->expandInfo.type, exceptionInfo->streamid,
-            exceptionInfo->taskid);
+        RT_LOG(
+            RT_LOG_DEBUG,
+            "Skip binary exception callback because program is nullptr, exception_type=%d, "
+            "stream_id=%u, task_id=%u.",
+            exceptionInfo->expandInfo.type, exceptionInfo->streamid, exceptionInfo->taskid);
         return;
     }
 
     auto callback = program->opExceptionCallback_;
-    void *userData = program->opExceptionCallbackUserData_;
+    void* userData = program->opExceptionCallbackUserData_;
     if (callback != nullptr) {
-        RT_LOG(RT_LOG_ERROR,
+        RT_LOG(
+            RT_LOG_ERROR,
             "execute binary exception callback, binHandle=%p, binHandle_id=%u, stream_id=%u, task_id=%u, retcode=%u",
             program, program->Id_(), exceptionInfo->streamid, exceptionInfo->taskid, exceptionInfo->retcode);
         callback(exceptionInfo, userData);
     }
 }
 
-static Program *GetAicpuExceptionProgram(const rtExceptionInfo_t * const exceptionInfo)
+static Program* GetAicpuExceptionProgram(const rtExceptionInfo_t* const exceptionInfo)
 {
     const rtFuncHandle funcHandle = exceptionInfo->expandInfo.u.aicpuInfo.funcHandle;
     if (funcHandle == nullptr) {
         return nullptr;
     }
 
-    Kernel *kernel = nullptr;
+    Kernel* kernel = nullptr;
     const rtError_t ret = GetValidatedObject<Kernel>(funcHandle, kernel);
     if ((ret != RT_ERROR_NONE) || (kernel == nullptr)) {
-        RT_LOG(RT_LOG_WARNING, "Op task fail callback notify failed, invalid funcHandle=%p, retCode=%#x.",
-            funcHandle, ret);
+        RT_LOG(
+            RT_LOG_WARNING, "Op task fail callback notify failed, invalid funcHandle=%p, retCode=%#x.", funcHandle,
+            ret);
         return nullptr;
     }
 
-    Program * const program = kernel->Program_();
+    Program* const program = kernel->Program_();
     if (program == nullptr) {
-        RT_LOG(RT_LOG_WARNING, "Op task fail callback notify failed, program is nullptr, funcHandle=%p.",
-            funcHandle);
+        RT_LOG(RT_LOG_WARNING, "Op task fail callback notify failed, program is nullptr, funcHandle=%p.", funcHandle);
     }
     return program;
 }
 
-void OpTaskFailCallbackNotify(rtExceptionInfo_t *const exceptionInfo)
+void OpTaskFailCallbackNotify(rtExceptionInfo_t* const exceptionInfo)
 {
     if (exceptionInfo->expandInfo.type == RT_EXCEPTION_AICPU) {
         ExecuteOpExceptionCallback(GetAicpuExceptionProgram(exceptionInfo), exceptionInfo);
@@ -131,7 +136,8 @@ void OpTaskFailCallbackNotify(rtExceptionInfo_t *const exceptionInfo)
     rtBinHandle binHandle = nullptr;
     if (exceptionInfo->expandInfo.type == RT_EXCEPTION_AICORE) {
         binHandle = exceptionInfo->expandInfo.u.aicoreInfo.exceptionArgs.exceptionKernelInfo.bin;
-    } else if (exceptionInfo->expandInfo.type == RT_EXCEPTION_FUSION &&
+    } else if (
+        exceptionInfo->expandInfo.type == RT_EXCEPTION_FUSION &&
         exceptionInfo->expandInfo.u.fusionInfo.type == RT_FUSION_AICORE_AICPU) {
         binHandle = exceptionInfo->expandInfo.u.fusionInfo.u.aicoreCcuInfo.exceptionArgs.exceptionKernelInfo.bin;
     }
@@ -140,31 +146,35 @@ void OpTaskFailCallbackNotify(rtExceptionInfo_t *const exceptionInfo)
         return;
     }
 
-    Program *program = nullptr;
+    Program* program = nullptr;
     const rtError_t ret = GetValidatedObject<Program>(binHandle, program);
     if ((ret != RT_ERROR_NONE) || (program == nullptr)) {
-        RT_LOG(RT_LOG_WARNING, "Op task fail callback notify failed, invalid binHandle=%p, retCode=%#x.",
-            binHandle, ret);
+        RT_LOG(
+            RT_LOG_WARNING, "Op task fail callback notify failed, invalid binHandle=%p, retCode=%#x.", binHandle, ret);
         return;
     }
     ExecuteOpExceptionCallback(program, exceptionInfo);
 }
 
-rtError_t OpTaskFailCallbackReg(Program *binHandle, void *callback, void *userData)
+rtError_t OpTaskFailCallbackReg(Program* binHandle, void* callback, void* userData)
 {
     if (binHandle->opExceptionCallback_ != nullptr) {
-        RT_LOG(RT_LOG_INFO, "the callback in the current binHandle has already been assigned, binHandle=%p, binHandle_id=%u, callback=%p",
+        RT_LOG(
+            RT_LOG_INFO,
+            "the callback in the current binHandle has already been assigned, binHandle=%p, binHandle_id=%u, "
+            "callback=%p",
             binHandle, binHandle->Id_(), binHandle->opExceptionCallback_);
     }
 
     binHandle->opExceptionCallback_ = RtPtrToPtr<rtOpExceptionCallback>(callback);
     binHandle->opExceptionCallbackUserData_ = userData;
-    
-    RT_LOG(RT_LOG_INFO, "reg binary exception callback success, binHandle=%p, binHandle_id=%u, callback=%p, userData=%p",
-            binHandle, binHandle->Id_(), callback, userData);
-    
+
+    RT_LOG(
+        RT_LOG_INFO, "reg binary exception callback success, binHandle=%p, binHandle_id=%u, callback=%p, userData=%p",
+        binHandle, binHandle->Id_(), callback, userData);
+
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

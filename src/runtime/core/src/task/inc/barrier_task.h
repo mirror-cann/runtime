@@ -15,8 +15,8 @@
 
 namespace cce {
 namespace runtime {
-rtError_t BarrierTaskInit(TaskInfo *taskInfo, const rtBarrierTaskInfo_t *const barrierTaskInfo, const Stream *const stm,
-                          const uint32_t flag);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_BARRIER_TASK_H
+rtError_t BarrierTaskInit(
+    TaskInfo* taskInfo, const rtBarrierTaskInfo_t* const barrierTaskInfo, const Stream* const stm, const uint32_t flag);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_BARRIER_TASK_H

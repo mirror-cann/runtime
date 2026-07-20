@@ -15,7 +15,7 @@
 
 namespace cce {
 namespace runtime {
-TTLVSentenceDecoder &TTLVParagraphDecoder::GetRecentSentence()
+TTLVSentenceDecoder& TTLVParagraphDecoder::GetRecentSentence()
 {
     if (decoderSentence_.empty()) {
         TTLVSentenceDecoder unknownSentence(static_cast<uint16_t>(TAG_TS_ERR_MSG_UNKNOWN_SENTENCE));
@@ -24,20 +24,21 @@ TTLVSentenceDecoder &TTLVParagraphDecoder::GetRecentSentence()
     return *(decoderSentence_.end() - 1);
 }
 
-void TTLVParagraphDecoder::PrintOut(std::string &outStr)
+void TTLVParagraphDecoder::PrintOut(std::string& outStr)
 {
     // record error message
     std::vector<TTLVErrMsgDecoder> userInputErrMsg;
-    for (auto &sen : decoderSentence_) {
-        for (auto &errMsg : sen.GetErrMsgDecoder()) {
-            if (strncmp(errMsg.GetErrCode().c_str(), RT_INNER_ERROR, strnlen(RT_INNER_ERROR,
-                static_cast<size_t>(RT_MAX_STRING_LEN))) != 0) {
+    for (auto& sen : decoderSentence_) {
+        for (auto& errMsg : sen.GetErrMsgDecoder()) {
+            if (strncmp(
+                    errMsg.GetErrCode().c_str(), RT_INNER_ERROR,
+                    strnlen(RT_INNER_ERROR, static_cast<size_t>(RT_MAX_STRING_LEN))) != 0) {
                 userInputErrMsg.emplace_back(errMsg);
             }
         }
     }
     // sort all userInputErrMsg by timestamp
-    const auto compFunc = [](const TTLVErrMsgDecoder &msgA, const TTLVErrMsgDecoder &msgB) -> bool {
+    const auto compFunc = [](const TTLVErrMsgDecoder& msgA, const TTLVErrMsgDecoder& msgB) -> bool {
         const uint64_t timestampSecA = msgA.GetTimestampSec();
         const uint64_t timestampSecB = msgB.GetTimestampSec();
         if (timestampSecA == timestampSecB) {
@@ -50,14 +51,14 @@ void TTLVParagraphDecoder::PrintOut(std::string &outStr)
     // Sort the OpInfos based on the compute cost of the engine
     std::sort(userInputErrMsg.begin(), userInputErrMsg.end(), compFunc);
     // record input error message
-    for (auto &msg : userInputErrMsg) {
+    for (auto& msg : userInputErrMsg) {
         RT_LOG_INNER_DETAIL_MSG(msg.GetErrCode(), {"extend_info"}, {msg.GetErrMsgSting()});
     }
     // print error message string
-    for (auto &sen : decoderSentence_) {
+    for (auto& sen : decoderSentence_) {
         sen.PrintOut(outStr);
     }
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

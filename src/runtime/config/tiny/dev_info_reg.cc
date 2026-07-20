@@ -48,8 +48,7 @@ static const std::unordered_set<RtOptionalFeatureType> CHIP_5612_FEATURE{
     RtOptionalFeatureType::RT_FEATURE_KERNEL_UMA_SUPER_ARGS_ALLOC,
     RtOptionalFeatureType::RT_FEATURE_MEM_SPMPOOL_SIZE_DIV,
     RtOptionalFeatureType::RT_FEATURE_TASK_DAVINCI_WITH_SCHEM_MODE,
-    RtOptionalFeatureType::RT_FEATURE_DEVICE_MEM_COPY_DOT_D2D_ONLY
-};
+    RtOptionalFeatureType::RT_FEATURE_DEVICE_MEM_COPY_DOT_D2D_ONLY};
 
 REGISTER_CHIP_FEATURE_SET(CHIP_ASCEND_031, CHIP_5612_FEATURE);
 
@@ -195,5 +194,5 @@ static const DevProperties CHIP_5612_PROPERTIES = {
 };
 
 REGISTER_DEV_PROPERTIES(CHIP_ASCEND_031, CHIP_5612_PROPERTIES);
-}
-}
+} // namespace runtime
+} // namespace cce

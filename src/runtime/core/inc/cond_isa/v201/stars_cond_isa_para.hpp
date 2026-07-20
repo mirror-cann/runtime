@@ -29,12 +29,12 @@ struct CondMbufTraceParam {
 };
 
 struct RtDqsMbufFreeFcPara {
-    uint64_t ctrlSpaceAddr; // ctrlSpace的地址
-    uint64_t mbufFreeAddr; // 存放mbuf pool寄存器的地址
-    uint64_t mbufHandleAddr; // 存放mbufHandle的
+    uint64_t ctrlSpaceAddr;      // ctrlSpace的地址
+    uint64_t mbufFreeAddr;       // 存放mbuf pool寄存器的地址
+    uint64_t mbufHandleAddr;     // 存放mbufHandle的
     uint64_t lastMbufHandleAddr; // 存放上一帧mbufHandle
     uint64_t realFreeMbufCntAddr;
-    uint16_t mbufPoolIndexMax; // pool的下标 和 mbufHandle的下标一致
+    uint16_t mbufPoolIndexMax;   // pool的下标 和 mbufHandle的下标一致
     uint8_t schedType;
     uint8_t sizeofHandleCache;
     CondMbufTraceParam freeMbufTracePara;
@@ -67,10 +67,10 @@ struct RtStarsDqsBatchDeqFcPara {
     uint64_t mbufFreeAddr; // 存放mbuf pool寄存器的地址
     uint64_t cntNotifyReadAddr;
     uint64_t cntNotifyClearAddr;
-    uint32_t sqId; 
+    uint32_t sqId;
     uint8_t cntOffset;
-	uint8_t sizeofHandleCache;
-	uint16_t mbufPoolIndexMax;
+    uint8_t sizeofHandleCache;
+    uint16_t mbufPoolIndexMax;
 
     CondMbufTraceParam dequeMbufTracePara;
 };
@@ -83,13 +83,13 @@ struct RtStarsDqsPrepareFcPara {
     // addrs in ctrl space -- input
     uint64_t csPtrInputMbufHandleAddr;
     uint64_t csPtrInputHeadPoolBaseAddr; // 含offset
-    uint64_t csPtrInputHeadPoolBlockSize; 
+    uint64_t csPtrInputHeadPoolBlockSize;
     // addrs in ctrl space -- output
     uint64_t csPtrOutputMbufAllocAddr;
     uint64_t csPtrOutputMbufHandleAddr;
     uint64_t csPtrOutputHeadPoolBaseAddr; // 含offset
     uint64_t csPtrOutputHeadPoolBlockSize;
-    uint64_t realOutputAllocMbufCntAddr; // alloc成功计数
+    uint64_t realOutputAllocMbufCntAddr;  // alloc成功计数
 
     CondMbufTraceParam allocMbufTracePara;
 };
@@ -101,7 +101,8 @@ struct RtStarsDqsZeroCopyPara {
     uint64_t offsetAddr;
     uint64_t destAddr;
     uint64_t count;
-    bool     isCpyAddrLow32First;  // 零拷贝时，64bit的地址拆分为两个32bit地址，分为高32和低32，true代表拷贝时低32位在前，高32位在后
+    bool
+        isCpyAddrLow32First; // 零拷贝时，64bit的地址拆分为两个32bit地址，分为高32和低32，true代表拷贝时低32位在前，高32位在后
 };
 
 struct RtStarsDqsConditionCopyPara {
@@ -128,7 +129,7 @@ struct RtStarsDqsInterChipPreProcPara {
 struct RtStarsDqsInterChipPostProcPara {
     uint64_t srcMbufHandleAddr;
     uint64_t dstMbufHandleAddr;
-    
+
     uint64_t dstQueueAddr;
     uint64_t srcMbufFreeAddr;
     uint64_t dstMbufFreeAddr;
@@ -139,9 +140,9 @@ struct RtStarsDqsInterChipPostProcPara {
 };
 
 struct RtStarsDqsAdspcFcPara {
-    uint8_t  cqeSize;
-    uint8_t  cqDepth;
-    uint8_t  cqeHeadTailMask;
+    uint8_t cqeSize;
+    uint8_t cqDepth;
+    uint8_t cqeHeadTailMask;
     uint32_t mbufHandle;
     uint64_t mbufFreeRegAddr;
     uint64_t qmngrEnqRegAddr;
@@ -161,6 +162,6 @@ struct RtStarsDqsFrameAlignFcPara {
     uint8_t cntOffset;
     uint8_t sizeofHandleCache;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

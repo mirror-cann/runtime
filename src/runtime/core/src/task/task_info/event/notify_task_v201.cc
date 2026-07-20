@@ -18,11 +18,11 @@
 namespace cce {
 namespace runtime {
 
-void ConstructSqeForIpcNotifyRecordTask(TaskInfo* taskInfo, rtDavidSqe_t * const command)
+void ConstructSqeForIpcNotifyRecordTask(TaskInfo* taskInfo, rtDavidSqe_t* const command)
 {
     ConstructDavidSqeForHeadCommon(taskInfo, command);
     NotifyRecordTaskInfo* notifyRecord = &taskInfo->u.notifyrecordTask;
-    RtDavidStarsWriteValueSqe * const sqe = &(command->writeValueSqe);
+    RtDavidStarsWriteValueSqe* const sqe = &(command->writeValueSqe);
     Stream* const stream = taskInfo->stream;
     const uint32_t devId = stream->Device_()->Id_();
     uint64_t notifyAddr = 0ULL;
@@ -31,7 +31,7 @@ void ConstructSqeForIpcNotifyRecordTask(TaskInfo* taskInfo, rtDavidSqe_t * const
     sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
     sqe->awsize = RT_STARS_WRITE_VALUE_SIZE_TYPE_32BIT;
     sqe->va = 0U;
-    sqe->writeValuePart[0] = 1U;    // write 1
+    sqe->writeValuePart[0] = 1U; // write 1
 
     const rtError_t error = GetIpcSqeWriteAddrForNotifyRecordTask(taskInfo, notifyAddr);
     if (error != RT_ERROR_NONE) {
@@ -42,17 +42,23 @@ void ConstructSqeForIpcNotifyRecordTask(TaskInfo* taskInfo, rtDavidSqe_t * const
     notifyRecord->uInfo.singleBitNtfyInfo.lastBaseAddr = notifyAddr;
     notifyRecord->uInfo.singleBitNtfyInfo.lastLocalId = devId;
     notifyRecord->uInfo.singleBitNtfyInfo.lastIsPcie = notifyRecord->uInfo.singleBitNtfyInfo.isPcie;
-    RT_LOG(RT_LOG_INFO, "ipc notify record write address updated: lastLocalId=%u, lastBaseAddr=0x%llx, "
-        "lastIsPcie=%u", devId, notifyAddr, notifyRecord->uInfo.singleBitNtfyInfo.isPcie);
+    RT_LOG(
+        RT_LOG_INFO,
+        "ipc notify record write address updated: lastLocalId=%u, lastBaseAddr=0x%llx, "
+        "lastIsPcie=%u",
+        devId, notifyAddr, notifyRecord->uInfo.singleBitNtfyInfo.isPcie);
 
     sqe->subType = RT_STARS_WRITE_VALUE_SUB_TYPE_NOTIFY_RECORD_IPC_NO_PCIE;
     sqe->writeAddrLow = static_cast<uint32_t>(notifyAddr & MASK_32_BIT);
     sqe->writeAddrHigh = static_cast<uint32_t>((notifyAddr >> UINT32_BIT_NUM) & MASK_17_BIT);
 
     PrintDavidSqe(command, "IpcNotifyRecordTask");
-    RT_LOG(RT_LOG_INFO, "ipc_notify_record: device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, sq_id=%u, "
-        "writeAddrLow=0x%x, writeAddrHigh=0x%x, subType=%u.", devId, stream->Id_(), taskInfo->id,
-        taskInfo->taskSn, stream->GetSqId(), sqe->writeAddrLow, sqe->writeAddrHigh, sqe->subType);
+    RT_LOG(
+        RT_LOG_INFO,
+        "ipc_notify_record: device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, sq_id=%u, "
+        "writeAddrLow=0x%x, writeAddrHigh=0x%x, subType=%u.",
+        devId, stream->Id_(), taskInfo->id, taskInfo->taskSn, stream->GetSqId(), sqe->writeAddrLow, sqe->writeAddrHigh,
+        sqe->subType);
 }
 
 static bool NotifyTaskRegister()
@@ -78,7 +84,7 @@ static bool NotifyTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
 
-    const auto &chips = GetV201Chips();
+    const auto& chips = GetV201Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_NOTIFY_RECORD, notifyRecordFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_NOTIFY_WAIT, notifyWaitFuncs);
@@ -91,5 +97,5 @@ static bool NotifyTaskRegister()
 
 static bool g_notifyTaskRegister = NotifyTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

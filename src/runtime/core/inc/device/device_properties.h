@@ -28,7 +28,7 @@ constexpr uint32_t TS_WITH_HBM = 0x4U;
 constexpr uint32_t SVM_HOST_AGENT = 0x8U;
 constexpr uint32_t P2P_ALIGNED = 0x10U;
 constexpr uint32_t DEFAULT = 0U;
-constexpr uint32_t DEVICE_RINGBUFFER_SIZE = 2U * 1024U * 1024U; // 2M
+constexpr uint32_t DEVICE_RINGBUFFER_SIZE = 2U * 1024U * 1024U;          // 2M
 constexpr uint32_t DEVICE_RINGBUFFER_SIZE_ON_95_96 = 4U * 1024U * 1024U; // 4M
 constexpr uint8_t PREFETCH_CNT_4 = 4U;
 constexpr uint8_t PREFETCH_CNT_8 = 8U;
@@ -56,8 +56,7 @@ constexpr size_t MEMCPY_DESC_SIZE_V1 = 32U;
 constexpr int32_t TIMELINE_EVENT_ID_DEFAULT = 1023;
 constexpr uint8_t OVERFLOW_MODE_SATURATION = 0x1U;
 constexpr uint8_t OVERFLOW_MODE_INFNAN = 0x2U;
-constexpr uint32_t RT_ATOMIC_OPERATION_MAX_VAL =
-    static_cast<uint32_t>(RT_ATOMIC_OPERATION_SIMD_SCALAR_EXCH) + 1U;
+constexpr uint32_t RT_ATOMIC_OPERATION_MAX_VAL = static_cast<uint32_t>(RT_ATOMIC_OPERATION_SIMD_SCALAR_EXCH) + 1U;
 
 enum class MemsetTaskSupportType : uint8_t {
     MEMSET_TASK_NOT_SUPPORT = 0U,
@@ -81,10 +80,7 @@ enum class StarsResourceAddrCalculateMethod {
     STARS_RESOURCE_ADDR_CALCULATE_STATIC
 };
 
-enum class StarsBaseMethod {
-    STARS_BASE_CALCULATE_BY_DRIVER,
-    STARS_BASE_CALCULATE_STATIC
-};
+enum class StarsBaseMethod { STARS_BASE_CALCULATE_BY_DRIVER, STARS_BASE_CALCULATE_STATIC };
 
 enum class TimeoutUpdateMethod {
     TIMEOUT_SET_WITH_AICPU = 0,
@@ -100,17 +96,9 @@ enum class SupportSnapshot {
     NOT_SUPPORT,
 };
 
-enum class EngineCreateType {
-    STARS_ENGINE,
-    ASYNC_HWTS_ENGINE,
-    DIRECT_HWTS_ENGINE
-};
+enum class EngineCreateType { STARS_ENGINE, ASYNC_HWTS_ENGINE, DIRECT_HWTS_ENGINE };
 
-enum class SqeVersion {
-    CMO_SQE_VERSION_V1,
-    CMO_SQE_VERSION_V2,
-    CMO_SQE_VERSION_V3
-};
+enum class SqeVersion { CMO_SQE_VERSION_V1, CMO_SQE_VERSION_V2, CMO_SQE_VERSION_V3 };
 
 struct RtsqVirtualAddr {
     uint64_t rtSqFsmStateAddr;
@@ -119,29 +107,13 @@ struct RtsqVirtualAddr {
     uint64_t rtSqHeadAddr;
 };
 
-enum class RtsqFsmStateAddrCalMethod {
-    FSM_ADDR_CALCULATE_BY_DEVICE_INFO,
-    FSM_ADDR_CALCULATE_STATIC,
-    NOT_SUPPORT
-};
+enum class RtsqFsmStateAddrCalMethod { FSM_ADDR_CALCULATE_BY_DEVICE_INFO, FSM_ADDR_CALCULATE_STATIC, NOT_SUPPORT };
 
-enum class StarsBaseAddrMethod {
-    STARS_BASE_CALCULATE_BY_DRIVER,
-    STARS_BASE_CALCULATE_STATIC,
-    NOT_SUPPORT
-};
+enum class StarsBaseAddrMethod { STARS_BASE_CALCULATE_BY_DRIVER, STARS_BASE_CALCULATE_STATIC, NOT_SUPPORT };
 
-enum class RtSqEnableAddrCalMethod {
-    RT_SQ_ENABLE_ADDR_CAL_BY_TRUE_SQID,
-    RT_SQ_ENABLE_ADDR_CAL_STATIC,
-    NOT_SUPPORT
-};
+enum class RtSqEnableAddrCalMethod { RT_SQ_ENABLE_ADDR_CAL_BY_TRUE_SQID, RT_SQ_ENABLE_ADDR_CAL_STATIC, NOT_SUPPORT };
 
-enum class OMArchVersion : uint8_t {
-    omArchVersion_4,
-    omArchVersion_3,
-    omArchVersion_DEFAULT
-};
+enum class OMArchVersion : uint8_t { omArchVersion_4, omArchVersion_3, omArchVersion_DEFAULT };
 
 enum class CheckArchVersionCompatibility : uint8_t {
     Arch_Version_Compat_V220,
@@ -161,20 +133,11 @@ enum class KernelFuncType : uint8_t {
     Kernel_FUC_TYPE_OTHER_AICORE,
 };
 
-enum class CmoAddrInfoType : uint8_t {
-    CMO_ADDR_INFO_TYPE_DAFAULT = 0,
-    CMO_ADDR_INFO_TYPE_DAVID
-};
+enum class CmoAddrInfoType : uint8_t { CMO_ADDR_INFO_TYPE_DAFAULT = 0, CMO_ADDR_INFO_TYPE_DAVID };
 
-enum class CqeDepth : uint32_t {
-    CQE_DEPTH_NON_DVPP_GRP = 4096U,
-    CQE_DEPTH_DVPP_GRP = 16384U
-};
+enum class CqeDepth : uint32_t { CQE_DEPTH_NON_DVPP_GRP = 4096U, CQE_DEPTH_DVPP_GRP = 16384U };
 
-enum class GetTsMemTypeMethod : uint8_t {
-    GET_TS_MEM_TYPE_STATIC,
-    GET_TS_MEM_TYPE_JUDGE_FROM_DRIVER
-};
+enum class GetTsMemTypeMethod : uint8_t { GET_TS_MEM_TYPE_STATIC, GET_TS_MEM_TYPE_JUDGE_FROM_DRIVER };
 
 enum class TsOverflowHandling : uint8_t {
     TS_OVER_FLOW_HANDING_INVALID,
@@ -208,11 +171,7 @@ enum class AllocManagedFlag : uint8_t {
     ALLOC_MANAGED_MEM_NORMAL
 };
 
-enum class SdmaCopyMethod : uint8_t {
-    SDMA_COPY_BY_MEM_SYNC_ADAPTER,
-    SDMA_COPY_BY_HAL,
-    SDMA_COPY_BY_HAL_WITH_OFFLINE
-};
+enum class SdmaCopyMethod : uint8_t { SDMA_COPY_BY_MEM_SYNC_ADAPTER, SDMA_COPY_BY_HAL, SDMA_COPY_BY_HAL_WITH_OFFLINE };
 
 enum class SupportCreateTaskRes : uint8_t {
     CREATE_TASK_RES_NOT_SUPPORT,
@@ -220,19 +179,16 @@ enum class SupportCreateTaskRes : uint8_t {
     CREATE_TASK_RES_SUPPORT
 };
 
-enum class PhysicalMemTypePolicy : uint8_t {
-    DEFAULT,
-    MAP_HBM_TO_DDR
-};
+enum class PhysicalMemTypePolicy : uint8_t { DEFAULT, MAP_HBM_TO_DDR };
 
 enum class DeviceSatStatusImpl : uint8_t {
-    NOT_SUPPORT, // 不支持饱和模式的状态获取和清理
+    NOT_SUPPORT,                     // 不支持饱和模式的状态获取和清理
     DEVICE_SAT_STATUS_CONTEXT_LEVEL, // 饱和模式的状态是存储在一个ContextOverflowAddr中
-    DEVICE_SAT_STATUS_STREAM_LEVEL // 饱和模式的状态是存储在stream上的
+    DEVICE_SAT_STATUS_STREAM_LEVEL   // 饱和模式的状态是存储在stream上的
 };
 
 enum class DeviceCvArchType : uint8_t {
-    CV_ARCH_INVALID    = 0U,   /* The compilation state does not involve the CV architecture */
+    CV_ARCH_INVALID = 0U, /* The compilation state does not involve the CV architecture */
     CV_ARCH_INTERGRATION = 1U,
     CV_ARCH_SEPARATION = 2U,
     CV_ARCH_MAX = 3U
@@ -261,8 +217,8 @@ struct DevProperties final {
     uint32_t mc2FeatureFlag;
     uint64_t stackPhyBase;
     uint32_t maxCustomerStackSize;
-    uint32_t aicNum; // 目前是宏定义，后续需要去 ini 里面去读
-    uint32_t aivNum; // 目前是宏定义，后续需要去 ini 里面去读
+    uint32_t aicNum;      // 目前是宏定义，后续需要去 ini 里面去读
+    uint32_t aivNum;      // 目前是宏定义，后续需要去 ini 里面去读
     uint32_t ringbufSize; // 0: do not need new DeviceErrorProc. others: Custom DeviceErrorProc ringBufferSize
     uint32_t hugeManagedFlag;
     uint32_t memAllocPctraceFlag;
@@ -376,6 +332,6 @@ struct DevProperties final {
     uint32_t taskFailPrintFlushTimeoutMs = TASK_FAIL_PRINT_FLUSH_TIMEOUT_DEFAULT;
     MemsetTaskSupportType memsetTaskSupport = MemsetTaskSupportType::MEMSET_TASK_NOT_SUPPORT;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

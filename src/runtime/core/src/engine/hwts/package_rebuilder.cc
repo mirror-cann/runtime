@@ -25,7 +25,7 @@ namespace cce {
 namespace runtime {
 PackageRebuilder::~PackageRebuilder()
 {
-    for (auto &iter : rptPkgTbl_) {
+    for (auto& iter : rptPkgTbl_) {
         if (iter.second != nullptr) {
             free(iter.second);
             iter.second = nullptr;
@@ -33,63 +33,69 @@ PackageRebuilder::~PackageRebuilder()
     }
 }
 
-bool PackageRebuilder::PackageReportReceive(const rtTaskReport_t * const report, uint8_t * const package,
-                                            const size_t pkgLen, const TaskInfo * const reportTask)
+bool PackageRebuilder::PackageReportReceive(
+    const rtTaskReport_t* const report, uint8_t* const package, const size_t pkgLen, const TaskInfo* const reportTask)
 {
-    const uint16_t streamId = static_cast<uint16_t>((static_cast<uint32_t>(report->streamID)) |
-                              (static_cast<uint32_t>(report->streamIDEx) << RT_STREAM_ID_OFFSET));
+    const uint16_t streamId = static_cast<uint16_t>(
+        (static_cast<uint32_t>(report->streamID)) | (static_cast<uint32_t>(report->streamIDEx) << RT_STREAM_ID_OFFSET));
     const uint8_t packageReportNum = reportTask->pkgStat[report->packageType].packageReportNum;
     if (likely(packageReportNum == 1U)) {
         if (unlikely((report->SOP == 0U) || (report->EOP == 0U))) {
-            RT_LOG(RT_LOG_ERROR, "Report missing SOP/EOP flag, "
+            RT_LOG(
+                RT_LOG_ERROR,
+                "Report missing SOP/EOP flag, "
                 "SOP=%hu,MOP=%hu,EOP=%hu,packType=%hu,stream_id=%hu,task_id=%hu,"
                 "payLoad=0x%x,sq_id=%hu,phase=%hu,sq_head=%hu",
-                report->SOP, report->MOP, report->EOP, report->packageType, streamId, report->taskID,
-                report->payLoad, report->SQ_id, report->phase, report->SQ_head);
+                report->SOP, report->MOP, report->EOP, report->packageType, streamId, report->taskID, report->payLoad,
+                report->SQ_id, report->phase, report->SQ_head);
             return false;
         }
-        *(RtPtrToPtr<uint32_t *>(package)) = report->payLoad;
+        *(RtPtrToPtr<uint32_t*>(package)) = report->payLoad;
         // get task id for model execute failed
-        *(RtPtrToPtr<uint32_t *>(package) + 1U) = report->reserved;
+        *(RtPtrToPtr<uint32_t*>(package) + 1U) = report->reserved;
         // get stream id high bit for model execute failed
-        *(RtPtrToPtr<uint32_t *>(package) + 2U) = report->faultStreamIDEx;
+        *(RtPtrToPtr<uint32_t*>(package) + 2U) = report->faultStreamIDEx;
         return true;
     }
 
     const uint64_t reportHashVal =
         static_cast<uint64_t>(REPORT_HASH_KEY(report->taskID, streamId, report->packageType));
-    rtPackageBuf_t *pkgBuf = rptPkgTbl_[reportHashVal];
+    rtPackageBuf_t* pkgBuf = rptPkgTbl_[reportHashVal];
 
     if (report->SOP != 0U) {
         if (report->MOP != 0U) {
-            RT_LOG(RT_LOG_ERROR, "Report invalid MOP flag, "
+            RT_LOG(
+                RT_LOG_ERROR,
+                "Report invalid MOP flag, "
                 "SOP=%hu,MOP=%hu,EOP=%hu,packType=%hu,stream_id=%hu,task_id=%hu,"
                 "payLoad=0x%x,sq_id=%hu,phase=%hu,sq_head=%hu",
-                report->SOP, report->MOP, report->EOP, report->packageType, streamId, report->taskID,
-                report->payLoad, report->SQ_id, report->phase, report->SQ_head);
+                report->SOP, report->MOP, report->EOP, report->packageType, streamId, report->taskID, report->payLoad,
+                report->SQ_id, report->phase, report->SQ_head);
             return false;
         }
         if (pkgBuf != nullptr) {
-            RT_LOG(RT_LOG_INFO, "Package rebuild: missing EOP report in last task! recvNum:%u expectNum:%u",
-                   static_cast<uint32_t>(pkgBuf->len), static_cast<uint32_t>(packageReportNum));
+            RT_LOG(
+                RT_LOG_INFO, "Package rebuild: missing EOP report in last task! recvNum:%u expectNum:%u",
+                static_cast<uint32_t>(pkgBuf->len), static_cast<uint32_t>(packageReportNum));
             free(pkgBuf);
             pkgBuf = nullptr;
             (void)rptPkgTbl_.erase(reportHashVal);
         }
 
         const size_t packageBufLen = (packageReportNum + 1U) * sizeof(uint32_t);
-        pkgBuf = static_cast<rtPackageBuf_t *>(malloc(packageBufLen));
-        COND_RETURN_AND_MSG_OUTER(pkgBuf == nullptr, false, ErrorCode::EE1013,
-            std::to_string(packageBufLen).c_str(), "malloc");
+        pkgBuf = static_cast<rtPackageBuf_t*>(malloc(packageBufLen));
+        COND_RETURN_AND_MSG_OUTER(
+            pkgBuf == nullptr, false, ErrorCode::EE1013, std::to_string(packageBufLen).c_str(), "malloc");
         const errno_t rc = memset_s(pkgBuf, packageBufLen, 0, packageBufLen);
         if (rc != EOK) {
-            RT_LOG_CALL_MSG(ERR_MODULE_SYSTEM, 
-                "Failed to reset rebuilder report memory in %s. Reason: Standard function memset_s failed. [Errno %d] %s. "
-                "SOP=%hu, MOP=%hu, EOP=%hu, packType=%hu, stream_id=%hu, task_id=%hu, payLoad=0x%x, sq_id=%hu, phase=%hu, sq_head=%hu, size=%zu(bytes).",
-                __func__, rc, strerror(rc), 
-                report->SOP, report->MOP, report->EOP, report->packageType,
-                streamId, report->taskID, report->payLoad, report->SQ_id, report->phase, report->SQ_head,
-                packageBufLen);
+            RT_LOG_CALL_MSG(
+                ERR_MODULE_SYSTEM,
+                "Failed to reset rebuilder report memory in %s. Reason: Standard function memset_s failed. [Errno %d] "
+                "%s. "
+                "SOP=%hu, MOP=%hu, EOP=%hu, packType=%hu, stream_id=%hu, task_id=%hu, payLoad=0x%x, sq_id=%hu, "
+                "phase=%hu, sq_head=%hu, size=%zu(bytes).",
+                __func__, rc, strerror(rc), report->SOP, report->MOP, report->EOP, report->packageType, streamId,
+                report->taskID, report->payLoad, report->SQ_id, report->phase, report->SQ_head, packageBufLen);
             free(pkgBuf);
             pkgBuf = nullptr;
             return false;
@@ -107,18 +113,20 @@ bool PackageRebuilder::PackageReportReceive(const rtTaskReport_t * const report,
 
     if (report->EOP != 0U) {
         if (pkgBuf == nullptr) {
-            RT_LOG(RT_LOG_ERROR,
+            RT_LOG(
+                RT_LOG_ERROR,
                 "Report rebuilder memory not found, "
                 "SOP=%hu,MOP=%hu,EOP=%hu,packType=%hu,stream_id=%hu,task_id=%hu,payLoad=0x%x,"
                 "sq_id=%hu,phase=%hu,sq_head=%hu",
-                report->SOP, report->MOP, report->EOP, report->packageType, streamId, report->taskID,
-                report->payLoad, report->SQ_id, report->phase, report->SQ_head);
+                report->SOP, report->MOP, report->EOP, report->packageType, streamId, report->taskID, report->payLoad,
+                report->SQ_id, report->phase, report->SQ_head);
             (void)rptPkgTbl_.erase(reportHashVal);
             return false;
         }
         if (static_cast<uint32_t>(packageReportNum) != static_cast<uint32_t>(pkgBuf->len)) {
-            RT_LOG(RT_LOG_INFO, "Package rebuild: missing MOP report in current task! recvNum:%u expectNum:%u",
-                   static_cast<uint32_t>(pkgBuf->len), static_cast<uint32_t>(packageReportNum));
+            RT_LOG(
+                RT_LOG_INFO, "Package rebuild: missing MOP report in current task! recvNum:%u expectNum:%u",
+                static_cast<uint32_t>(pkgBuf->len), static_cast<uint32_t>(packageReportNum));
             free(pkgBuf);
             pkgBuf = nullptr;
             (void)rptPkgTbl_.erase(reportHashVal);
@@ -126,13 +134,13 @@ bool PackageRebuilder::PackageReportReceive(const rtTaskReport_t * const report,
         }
         const errno_t ret = memcpy_s(package, pkgLen, pkgBuf->buf, pkgBuf->len * sizeof(uint32_t));
         if (ret != EOK) {
-            RT_LOG_CALL_MSG(ERR_MODULE_SYSTEM,
+            RT_LOG_CALL_MSG(
+                ERR_MODULE_SYSTEM,
                 "%s failed. Reason: Standard function memcpy_s failed. [Errno %d] %s. "
                 "SOP=%hu, MOP=%hu, EOP=%hu, packType=%hu, stream_id=%hu, task_id=%hu, "
                 "payLoad=0x%x, sq_id=%hu, phase=%hu, sq_head=%hu, copySize=%zu(bytes), targetSize=%zu(bytes).",
-                __func__, ret, strerror(ret),
-                report->SOP, report->MOP, report->EOP, report->packageType, streamId, report->taskID,
-                report->payLoad, report->SQ_id, report->phase, report->SQ_head,
+                __func__, ret, strerror(ret), report->SOP, report->MOP, report->EOP, report->packageType, streamId,
+                report->taskID, report->payLoad, report->SQ_id, report->phase, report->SQ_head,
                 pkgBuf->len * sizeof(uint32_t), pkgLen);
         }
 
@@ -143,5 +151,5 @@ bool PackageRebuilder::PackageReportReceive(const rtTaskReport_t * const report,
     }
     return false;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

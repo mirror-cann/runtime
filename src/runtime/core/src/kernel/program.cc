@@ -28,15 +28,15 @@ namespace runtime {
 
 #pragma pack(push, 1)
 struct CpuSoBuf {
-  uint64_t kernelSoBuf;
-  uint32_t kernelSoBufLen;
-  uint64_t kernelSoName;
-  uint32_t kernelSoNameLen;
+    uint64_t kernelSoBuf;
+    uint32_t kernelSoBufLen;
+    uint64_t kernelSoName;
+    uint32_t kernelSoNameLen;
 };
 
 struct BatchProcCpuOpFromBufArgs {
-  uint32_t soNum;
-  uint64_t args;
+    uint32_t soNum;
+    uint64_t args;
 };
 #pragma pack(pop)
 
@@ -72,7 +72,7 @@ Program::~Program()
 void Program::ReleaseKernelsOnDestroy()
 {
     kernelMapLock_.Lock();
-    const auto isKernelInTable = [this](const Kernel * const targetKernel) {
+    const auto isKernelInTable = [this](const Kernel* const targetKernel) {
         if ((targetKernel == nullptr) || (KernelTable_ == nullptr)) {
             return false;
         }
@@ -86,21 +86,21 @@ void Program::ReleaseKernelsOnDestroy()
 
     if (KernelTable_ != nullptr) {
         for (uint32_t i = 0U; i < kernelPos_; i++) {
-            Kernel * const delKernel = KernelTable_[i].kernel;
+            Kernel* const delKernel = KernelTable_[i].kernel;
             ResetEmbeddedInnerHandle<Kernel>(delKernel);
             delete delKernel;
         }
     }
 
     for (auto iter = kernelNameMap_.begin(); iter != kernelNameMap_.end(); ++iter) {
-        Kernel * const kernel = iter->second;
+        Kernel* const kernel = iter->second;
         if (!isKernelInTable(kernel)) {
             ResetEmbeddedInnerHandle<Kernel>(kernel);
             delete kernel;
         }
     }
 
-    delete [] KernelTable_;
+    delete[] KernelTable_;
     KernelTable_ = nullptr;
 
     kernelMapLock_.Unlock();
@@ -109,7 +109,7 @@ void Program::ReleaseKernelsOnDestroy()
 void Program::ReleaseBinaryOnDestroy()
 {
     if ((!isUserData_) && (binary_ != nullptr)) {
-        char_t *buff = RtPtrToPtr<char_t *>(binary_);
+        char_t* buff = RtPtrToPtr<char_t*>(binary_);
         binary_ = nullptr;
         DELETE_A(buff);
     }
@@ -118,21 +118,23 @@ void Program::ReleaseBinaryOnDestroy()
 void Program::ResetProgramAllocatorOnDestroy() const
 {
     if (progId_ >= Runtime::maxProgramNum_) {
-        RT_LOG(RT_LOG_WARNING, "Skip program allocator reset on destroy, prog=%p, progId=%u, maxProgramNum=%u",
-            this, progId_, Runtime::maxProgramNum_);
+        RT_LOG(
+            RT_LOG_WARNING, "Skip program allocator reset on destroy, prog=%p, progId=%u, maxProgramNum=%u", this,
+            progId_, Runtime::maxProgramNum_);
         return;
     }
 
-    RefObject<Program *> *const programItem = Runtime::Instance()->GetProgramAllocator()->GetDataToItem(progId_);
+    RefObject<Program*>* const programItem = Runtime::Instance()->GetProgramAllocator()->GetDataToItem(progId_);
     if (programItem == nullptr) {
         return;
     }
 
     const uint64_t refCount = programItem->GetRef();
-    Program *programInst = programItem->GetVal(false);
+    Program* programInst = programItem->GetVal(false);
     if (programInst == nullptr) {
-        RT_LOG(RT_LOG_WARNING, "Program allocator slot already empty on destroy, prog=%p, progId=%u, ref=%llu",
-            this, progId_, refCount);
+        RT_LOG(
+            RT_LOG_WARNING, "Program allocator slot already empty on destroy, prog=%p, progId=%u, ref=%llu", this,
+            progId_, refCount);
         return;
     }
 
@@ -163,26 +165,26 @@ void Program::Dereference()
             break;
         }
 
-        Context * const dereferenceCtx = iter->second;
+        Context* const dereferenceCtx = iter->second;
         err = dereferenceCtx->ReleaseModule(progId_);
     }
     if (!dependencies_.empty()) {
         // dereference depended program
-        for (Program * const prog : dependencies_) {
+        for (Program* const prog : dependencies_) {
             Runtime::Instance()->PutProgram(prog);
         }
         dependencies_.clear();
     }
 }
 
-void Program::Insert2CtxMap(Module ** const moduleItem, Context * const ctxItem)
+void Program::Insert2CtxMap(Module** const moduleItem, Context* const ctxItem)
 {
     mapLock_.Lock();
     mapUsedCtx_[moduleItem] = ctxItem;
     mapLock_.Unlock();
 }
 
-void Program::Remove2CtxMap(Module ** const moduleItem)
+void Program::Remove2CtxMap(Module** const moduleItem)
 {
     mapLock_.Lock();
 
@@ -194,12 +196,12 @@ void Program::Remove2CtxMap(Module ** const moduleItem)
     mapLock_.Unlock();
 }
 
-void Program::SaveBinaryData(const void *data, uint64_t length, const bool isLoadFromFile)
+void Program::SaveBinaryData(const void* data, uint64_t length, const bool isLoadFromFile)
 {
     binarySize_ = length;
     isUserData_ = true;
     if (isLoadFromFile) {
-        binary_ = const_cast<void *>(data);
+        binary_ = const_cast<void*>(data);
         isUserData_ = false;
         return;
     }
@@ -208,19 +210,19 @@ void Program::SaveBinaryData(const void *data, uint64_t length, const bool isLoa
     if (buffer != nullptr) {
         if (memcpy_s(buffer.get(), length, data, length) == EOK) {
             RT_LOG(RT_LOG_INFO, "Malloc the buffer for elfData, len=%llu", length);
-            binary_ = RtPtrToPtr<void *>(buffer.release());
+            binary_ = RtPtrToPtr<void*>(buffer.release());
             isUserData_ = false;
             return;
         }
     }
-    binary_ = const_cast<void *>(data);
+    binary_ = const_cast<void*>(data);
 }
 
-rtError_t Program::Register(const void *data, const uint64_t length, const bool isLoadFromFile)
+rtError_t Program::Register(const void* data, const uint64_t length, const bool isLoadFromFile)
 {
     NULL_PTR_RETURN_MSG(data, RT_ERROR_INVALID_VALUE);
-    COND_RETURN_ERROR_MSG_INNER(length == 0ULL, RT_ERROR_INVALID_VALUE,
-        "Register program failed, bin size can not be 0.");
+    COND_RETURN_ERROR_MSG_INNER(
+        length == 0ULL, RT_ERROR_INVALID_VALUE, "Register program failed, bin size can not be 0.");
 
     SaveBinaryData(data, length, isLoadFromFile);
     rtError_t error = ParserBinary();
@@ -230,8 +232,7 @@ rtError_t Program::Register(const void *data, const uint64_t length, const bool 
     return RT_ERROR_NONE;
 }
 
-void Program::HalfSearch(const uint32_t searchLen, const uint64_t target,
-                         rtHalfSearchResult_t *halfSearchResult) const
+void Program::HalfSearch(const uint32_t searchLen, const uint64_t target, rtHalfSearchResult_t* halfSearchResult) const
 {
     int32_t topIndex = searchLen - 1;
     int32_t bottomIndex = 0;
@@ -265,7 +266,7 @@ Kernel* Program::SearchKernelByPcAddr(const uint64_t pcAddr) const
 
     const uint64_t pcAddrWithoutOffset = (pcAddr & 0x7FFFFFFFFFFFFFFULL);
     for (uint32_t i = 0; i < kernelPos_; i++) {
-        Kernel * const k = KernelTable_[i].kernel;
+        Kernel* const k = KernelTable_[i].kernel;
         uint32_t length1;
         uint32_t length2;
         uint64_t func1 = 0ULL;
@@ -275,7 +276,8 @@ Kernel* Program::SearchKernelByPcAddr(const uint64_t pcAddr) const
         err = k->GetFunctionDevAddr(func1, func2);
         COND_PROC(err != RT_ERROR_NONE, continue);
 
-        RT_LOG(RT_LOG_DEBUG, "list kernel_name=%s, func1=0x%llx, func2=0x%llx, length1=0x%llx, length2=0x%llx",
+        RT_LOG(
+            RT_LOG_DEBUG, "list kernel_name=%s, func1=0x%llx, func2=0x%llx, length1=0x%llx, length2=0x%llx",
             k->Name_().c_str(), func1, func2, length1, length2);
         if ((pcAddrWithoutOffset - func1) <= length1) {
             RT_LOG(RT_LOG_ERROR, "kernel_name=%s", k->Name_().c_str());
@@ -290,18 +292,18 @@ Kernel* Program::SearchKernelByPcAddr(const uint64_t pcAddr) const
     return nullptr;
 }
 
-rtError_t Program::ArrayInsert(const int32_t insertIndex, const uint64_t tilingKey,
-                               Kernel *&addKernel, const uint32_t curLen)
+rtError_t Program::ArrayInsert(
+    const int32_t insertIndex, const uint64_t tilingKey, Kernel*& addKernel, const uint32_t curLen)
 {
-    const uint32_t copySize = static_cast<uint32_t>(sizeof(rtKernelArray_t)) *
-                              (curLen - static_cast<uint32_t>(insertIndex));
-    RT_LOG(RT_LOG_DEBUG, "Program ArrayInsert insertIndex=%d, curLen=%u, copySize=%u",
-           insertIndex, curLen, copySize);
+    const uint32_t copySize =
+        static_cast<uint32_t>(sizeof(rtKernelArray_t)) * (curLen - static_cast<uint32_t>(insertIndex));
+    RT_LOG(RT_LOG_DEBUG, "Program ArrayInsert insertIndex=%d, curLen=%u, copySize=%u", insertIndex, curLen, copySize);
 
     if (copySize > 0U) {
         const errno_t ret = memmove_s(KernelTable_ + insertIndex + 1, copySize, KernelTable_ + insertIndex, copySize);
 
-        COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_SEC_HANDLE,
+        COND_RETURN_ERROR_MSG_INNER(
+            ret != EOK, RT_ERROR_SEC_HANDLE,
             "Failed to call memmove_s to move kernel table, dest=%p, destsz=%u, src=%p, count=%u, retCode=%d.",
             KernelTable_ + insertIndex + 1, copySize, KernelTable_ + insertIndex, copySize, ret);
     }
@@ -312,7 +314,7 @@ rtError_t Program::ArrayInsert(const int32_t insertIndex, const uint64_t tilingK
     return RT_ERROR_NONE;
 }
 
-rtError_t Program::AllKernelAdd(Kernel *&addKernel, bool &isRepeated)
+rtError_t Program::AllKernelAdd(Kernel*& addKernel, bool& isRepeated)
 {
     rtError_t error = RT_ERROR_NONE;
     rtHalfSearchResult_t halfSearchResult;
@@ -322,12 +324,12 @@ rtError_t Program::AllKernelAdd(Kernel *&addKernel, bool &isRepeated)
     HalfSearch(kernelPos_, kernelInfoExt, &halfSearchResult);
     if (!halfSearchResult.matchFlag) {
         error = ArrayInsert(halfSearchResult.matchIndex, kernelInfoExt, addKernel, kernelPos_);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error,
-            kernelMapLock_.Unlock();,
-            "Program AllKernelAdd failed, retCode=%#x.", static_cast<uint32_t>(error));
+        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, kernelMapLock_.Unlock();
+                               , "Program AllKernelAdd failed, retCode=%#x.", static_cast<uint32_t>(error));
         kernelPos_ += 1;
     } else {
-        RT_LOG(RT_LOG_WARNING, "Add all kernels repeatedly, programId=%u, kernelInfoExt=%" PRIu64,
+        RT_LOG(
+            RT_LOG_WARNING, "Add all kernels repeatedly, programId=%u, kernelInfoExt=%" PRIu64,
             addKernel->Program_()->Id_(), kernelInfoExt);
         kernelMapLock_.Unlock();
         isRepeated = true;
@@ -335,12 +337,13 @@ rtError_t Program::AllKernelAdd(Kernel *&addKernel, bool &isRepeated)
     }
     kernelMapLock_.Unlock();
 
-    RT_LOG(RT_LOG_DEBUG, "Add kernel success, prog=%p, programId=%u, kernelInfoExt=%" PRIu64, addKernel->Program_(),
+    RT_LOG(
+        RT_LOG_DEBUG, "Add kernel success, prog=%p, programId=%u, kernelInfoExt=%" PRIu64, addKernel->Program_(),
         addKernel->Program_()->Id_(), kernelInfoExt);
     return error;
 }
 
-rtError_t Program::KernelNameMapAdd(Kernel *&addKernel)
+rtError_t Program::KernelNameMapAdd(Kernel*& addKernel)
 {
     kernelMapLock_.Lock();
     const auto iter = kernelNameMap_.find(addKernel->Name_());
@@ -358,10 +361,10 @@ rtError_t Program::KernelNameMapAdd(Kernel *&addKernel)
     return RT_ERROR_NONE;
 }
 
-const Kernel *Program::GetKernelByName(const char_t *kernelName)
+const Kernel* Program::GetKernelByName(const char_t* kernelName)
 {
     kernelMapLock_.Lock();
-    const Kernel *retKernel = nullptr;
+    const Kernel* retKernel = nullptr;
     const auto iter = kernelNameMap_.find(std::string(kernelName));
     if (iter != kernelNameMap_.end()) {
         retKernel = iter->second;
@@ -371,14 +374,13 @@ const Kernel *Program::GetKernelByName(const char_t *kernelName)
     return retKernel;
 }
 
-Kernel *Program::AllKernelLookup(const uint64_t tilingKey, const bool getProgFlag)
+Kernel* Program::AllKernelLookup(const uint64_t tilingKey, const bool getProgFlag)
 {
-    Kernel *retKernel = nullptr;
+    Kernel* retKernel = nullptr;
     rtHalfSearchResult_t halfSearchResult;
     kernelMapLock_.Lock();
     HalfSearch(kernelPos_, tilingKey, &halfSearchResult);
-    retKernel = halfSearchResult.matchFlag ?
-                KernelTable_[halfSearchResult.matchIndex].kernel : nullptr;
+    retKernel = halfSearchResult.matchFlag ? KernelTable_[halfSearchResult.matchIndex].kernel : nullptr;
     if ((retKernel != nullptr) && (getProgFlag)) {
         const bool notReleased = Runtime::Instance()->GetProgram(this);
         // Program was releasing and kernel will be deleted later.
@@ -391,22 +393,22 @@ Kernel *Program::AllKernelLookup(const uint64_t tilingKey, const bool getProgFla
     return retKernel;
 }
 
-const Kernel *Program::GetKernelByTillingKey(const uint64_t tilingKey)
+const Kernel* Program::GetKernelByTillingKey(const uint64_t tilingKey)
 {
-    const Kernel *retKernel = nullptr;
+    const Kernel* retKernel = nullptr;
     rtHalfSearchResult_t halfSearchResult;
     kernelMapLock_.Lock();
     HalfSearch(kernelPos_, tilingKey, &halfSearchResult);
-    retKernel = halfSearchResult.matchFlag ?
-                KernelTable_[halfSearchResult.matchIndex].kernel : nullptr;
+    retKernel = halfSearchResult.matchFlag ? KernelTable_[halfSearchResult.matchIndex].kernel : nullptr;
     kernelMapLock_.Unlock();
-    RT_LOG(RT_LOG_DEBUG, "AllKernelLookup end, tilingKey=%lu, programId=%u. kernelRegType=%d",
-        tilingKey, Id_(), GetKernelRegType());
+    RT_LOG(
+        RT_LOG_DEBUG, "AllKernelLookup end, tilingKey=%lu, programId=%u. kernelRegType=%d", tilingKey, Id_(),
+        GetKernelRegType());
 
     return retKernel;
 }
 
-void Program::DependencyRegister(Program * const prog)
+void Program::DependencyRegister(Program* const prog)
 {
     const bool success = Runtime::Instance()->GetProgram(prog);
     if (unlikely(!success)) {
@@ -417,18 +419,18 @@ void Program::DependencyRegister(Program * const prog)
     dependencies_.push_back(prog);
 }
 
-void Program::LoadDependencies(Context * const ctxItem)
+void Program::LoadDependencies(Context* const ctxItem)
 {
     rtKernelAttrType kernelAttrType = GetDefaultKernelAttrType();
     if (kernelAttrType == RT_KERNEL_ATTR_TYPE_AICPU) {
-        for (Program * const prog : dependencies_) {
-            Module *moduleItem = RtPtrToPtr<Module *>(ctxItem->GetModule(prog));
+        for (Program* const prog : dependencies_) {
+            Module* moduleItem = RtPtrToPtr<Module*>(ctxItem->GetModule(prog));
             COND_LOG_DEBUG(moduleItem == nullptr, "get module failed, progId_=%u", prog->progId_);
         }
     }
 }
 
-uint32_t Program::AppendKernelName(const char_t *kernelName)
+uint32_t Program::AppendKernelName(const char_t* kernelName)
 {
     const uint32_t offset = kernelNames_.size();
     if (kernelName != nullptr) {
@@ -441,7 +443,7 @@ uint32_t Program::AppendKernelName(const char_t *kernelName)
     return offset;
 }
 
-rtError_t Program::BuildTilingTbl(TilingTabl **tilingTab, uint32_t *kernelLen)
+rtError_t Program::BuildTilingTbl(TilingTabl** tilingTab, uint32_t* kernelLen)
 {
     RT_LOG(RT_LOG_INFO, "kernelPos_ = %u tilingTab size=%u.", kernelPos_, sizeof(TilingTabl));
     if (kernelPos_ == 0) {
@@ -451,7 +453,7 @@ rtError_t Program::BuildTilingTbl(TilingTabl **tilingTab, uint32_t *kernelLen)
 
     kernelMapLock_.Lock();
     const uint32_t size = kernelPos_;
-    TilingTabl *tilingTabInfo = (TilingTabl *)malloc(sizeof(TilingTabl) * size);
+    TilingTabl* tilingTabInfo = (TilingTabl*)malloc(sizeof(TilingTabl) * size);
     if (tilingTabInfo == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(TilingTabl) * size, "malloc");
         kernelMapLock_.Unlock();
@@ -468,10 +470,10 @@ rtError_t Program::BuildTilingTbl(TilingTabl **tilingTab, uint32_t *kernelLen)
         tilingTabInfo[i].taskRation = KernelTable_[i].kernel->GetTaskRation();
         tilingTabInfo[i].mixType = KernelTable_[i].kernel->GetMixType();
         tilingTabInfo[i].rsv = {0U};
-        RT_LOG(RT_LOG_INFO,
-            "tilingKey=0x%llx,function1=0x%llx,function2=0x%llx,taskRation=%u,mixType=%u,i=%u.",
-            tilingTabInfo[i].tilingKey, tilingTabInfo[i].pcInfo[0],
-            tilingTabInfo[i].pcInfo[1], tilingTabInfo[i].taskRation, tilingTabInfo[i].mixType, i);
+        RT_LOG(
+            RT_LOG_INFO, "tilingKey=0x%llx,function1=0x%llx,function2=0x%llx,taskRation=%u,mixType=%u,i=%u.",
+            tilingTabInfo[i].tilingKey, tilingTabInfo[i].pcInfo[0], tilingTabInfo[i].pcInfo[1],
+            tilingTabInfo[i].taskRation, tilingTabInfo[i].mixType, i);
     }
 
     *tilingTab = tilingTabInfo;
@@ -480,7 +482,7 @@ rtError_t Program::BuildTilingTbl(TilingTabl **tilingTab, uint32_t *kernelLen)
     return RT_ERROR_NONE;
 }
 
-void Program::DestroyTilingTbl(TilingTabl *tilingTab) const
+void Program::DestroyTilingTbl(TilingTabl* tilingTab) const
 {
     if (tilingTab != nullptr) {
         free(tilingTab);
@@ -489,7 +491,7 @@ void Program::DestroyTilingTbl(TilingTabl *tilingTab) const
     return;
 }
 
-rtError_t Program::DavidBuildTilingTblForNewFlow(TilingTablForDavid **tilingTab, uint32_t *kernelLen)
+rtError_t Program::DavidBuildTilingTblForNewFlow(TilingTablForDavid** tilingTab, uint32_t* kernelLen)
 {
     RT_LOG(RT_LOG_INFO, "kernelPos_ = %u tilingTab size=%u.", kernelPos_, sizeof(TilingTablForDavid));
     if (kernelPos_ == 0) {
@@ -500,7 +502,8 @@ rtError_t Program::DavidBuildTilingTblForNewFlow(TilingTablForDavid **tilingTab,
     kernelMapLock_.Lock();
     const uint32_t size = kernelPos_;
     TilingTablForDavid* tilingTabInfo = (TilingTablForDavid*)malloc(sizeof(TilingTablForDavid) * size);
-    COND_PROC_RETURN_AND_MSG_OUTER(tilingTabInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, kernelMapLock_.Unlock(),
+    COND_PROC_RETURN_AND_MSG_OUTER(
+        tilingTabInfo == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, kernelMapLock_.Unlock(),
         sizeof(TilingTablForDavid) * size, "malloc");
     uint64_t function1 = 0ULL;
     uint64_t function2 = 0ULL;
@@ -529,7 +532,7 @@ rtError_t Program::DavidBuildTilingTblForNewFlow(TilingTablForDavid **tilingTab,
     return RT_ERROR_NONE;
 }
 
-rtError_t Program::BuildTilingTblForDavid(const Module *mdl, TilingTablForDavid **tilingTab, uint32_t *kernelLen)
+rtError_t Program::BuildTilingTblForDavid(const Module* mdl, TilingTablForDavid** tilingTab, uint32_t* kernelLen)
 {
     // 新的注册流程 binHandle中不包含module信息，需要走兼容分支
     if (IsNewBinaryLoadFlow()) {
@@ -542,16 +545,16 @@ rtError_t Program::BuildTilingTblForDavid(const Module *mdl, TilingTablForDavid 
         RT_LOG(RT_LOG_ERROR, "kernelPos_ == 0.");
         return RT_ERROR_PROGRAM_SIZE;
     }
- 
+
     kernelMapLock_.Lock();
     const uint32_t size = kernelPos_;
-    TilingTablForDavid *tilingTabInfo = (TilingTablForDavid *)malloc(sizeof(TilingTablForDavid) * size);
+    TilingTablForDavid* tilingTabInfo = (TilingTablForDavid*)malloc(sizeof(TilingTablForDavid) * size);
     if (tilingTabInfo == nullptr) {
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1013, sizeof(TilingTablForDavid) * size, "malloc");
         kernelMapLock_.Unlock();
         return RT_ERROR_PROGRAM_SIZE;
     }
- 
+
     uint64_t function1;
     uint64_t function2;
     for (uint32_t i = 0; i < size; i++) {
@@ -564,31 +567,29 @@ rtError_t Program::BuildTilingTblForDavid(const Module *mdl, TilingTablForDavid 
         tilingTabInfo[i].rsv = {0U};
         tilingTabInfo[i].u.tilingInfoExt.kernelVfType = KernelTable_[i].kernel->KernelVfType_();
         tilingTabInfo[i].u.tilingInfoExt.shareMemSize = KernelTable_[i].kernel->ShareMemSize_();
-        RT_LOG(RT_LOG_INFO,
+        RT_LOG(
+            RT_LOG_INFO,
             "tilingKey=%" PRIu64 ",function1=%#" PRIu64 ",function2=%#" PRIu64 ",taskRation=%u,mixType=%u,i=%u.",
-            tilingTabInfo[i].tilingKey, tilingTabInfo[i].pcInfo[0],
-            tilingTabInfo[i].pcInfo[1], tilingTabInfo[i].taskRation, tilingTabInfo[i].mixType, i);
+            tilingTabInfo[i].tilingKey, tilingTabInfo[i].pcInfo[0], tilingTabInfo[i].pcInfo[1],
+            tilingTabInfo[i].taskRation, tilingTabInfo[i].mixType, i);
     }
- 
+
     *tilingTab = tilingTabInfo;
     *kernelLen = size;
     kernelMapLock_.Unlock();
     return RT_ERROR_NONE;
 }
- 
-void Program::DestroyTilingTblForDavid(TilingTablForDavid *tilingTab) const
+
+void Program::DestroyTilingTblForDavid(TilingTablForDavid* tilingTab) const
 {
     if (tilingTab != nullptr) {
         free(tilingTab);
     }
- 
+
     return;
 }
 
-const std::string &Program::GetKernelNamesBuffer() const
-{
-    return kernelNames_;
-}
+const std::string& Program::GetKernelNamesBuffer() const { return kernelNames_; }
 
 rtError_t Program::CheckLoaded2Device()
 {
@@ -603,9 +604,9 @@ rtError_t Program::Load2Device()
 {
     Runtime* runtime = Runtime::Instance();
     NULL_PTR_RETURN_MSG(runtime, RT_ERROR_INSTANCE_NULL);
-    Context * const curCtx = runtime->CurrentContext();
+    Context* const curCtx = runtime->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const device = curCtx->Device_();
+    Device* const device = curCtx->Device_();
     NULL_PTR_RETURN_MSG(device, RT_ERROR_DEVICE_NULL)
 
     if (GetBinBaseAddr(device->Id_()) != nullptr) {
@@ -631,53 +632,54 @@ rtError_t Program::Load2Device()
 uint32_t Program::GetMaxMinStackSize() const
 {
     uint32_t maxMinStackSize = 0U;
-    for (const auto &iter : kernelNameMap_) {
-        const Kernel *kernel = iter.second;
+    for (const auto& iter : kernelNameMap_) {
+        const Kernel* kernel = iter.second;
         if (kernel != nullptr) {
-            maxMinStackSize = std::max(maxMinStackSize,
-                kernel->GetMinStackSize1() > kernel->GetMinStackSize2() ? kernel->GetMinStackSize1()
-                                                                        : kernel->GetMinStackSize2());
+            maxMinStackSize = std::max(
+                maxMinStackSize, kernel->GetMinStackSize1() > kernel->GetMinStackSize2() ? kernel->GetMinStackSize1() :
+                                                                                           kernel->GetMinStackSize2());
         }
     }
     return maxMinStackSize;
 }
 
-rtError_t Program::CopyKernelLiteralNameToDevice(const std::string &literalName, void **devAddrHandle, const Device * const dev) const
+rtError_t Program::CopyKernelLiteralNameToDevice(
+    const std::string& literalName, void** devAddrHandle, const Device* const dev) const
 {
     // get current device
     Runtime* runtime = Runtime::Instance();
-	NULL_PTR_RETURN_MSG(runtime, RT_ERROR_INSTANCE_NULL);
-	const uint32_t devId = static_cast<uint32_t>(dev->Id_());
-	Driver *curDrv = dev->Driver_();
+    NULL_PTR_RETURN_MSG(runtime, RT_ERROR_INSTANCE_NULL);
+    const uint32_t devId = static_cast<uint32_t>(dev->Id_());
+    Driver* curDrv = dev->Driver_();
 
     // alloc dev memory for soName and funcName
     size_t nameSize = literalName.size() + 1;
-    void *devAddr = nullptr;
+    void* devAddr = nullptr;
     const rtMemType_t memType = runtime->GetTsMemType(MEM_REQUEST_FEATURE_DEFAULT, static_cast<uint64_t>(nameSize));
-	rtError_t ret = curDrv->DevMemAlloc(&devAddr, nameSize, memType, devId);
+    rtError_t ret = curDrv->DevMemAlloc(&devAddr, nameSize, memType, devId);
     ERROR_RETURN(ret, "Failed to alloc device memory for literalName, ret=%d, devId=%u.", ret, devId);
-    
+
     // copy soName and funcName to device
     ret = curDrv->MemCopySync(devAddr, nameSize, literalName.c_str(), nameSize, RT_MEMCPY_HOST_TO_DEVICE);
     if (ret != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_ERROR, "Failed to copy literalName to device, ret=%d, devId=%u.", ret, devId);
         (void)curDrv->DevMemFree(devAddr, devId);
         return ret;
-    }   
-    
+    }
+
     *devAddrHandle = devAddr;
     return RT_ERROR_NONE;
 }
 
-rtError_t Program::StoreKernelLiteralNameToDevice(Kernel *const kernel)
+rtError_t Program::StoreKernelLiteralNameToDevice(Kernel* const kernel)
 {
-    void *soNameDevAddr = nullptr;
-    void *funcNameDevAddr = nullptr;
+    void* soNameDevAddr = nullptr;
+    void* funcNameDevAddr = nullptr;
     COND_PROC(kernelRegType_ == RT_KERNEL_REG_TYPE_NON_CPU, return RT_ERROR_NONE);
     // get current device
     Runtime* runtime = Runtime::Instance();
     NULL_PTR_RETURN_MSG(runtime, RT_ERROR_INSTANCE_NULL);
-    Context * const curCtx = runtime->CurrentContext();
+    Context* const curCtx = runtime->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
     const uint32_t devId = static_cast<uint32_t>(curCtx->Device_()->Id_());
 
@@ -686,7 +688,8 @@ rtError_t Program::StoreKernelLiteralNameToDevice(Kernel *const kernel)
     if (iterSoName != soNameDevAddrMap_[devId].end()) {
         soNameDevAddr = iterSoName->second;
     } else {
-        const rtError_t ret = CopyKernelLiteralNameToDevice(kernel->GetCpuKernelSo(), &soNameDevAddr, curCtx->Device_());
+        const rtError_t ret =
+            CopyKernelLiteralNameToDevice(kernel->GetCpuKernelSo(), &soNameDevAddr, curCtx->Device_());
         ERROR_RETURN(ret, "Failed to copy soName to device, ret=%d.", ret);
         soNameDevAddrMap_[devId][kernel->GetCpuKernelSo()] = soNameDevAddr;
     }
@@ -696,7 +699,8 @@ rtError_t Program::StoreKernelLiteralNameToDevice(Kernel *const kernel)
     if (iterFuncName != funcNameDevAddrMap_[devId].end()) {
         funcNameDevAddr = iterFuncName->second;
     } else {
-        const rtError_t ret = CopyKernelLiteralNameToDevice(kernel->GetCpuFuncName(), &funcNameDevAddr, curCtx->Device_());
+        const rtError_t ret =
+            CopyKernelLiteralNameToDevice(kernel->GetCpuFuncName(), &funcNameDevAddr, curCtx->Device_());
         ERROR_RETURN(ret, "Failed to copy funcName to device, ret=%d.", ret);
         funcNameDevAddrMap_[devId][kernel->GetCpuFuncName()] = funcNameDevAddr;
     }
@@ -704,12 +708,12 @@ rtError_t Program::StoreKernelLiteralNameToDevice(Kernel *const kernel)
     return RT_ERROR_NONE;
 }
 
-rtError_t Program::FreeKernelLiteralNameDevMem(const Device *const device)
+rtError_t Program::FreeKernelLiteralNameDevMem(const Device* const device)
 {
     const uint32_t deviceId = device->Id_();
-	Driver *curDrv = device->Driver_();
+    Driver* curDrv = device->Driver_();
 
-    for (auto iter = soNameDevAddrMap_[deviceId].begin(); iter != soNameDevAddrMap_[deviceId].end(); ) {
+    for (auto iter = soNameDevAddrMap_[deviceId].begin(); iter != soNameDevAddrMap_[deviceId].end();) {
         if (iter->second != nullptr) {
             const rtError_t ret = curDrv->DevMemFree(iter->second, deviceId);
             ERROR_RETURN(ret, "Failed to free soNameDevMem %s, ret=%d, devId=%u.", iter->first.c_str(), ret, deviceId);
@@ -717,11 +721,12 @@ rtError_t Program::FreeKernelLiteralNameDevMem(const Device *const device)
         iter = soNameDevAddrMap_[deviceId].erase(iter);
     }
 
-    for (auto iter = funcNameDevAddrMap_[deviceId].begin(); iter != funcNameDevAddrMap_[deviceId].end(); ) {
+    for (auto iter = funcNameDevAddrMap_[deviceId].begin(); iter != funcNameDevAddrMap_[deviceId].end();) {
         if (iter->second != nullptr) {
             const rtError_t ret = curDrv->DevMemFree(iter->second, deviceId);
-            ERROR_RETURN(ret, "Failed to free funcNameDevMem %s, ret=%d, devId=%u.", iter->first.c_str(), ret, deviceId);
-        }    
+            ERROR_RETURN(
+                ret, "Failed to free funcNameDevMem %s, ret=%d, devId=%u.", iter->first.c_str(), ret, deviceId);
+        }
         iter = funcNameDevAddrMap_[deviceId].erase(iter);
     }
 
@@ -733,17 +738,15 @@ PlainProgram::PlainProgram(const rtKernelAttrType kernelAttrType) : Program(kern
     SetType(Program::PLAIN_PROGRAM);
 }
 
-PlainProgram::PlainProgram(const KernelRegisterType kernelRegType,
-    const rtKernelAttrType kernelAttrType) : Program(kernelAttrType)
+PlainProgram::PlainProgram(const KernelRegisterType kernelRegType, const rtKernelAttrType kernelAttrType)
+    : Program(kernelAttrType)
 {
     SetKernelRegType(kernelRegType);
 }
 
-PlainProgram::~PlainProgram()
-{
-}
+PlainProgram::~PlainProgram() {}
 
-uint32_t PlainProgram::SymbolOffset(const void * const symbol, uint32_t &length)
+uint32_t PlainProgram::SymbolOffset(const void* const symbol, uint32_t& length)
 {
     const auto symOffset = RtPtrToPtr<uintptr_t>(symbol);
     if (symOffset >= binarySize_) {
@@ -755,54 +758,43 @@ uint32_t PlainProgram::SymbolOffset(const void * const symbol, uint32_t &length)
     }
 }
 
-uint32_t PlainProgram::LoadSize()
-{
-    return static_cast<uint32_t>(binarySize_);
-}
+uint32_t PlainProgram::LoadSize() { return static_cast<uint32_t>(binarySize_); }
 
-bool PlainProgram::IsReadOnly()
-{
-    return false;
-}
+bool PlainProgram::IsReadOnly() { return false; }
 
-rtError_t PlainProgram::LoadExtract(void * const output, const uint32_t size)
+rtError_t PlainProgram::LoadExtract(void* const output, const uint32_t size)
 {
     NULL_PTR_RETURN_MSG(output, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG(binary_, RT_ERROR_PROGRAM_DATA);
 
     const errno_t ret = memcpy_s(output, static_cast<size_t>(size), binary_, binarySize_);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
         "Failed to call memcpy_s to copy binary data, dest=%p, dest_max=%zu, src=%p, count=%" PRIu64 ", retCode=%d.",
         output, static_cast<size_t>(size), binary_, binarySize_, ret);
     return RT_ERROR_NONE;
 }
 
-void *PlainProgram::Data()
-{
-    return binary_;
-}
+void* PlainProgram::Data() { return binary_; }
 
-rtError_t PlainProgram::GetKernel(const void * const symbol, RtKernel &kernel)
+rtError_t PlainProgram::GetKernel(const void* const symbol, RtKernel& kernel)
 {
     UNUSED(symbol);
     UNUSED(kernel);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t PlainProgram::RefreshSymbolAddr()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t PlainProgram::RefreshSymbolAddr() { return RT_ERROR_NONE; }
 
-rtError_t PlainProgram::BinaryGetMetaNum(const rtBinaryMetaType type, size_t *numOfMeta)
+rtError_t PlainProgram::BinaryGetMetaNum(const rtBinaryMetaType type, size_t* numOfMeta)
 {
     UNUSED(type);
     UNUSED(numOfMeta);
     return RT_ERROR_NONE;
 }
 
-rtError_t PlainProgram::BinaryGetMetaInfo(const rtBinaryMetaType type, const size_t numOfMeta, void **data,
-                                          const size_t *dataSize)
+rtError_t PlainProgram::BinaryGetMetaInfo(
+    const rtBinaryMetaType type, const size_t numOfMeta, void** data, const size_t* dataSize)
 {
     UNUSED(type);
     UNUSED(numOfMeta);
@@ -811,8 +803,8 @@ rtError_t PlainProgram::BinaryGetMetaInfo(const rtBinaryMetaType type, const siz
     return RT_ERROR_NONE;
 }
 
-rtError_t PlainProgram::FunctionGetMetaInfo(const std::string &kernelName, const rtFunctionMetaType type,
-                                            void *data, const uint32_t length)
+rtError_t PlainProgram::FunctionGetMetaInfo(
+    const std::string& kernelName, const rtFunctionMetaType type, void* data, const uint32_t length)
 {
     UNUSED(kernelName);
     UNUSED(type);
@@ -821,8 +813,8 @@ rtError_t PlainProgram::FunctionGetMetaInfo(const std::string &kernelName, const
     return RT_ERROR_NONE;
 }
 
-rtError_t PlainProgram::FunctionGetMetaInfoSize(const std::string &kernelName, const rtFunctionMetaType type,
-                                                  size_t *size)
+rtError_t PlainProgram::FunctionGetMetaInfoSize(
+    const std::string& kernelName, const rtFunctionMetaType type, size_t* size)
 {
     UNUSED(kernelName);
     UNUSED(type);
@@ -831,12 +823,12 @@ rtError_t PlainProgram::FunctionGetMetaInfoSize(const std::string &kernelName, c
 }
 
 // 注册CPU算子
-rtError_t Program::RegisterCpuKernel(const std::vector<CpuKernelInfo> &kernelInfos)
+rtError_t Program::RegisterCpuKernel(const std::vector<CpuKernelInfo>& kernelInfos)
 {
     constexpr uint64_t defaultTilingKey = 0ULL; // cpu kernel不使用tiling key，所以默认填值0
     kernelMapLock_.Lock();
-    
-    for (auto kernelInfo : kernelInfos) {	
+
+    for (auto kernelInfo : kernelInfos) {
         const std::string key = kernelInfo.key;
         const auto iter = kernelNameMap_.find(key); // 如果已经注册，不重复注册
         if (iter != kernelNameMap_.end()) {
@@ -844,15 +836,16 @@ rtError_t Program::RegisterCpuKernel(const std::vector<CpuKernelInfo> &kernelInf
             continue;
         }
 
-        Kernel *kernel = new (std::nothrow) Kernel(key.c_str(), defaultTilingKey, this, RT_KERNEL_ATTR_TYPE_AICPU, 0U);
+        Kernel* kernel = new (std::nothrow) Kernel(key.c_str(), defaultTilingKey, this, RT_KERNEL_ATTR_TYPE_AICPU, 0U);
         if (unlikely(kernel == nullptr)) {
             RT_LOG(RT_LOG_WARNING, "kernel new failed, continue");
             continue;
         }
         SetCpuKernelAttr(kernel, kernelInfo, key);
         kernelNameMap_[key] = kernel;
-        RT_LOG(RT_LOG_DEBUG, "cpu kernel info:functionName[%s],kernelSo[%s],opType[%s]",
-            kernel->GetCpuFuncName().c_str(), kernel->GetCpuKernelSo().c_str(), key.c_str());
+        RT_LOG(
+            RT_LOG_DEBUG, "cpu kernel info:functionName[%s],kernelSo[%s],opType[%s]", kernel->GetCpuFuncName().c_str(),
+            kernel->GetCpuKernelSo().c_str(), key.c_str());
     }
 
     kernelMapLock_.Unlock();
@@ -862,11 +855,12 @@ rtError_t Program::RegisterCpuKernel(const std::vector<CpuKernelInfo> &kernelInf
 }
 
 // 通过funcName和opType单独注册单个cpu kernel
-rtError_t Program::RegisterSingleCpuKernel(const char *const funcName, const char *const kernelName, Kernel **kernelHandle)
+rtError_t Program::RegisterSingleCpuKernel(
+    const char* const funcName, const char* const kernelName, Kernel** kernelHandle)
 {
     *kernelHandle = nullptr;
     kernelMapLock_.Lock();
-    const auto iter = kernelNameMap_.find(kernelName);  // 如果已经注册，不重复注册
+    const auto iter = kernelNameMap_.find(kernelName); // 如果已经注册，不重复注册
     if (iter != kernelNameMap_.end()) {
         RT_LOG(RT_LOG_WARNING, "[%s] has been registered, continue", kernelName);
         *kernelHandle = iter->second;
@@ -876,7 +870,8 @@ rtError_t Program::RegisterSingleCpuKernel(const char *const funcName, const cha
 
     std::unique_ptr<Kernel> kernel(new (std::nothrow) Kernel(kernelName, 0U, this, RT_KERNEL_ATTR_TYPE_AICPU, 0U));
     COND_PROC_RETURN_AND_MSG_OUTER(kernel == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        kernelMapLock_.Unlock();, sizeof(Kernel), "new");
+                                   kernelMapLock_.Unlock();
+                                   , sizeof(Kernel), "new");
 
     kernel->SetKernelRegisterType(RT_KERNEL_REG_TYPE_CPU);
     std::string tmpFuncName = funcName;
@@ -890,15 +885,16 @@ rtError_t Program::RegisterSingleCpuKernel(const char *const funcName, const cha
     kernel->SetIsSupportOverFlow(false);
     kernel->SetAicpuKernelType_(static_cast<uint32_t>(KERNEL_TYPE_AICPU_CUSTOM));
     kernel->SetKernelAttrType(RT_KERNEL_ATTR_TYPE_AICPU);
- 
-    // Aicpu算子注册时，把KernelName, soname存储至device侧，并把devAddr记录至kernel，从而args区无须填入kernelName, soname
+
+    // Aicpu算子注册时，把KernelName, soname存储至device侧，并把devAddr记录至kernel，从而args区无须填入kernelName,
+    // soname
     const rtError_t ret = StoreKernelLiteralNameToDevice(kernel.get());
     if (ret != RT_ERROR_NONE) {
         kernelMapLock_.Unlock();
         RT_LOG(RT_LOG_ERROR, "Failed to store kernel %s literal name to device, ret=%d", kernelName, ret);
         return ret;
     }
-    auto *rawKernel = kernel.release();
+    auto* rawKernel = kernel.release();
     kernelNameMap_[kernelName] = rawKernel;
     kernelMapLock_.Unlock();
 
@@ -924,13 +920,13 @@ ElfProgram::~ElfProgram()
                 DELETE_A(kernels_[i].name);
             }
         }
-        delete [] elfData_->section_headers;
+        delete[] elfData_->section_headers;
         elfData_->section_headers = nullptr;
         delete elfData_;
         elfData_ = nullptr;
     }
 
-    delete [] kernels_;
+    delete[] kernels_;
     kernels_ = nullptr;
 }
 
@@ -943,10 +939,11 @@ rtError_t ElfProgram::ParserBinary()
     static const std::string property("exclusive");
 
     elfData_->obj_size = binarySize_;
-    kernels_ = ProcessObject(RtPtrToPtr<char_t *>(binary_), elfData_);
-    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(kernels_, RT_ERROR_INVALID_VALUE, "Parsing the binary file data of the operator");
+    kernels_ = ProcessObject(RtPtrToPtr<char_t*>(binary_), elfData_);
+    NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
+        kernels_, RT_ERROR_INVALID_VALUE, "Parsing the binary file data of the operator");
 
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     const rtChipType_t chipType = rtInstance->GetChipType();
     if (IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_KERNEL_ELF_AICPU_MACHINE)) {
         if (elfData_->elf_header.e_machine == 183U) { // 183:aicpu machine
@@ -966,22 +963,22 @@ rtError_t ElfProgram::ParserBinary()
         soName_ = elfData_->so_name;
 
         // runtime fake metadata
-        (void)metadata_.append(soName_).append(1UL, ',');   // so name
-        (void)metadata_.append(ver).append(1UL, ',');       // version
-        (void)metadata_.append(sha256).append(1UL, ',');    // share256
-        (void)metadata_.append(property).append(1UL, ';');  // shared
+        (void)metadata_.append(soName_).append(1UL, ',');  // so name
+        (void)metadata_.append(ver).append(1UL, ',');      // version
+        (void)metadata_.append(sha256).append(1UL, ',');   // share256
+        (void)metadata_.append(property).append(1UL, ';'); // shared
     }
     return RT_ERROR_NONE;
 }
 
-uint32_t ElfProgram::SymbolOffset(const void * const symbol, uint32_t &length)
+uint32_t ElfProgram::SymbolOffset(const void* const symbol, uint32_t& length)
 {
     NULL_PTR_RETURN_MSG(elfData_, 0U);
     NULL_PTR_RETURN_MSG(symbol, UINT32_MAX);
     length = 0U;
     for (uint32_t idx = 0U; idx < elfData_->kernel_num; idx++) {
         if (kernels_ != nullptr) {
-            if (strncmp(kernels_[idx].name, RtPtrToPtr<const char_t *>(symbol), NAME_MAX_LENGTH) == 0) {
+            if (strncmp(kernels_[idx].name, RtPtrToPtr<const char_t*>(symbol), NAME_MAX_LENGTH) == 0) {
                 length = static_cast<uint32_t>(kernels_[idx].length);
                 return static_cast<uint32_t>(kernels_[idx].offset);
             }
@@ -990,16 +987,13 @@ uint32_t ElfProgram::SymbolOffset(const void * const symbol, uint32_t &length)
     return UINT32_MAX;
 }
 
-uint32_t ElfProgram::LoadSize()
-{
-    return (elfData_ != nullptr) ? static_cast<uint32_t>(elfData_->text_size) : 0U;
-}
+uint32_t ElfProgram::LoadSize() { return (elfData_ != nullptr) ? static_cast<uint32_t>(elfData_->text_size) : 0U; }
 
-rtError_t ElfProgram::GetKernel(const void * const symbol, RtKernel &kernel)
+rtError_t ElfProgram::GetKernel(const void* const symbol, RtKernel& kernel)
 {
     for (uint32_t idx = 0U; idx < elfData_->kernel_num; idx++) {
         if (kernels_ != nullptr) {
-            if (strncmp(kernels_[idx].name, RtPtrToPtr<const char_t *>(symbol), NAME_MAX_LENGTH) == 0) {
+            if (strncmp(kernels_[idx].name, RtPtrToPtr<const char_t*>(symbol), NAME_MAX_LENGTH) == 0) {
                 kernel = kernels_[idx];
                 return RT_ERROR_NONE;
             }
@@ -1008,26 +1002,28 @@ rtError_t ElfProgram::GetKernel(const void * const symbol, RtKernel &kernel)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ElfProgram::LoadExtract(void * const output, const uint32_t size)
+rtError_t ElfProgram::LoadExtract(void* const output, const uint32_t size)
 {
     NULL_PTR_RETURN_MSG(output, RT_ERROR_INVALID_VALUE);
     NULL_PTR_RETURN_MSG(elfData_, RT_ERROR_PROGRAM_DATA);
     NULL_PTR_RETURN_MSG(binary_, RT_ERROR_PROGRAM_DATA);
 
-    const errno_t ret = memcpy_s(output, static_cast<size_t>(size),
-                                 RtPtrToPtr<char_t *>(binary_) + elfData_->text_offset, elfData_->text_size);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
-        "Failed to call memcpy_s to copy text, dest=%p, dest_max=%zu, src=%p, count=%" PRIu64 ", retCode=%d.",
-        output, static_cast<size_t>(size), RtPtrToPtr<char_t *>(binary_) + elfData_->text_offset, elfData_->text_size, ret);
-    RT_LOG(RT_LOG_INFO, "text_offset:%" PRIu64 ", elfData_->text_size:%" PRIu64, elfData_->text_offset,
+    const errno_t ret = memcpy_s(
+        output, static_cast<size_t>(size), RtPtrToPtr<char_t*>(binary_) + elfData_->text_offset, elfData_->text_size);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
+        "Failed to call memcpy_s to copy text, dest=%p, dest_max=%zu, src=%p, count=%" PRIu64 ", retCode=%d.", output,
+        static_cast<size_t>(size), RtPtrToPtr<char_t*>(binary_) + elfData_->text_offset, elfData_->text_size, ret);
+    RT_LOG(
+        RT_LOG_INFO, "text_offset:%" PRIu64 ", elfData_->text_size:%" PRIu64, elfData_->text_offset,
         elfData_->text_size);
     return RT_ERROR_NONE;
 }
 
-void *ElfProgram::Data()
+void* ElfProgram::Data()
 {
-    return ((binary_ != nullptr) && (elfData_ != nullptr)) ?
-        (RtPtrToPtr<char_t *>(binary_) + elfData_->text_offset) : nullptr;
+    return ((binary_ != nullptr) && (elfData_ != nullptr)) ? (RtPtrToPtr<char_t*>(binary_) + elfData_->text_offset) :
+                                                             nullptr;
 }
 
 bool ElfProgram::IsReadOnly()
@@ -1043,7 +1039,7 @@ bool ElfProgram::IsReadOnly()
  * Parse tiling key from kernel name. Make sure mix_aic/mix_aiv has been removed from the kernel name.
  * if there is no valid tiling key, will return RT_ERROR_INVALID_VALUE
  */
-rtError_t ElfProgram::ParseTilingKey(const std::string &kernelName, uint64_t &tilingKey) const
+rtError_t ElfProgram::ParseTilingKey(const std::string& kernelName, uint64_t& tilingKey) const
 {
     const auto pos = kernelName.rfind('_');
     const std::string tilingKeyStr = kernelName.substr(pos + 1U);
@@ -1062,9 +1058,9 @@ rtError_t ElfProgram::ParseTilingKey(const std::string &kernelName, uint64_t &ti
     return ret;
 }
 
-static void SwapMixKernelOffsetAndLength(Kernel * const kernelTmp, const RtKernel * const kernel)
+static void SwapMixKernelOffsetAndLength(Kernel* const kernelTmp, const RtKernel* const kernel)
 {
-    const RtKernelMetaInfo * const metaInfo = &(kernel->metaInfo);
+    const RtKernelMetaInfo* const metaInfo = &(kernel->metaInfo);
     // swap offset
     kernelTmp->SetOffset2(kernelTmp->Offset_());
     kernelTmp->SetOffset(static_cast<uint32_t>(kernel->offset));
@@ -1081,9 +1077,9 @@ static void SwapMixKernelOffsetAndLength(Kernel * const kernelTmp, const RtKerne
     kernelTmp->SetKernelLength2(kernelLen1);
 }
 
-void ElfProgram::SetKernelAttribute(const RtKernel * const kernel, Kernel * const kernelObj)
+void ElfProgram::SetKernelAttribute(const RtKernel* const kernel, Kernel* const kernelObj)
 {
-    const RtKernelMetaInfo * const metaInfo = &(kernel->metaInfo);
+    const RtKernelMetaInfo* const metaInfo = &(kernel->metaInfo);
     const uint32_t nameOffset = AppendKernelName(kernel->name);
     kernelObj->SetStlKernelByKernelName(kernel->name);
     kernelObj->SetNameOffset(nameOffset);
@@ -1108,20 +1104,23 @@ void ElfProgram::SetKernelAttribute(const RtKernel * const kernel, Kernel * cons
     if (kernelObj->IsSupportOverFlow()) {
         sysParamNum++;
     }
-    const Runtime * const runtime = Runtime::Instance();
+    const Runtime* const runtime = Runtime::Instance();
     NULL_PTR_RETURN_DIRECTLY(runtime);
-    if ((IS_SUPPORT_CHIP_FEATURE(Runtime::Instance()->GetChipType(), RtOptionalFeatureType::RT_FEATURE_TASK_FFTS_PLUS)) &&
-        !IsMetaFlagSupprotFfts() && (IsSupportInterCoreSync() || (metaInfo->crossCoreSync == FUNC_USE_SYNC) ||
-        (kernelObj->GetMixType() != NO_MIX))) {
+    if ((IS_SUPPORT_CHIP_FEATURE(
+            Runtime::Instance()->GetChipType(), RtOptionalFeatureType::RT_FEATURE_TASK_FFTS_PLUS)) &&
+        !IsMetaFlagSupprotFfts() &&
+        (IsSupportInterCoreSync() || (metaInfo->crossCoreSync == FUNC_USE_SYNC) ||
+         (kernelObj->GetMixType() != NO_MIX))) {
         kernelObj->SetIsNeedSetFftsAddrInArg(true);
         sysParamNum++;
     }
     kernelObj->SetSystemParaNum(sysParamNum);
-    RT_LOG(RT_LOG_INFO, "kernel_name=%s, kernelAttrType=%d, userParamNum=%hu, sysParamNum=%hu, "
+    RT_LOG(
+        RT_LOG_INFO,
+        "kernel_name=%s, kernelAttrType=%d, userParamNum=%hu, sysParamNum=%hu, "
         "IsNeedSetFftsAddrInArg=%u, isSupportOverFlow=%u, elfDataFlag=%d",
-        kernel->name, kernelObj->GetKernelAttrType(), kernelObj->GetUserParaNum(),
-        kernelObj->GetSystemParaNum(), kernelObj->IsNeedSetFftsAddrInArg(), kernelObj->IsSupportOverFlow(),
-        kernelObj->ElfDataFlag());
+        kernel->name, kernelObj->GetKernelAttrType(), kernelObj->GetUserParaNum(), kernelObj->GetSystemParaNum(),
+        kernelObj->IsNeedSetFftsAddrInArg(), kernelObj->IsSupportOverFlow(), kernelObj->ElfDataFlag());
     return;
 }
 
@@ -1130,7 +1129,7 @@ rtError_t ElfProgram::UnifiedKernelRegister()
     rtError_t error = RegisterAllKernelCommon();
     ERROR_RETURN(error, "register all kernel failed, retCode=%#x.", static_cast<uint32_t>(error));
 
-    const std::map<std::string, Kernel *>& kernelNameMap = GetKernelNameMap();
+    const std::map<std::string, Kernel*>& kernelNameMap = GetKernelNameMap();
     for (auto iter = kernelNameMap.begin(); iter != kernelNameMap.end(); ++iter) {
         Kernel* kernelObj = iter->second;
         /* not support tilingKey and not support function entry */
@@ -1141,49 +1140,48 @@ rtError_t ElfProgram::UnifiedKernelRegister()
         /* kernelTable_ will maintain kernel and the function PutProgram() will release memory. */
         if (KernelTable_ == nullptr) {
             KernelTable_ = new (std::nothrow) rtKernelArray_t[GetKernelsCount()];
-            COND_RETURN_AND_MSG_OUTER(KernelTable_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+            COND_RETURN_AND_MSG_OUTER(
+                KernelTable_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
                 sizeof(rtKernelArray_t) * GetKernelsCount(), "new");
         }
 
         /* add kernel to KernelTable */
         bool isRepeated = false;
         error = AllKernelAdd(kernelObj, isRepeated);
-        ERROR_RETURN(error, "add kernel to tilingKey table failed, kernel_name=%s, tilingKey=%llu.",
-            kernelObj->Name_().c_str(), kernelObj->TilingKey());
+        ERROR_RETURN(
+            error, "add kernel to tilingKey table failed, kernel_name=%s, tilingKey=%llu.", kernelObj->Name_().c_str(),
+            kernelObj->TilingKey());
     }
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ElfProgram::RefreshSymbolAddr()
-{
-    return RefreshSymbolAddress(elfData_);
-}
+rtError_t ElfProgram::RefreshSymbolAddr() { return RefreshSymbolAddress(elfData_); }
 
-rtError_t ElfProgram::BinaryGetMetaNum(const rtBinaryMetaType type, size_t *numOfMeta)
+rtError_t ElfProgram::BinaryGetMetaNum(const rtBinaryMetaType type, size_t* numOfMeta)
 {
     return GetBinaryMetaNum(elfData_, type, numOfMeta);
 }
 
-rtError_t ElfProgram::BinaryGetMetaInfo(const rtBinaryMetaType type, const size_t numOfMeta, void **data,
-                                        const size_t *dataSize)
+rtError_t ElfProgram::BinaryGetMetaInfo(
+    const rtBinaryMetaType type, const size_t numOfMeta, void** data, const size_t* dataSize)
 {
     return GetBinaryMetaInfo(elfData_, type, numOfMeta, data, dataSize);
 }
 
-rtError_t ElfProgram::FunctionGetMetaInfo(const std::string &kernelName, const rtFunctionMetaType type,
-                                          void *data, const uint32_t length)
+rtError_t ElfProgram::FunctionGetMetaInfo(
+    const std::string& kernelName, const rtFunctionMetaType type, void* data, const uint32_t length)
 {
     return GetFunctionMetaInfo(elfData_, kernelName, type, data, length);
 }
 
-rtError_t ElfProgram::FunctionGetMetaInfoSize(const std::string &kernelName, const rtFunctionMetaType type,
-                                               size_t *size)
+rtError_t ElfProgram::FunctionGetMetaInfoSize(
+    const std::string& kernelName, const rtFunctionMetaType type, size_t* size)
 {
     return GetFunctionMetaInfoSize(elfData_, kernelName, type, size);
 }
 
-rtError_t ElfProgram::GetGlobalSymbol(const char *name, uint64_t *offset, uint64_t *size) const
+rtError_t ElfProgram::GetGlobalSymbol(const char* name, uint64_t* offset, uint64_t* size) const
 {
     NULL_PTR_RETURN_MSG(elfData_, RT_ERROR_INVALID_VALUE);
 
@@ -1197,7 +1195,8 @@ rtError_t ElfProgram::GetGlobalSymbol(const char *name, uint64_t *offset, uint64
     return RT_ERROR_NONE;
 }
 
-void Program::RegCpuProgInfo(const void *data, const uint64_t length, const std::string &soName, const int32_t cpuRegMode,
+void Program::RegCpuProgInfo(
+    const void* data, const uint64_t length, const std::string& soName, const int32_t cpuRegMode,
     const bool isLoadFromFile)
 {
     SaveBinaryData(data, length, isLoadFromFile);
@@ -1208,17 +1207,16 @@ void Program::RegCpuProgInfo(const void *data, const uint64_t length, const std:
     return;
 }
 
-rtError_t Program::FreeCpuSoH2dMem(Device * const device, std::vector<void *> &allocatedMem) const
+rtError_t Program::FreeCpuSoH2dMem(Device* const device, std::vector<void*>& allocatedMem) const
 {
     RT_LOG(RT_LOG_DEBUG, "free cpu so start");
     rtError_t error = RT_ERROR_NONE;
-    Driver *drv = device->Driver_();
+    Driver* drv = device->Driver_();
     const uint32_t devId = static_cast<uint32_t>(device->Id_());
-    for (auto &mem : allocatedMem) {
+    for (auto& mem : allocatedMem) {
         RT_LOG(RT_LOG_DEBUG, "cpu kernel proc recycle memory");
         error = drv->DevMemFree(mem, devId);
-        COND_PROC((error != RT_ERROR_NONE),
-            RT_LOG(RT_LOG_ERROR, "free dev mem failed! error=%#x", error));
+        COND_PROC((error != RT_ERROR_NONE), RT_LOG(RT_LOG_ERROR, "free dev mem failed! error=%#x", error));
     }
 
     RT_LOG(RT_LOG_DEBUG, "free cpu so end");
@@ -1233,7 +1231,7 @@ static bool IsNoNeedProcCpuH2DMem(const KernelRegisterType kernelRegType, const 
 }
 
 // isLoadCpuSo  true 代表注册， false 代表卸载
-rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device * const device)
+rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device* const device)
 {
     NULL_PTR_RETURN_MSG(device, RT_ERROR_DEVICE_NULL);
     if (IS_SUPPORT_CHIP_FEATURE(device->GetChipType(), RtOptionalFeatureType::RT_FEATURE_XPU)) {
@@ -1241,9 +1239,9 @@ rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device * const device)
     }
     COND_RETURN_WITH_NOLOG(IsNoNeedProcCpuH2DMem(kernelRegType_, cpuRegMode_), RT_ERROR_NONE);
     rtError_t ret = RT_ERROR_NONE;
-    std::vector<void *> allocMem;
-    std::unique_ptr<Stream, void(*)(Stream*)> stm(StreamFactory::CreateStream(device, 0U, RT_STREAM_DEFAULT),
-                                                  [](Stream* ptr) {ptr->Destructor();});
+    std::vector<void*> allocMem;
+    std::unique_ptr<Stream, void (*)(Stream*)> stm(
+        StreamFactory::CreateStream(device, 0U, RT_STREAM_DEFAULT), [](Stream* ptr) { ptr->Destructor(); });
     COND_RETURN_AND_MSG_OUTER(stm == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(Stream), "new");
     ret = stm->Setup();
     ERROR_RETURN_MSG_INNER(ret, "Stream setup failed, retCode=%#x.", static_cast<uint32_t>(ret));
@@ -1260,7 +1258,7 @@ rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device * const device)
     ScopeGuard procCpuKernelGuard(recycle);
 
     const uint32_t devId = static_cast<uint32_t>(device->Id_());
-    void *devSoBuff = nullptr;
+    void* devSoBuff = nullptr;
     if (isLoadCpuSo) {
         ret = device->Driver_()->DevMemAlloc(&devSoBuff, binarySize_, RT_MEMORY_HBM, devId, MODULEID_RUNTIME);
         ERROR_RETURN(ret, "devSoBuff alloc failed! error=%#x", ret);
@@ -1270,20 +1268,24 @@ rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device * const device)
         ERROR_RETURN(ret, "devSoBuff copy failed! error=%#x", ret);
     }
 
-    void *devSoName = nullptr;
+    void* devSoName = nullptr;
     ret = device->Driver_()->DevMemAlloc(&devSoName, soName_.size(), RT_MEMORY_HBM, devId, MODULEID_RUNTIME);
     ERROR_RETURN(ret, "devSoName alloc failed! error=%#x", ret);
     allocMem.push_back(devSoName);
 
-    ret = device->Driver_()->MemCopySync(devSoName, soName_.size(), soName_.c_str(), soName_.size(), RT_MEMCPY_HOST_TO_DEVICE);
+    ret = device->Driver_()->MemCopySync(
+        devSoName, soName_.size(), soName_.c_str(), soName_.size(), RT_MEMCPY_HOST_TO_DEVICE);
     ERROR_RETURN(ret, "devSoName copy failed! error=%#x", ret);
 
-    CpuSoBuf cpuSoBuf = {.kernelSoBuf = PtrToValue(devSoBuff), .kernelSoBufLen = static_cast<uint32_t>(binarySize_),
-        .kernelSoName = PtrToValue(devSoName), .kernelSoNameLen = static_cast<uint32_t>(soName_.size())};
+    CpuSoBuf cpuSoBuf = {
+        .kernelSoBuf = PtrToValue(devSoBuff),
+        .kernelSoBufLen = static_cast<uint32_t>(binarySize_),
+        .kernelSoName = PtrToValue(devSoName),
+        .kernelSoNameLen = static_cast<uint32_t>(soName_.size())};
 
     // 1. alloc device memory for args
     // 2. copy cpuSoBuf to device memory
-    void *args = nullptr;
+    void* args = nullptr;
     constexpr size_t argsSize = sizeof(CpuSoBuf);
     ret = device->Driver_()->DevMemAlloc(&args, argsSize, RT_MEMORY_HBM, devId, MODULEID_RUNTIME);
     ERROR_RETURN(ret, "args alloc failed! error=%#x", ret);
@@ -1294,7 +1296,8 @@ rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device * const device)
 
     const std::string opName = isLoadCpuSo ? LOAD_CPU_SO : DELETE_CPU_SO;
     const rtKernelLaunchNames_t launchName = {nullptr, opName.c_str(), ""};
-    ERROR_RETURN_MSG_INNER(Runtime::Instance()->StartAicpuSd(device),
+    ERROR_RETURN_MSG_INNER(
+        Runtime::Instance()->StartAicpuSd(device),
         "Cpu kernel launch failed, check and start tsd open aicpu sd error.");
 
     // only 1 so
@@ -1307,7 +1310,7 @@ rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device * const device)
     ret = LaunchAicpuKernelForCpuSo(&launchName, &argsInfo, stm.get());
     ERROR_RETURN(ret, "launch cpu kernel failed! error=%#x", ret);
 
-    ret = stm->Synchronize(false, -1);  // -1代表永不超时
+    ret = stm->Synchronize(false, -1); // -1代表永不超时
     ERROR_RETURN(ret, "stream sync failed! error=%#x", ret);
     return RT_ERROR_NONE;
 }
@@ -1315,12 +1318,14 @@ rtError_t Program::ProcCpuKernelH2DMem(bool isLoadCpuSo, Device * const device)
 rtError_t Program::CopySoAndNameToCurrentDevice()
 {
     rtError_t ret = RT_ERROR_NONE;
-    Context *curCtx = Runtime::Instance()->CurrentContext();
+    Context* curCtx = Runtime::Instance()->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device *device = curCtx->Device_();
+    Device* device = curCtx->Device_();
     NULL_PTR_RETURN_MSG(device, RT_ERROR_DEVICE_NULL);
     if (!IsNewBinaryLoadFlow() || devicePtr_[device->Id_()] != nullptr) {
-        RT_LOG(RT_LOG_INFO, "device_id=%d, handle=%p, isNewFlow=%d already copy or not need.", device->Id_(), this, IsNewBinaryLoadFlow());
+        RT_LOG(
+            RT_LOG_INFO, "device_id=%d, handle=%p, isNewFlow=%d already copy or not need.", device->Id_(), this,
+            IsNewBinaryLoadFlow());
         return ret;
     }
     {
@@ -1334,13 +1339,16 @@ rtError_t Program::CopySoAndNameToCurrentDevice()
             ERROR_RETURN(ret, "load program to device_id=%d failed, retCode=%#x", device->Id_(), ret);
         }
         kernelMapLock_.Lock();
-        for (auto iter = kernelNameMap_.begin(); iter != kernelNameMap_.end(); ) {
-            // Aicpu算子注册时，把KernelName, soname存储至device侧，并把devAddr记录至kernel，从而args区无须填入kernelName, soname
-            Kernel *kernel = iter->second;
+        for (auto iter = kernelNameMap_.begin(); iter != kernelNameMap_.end();) {
+            // Aicpu算子注册时，把KernelName,
+            // soname存储至device侧，并把devAddr记录至kernel，从而args区无须填入kernelName, soname
+            Kernel* kernel = iter->second;
             ret = StoreKernelLiteralNameToDevice(kernel);
 
             if (unlikely(ret != RT_ERROR_NONE)) {
-                RT_LOG(RT_LOG_ERROR, "Failed to store kernel %s literal name to device_id=%d, retCode=%#x", iter->first.c_str(), device->Id_(), ret);
+                RT_LOG(
+                    RT_LOG_ERROR, "Failed to store kernel %s literal name to device_id=%d, retCode=%#x",
+                    iter->first.c_str(), device->Id_(), ret);
                 kernelMapLock_.Unlock();
                 return ret;
             } else {
@@ -1384,7 +1392,7 @@ void Program::SetProgramInvalidToDevice(const uint32_t deviceId)
             devValidMutex_[deviceId].unlock();
             break;
         }
-        Device *dev =  devicePtr_[deviceId];
+        Device* dev = devicePtr_[deviceId];
         if (dev->ProgramSetMutexTryLock()) {
             dev->UnRegisterProgram(this);
             devicePtr_[deviceId] = nullptr;
@@ -1414,102 +1422,123 @@ rtError_t Program::FreeSoAndNameByDeviceId(const uint32_t deviceId)
     return error;
 }
 
-static rtError_t BinaryMemAdvise(void * const devMem, const uint32_t devSize, rtAdviseMemType adviseType,
-    const Device * const device, const bool readonly)
+static rtError_t BinaryMemAdvise(
+    void* const devMem, const uint32_t devSize, rtAdviseMemType adviseType, const Device* const device,
+    const bool readonly)
 {
     if (!readonly) {
         return RT_ERROR_NONE;
     }
 
     const uint32_t devId = device->Id_();
-    Driver * const curDrv = device->Driver_();
+    Driver* const curDrv = device->Driver_();
 
-    rtError_t error = curDrv->MemAdvise(devMem, static_cast<uint64_t>(devSize), static_cast<uint32_t>(adviseType), devId);
+    rtError_t error =
+        curDrv->MemAdvise(devMem, static_cast<uint64_t>(devSize), static_cast<uint32_t>(adviseType), devId);
     // for compatibility between new and old packages, do not handle RT_ERROR_DRV_NOT_SUPPORT and RT_ERROR_DRV_INPUT.
     if ((error != RT_ERROR_NONE) && (error != RT_ERROR_DRV_NOT_SUPPORT) && (error != RT_ERROR_DRV_INPUT)) {
-        RT_LOG(RT_LOG_ERROR, "advise memory, error=%u, dev_mem=%p, dev_size=%u, advise_type=%d, device_id=%u.", error, devMem, devSize, adviseType, devId);
+        RT_LOG(
+            RT_LOG_ERROR, "advise memory, error=%u, dev_mem=%p, dev_size=%u, advise_type=%d, device_id=%u.", error,
+            devMem, devSize, adviseType, devId);
         return error;
     }
 
-    RT_LOG(RT_LOG_INFO, "advise memory, dev_mem=%p, dev_size=%u, advise_type=%d, device_id=%u.", devMem, devSize, adviseType, devId);
+    RT_LOG(
+        RT_LOG_INFO, "advise memory, dev_mem=%p, dev_size=%u, advise_type=%d, device_id=%u.", devMem, devSize,
+        adviseType, devId);
     return RT_ERROR_NONE;
 }
 
 TIMESTAMP_EXTERN(BinaryMemCpy);
 
-rtError_t Program::BinaryMemCopySync(void * const devMem, const uint32_t adviseSize, const uint32_t size, void * const data,
-    const Device * const device, const bool readonly)
+rtError_t Program::BinaryMemCopySync(
+    void* const devMem, const uint32_t adviseSize, const uint32_t size, void* const data, const Device* const device,
+    const bool readonly)
 {
     const uint32_t devId = device->Id_();
-    Driver * const curDrv = device->Driver_();
+    Driver* const curDrv = device->Driver_();
 
-    RT_LOG(RT_LOG_INFO, "binary memcpy to dev_mem, dev_mem=%p, adviseSize=%u, size=%u, device_id=%u, readonly=%d.",
-        devMem, adviseSize, size, devId, readonly);
+    RT_LOG(
+        RT_LOG_INFO, "binary memcpy to dev_mem, dev_mem=%p, adviseSize=%u, size=%u, device_id=%u, readonly=%d.", devMem,
+        adviseSize, size, devId, readonly);
 
     // in the UB scenario, read-only memory cannot be directly copied from host to device (H2D).
     // the memory needs to be set as readable and writable first.
     rtError_t error = BinaryMemAdvise(devMem, adviseSize, RT_ADVISE_ACCESS_READWRITE, device, readonly);
-    ERROR_RETURN(error, "advise dev_mem failed, adviseSize=%u(bytes),"
+    ERROR_RETURN(
+        error,
+        "advise dev_mem failed, adviseSize=%u(bytes),"
         "type=%d(RT_ADVISE_ACCESS_READWRITE), retCode=%#x, device_id=%u.",
         adviseSize, static_cast<int32_t>(RT_ADVISE_ACCESS_READWRITE), static_cast<uint32_t>(error), devId);
 
     TIMESTAMP_BEGIN(BinaryMemCpy);
-    error = curDrv->MemCopySync(devMem, static_cast<uint64_t>(size), data,
-        static_cast<uint64_t>(size), RT_MEMCPY_HOST_TO_DEVICE);
-    ERROR_RETURN_MSG_INNER(error, "Memcpy failed, size=%u(bytes),"
+    error = curDrv->MemCopySync(
+        devMem, static_cast<uint64_t>(size), data, static_cast<uint64_t>(size), RT_MEMCPY_HOST_TO_DEVICE);
+    ERROR_RETURN_MSG_INNER(
+        error,
+        "Memcpy failed, size=%u(bytes),"
         "type=%d(RT_MEMCPY_HOST_TO_DEVICE), retCode=%#x, device_id=%u.",
         size, static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error), devId);
     TIMESTAMP_END(BinaryMemCpy);
 
     // after the host-to-device (H2D) transfer is completed, the memory needs to be set as read-only.
     error = BinaryMemAdvise(devMem, adviseSize, RT_ADVISE_ACCESS_READONLY, device, readonly);
-    ERROR_RETURN(error, "advise dev_mem failed, adviseSize=%u(bytes),"
+    ERROR_RETURN(
+        error,
+        "advise dev_mem failed, adviseSize=%u(bytes),"
         "type=%d(RT_ADVISE_ACCESS_READONLY), retCode=%#x, device_id=%u.",
         adviseSize, static_cast<int32_t>(RT_ADVISE_ACCESS_READONLY), static_cast<uint32_t>(error), devId);
-    
+
     return RT_ERROR_NONE;
 }
 
-rtError_t Program::BinaryPoolMemCopySync(void * const devMem, const uint32_t size, void * const data,
-    const Device * const device, const bool readonly)
+rtError_t Program::BinaryPoolMemCopySync(
+    void* const devMem, const uint32_t size, void* const data, const Device* const device, const bool readonly)
 {
     const uint32_t devId = device->Id_();
-    Driver * const curDrv = device->Driver_();
+    Driver* const curDrv = device->Driver_();
     // 使用 GetPoolMemInfo 原子化获取 baseAddr 和 adviseMutex，消除 TOCTOU 竞争
     PoolMemInfo poolInfo = device->GetKernelMemoryPool()->GetPoolMemInfo(devMem);
-    void *const baseAddr = const_cast<void *>(poolInfo.baseAddr);
+    void* const baseAddr = const_cast<void*>(poolInfo.baseAddr);
     // lock the current memory pool block.
     std::lock_guard<std::mutex> lock(*(poolInfo.adviseMutex));
 
-    RT_LOG(RT_LOG_INFO, "binary memcpy to pool_mem, dev_mem=%p, size=%u, device_id=%u, readonly=%d.",
-        devMem, size, devId, readonly);
+    RT_LOG(
+        RT_LOG_INFO, "binary memcpy to pool_mem, dev_mem=%p, size=%u, device_id=%u, readonly=%d.", devMem, size, devId,
+        readonly);
 
     // in the UB scenario, read-only memory cannot be directly copied from host to device (H2D).
     // the memory needs to be set as readable and writable first.
     rtError_t error = BinaryMemAdvise(baseAddr, size, RT_ADVISE_ACCESS_READWRITE, device, readonly);
-    ERROR_RETURN(error, "advise pool_mem failed, size=%u(bytes),"
+    ERROR_RETURN(
+        error,
+        "advise pool_mem failed, size=%u(bytes),"
         "type=%d(RT_ADVISE_ACCESS_READWRITE), retCode=%#x, device_id=%u.",
         size, static_cast<int32_t>(RT_ADVISE_ACCESS_READWRITE), static_cast<uint32_t>(error), devId);
 
     TIMESTAMP_BEGIN(BinaryMemCpy);
-    error = curDrv->MemCopySync(devMem, static_cast<uint64_t>(size), data,
-        static_cast<uint64_t>(size), RT_MEMCPY_HOST_TO_DEVICE);
-    ERROR_RETURN_MSG_INNER(error, "memcpy failed, size=%u(bytes),"
+    error = curDrv->MemCopySync(
+        devMem, static_cast<uint64_t>(size), data, static_cast<uint64_t>(size), RT_MEMCPY_HOST_TO_DEVICE);
+    ERROR_RETURN_MSG_INNER(
+        error,
+        "memcpy failed, size=%u(bytes),"
         "type=%d(RT_MEMCPY_HOST_TO_DEVICE), retCode=%#x, device_id=%u.",
         size, static_cast<int32_t>(RT_MEMCPY_HOST_TO_DEVICE), static_cast<uint32_t>(error), devId);
     TIMESTAMP_END(BinaryMemCpy);
 
     // after the host-to-device (H2D) transfer is completed, the memory needs to be set as read-only.
     error = BinaryMemAdvise(baseAddr, size, RT_ADVISE_ACCESS_READONLY, device, readonly);
-    ERROR_RETURN(error, "advise pool_mem failed, size=%u(bytes),"
+    ERROR_RETURN(
+        error,
+        "advise pool_mem failed, size=%u(bytes),"
         "type=%d(RT_ADVISE_ACCESS_READONLY), retCode=%#x, device_id=%u.",
         size, static_cast<int32_t>(RT_ADVISE_ACCESS_READONLY), static_cast<uint32_t>(error), devId);
-    
+
     return RT_ERROR_NONE;
 }
 
 /* 剥离掉kernelName的_mix_aic/_mix_aiv的后缀 */
-std::string ElfProgram::AdjustKernelName(const std::string &kernelName) const
+std::string ElfProgram::AdjustKernelName(const std::string& kernelName) const
 {
     std::string tripKernelName = kernelName;
     const std::string mixAicName = "_mix_aic";
@@ -1546,10 +1575,10 @@ std::string ElfProgram::AdjustKernelName(const std::string &kernelName) const
    add_mic_aic   AIC_ROLLBACK        YES              RT_KERNEL_ATTR_TYPE_CUBE      MIX_AIC
    add_mic_aiv   AIV_ROLLBACK        YES              RT_KERNEL_ATTR_TYPE_VECTOR    MIX_AIV
  */
-rtError_t ElfProgram::GetKernelTypeAndMixTypeByMetaInfo(const RtKernel * const elfkernelInfo,
-    rtKernelAttrType &kernelAttrType, uint8_t &mixType)
+rtError_t ElfProgram::GetKernelTypeAndMixTypeByMetaInfo(
+    const RtKernel* const elfkernelInfo, rtKernelAttrType& kernelAttrType, uint8_t& mixType)
 {
-    const RtKernelMetaInfo * const metaInfo = &(elfkernelInfo->metaInfo);
+    const RtKernelMetaInfo* const metaInfo = &(elfkernelInfo->metaInfo);
     uint32_t funcType = metaInfo->funcType;
     uint32_t crossCoreSync = metaInfo->crossCoreSync;
     std::string kernelName = elfkernelInfo->name;
@@ -1599,15 +1628,16 @@ rtError_t ElfProgram::GetKernelTypeAndMixTypeByMetaInfo(const RtKernel * const e
     }
 
     if (result != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "Get kernel type and mix type failed, kernelName=%s, funcType=%lu, crossCoreSync=%lu.",
+        RT_LOG(
+            RT_LOG_ERROR, "Get kernel type and mix type failed, kernelName=%s, funcType=%lu, crossCoreSync=%lu.",
             elfkernelInfo->name, funcType, crossCoreSync);
     }
 
     return result;
 }
 
-void ElfProgram::GetKernelTypeAndMixTypeByName(const std::string &kernelName,
-    rtKernelAttrType &kernelAttrType, uint8_t &mixType) const
+void ElfProgram::GetKernelTypeAndMixTypeByName(
+    const std::string& kernelName, rtKernelAttrType& kernelAttrType, uint8_t& mixType) const
 {
     const std::string mixAicName = "_mix_aic";
     const std::string mixAivName = "_mix_aiv";
@@ -1629,37 +1659,40 @@ void ElfProgram::GetKernelTypeAndMixTypeByName(const std::string &kernelName,
     return;
 }
 
-rtError_t ElfProgram::GetKernelTypeAndMixType(const RtKernel * const elfkernelInfo,
-    rtKernelAttrType &kernelAttrType, uint8_t &mixType) const
+rtError_t ElfProgram::GetKernelTypeAndMixType(
+    const RtKernel* const elfkernelInfo, rtKernelAttrType& kernelAttrType, uint8_t& mixType) const
 {
-    const RtKernelMetaInfo * const metaInfo = &(elfkernelInfo->metaInfo);
+    const RtKernelMetaInfo* const metaInfo = &(elfkernelInfo->metaInfo);
     kernelAttrType = static_cast<rtKernelAttrType>(RT_KERNEL_ATTR_TYPE_INVALID);
     mixType = static_cast<uint8_t>(NO_MIX);
     rtError_t error = GetKernelTypeAndMixTypeByMetaInfo(elfkernelInfo, kernelAttrType, mixType);
     ERROR_RETURN(error, "Ger kernel type and mix type failed, retCode=%#x.", static_cast<uint32_t>(error));
 
-    COND_RETURN_INFO((kernelAttrType != static_cast<rtKernelAttrType>(RT_KERNEL_ATTR_TYPE_INVALID)), RT_ERROR_NONE,
-        "Get kernel type success, kernelName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu",
-        elfkernelInfo->name, metaInfo->funcType, kernelAttrType, mixType);
+    COND_RETURN_INFO(
+        (kernelAttrType != static_cast<rtKernelAttrType>(RT_KERNEL_ATTR_TYPE_INVALID)), RT_ERROR_NONE,
+        "Get kernel type success, kernelName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu", elfkernelInfo->name,
+        metaInfo->funcType, kernelAttrType, mixType);
 
     GetKernelTypeAndMixTypeByName(elfkernelInfo->name, kernelAttrType, mixType);
-    COND_RETURN_INFO((kernelAttrType != static_cast<rtKernelAttrType>(RT_KERNEL_ATTR_TYPE_INVALID)), RT_ERROR_NONE,
-        "Get kernel type success, kernelName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu",
-        elfkernelInfo->name, metaInfo->funcType, kernelAttrType, mixType);
+    COND_RETURN_INFO(
+        (kernelAttrType != static_cast<rtKernelAttrType>(RT_KERNEL_ATTR_TYPE_INVALID)), RT_ERROR_NONE,
+        "Get kernel type success, kernelName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu", elfkernelInfo->name,
+        metaInfo->funcType, kernelAttrType, mixType);
 
     kernelAttrType = GetDefaultKernelAttrType();
 
-    RT_LOG(RT_LOG_INFO, "Get kernel type success, kernelName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu",
+    RT_LOG(
+        RT_LOG_INFO, "Get kernel type success, kernelName=%s, funcType=%u, kernelAttrType=%d, mixType=%hhu",
         elfkernelInfo->name, metaInfo->funcType, kernelAttrType, mixType);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t ElfProgram::BuildNewKernel(const std::string tripKernelName, const RtKernel * const elfkernelInfo,
-    Kernel * &kernel)
+rtError_t ElfProgram::BuildNewKernel(
+    const std::string tripKernelName, const RtKernel* const elfkernelInfo, Kernel*& kernel)
 {
     kernel = nullptr;
-    const RtKernelMetaInfo * const metaInfo = &(elfkernelInfo->metaInfo);
+    const RtKernelMetaInfo* const metaInfo = &(elfkernelInfo->metaInfo);
     rtKernelAttrType kernelAttrType = static_cast<rtKernelAttrType>(RT_KERNEL_ATTR_TYPE_INVALID);
     uint8_t mixType = static_cast<uint8_t>(NO_MIX);
     uint64_t tilingKey = 0UL;
@@ -1676,29 +1709,30 @@ rtError_t ElfProgram::BuildNewKernel(const std::string tripKernelName, const RtK
         tilingKey = metaInfo->functionEntry;
     }
 
-    Kernel *kernelObj = new (std::nothrow) Kernel(tripKernelName.c_str(), tilingKey, this, kernelAttrType,
-        static_cast<uint32_t>(elfkernelInfo->offset), 0U, mixType);
+    Kernel* kernelObj = new (std::nothrow) Kernel(
+        tripKernelName.c_str(), tilingKey, this, kernelAttrType, static_cast<uint32_t>(elfkernelInfo->offset), 0U,
+        mixType);
     COND_RETURN_AND_MSG_OUTER((kernelObj == nullptr), RT_ERROR_KERNEL_NEW, ErrorCode::EE1013, sizeof(Kernel), "new");
 
     // set other attrs
     SetKernelAttribute(elfkernelInfo, kernelObj);
     (void)GetPrefetchCnt(kernelObj);
 
-    RT_LOG(RT_LOG_INFO,
+    RT_LOG(
+        RT_LOG_INFO,
         "new kernel success, size=%zu, programId=%u, original kernel_name=%s, register kernel_name=%s, "
         "tilingKey=%llu, functionEntry=%llu, funcType=%u, kernelAttrType=%d, mixType=%hu, taskRation=%u, "
         "offset=%u, dfxAddr=%#" PRIu64 ", dfxSize=%u",
         sizeof(Kernel), Id_(), elfkernelInfo->name, tripKernelName.c_str(), tilingKey, metaInfo->functionEntry,
-        metaInfo->funcType, kernelAttrType, mixType, metaInfo->taskRation,
-        static_cast<uint32_t>(elfkernelInfo->offset),
+        metaInfo->funcType, kernelAttrType, mixType, metaInfo->taskRation, static_cast<uint32_t>(elfkernelInfo->offset),
         static_cast<uint64_t>(RtPtrToPtr<uintptr_t>(metaInfo->dfxAddr)), metaInfo->dfxSize);
     kernel = kernelObj;
     return RT_ERROR_NONE;
 }
 
-rtError_t ElfProgram::MergeKernel(const RtKernel * const elfkernelInfo, Kernel *oldKernel)
+rtError_t ElfProgram::MergeKernel(const RtKernel* const elfkernelInfo, Kernel* oldKernel)
 {
-    const RtKernelMetaInfo * const metaInfo = &(elfkernelInfo->metaInfo);
+    const RtKernelMetaInfo* const metaInfo = &(elfkernelInfo->metaInfo);
     rtKernelAttrType oldKernelAttrType = oldKernel->GetKernelAttrType();
     uint8_t oldMixType = oldKernel->GetMixType();
     rtKernelAttrType kernelAttrType = static_cast<rtKernelAttrType>(RT_KERNEL_ATTR_TYPE_INVALID);
@@ -1713,11 +1747,13 @@ rtError_t ElfProgram::MergeKernel(const RtKernel * const elfkernelInfo, Kernel *
        2. mixType is cannot be no_mix, mix type must be mix_aic/mix_aiv
      */
     if ((oldKernel->Offset2_() != 0ULL) || (oldMixType == mixType) || (mixType == static_cast<uint8_t>(NO_MIX))) {
-        RT_LOG(RT_LOG_ERROR, "found the previous mix kernel but conflict. "
+        RT_LOG(
+            RT_LOG_ERROR,
+            "found the previous mix kernel but conflict. "
             "found kernel name=[%s], kernelAttrType=%d, mixType=%hu, offset2=%u, "
             "current kernel name=[%s], kernelAttrType=%d, mixType=%hu",
-            oldKernel->Name_().c_str(), oldKernelAttrType, oldMixType, oldKernel->Offset2_(),
-            elfkernelInfo->name, kernelAttrType, mixType);
+            oldKernel->Name_().c_str(), oldKernelAttrType, oldMixType, oldKernel->Offset2_(), elfkernelInfo->name,
+            kernelAttrType, mixType);
         return RT_ERROR_INVALID_VALUE;
     }
 
@@ -1744,11 +1780,13 @@ rtError_t ElfProgram::MergeKernel(const RtKernel * const elfkernelInfo, Kernel *
         // case 1: cv is not separated
         oldKernel->SetKernelAttrType(RT_KERNEL_ATTR_TYPE_AICORE);
         oldKernel->SetMixType(static_cast<uint8_t>(MIX_AIC_AIV_MAIN_AIC));
-    } else if ((oldKernel->GetFuncType() == KERNEL_FUNCTION_TYPE_MIX_AIC_MAIN) ||
-               (oldKernel->GetFuncType() == KERNEL_FUNCTION_TYPE_MIX_AIV_MAIN)) {
+    } else if (
+        (oldKernel->GetFuncType() == KERNEL_FUNCTION_TYPE_MIX_AIC_MAIN) ||
+        (oldKernel->GetFuncType() == KERNEL_FUNCTION_TYPE_MIX_AIV_MAIN)) {
         // case 2: cv is separated, judge by functionType
         uint8_t mergeMixType = (metaInfo->funcType == static_cast<uint32_t>(KERNEL_FUNCTION_TYPE_MIX_AIC_MAIN)) ?
-            static_cast<uint8_t>(MIX_AIC_AIV_MAIN_AIC) : static_cast<uint8_t>(MIX_AIC_AIV_MAIN_AIV);
+                                   static_cast<uint8_t>(MIX_AIC_AIV_MAIN_AIC) :
+                                   static_cast<uint8_t>(MIX_AIC_AIV_MAIN_AIV);
         oldKernel->SetMixType(mergeMixType);
         oldKernel->SetKernelAttrType(RT_KERNEL_ATTR_TYPE_MIX);
     } else {
@@ -1759,11 +1797,13 @@ rtError_t ElfProgram::MergeKernel(const RtKernel * const elfkernelInfo, Kernel *
 
     (void)GetPrefetchCnt(oldKernel);
 
-    RT_LOG(RT_LOG_INFO, "merge kernel success, programId=%u, kernel name=[%s], offset1=%u, offset2=%u, "
+    RT_LOG(
+        RT_LOG_INFO,
+        "merge kernel success, programId=%u, kernel name=[%s], offset1=%u, offset2=%u, "
         "mixType1=%hu, mixType2=%hu, final mixType=%hu, final kernelAttrType=%d, kernelVfType=%u, shareMemSize=%u",
-        Id_(), oldKernel->Name_().c_str(), oldKernel->Offset_(), oldKernel->Offset2_(), kernelTmpMixType,
-        mixType, oldKernel->GetMixType(), oldKernel->GetKernelAttrType(),
-        oldKernel->KernelVfType_(), oldKernel->ShareMemSize_());
+        Id_(), oldKernel->Name_().c_str(), oldKernel->Offset_(), oldKernel->Offset2_(), kernelTmpMixType, mixType,
+        oldKernel->GetMixType(), oldKernel->GetKernelAttrType(), oldKernel->KernelVfType_(),
+        oldKernel->ShareMemSize_());
     return RT_ERROR_NONE;
 }
 
@@ -1775,33 +1815,34 @@ rtError_t ElfProgram::RegisterAllKernelCommon(void)
     }
 
     for (uint32_t idx = 0U; idx < GetKernelsCount(); idx++) {
-        const RtKernel * const elfKernelInfo = &kernels_[idx];
+        const RtKernel* const elfKernelInfo = &kernels_[idx];
 
         /* 去掉kernelName的_mix_aic/_mix_aiv的后缀 */
         rtError_t error;
         const std::string tripKernelName = AdjustKernelName(elfKernelInfo->name);
         COND_RETURN_ERROR(tripKernelName.empty(), RT_ERROR_INVALID_VALUE, "KernelName cannot be empty.");
 
-        Kernel *kernelTmp = const_cast<Kernel*>(GetKernelByName(tripKernelName.c_str()));
+        Kernel* kernelTmp = const_cast<Kernel*>(GetKernelByName(tripKernelName.c_str()));
         if (kernelTmp != nullptr) {
             error = MergeKernel(elfKernelInfo, kernelTmp);
-            ERROR_RETURN(error, "merge kernel failed, kernelName=%s. retCode=%#x.",
-                tripKernelName.c_str(), static_cast<uint32_t>(error));
+            ERROR_RETURN(
+                error, "merge kernel failed, kernelName=%s. retCode=%#x.", tripKernelName.c_str(),
+                static_cast<uint32_t>(error));
             continue;
         }
 
-        Kernel *kernelObj = nullptr;
+        Kernel* kernelObj = nullptr;
         error = BuildNewKernel(tripKernelName, elfKernelInfo, kernelObj);
-        COND_RETURN_ERROR((kernelObj == nullptr), error,
-            "Kernel register failed, build new Kernel failed, kernelName=%s.", elfKernelInfo->name);
+        COND_RETURN_ERROR(
+            (kernelObj == nullptr), error, "Kernel register failed, build new Kernel failed, kernelName=%s.",
+            elfKernelInfo->name);
 
         error = KernelNameMapAdd(kernelObj);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error,
-            ResetEmbeddedInnerHandle<Kernel>(kernelObj); DELETE_O(kernelObj);,
-            "Add kernel failed, retCode=%#x.", static_cast<uint32_t>(error));
+        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, ResetEmbeddedInnerHandle<Kernel>(kernelObj);
+                               DELETE_O(kernelObj);, "Add kernel failed, retCode=%#x.", static_cast<uint32_t>(error));
     }
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

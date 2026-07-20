@@ -20,10 +20,10 @@ namespace runtime {
 
 #if F_DESC("AddEndGraphTask")
 
-static void ConstructSqeForAddEndGraphTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForAddEndGraphTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    RtStarsAicpuKernelSqe *const sqe = &(command->aicpuSqe);
-    Stream *stm = taskInfo->stream;
+    RtStarsAicpuKernelSqe* const sqe = &(command->aicpuSqe);
+    Stream* stm = taskInfo->stream;
 
     sqe->header.type = RT_STARS_SQE_TYPE_AICPU;
     sqe->header.l1_lock = 0U;
@@ -64,14 +64,15 @@ static void ConstructSqeForAddEndGraphTask(TaskInfo* taskInfo, rtStarsSqe_t *con
     sqe->extra_field_high = 0U;
 
     sqe->subTopicId = 0U;
-    sqe->topicId = 3U; // EVENT_TS_HWTS_KERNEL
+    sqe->topicId = 3U;       // EVENT_TS_HWTS_KERNEL
     sqe->group_id = 0U;
     sqe->usr_data_len = 40U; // size: word4-13
     sqe->dest_pid = 0U;
 
     PrintSqe(command, "AddEndGraphTask");
-    RT_LOG(RT_LOG_INFO, "AddEndGraphTask::ConstructSqe finish,topic_type=%u sqe addr=%p",
-           static_cast<uint32_t>(sqe->topic_type), command);
+    RT_LOG(
+        RT_LOG_INFO, "AddEndGraphTask::ConstructSqe finish,topic_type=%u sqe addr=%p",
+        static_cast<uint32_t>(sqe->topic_type), command);
 }
 
 #endif
@@ -99,7 +100,7 @@ static bool ModelGraphTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommon,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_END_GRAPH, endGraphFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_EXIT_GRAPH, exitGraphFuncs);
@@ -110,5 +111,5 @@ static bool ModelGraphTaskRegister()
 
 static bool g_modelGraphTaskRegister = ModelGraphTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

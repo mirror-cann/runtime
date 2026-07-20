@@ -20,25 +20,24 @@ rtError_t CtrlStream::Setup()
     uint32_t cqId = 0U;
     uint32_t logicCqId = 0U;
     bool isFastCq = false;
-    rtError_t error = Device_()->Driver_()->LogicCqAllocate(Device_()->Id_(), Device_()->DevGetTsId(),
-        static_cast<uint32_t>(Id_()), false, logicCqId, isFastCq, true);
+    rtError_t error = Device_()->Driver_()->LogicCqAllocate(
+        Device_()->Id_(), Device_()->DevGetTsId(), static_cast<uint32_t>(Id_()), false, logicCqId, isFastCq, true);
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_WARNING, "[ctrlsq]Alloc logicCq fail, retCode=%#x.", error);
         return error;
     }
-    error = Device_()->Driver_()->CtrlSqCqAllocate(Device_()->Id_(), Device_()->DevGetTsId(),
-        &sqId, &cqId, logicCqId);
+    error = Device_()->Driver_()->CtrlSqCqAllocate(Device_()->Id_(), Device_()->DevGetTsId(), &sqId, &cqId, logicCqId);
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_WARNING, "[ctrlsq]Alloc sq cq fail, retCode=%#x.", error);
-        const rtError_t error0 = Device_()->Driver_()->LogicCqFree(Device_()->Id_(), Device_()->DevGetTsId(), logicCqId);
+        const rtError_t error0 =
+            Device_()->Driver_()->LogicCqFree(Device_()->Id_(), Device_()->DevGetTsId(), logicCqId);
         if (error0 != RT_ERROR_NONE) {
             RT_LOG(RT_LOG_WARNING, "[ctrlsq]free logic_cq=%u, retCode=%#x.", logicCqId, error);
         }
         return error;
     }
 
-    RT_LOG(RT_LOG_INFO, "[ctrlsq]alloc sq cq success: deviceId=%u, sqId=%u, cqId=%u",
-           Device_()->Id_(), sqId, cqId);
+    RT_LOG(RT_LOG_INFO, "[ctrlsq]alloc sq cq success: deviceId=%u, sqId=%u, cqId=%u", Device_()->Id_(), sqId, cqId);
     sqId_ = sqId;
     cqId_ = cqId;
     SetLogicalCqId(logicCqId);
@@ -49,7 +48,7 @@ rtError_t CtrlStream::Setup()
 CtrlStream::~CtrlStream() noexcept
 {
     rtError_t error = RT_ERROR_NONE;
-    const Runtime * const rt = Runtime::Instance();
+    const Runtime* const rt = Runtime::Instance();
     const bool runtimeExiting = Runtime::IsProcessExiting(rt);
     if (!posToCtrlTaskIdMap_.empty()) {
         if (runtimeExiting) {
@@ -78,7 +77,7 @@ CtrlStream::~CtrlStream() noexcept
     }
 }
 
-rtError_t CtrlStream::GetTaskIdByPos(const uint16_t recycleHead, uint32_t &taskId)
+rtError_t CtrlStream::GetTaskIdByPos(const uint16_t recycleHead, uint32_t& taskId)
 {
     const std::lock_guard<std::mutex> stmLock(posToCtrlTaskIdMapLock_);
     std::unordered_map<uint16_t, uint16_t>::iterator it = posToCtrlTaskIdMap_.find(recycleHead);
@@ -91,15 +90,15 @@ rtError_t CtrlStream::GetTaskIdByPos(const uint16_t recycleHead, uint32_t &taskI
     return RT_ERROR_NONE;
 }
 
-rtError_t CtrlStream::GetHeadPosFromCtrlSq(uint32_t &sqHead)
+rtError_t CtrlStream::GetHeadPosFromCtrlSq(uint32_t& sqHead)
 {
     uint16_t pos = 0U;
     const uint32_t sqId = GetSqId();
     const uint32_t tsId = Device_()->DevGetTsId();
 
     const rtError_t error = Device_()->Driver_()->GetCtrlSqHead(Device_()->Id_(), tsId, sqId, pos);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Query sq head failed, retCode=%#x",
-        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Query sq head failed, retCode=%#x", static_cast<uint32_t>(error));
     sqHead = (sqDepth + pos - 1U) % sqDepth;
     RT_LOG(RT_LOG_DEBUG, "[ctrlsq]get ctrl sq head tsId=%u, sqId=%u, pos=%u, sqHead=%u.", tsId, sqId, pos, sqHead);
     return RT_ERROR_NONE;
@@ -144,12 +143,13 @@ rtError_t CtrlStream::Synchronize(const bool isNeedWaitSyncCq, int32_t timeout)
     return SynchronizeInternal(isNeedWaitSyncCq, timeout);
 }
 
-rtError_t CtrlStream::AddTaskToStream(const uint32_t pos, const TaskInfo * const tsk)
+rtError_t CtrlStream::AddTaskToStream(const uint32_t pos, const TaskInfo* const tsk)
 {
     NULL_PTR_RETURN_MSG(tsk, RT_ERROR_TASK_NULL);
 
-    RT_LOG(RT_LOG_INFO, "[ctrlsq]ctrl stream_id=%d, task_id=%hu, type=%d(%s), pos=%u",
-        streamId_, tsk->id, static_cast<int32_t>(tsk->type), tsk->typeName, pos);
+    RT_LOG(
+        RT_LOG_INFO, "[ctrlsq]ctrl stream_id=%d, task_id=%hu, type=%d(%s), pos=%u", streamId_, tsk->id,
+        static_cast<int32_t>(tsk->type), tsk->typeName, pos);
 
     const std::lock_guard<std::mutex> stmLock(posToCtrlTaskIdMapLock_);
     posToCtrlTaskIdMap_[pos] = tsk->id;
@@ -169,5 +169,5 @@ void CtrlStream::DelPosToCtrlTaskIdMap(uint16_t pos)
     (void)posToCtrlTaskIdMap_.erase(pos);
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

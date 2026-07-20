@@ -24,10 +24,18 @@ static inline std::string TaskBuffTypeToString(const rtTaskBuffType_t type)
 {
     std::string desc;
     switch (type) {
-        case HWTS_STATIC_TASK_DESC: desc = "HWTS_STATIC_TASK_DESC(0)"; break;
-        case HWTS_DYNAMIC_TASK_DESC: desc = "HWTS_DYNAMIC_TASK_DESC(1)"; break;
-        case PARAM_TASK_INFO_DESC: desc = "PARAM_TASK_INFO_DESC(2)"; break;
-        default: desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(type)); break;
+        case HWTS_STATIC_TASK_DESC:
+            desc = "HWTS_STATIC_TASK_DESC(0)";
+            break;
+        case HWTS_DYNAMIC_TASK_DESC:
+            desc = "HWTS_DYNAMIC_TASK_DESC(1)";
+            break;
+        case PARAM_TASK_INFO_DESC:
+            desc = "PARAM_TASK_INFO_DESC(2)";
+            break;
+        default:
+            desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(type));
+            break;
     }
     return desc;
 }
@@ -36,10 +44,18 @@ static inline std::string MultipleTaskTypeToString(const rtMultipleTaskType_t ty
 {
     std::string desc;
     switch (type) {
-        case RT_MULTIPLE_TASK_TYPE_DVPP: desc = "MULTIPLE_TASK_TYPE_DVPP(0)"; break;
-        case RT_MULTIPLE_TASK_TYPE_AICPU: desc = "MULTIPLE_TASK_TYPE_AICPU(1)"; break;
-        case RT_MULTIPLE_TASK_TYPE_AICPU_BY_HANDLE: desc = "MULTIPLE_TASK_TYPE_AICPU_BY_HANDLE(2)"; break;
-        default: desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(type)); break;
+        case RT_MULTIPLE_TASK_TYPE_DVPP:
+            desc = "MULTIPLE_TASK_TYPE_DVPP(0)";
+            break;
+        case RT_MULTIPLE_TASK_TYPE_AICPU:
+            desc = "MULTIPLE_TASK_TYPE_AICPU(1)";
+            break;
+        case RT_MULTIPLE_TASK_TYPE_AICPU_BY_HANDLE:
+            desc = "MULTIPLE_TASK_TYPE_AICPU_BY_HANDLE(2)";
+            break;
+        default:
+            desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(type));
+            break;
     }
     return desc;
 }

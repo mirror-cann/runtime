@@ -23,13 +23,13 @@
 #include "mmpa_linux.h"
 #include "securec.h"
 
-#define TASK_ID_LT(lsh, rsh)    (static_cast<int16_t>(static_cast<uint16_t>(lsh) - static_cast<uint16_t>(rsh)) < 0)
-#define TASK_ID_GT(lsh, rsh)    TASK_ID_LT((rsh), (lsh))
-#define TASK_ID_LEQ(lsh, rsh)   (static_cast<int16_t>(static_cast<uint16_t>(lsh) - static_cast<uint16_t>(rsh)) <= 0)
-#define TASK_ID_GEQ(lsh, rsh)   TASK_ID_LEQ((rsh), (lsh))
+#define TASK_ID_LT(lsh, rsh) (static_cast<int16_t>(static_cast<uint16_t>(lsh) - static_cast<uint16_t>(rsh)) < 0)
+#define TASK_ID_GT(lsh, rsh) TASK_ID_LT((rsh), (lsh))
+#define TASK_ID_LEQ(lsh, rsh) (static_cast<int16_t>(static_cast<uint16_t>(lsh) - static_cast<uint16_t>(rsh)) <= 0)
+#define TASK_ID_GEQ(lsh, rsh) TASK_ID_LEQ((rsh), (lsh))
 
-#define TASK_ID_ADD(lsh, rsh)   (static_cast<uint16_t>(static_cast<uint16_t>(lsh) + static_cast<uint16_t>(rsh)))
-#define TASK_ID_SUB(lsh, rsh)   (static_cast<uint16_t>(static_cast<uint16_t>(lsh) - static_cast<uint16_t>(rsh)))
+#define TASK_ID_ADD(lsh, rsh) (static_cast<uint16_t>(static_cast<uint16_t>(lsh) + static_cast<uint16_t>(rsh)))
+#define TASK_ID_SUB(lsh, rsh) (static_cast<uint16_t>(static_cast<uint16_t>(lsh) - static_cast<uint16_t>(rsh)))
 
 namespace cce {
 namespace runtime {
@@ -60,8 +60,7 @@ public:
           clearFlag_(clearFlag),
           pool_(nullptr),
           mtx_(nullptr)
-    {
-    }
+    {}
 
     ~ObjAllocator() override
     {
@@ -75,11 +74,11 @@ public:
             }
         }
         if (pool_ != nullptr) {
-            free((void *)pool_);
+            free((void*)pool_);
             pool_ = nullptr;
         }
         if (mtx_ != nullptr) {
-            delete []mtx_;
+            delete[] mtx_;
             mtx_ = nullptr;
         }
     }
@@ -87,20 +86,20 @@ public:
     rtError_t Init(void)
     {
         uint32_t poolNum = GetPoolIndex(maxCount_ - 1) + 1;
-        size_t poolArraySize = static_cast<size_t>(poolNum) * sizeof(T *);
-        if (poolArraySize < sizeof(T *)) {
+        size_t poolArraySize = static_cast<size_t>(poolNum) * sizeof(T*);
+        if (poolArraySize < sizeof(T*)) {
             return RT_ERROR_POOL_RESOURCE;
         }
 
-        pool_ = (T **)malloc(poolArraySize);
+        pool_ = (T**)malloc(poolArraySize);
         if (pool_ == nullptr) {
             RT_LOG(RT_LOG_ERROR, "ObjAllocator alloc failed, pool array size %zu(bytes)", poolArraySize);
             return RT_ERROR_MEMORY_ALLOCATION;
         }
-        errno_t rc = memset_s((void *)pool_, poolArraySize, 0, poolArraySize);
+        errno_t rc = memset_s((void*)pool_, poolArraySize, 0, poolArraySize);
         if (rc != EOK) {
             RT_LOG(RT_LOG_ERROR, "memset_s failed, size=%zu(bytes), retCode=%d.", poolArraySize, rc);
-            free((void *)pool_);
+            free((void*)pool_);
             pool_ = nullptr;
             return RT_ERROR_SEC_HANDLE;
         }
@@ -108,7 +107,7 @@ public:
         pool_[0] = ObjAlloc();
         if (pool_[0] == nullptr) {
             RT_LOG(RT_LOG_ERROR, "ObjAlloc pool 0 failed.");
-            free((void *)pool_);
+            free((void*)pool_);
             pool_ = nullptr;
             return RT_ERROR_MEMORY_ALLOCATION;
         }
@@ -119,7 +118,7 @@ public:
             RT_LOG(RT_LOG_ERROR, "new mutex resource failed, poolNum=%u.", poolNum);
             ObjFree(pool_[0]);
             pool_[0] = nullptr;
-            free((void *)pool_);
+            free((void*)pool_);
             pool_ = nullptr;
             return RT_ERROR_MEMORY_ALLOCATION;
         }
@@ -138,7 +137,7 @@ public:
         }
     }
 
-    T *GetDataToItem(uint32_t id)
+    T* GetDataToItem(uint32_t id)
     {
         uint32_t poolIdx;
         uint32_t subId;
@@ -149,7 +148,7 @@ public:
         return &(pool_[poolIdx][subId]);
     }
 
-    T *GetDataToItemApplied(uint32_t id) const
+    T* GetDataToItemApplied(uint32_t id) const
     {
         const uint32_t poolIdx = GetPoolIndex(id);
         if (pool_[poolIdx] == nullptr) {
@@ -166,15 +165,9 @@ public:
         return pool_[poolIdx] != nullptr;
     }
 
-    constexpr uint32_t NextPoolFirstId(uint32_t id) const
-    {
-        return (GetPoolIndex(id) + 1) * initCount_;
-    }
+    constexpr uint32_t NextPoolFirstId(uint32_t id) const { return (GetPoolIndex(id) + 1) * initCount_; }
 
-    constexpr uint32_t AccumulatePoolCount(uint32_t idx) const
-    {
-        return idx * initCount_;
-    }
+    constexpr uint32_t AccumulatePoolCount(uint32_t idx) const { return idx * initCount_; }
 
     // 只有回收线程调用，外面加锁
     void RecyclePool(uint32_t idx) const
@@ -184,18 +177,12 @@ public:
         return;
     }
 
-    std::mutex *GetObjAllocatorMutex() const
-    {
-        return mtx_;
-    }
+    std::mutex* GetObjAllocatorMutex() const { return mtx_; }
 
-    T **GetObjAllocatorPool() const
-    {
-        return pool_;
-    }
+    T** GetObjAllocatorPool() const { return pool_; }
 
 private:
-    void GetOrAllocItemById(uint32_t id, uint32_t &poolIdx, uint32_t &subId) const
+    void GetOrAllocItemById(uint32_t id, uint32_t& poolIdx, uint32_t& subId) const
     {
         poolIdx = GetPoolIndex(id);
         const uint32_t baseId = AccumulatePoolCount(poolIdx);
@@ -208,7 +195,7 @@ private:
                 ++counter;
                 if ((counter % 10) == 0) { // if try 10 times alloc failed, print warning log
                     RT_LOG(RT_LOG_WARNING, "pool index:%u obj alloc failed.", poolIdx);
-                    (void)mmSleep(10); // sleep 10ms
+                    (void)mmSleep(10);     // sleep 10ms
                 }
             }
             mtx_[poolIdx].unlock();
@@ -216,14 +203,11 @@ private:
         subId = id - baseId;
     }
 
-    constexpr uint32_t GetPoolIndex(uint32_t id) const
-    {
-        return id / initCount_;
-    }
+    constexpr uint32_t GetPoolIndex(uint32_t id) const { return id / initCount_; }
 
-    T *ObjAlloc(void) const
+    T* ObjAlloc(void) const
     {
-        T *t = new (std::nothrow) T[initCount_];
+        T* t = new (std::nothrow) T[initCount_];
         if (t == nullptr) {
             RT_LOG(RT_LOG_ERROR, "ObjAlloc failed, size %u", initCount_);
             return nullptr;
@@ -235,18 +219,15 @@ private:
         return t;
     }
 
-    void ObjFree(T *pool) const
-    {
-        delete []pool;
-    }
+    void ObjFree(T* pool) const { delete[] pool; }
 
     const uint32_t initCount_;
     const uint32_t maxCount_;
     const bool clearFlag_;
-    T **pool_;
-    std::mutex *mtx_;
+    T** pool_;
+    std::mutex* mtx_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_POOL_HPP
+#endif // CCE_RUNTIME_POOL_HPP

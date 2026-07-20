@@ -17,7 +17,7 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("RingBufferMaintainTask")
-rtError_t RingBufferMaintainTaskInit(TaskInfo *taskInfo, const void *const addr, const bool delFlag, const uint32_t len)
+rtError_t RingBufferMaintainTaskInit(TaskInfo* taskInfo, const void* const addr, const bool delFlag, const uint32_t len)
 {
     if (addr == nullptr) {
         return RT_ERROR_DRV_MEMORY;
@@ -27,17 +27,17 @@ rtError_t RingBufferMaintainTaskInit(TaskInfo *taskInfo, const void *const addr,
     taskInfo->typeName = "DEVICE_RINGBUFFER_CONTROL";
     taskInfo->type = TS_TASK_TYPE_DEVICE_RINGBUFFER_CONTROL;
 
-    RingBufferMaintainTaskInfo *ringBufMtTsk = &taskInfo->u.ringBufMtTask;
-    ringBufMtTsk->deviceRingBufferAddr = RtPtrToUnConstPtr<void *, const void *>(addr);
+    RingBufferMaintainTaskInfo* ringBufMtTsk = &taskInfo->u.ringBufMtTask;
+    ringBufMtTsk->deviceRingBufferAddr = RtPtrToUnConstPtr<void*, const void*>(addr);
     ringBufMtTsk->deleteFlag = delFlag;
     ringBufMtTsk->bufferLen = len;
     RT_LOG(RT_LOG_DEBUG, "Success to create device ringbuffer task");
     return RT_ERROR_NONE;
 }
 
-void ToCmdBodyForRingBufferMaintainTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCmdBodyForRingBufferMaintainTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
-    RingBufferMaintainTaskInfo *ringBufMtTsk = &taskInfo->u.ringBufMtTask;
+    RingBufferMaintainTaskInfo* ringBufMtTsk = &taskInfo->u.ringBufMtTask;
     uint64_t offset = 0UL;
 
     command->u.ringBufferToDeviceTask.ringBufferPhyAddr = 0UL;
@@ -50,7 +50,7 @@ void ToCmdBodyForRingBufferMaintainTask(TaskInfo* taskInfo, rtCommand_t *const c
 
     const rtError_t error = taskInfo->stream->Device_()->Driver_()->MemAddressTranslate(
         static_cast<int32_t>(taskInfo->stream->Device_()->Id_()),
-        RtPtrToValue<void *>(ringBufMtTsk->deviceRingBufferAddr), &offset);
+        RtPtrToValue<void*>(ringBufMtTsk->deviceRingBufferAddr), &offset);
     COND_RETURN_VOID(error != RT_ERROR_NONE, "RingBufferMaintainTask address error=%d", error);
 
     RT_LOG(RT_LOG_INFO, "RingBufferMaintainTask offset=%#" PRIx64, offset);
@@ -62,5 +62,5 @@ void ToCmdBodyForRingBufferMaintainTask(TaskInfo* taskInfo, rtCommand_t *const c
 
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

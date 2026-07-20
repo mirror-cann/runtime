@@ -18,10 +18,10 @@ namespace cce {
 namespace runtime {
 
 union DqsTaskConfig {
-    rtDqsSchedCfg_t *dqsSchedCfg;
-    rtDqsZeroCopyCfg_t *zeroCopyCfg;
-    rtDqsAdspcTaskCfg_t *adspcCfg;
-    rtDqsConditionCopyCfg_t *condCopyCfg;
+    rtDqsSchedCfg_t* dqsSchedCfg;
+    rtDqsZeroCopyCfg_t* zeroCopyCfg;
+    rtDqsAdspcTaskCfg_t* adspcCfg;
+    rtDqsConditionCopyCfg_t* condCopyCfg;
 };
 
 constexpr uint64_t DQS_CONDITION_COPY_SIZE_MAX = 512ULL;
@@ -34,7 +34,7 @@ enum class DqsInterChipTaskType : int32_t {
     DQS_INTER_CHIP_TASK_NOP
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_TASK_DQS_HPP

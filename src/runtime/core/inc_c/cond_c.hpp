@@ -18,19 +18,19 @@
 namespace cce {
 namespace runtime {
 
-    rtError_t CondStreamActive(const Stream * const activeStream, Stream * const stm,
-        Context * const ctx = nullptr, const bool alreadyCascaded = false);
-    rtError_t CondStreamSwitchEx(const void * const ptr, const rtCondition_t condition, const void * const valuePtr,
-        const Stream * const trueStream, Stream * const stm, const rtSwitchDataType_t dataType,
-        Context * const ctx = nullptr);
-    rtError_t CondStreamSwitchN(const void * const ptr, const uint32_t size,
-        const void * const valuePtr, Stream ** const trueStreamPtr, const uint32_t elementSize,
-        Stream * const stm, const rtSwitchDataType_t dataType, Context * const ctx = nullptr);
-    rtError_t CondMemWaitValue(const void * const devAddr, const uint64_t value,
-        const uint32_t flag, Stream * const stm);
-    rtError_t StreamAddCondTask(CondHandle *condHandle, rtCondTaskParams params, Stream * const stm, uint32_t flags);
-    rtError_t SubmitCaptureConditionTask(CondHandle *condHandle, Stream * const stm);
-}  // namespace runtime
-}  // namespace cce
+rtError_t CondStreamActive(
+    const Stream* const activeStream, Stream* const stm, Context* const ctx = nullptr,
+    const bool alreadyCascaded = false);
+rtError_t CondStreamSwitchEx(
+    const void* const ptr, const rtCondition_t condition, const void* const valuePtr, const Stream* const trueStream,
+    Stream* const stm, const rtSwitchDataType_t dataType, Context* const ctx = nullptr);
+rtError_t CondStreamSwitchN(
+    const void* const ptr, const uint32_t size, const void* const valuePtr, Stream** const trueStreamPtr,
+    const uint32_t elementSize, Stream* const stm, const rtSwitchDataType_t dataType, Context* const ctx = nullptr);
+rtError_t CondMemWaitValue(const void* const devAddr, const uint64_t value, const uint32_t flag, Stream* const stm);
+rtError_t StreamAddCondTask(CondHandle* condHandle, rtCondTaskParams params, Stream* const stm, uint32_t flags);
+rtError_t SubmitCaptureConditionTask(CondHandle* condHandle, Stream* const stm);
+} // namespace runtime
+} // namespace cce
 
 #endif

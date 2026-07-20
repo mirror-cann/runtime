@@ -19,15 +19,16 @@ class Kernel;
 constexpr uint32_t COUNT_NOTIFY_STATIC_THRESHOLD = 0xFFFFFFFDU;
 class DavidStream : public Stream {
 public:
-    explicit DavidStream(Device * const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp * const dvppGrp);
+    explicit DavidStream(Device* const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp* const dvppGrp);
     ~DavidStream() override;
     rtError_t DavidUpdatePublicQueue(void) override;
     void StarsShowStmDfxInfo(void) override;
     rtError_t SubmitRecordTask(int32_t timeout) override;
     uint32_t GetPendingNum() const override;
-    rtError_t PrintStmDfxAndCheckDevice(uint64_t& beginCnt, uint64_t& endCnt, uint16_t& checkCount, uint32_t tryCount) override;
-    rtError_t StarsAddTaskToStream(TaskInfo * const tsk, const uint32_t sendSqeNum) override;
-    rtError_t AddTaskToList(const TaskInfo * const tsk) override;
+    rtError_t PrintStmDfxAndCheckDevice(
+        uint64_t& beginCnt, uint64_t& endCnt, uint16_t& checkCount, uint32_t tryCount) override;
+    rtError_t StarsAddTaskToStream(TaskInfo* const tsk, const uint32_t sendSqeNum) override;
+    rtError_t AddTaskToList(const TaskInfo* const tsk) override;
     rtError_t CreateStreamTaskRes(void) override;
     rtError_t TearDown(const bool terminal = false, bool flag = true) override;
     virtual rtError_t SetupByFlagAndCheck(void);
@@ -35,48 +36,46 @@ public:
     void StarsShowPublicQueueDfxInfo(void) override;
     uint32_t GetCurSqPos(void) const override;
     // public queue stores the initial pos of each task. *delTaskPos = the initial pos of the task.
-    rtError_t StarsGetPublicTaskHead(TaskInfo *workTask, const bool isTaskBind, const uint16_t tailTaskId,
-        uint16_t * const delTaskId) override;
+    rtError_t StarsGetPublicTaskHead(
+        TaskInfo* workTask, const bool isTaskBind, const uint16_t tailTaskId, uint16_t* const delTaskId) override;
     bool IsCntNotifyReachThreshold(void) override;
-    rtError_t ApplyCntNotifyId(int32_t &newEventId) override;
-    void GetCntNotifyId(int32_t &newEventId) override;
-    rtError_t ApplyCntValue(uint32_t &cntValue) override;
+    rtError_t ApplyCntNotifyId(int32_t& newEventId) override;
+    void GetCntNotifyId(int32_t& newEventId) override;
+    rtError_t ApplyCntValue(uint32_t& cntValue) override;
     rtError_t ResClear(uint64_t timeout = 0) override;
     uint32_t StarsGetMaxTryCount() const override;
     void DebugDotPrintForModelStm() override;
-    void DebugJsonPrintForModelStm(std::ofstream& outputFile, const uint32_t modelId, const bool isLastStm,
-        const uint32_t flags) override;
+    void DebugJsonPrintForModelStm(
+        std::ofstream& outputFile, const uint32_t modelId, const bool isLastStm, const uint32_t flags) override;
     uint32_t GetDelayRecycleTaskSqeNum(void) const override;
-    rtError_t QueryWaitTask(bool &isWaitFlag, const uint32_t taskId) override;
-    rtError_t JudgeTaskFinish(uint16_t taskPos, bool &isFinished) override;
-    rtError_t JudgeHeadTailPos(rtEventStatus_t * const status, uint16_t eventPos) override;
-    rtError_t GetLastTaskIdFromRtsq(uint32_t &lastTaskId) override;
+    rtError_t QueryWaitTask(bool& isWaitFlag, const uint32_t taskId) override;
+    rtError_t JudgeTaskFinish(uint16_t taskPos, bool& isFinished) override;
+    rtError_t JudgeHeadTailPos(rtEventStatus_t* const status, uint16_t eventPos) override;
+    rtError_t GetLastTaskIdFromRtsq(uint32_t& lastTaskId) override;
     rtError_t CreateStreamArgRes() override;
 
     // use for fast recover
     void ResetDavidStreamConstruct();
-    void ModelTaskClean() ;
+    void ModelTaskClean();
     rtError_t StreamRecoverAbort() override;
     rtError_t StreamTaskClean() override;
     bool IsWaitFinish(const uint32_t finishedTaskId, const uint32_t submittedTaskId) override;
     rtError_t GetAbortStatus() const override;
-    rtError_t SubmitMaintenanceTask(const MtType type, bool isForceRecycle, int32_t targetStmId,
-        const uint32_t logicCqId = 0U, bool terminal = false);
-    bool AddArgToRecycleList(TaskInfo * const tsk) override;
+    rtError_t SubmitMaintenanceTask(
+        const MtType type, bool isForceRecycle, int32_t targetStmId, const uint32_t logicCqId = 0U,
+        bool terminal = false);
+    bool AddArgToRecycleList(TaskInfo* const tsk) override;
     void ProcArgRecycleList(void) override;
-    rtError_t GetTaskIdByPos(const uint16_t pos, uint32_t &taskId) override;
+    rtError_t GetTaskIdByPos(const uint16_t pos, uint32_t& taskId) override;
     uint32_t GetTaskPosHead() const override;
     uint32_t GetTaskPosTail() const override;
     bool IsTaskExcuted(const uint32_t executeEndTaskid, const uint32_t taskId) override;
     bool SynchronizeDelayTime(const uint16_t finishedId, const uint16_t taskId, const uint16_t sqHead) override;
     void EraseCacheStream() override;
-    void RecordPosToTaskIdMap(TaskInfo * const tsk, const uint32_t sendSqeNum);
+    void RecordPosToTaskIdMap(TaskInfo* const tsk, const uint32_t sendSqeNum);
     void ExpandStreamRecycleModelBindStreamAllTask(const bool cleanFlag);
 
-    StarsArgManager* ArgManagePtr() const
-    {
-        return argManage_;
-    }
+    StarsArgManager* ArgManagePtr() const { return argManage_; }
     void AddArgHandleToRecycleList(void* argHandle);
     rtError_t LoadArgsFromArray(
         const bool useArgPool, const Kernel* kernel, void** argsArray, StarsArgLoaderResult* result) const
@@ -92,8 +91,8 @@ public:
     void ArgReleaseSingleTask(TaskInfo* const taskInfo, bool freeStmPool) override;
     void ArgReleaseStmPool(TaskInfo* const taskInfo) const override;
     void ArgReleaseMultipleTask(TaskInfo* const taskInfo) override;
-    rtError_t LoadSimtArgsFromArray(const bool useArgPool,
-        const Kernel *kernel, SimtArgsArray *simtArgsArray, StarsArgLoaderResult *result)
+    rtError_t LoadSimtArgsFromArray(
+        const bool useArgPool, const Kernel* kernel, SimtArgsArray* simtArgsArray, StarsArgLoaderResult* result)
     {
         if (argManage_ != nullptr) {
             return argManage_->LoadSimtArgsFromArray(useArgPool, kernel, simtArgsArray, result);
@@ -102,8 +101,7 @@ public:
         return RT_ERROR_NONE;
     }
 
-    rtError_t LoadSimtHostArgs(const bool useArgPool,
-        SimtArgsHost* simtArgsHost, StarsArgLoaderResult *result)
+    rtError_t LoadSimtHostArgs(const bool useArgPool, SimtArgsHost* simtArgsHost, StarsArgLoaderResult* result)
     {
         if (argManage_ != nullptr) {
             return argManage_->LoadSimtHostArgs(useArgPool, simtArgsHost, result);
@@ -112,27 +110,26 @@ public:
         return RT_ERROR_NONE;
     }
 
-
     void GetTaskQueueHeadTail(uint16_t& head, uint16_t& tail) const;
     rtError_t Restore() override;
     rtError_t ReAllocStreamId() override;
     rtError_t UpdateSnapShotSqe() override;
-    rtError_t UpdateTaskAndSqe(TaskInfo *task, Stream *stream);
-    bool IsNeedUpdateTask(const TaskInfo * const updateTask) const;
+    rtError_t UpdateTaskAndSqe(TaskInfo* task, Stream* stream);
+    bool IsNeedUpdateTask(const TaskInfo* const updateTask) const;
 
 private:
-    void BuildTraceEventForTask(TaskInfo *const task, const uint32_t flags, TraceEvent &record) const;
-    rtError_t HandleTaskUpdate(TaskInfo* workTask, CaptureModel* model,
-        uint8_t* sqeBufferBackup, uint32_t sendSqeNum) override;
-    rtError_t HandleTaskDefault(TaskInfo* workTask, CaptureModel* model,
-        uint8_t* sqeBufferBackup, uint32_t sendSqeNum) override;
+    void BuildTraceEventForTask(TaskInfo* const task, const uint32_t flags, TraceEvent& record) const;
+    rtError_t HandleTaskUpdate(
+        TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum) override;
+    rtError_t HandleTaskDefault(
+        TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum) override;
     rtError_t HandleTaskDisable(TaskInfo* workTask, CaptureModel* model) override;
     void FinalizeDavidHostStateOnExit();
     void RecycleArgHandlesOnDestroy();
     void ReleaseSqCqResourcesOnDestroy();
     bool ReleaseDriverResourcesOnDestroy();
     void ResetHostStateOnDestroy();
-    rtError_t SkipTearDownOnExit(Device * const dev, int32_t stmId);
+    rtError_t SkipTearDownOnExit(Device* const dev, int32_t stmId);
     void TearDownAutoSplitSlaves();
     void WaitRecycleThreadProcDone();
 
@@ -143,11 +140,11 @@ private:
     uint32_t publicQueueHead_{0U};
     uint32_t publicQueueTail_{0U};
     void FreeStreamIdAndSqCq();
-    
+
     std::vector<void*> argHandleRecycleList_;
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_STREAM_DAVID_HPP__

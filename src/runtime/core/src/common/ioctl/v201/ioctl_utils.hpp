@@ -24,7 +24,8 @@ constexpr int32_t IOCTL_INVALID_FD = -1;
 class IoctlUtil {
 public:
     static IoctlUtil& GetInstance();
-    rtError_t IoctlByCmd(const stars_ioctl_cmd_t cmd, const stars_ioctl_cmd_args_t *args);
+    rtError_t IoctlByCmd(const stars_ioctl_cmd_t cmd, const stars_ioctl_cmd_args_t* args);
+
 private:
     IoctlUtil();
     ~IoctlUtil();
@@ -38,6 +39,6 @@ private:
     // close fd
     rtError_t CloseFd();
 };
-}  // namespace runtime
-}  // namespace cce
-#endif  // CCE_RUNTIME_IOCTL_UTILS_HPP
+} // namespace runtime
+} // namespace cce
+#endif // CCE_RUNTIME_IOCTL_UTILS_HPP

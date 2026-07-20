@@ -17,13 +17,13 @@
 namespace cce {
 namespace runtime {
 
-Stream *CreateStreamAndGet(Device *const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp *const dvppGrp)
+Stream* CreateStreamAndGet(Device* const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp* const dvppGrp)
 {
     if ((stmFlags & RT_STREAM_CP_PROCESS_USE) != 0U) {
         return new (std::nothrow) CoprocessorStream(dev, prio, stmFlags);
     }
-    
+
     return new (std::nothrow) StreamWithDqs(dev, prio, stmFlags, dvppGrp);
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

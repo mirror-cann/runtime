@@ -28,16 +28,16 @@ rtError_t NtyWait(
     Notify* const inNotify, Stream* const streamIn, const uint32_t timeOut, const bool isEndGraphNotify,
     Model* const captureModel, std::vector<EventResource>* externalWaitRetainedResources)
 {
-    TaskInfo *waitTask = nullptr;
+    TaskInfo* waitTask = nullptr;
     rtError_t error = CheckTaskCanSend(streamIn);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamIn->Id_(), static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = streamIn;
+    Stream* dstStm = streamIn;
     streamIn->StreamLock();
     error = AllocTaskInfoForCapture(&waitTask, streamIn, pos, dstStm);
     ERROR_PROC_RETURN_MSG_INNER(error, streamIn->StreamUnLock();, "Failed to alloc task, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+                                                                streamIn->Id_(), static_cast<uint32_t>(error));
     std::function<void()> const errRecycle = [&waitTask, &streamIn, &pos, &dstStm]() {
         TaskUnInitProc(waitTask);
         TaskRollBack(dstStm, pos);
@@ -46,25 +46,28 @@ rtError_t NtyWait(
     SaveTaskCommonInfo(waitTask, dstStm, pos);
     ScopeGuard tskErrRecycle(errRecycle);
     error = NotifyWaitTaskInit(waitTask, inNotify->GetNotifyId(), timeOut, nullptr, inNotify);
-    ERROR_RETURN(error, "Failed to initialize notify wait task, stream_id=%d, retCode=%#x",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN(
+        error, "Failed to initialize notify wait task, stream_id=%d, retCode=%#x", streamIn->Id_(),
+        static_cast<uint32_t>(error));
     std::unique_ptr<std::vector<EventResource>> retainedOwner;
     if ((externalWaitRetainedResources != nullptr) && (!externalWaitRetainedResources->empty())) {
         retainedOwner.reset(new (std::nothrow) std::vector<EventResource>(*externalWaitRetainedResources));
         if (retainedOwner == nullptr) {
-            ERROR_RETURN(RT_ERROR_MEMORY_ALLOCATION, "Failed to allocate external wait retained owner, stream_id=%d.",
+            ERROR_RETURN(
+                RT_ERROR_MEMORY_ALLOCATION, "Failed to allocate external wait retained owner, stream_id=%d.",
                 streamIn->Id_());
         }
     }
     RT_LOG(RT_LOG_INFO, "stream_id=%d notify_id=%u.", streamIn->Id_(), inNotify->GetNotifyId());
-    waitTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    waitTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     waitTask->u.notifywaitTask.isEndGraphNotify = isEndGraphNotify;
     waitTask->u.notifywaitTask.captureModel = captureModel;
     waitTask->needPostProc = isEndGraphNotify;
 
     error = DavidSendTask(waitTask, dstStm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit notify wait task, stream_id=%d, retCode=%#x",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit notify wait task, stream_id=%d, retCode=%#x", streamIn->Id_(),
+        static_cast<uint32_t>(error));
     if (retainedOwner != nullptr) {
         waitTask->u.notifywaitTask.externalWaitRetainedResources = retainedOwner.release();
         externalWaitRetainedResources->clear();
@@ -73,15 +76,15 @@ rtError_t NtyWait(
     streamIn->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), waitTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN(error, "Failed to recycle task, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamIn->Id_(), static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t NtyRecord(Notify * const inNotify, Stream * const streamIn)
+rtError_t NtyRecord(Notify* const inNotify, Stream* const streamIn)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(streamIn, RT_ERROR_STREAM_NULL, "Notify recording");
-    TaskInfo *recordTask = nullptr;
+    TaskInfo* recordTask = nullptr;
     const int32_t streamId = streamIn->Id_();
     RT_LOG(RT_LOG_INFO, "notify_id=%u, device_id=%u.", inNotify->GetNotifyId(), streamIn->Device_()->Id_());
 
@@ -93,10 +96,10 @@ rtError_t NtyRecord(Notify * const inNotify, Stream * const streamIn)
     }
     SingleBitNotifyRecordInfo singleInfo = {isIpc, false, false, inNotify->IsPod(), MAX_UINT32_NUM, baseAddr, false};
     rtError_t error = CheckTaskCanSend(streamIn);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamIn->Id_(), static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = streamIn;
+    Stream* dstStm = streamIn;
     std::function<void()> const errRecycle = [&recordTask, &streamIn, &pos, &dstStm]() {
         TaskUnInitProc(recordTask);
         TaskRollBack(dstStm, pos);
@@ -105,30 +108,32 @@ rtError_t NtyRecord(Notify * const inNotify, Stream * const streamIn)
     streamIn->StreamLock();
     error = AllocTaskInfoForCapture(&recordTask, streamIn, pos, dstStm);
     ERROR_PROC_RETURN_MSG_INNER(error, streamIn->StreamUnLock();, "Failed to alloc task, stream_id=%d, retCode=%#x.",
-        streamId, static_cast<uint32_t>(error));
+                                                                streamId, static_cast<uint32_t>(error));
     SaveTaskCommonInfo(recordTask, dstStm, pos);
-    error = NotifyRecordTaskInit(recordTask, inNotify->GetNotifyId(),
-        static_cast<int32_t>(inNotify->GetDeviceId()), inNotify->GetPhyDevId(), &singleInfo,
-        nullptr, static_cast<void *>(inNotify));
+    error = NotifyRecordTaskInit(
+        recordTask, inNotify->GetNotifyId(), static_cast<int32_t>(inNotify->GetDeviceId()), inNotify->GetPhyDevId(),
+        &singleInfo, nullptr, static_cast<void*>(inNotify));
     ScopeGuard tskErrRecycle(errRecycle);
     ERROR_RETURN(error, "Failed to initialize notify record task, retCode=%#x", static_cast<uint32_t>(error));
-    recordTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    recordTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(recordTask, dstStm);
     ERROR_RETURN_MSG_INNER(error, "Failed to submit notify record task, retCode=%#x", static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
     streamIn->StreamUnLock();
-    RT_LOG(RT_LOG_INFO, "device_id=%u, stream_id=%d, pos=%u, notify_id=%u",
-        streamIn->Device_()->Id_(), streamId, pos, inNotify->GetNotifyId());
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%u, stream_id=%d, pos=%u, notify_id=%u", streamIn->Device_()->Id_(), streamId, pos,
+        inNotify->GetNotifyId());
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), recordTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
     ERROR_RETURN(error, "Failed to recycle task, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t NtyReset(Notify * const inNotify, Stream * const streamIn)
+rtError_t NtyReset(Notify* const inNotify, Stream* const streamIn)
 {
     const int32_t streamId = streamIn->Id_();
-    RT_LOG(RT_LOG_INFO, "device_id=%u, stream_id=%d, notify_id=%u, lastLocalId=%u, lastBaseAddr_=%#x.",
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%u, stream_id=%d, notify_id=%u, lastLocalId=%u, lastBaseAddr_=%#x.",
         streamIn->Device_()->Id_(), streamId, inNotify->GetNotifyId(), inNotify->GetLastLocalId(),
         inNotify->GetLastBaseAddr());
 
@@ -136,19 +141,25 @@ rtError_t NtyReset(Notify * const inNotify, Stream * const streamIn)
         RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1005, "IPC notify reset");
         return RT_ERROR_TASK_NOT_SUPPORT;
     }
-    SingleBitNotifyRecordInfo singleInfo = {false, false, inNotify->GetLastIsPcie(), inNotify->IsPod(),
-                                            inNotify->GetLastLocalId(), inNotify->GetLastBaseAddr(), true};
+    SingleBitNotifyRecordInfo singleInfo = {false,
+                                            false,
+                                            inNotify->GetLastIsPcie(),
+                                            inNotify->IsPod(),
+                                            inNotify->GetLastLocalId(),
+                                            inNotify->GetLastBaseAddr(),
+                                            true};
 
     if (streamIn->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_CTRL_SQ)) {
-        return streamIn->Device_()->GetCtrlSQ().SendNotifyResetV200Msg(inNotify->GetNotifyId(), &singleInfo, static_cast<void *>(inNotify));
+        return streamIn->Device_()->GetCtrlSQ().SendNotifyResetV200Msg(
+            inNotify->GetNotifyId(), &singleInfo, static_cast<void*>(inNotify));
     }
- 
-    TaskInfo *resetTask = nullptr;
+
+    TaskInfo* resetTask = nullptr;
     rtError_t error = CheckTaskCanSend(streamIn);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamIn->Id_(), static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = streamIn;
+    Stream* dstStm = streamIn;
     std::function<void()> const errRecycle = [&resetTask, &streamIn, &pos, &dstStm]() {
         TaskUnInitProc(resetTask);
         TaskRollBack(dstStm, pos);
@@ -156,14 +167,14 @@ rtError_t NtyReset(Notify * const inNotify, Stream * const streamIn)
     };
     streamIn->StreamLock();
     error = AllocTaskInfoForCapture(&resetTask, streamIn, pos, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, streamIn->StreamUnLock();,
-        "Failed to alloc task, device_id=%u, stream_id=%d, retCode=%#x.",
-        streamIn->Device_()->Id_(), streamId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, streamIn->StreamUnLock();
+                                , "Failed to alloc task, device_id=%u, stream_id=%d, retCode=%#x.",
+                                streamIn->Device_()->Id_(), streamId, static_cast<uint32_t>(error));
     SaveTaskCommonInfo(resetTask, dstStm, pos);
-    error = NotifyResetTaskInit(resetTask, inNotify->GetNotifyId(), &singleInfo, static_cast<void *>(inNotify));
+    error = NotifyResetTaskInit(resetTask, inNotify->GetNotifyId(), &singleInfo, static_cast<void*>(inNotify));
     ScopeGuard tskErrRecycle(errRecycle);
     ERROR_RETURN(error, "Failed to initialize notify reset task, retCode=%#x", static_cast<uint32_t>(error));
-    resetTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    resetTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(resetTask, dstStm);
     ERROR_RETURN_MSG_INNER(error, "Failed to submit notify reset task, retCode=%#x.", static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
@@ -171,10 +182,11 @@ rtError_t NtyReset(Notify * const inNotify, Stream * const streamIn)
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), resetTask->taskSn);
 
     error = streamIn->Synchronize();
-    ERROR_RETURN_MSG_INNER(error, "Failed to synchronize notify reset Task, device_id=%u, streamId=%d, retCode=%#x",
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to synchronize notify reset Task, device_id=%u, streamId=%d, retCode=%#x",
         streamIn->Device_()->Id_(), streamIn->Id_(), static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

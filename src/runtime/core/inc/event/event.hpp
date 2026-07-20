@@ -34,8 +34,9 @@ class EventRecordTask;
 constexpr int32_t INVALID_EVENT_ID = -1;
 constexpr int32_t TIMELINE_EVENT_ID = 1023;
 constexpr int32_t TIMELINE_EVENT_ID_MDC_LITE = 511;
-constexpr uint32_t RT_EVENT_FLAG_MAX = (RT_EVENT_DDSYNC_NS | RT_EVENT_STREAM_MARK | RT_EVENT_DDSYNC |
-                                        RT_EVENT_TIME_LINE | RT_EVENT_MC2 | RT_EVENT_EXTERNAL);
+constexpr uint32_t RT_EVENT_FLAG_MAX =
+    (RT_EVENT_DDSYNC_NS | RT_EVENT_STREAM_MARK | RT_EVENT_DDSYNC | RT_EVENT_TIME_LINE | RT_EVENT_MC2 |
+     RT_EVENT_EXTERNAL);
 constexpr uint32_t MEM_WAIT_SPLIT_SIZE = 1024U;
 
 enum rtEventState_t {
@@ -59,55 +60,50 @@ struct RecordTaskInfo {
 class Event : public NoCopy {
 public:
     Event();
-    Event(Device *device, uint64_t eventFlag, Context *ctx, bool isSync = false, bool isNewMode = false);
+    Event(Device* device, uint64_t eventFlag, Context* ctx, bool isSync = false, bool isNewMode = false);
     ~Event() noexcept override;
-    rtInnerObject *GetInnerHandle()
-    {
-        return &handle_;
-    }
-    const rtInnerObject *GetInnerHandle() const
-    {
-        return &handle_;
-    }
+    rtInnerObject* GetInnerHandle() { return &handle_; }
+    const rtInnerObject* GetInnerHandle() const { return &handle_; }
 
     // interface for api_imp
     virtual rtError_t GenEventId();
-    virtual rtError_t GetEventID(uint32_t * const evtId) const;
+    virtual rtError_t GetEventID(uint32_t* const evtId) const;
     virtual rtError_t ReAllocId();
-    rtError_t Record(Stream * const stm, const bool isApiCall = false);
-    rtError_t Wait(Stream * const stm, const uint32_t timeout);
-    rtError_t Reset(Stream * const stm);
+    rtError_t Record(Stream* const stm, const bool isApiCall = false);
+    rtError_t Wait(Stream* const stm, const uint32_t timeout);
+    rtError_t Reset(Stream* const stm);
     virtual rtError_t Query(void);
-    virtual rtError_t QueryEventStatus(rtEventStatus_t * const status);
-    virtual rtError_t QueryEventWaitStatus(const bool disableThread, bool &waitFlag);
+    virtual rtError_t QueryEventStatus(rtEventStatus_t* const status);
+    virtual rtError_t QueryEventWaitStatus(const bool disableThread, bool& waitFlag);
     virtual rtError_t Synchronize(int32_t timeout = -1);
-    virtual rtError_t ElapsedTime(float32_t * const timeInterval, Event * const base);
-    virtual rtError_t GetTimeStamp(uint64_t * const recTimestamp);
+    virtual rtError_t ElapsedTime(float32_t* const timeInterval, Event* const base);
+    virtual rtError_t GetTimeStamp(uint64_t* const recTimestamp);
 
     // tools for api_imp interface
-    virtual rtError_t QueryEventTask(rtEventStatus_t * const status);
+    virtual rtError_t QueryEventTask(rtEventStatus_t* const status);
     virtual rtError_t Setup();
     rtError_t WaitForBusy();
     virtual rtError_t ReclaimTask(const bool evtWaitTask);
     rtError_t GetFailureStatus();
-    void RecordComplete(TaskInfo * const tsk, const uint64_t recTimestamp, const uint64_t recTimeline);
+    void RecordComplete(TaskInfo* const tsk, const uint64_t recTimestamp, const uint64_t recTimeline);
     void UpdateTimeline();
     virtual rtError_t WaitTask(const int32_t timeout);
 
     // for notifier special interface
     rtError_t NotifierSync(Notifier* notifier, int32_t timeout);
-    rtError_t CreateEventNotifier(Notifier* &notifier);
-    rtError_t RecordForNotify(Stream * const stm);
+    rtError_t CreateEventNotifier(Notifier*& notifier);
+    rtError_t RecordForNotify(Stream* const stm);
     // tools for task map
     bool IsEventTaskEmpty();
-    void InsertWaitToMap(TaskInfo *tsk);
-    void DeleteWaitFromMap(TaskInfo *tsk);
-    void InsertRecordResetToMap(TaskInfo *tsk);
-    void DeleteRecordResetFromMap(TaskInfo *tsk);
-    void UpdateLatestRecord(RecordTaskInfo &latestRecord, const int32_t newEventId = INVALID_EVENT_ID,
-        const uint64_t timeLine = UINT64_MAX, const uint64_t timeStamp = UINT64_MAX);
-    virtual bool WaitSendCheck(const Stream * const stm, int32_t &eventId);
-    virtual rtError_t AllocEventIdResource(Stream * const stm, int32_t &newEventId);
+    void InsertWaitToMap(TaskInfo* tsk);
+    void DeleteWaitFromMap(TaskInfo* tsk);
+    void InsertRecordResetToMap(TaskInfo* tsk);
+    void DeleteRecordResetFromMap(TaskInfo* tsk);
+    void UpdateLatestRecord(
+        RecordTaskInfo& latestRecord, const int32_t newEventId = INVALID_EVENT_ID, const uint64_t timeLine = UINT64_MAX,
+        const uint64_t timeStamp = UINT64_MAX);
+    virtual bool WaitSendCheck(const Stream* const stm, int32_t& eventId);
+    virtual rtError_t AllocEventIdResource(Stream* const stm, int32_t& newEventId);
     void InitEventAllocFlag(int32_t streamId = -1);
     rtError_t RecordSoftwareEvent(Stream* const stm);
     rtError_t CaptureWaitProcess(Stream* const stm);
@@ -115,92 +111,43 @@ public:
     rtError_t TrySwitchToSoftwareMode();
     virtual bool IsEventInModel();
     // simple tools for access private.
-    uint64_t Timeline_() const {
-        return timeline_;
-    }
-    uint64_t TimeStamp() const {
-        return timestamp_;
-    }
-    void SetTimeStamp(uint64_t timestamp)
+    uint64_t Timeline_() const { return timeline_; }
+    uint64_t TimeStamp() const { return timestamp_; }
+    void SetTimeStamp(uint64_t timestamp) { timestamp_ = timestamp; }
+    virtual uint64_t GetEventFlag() const { return eventFlag_; }
+    int32_t EventId_() const { return eventId_; }
+    void SetEventId(int32_t newEventId) { eventId_ = newEventId; }
+
+    void PublishSoftwareRecordResource(void* const eventAddr, int32_t eventId);
+
+    void SetEventAddr(void* eventAddr) { eventAddr_ = eventAddr; }
+
+    void* GetEventAddr() const { return eventAddr_; }
+
+    RecordTaskInfo GetLatestRecord()
     {
-        timestamp_ = timestamp;
-    }
-    virtual uint64_t GetEventFlag() const {
-        return eventFlag_;
-    }
-    int32_t EventId_() const {
-        return eventId_;
-    }
-    void SetEventId(int32_t newEventId) {
-        eventId_ = newEventId;
-    }
-
-    void PublishSoftwareRecordResource(void *const eventAddr, int32_t eventId);
-
-    void SetEventAddr(void *eventAddr) {
-        eventAddr_ = eventAddr;
-    }
-
-    void *GetEventAddr() const {
- 	    return eventAddr_;
- 	}
-
-    RecordTaskInfo GetLatestRecord() {
         const std::lock_guard<std::mutex> latestStateLock(recordStateMutex_);
         return latestRecord_;
     }
-    void SetEventSyncTimeoutFlag(const bool isTimeout)
+    void SetEventSyncTimeoutFlag(const bool isTimeout) { isEventSyncTimeout_ = isTimeout; }
+    virtual bool IsEventWithoutWaitTask() const
     {
-        isEventSyncTimeout_ = isTimeout;
-    }
-    virtual bool IsEventWithoutWaitTask() const {
         return (((eventFlag_ & (RT_EVENT_DDSYNC | RT_EVENT_DDSYNC_NS | RT_EVENT_EXTERNAL | RT_EVENT_IPC)) == 0U));
     }
-    bool IsNotify() const {
-        return isNotify_;
-    }
-    bool GetSyncFlag() const
+    bool IsNotify() const { return isNotify_; }
+    bool GetSyncFlag() const { return isSync_.Value(); }
+    bool HasRecord() const { return hasRecord_.Value(); }
+    void SetRecord(bool flag) { return hasRecord_.Set(flag); }
+    void SetEventOwner(EventOwner owner) { eventOwner_ = owner; }
+    EventOwner EventOwner_() const { return eventOwner_; }
+    bool HasReset() const { return hasReset_.Value(); }
+    void SetHasReset(bool flag) { return hasReset_.Set(flag); }
+    bool IsNewMode() const { return isNewMode_; }
+    bool IsIdAllocFromDrv() const { return isIdAllocFromDrv_; }
+    void SetDestroySync(bool flag) { isDestroySync_ = flag; }
+    bool GetDestroySync() const { return isDestroySync_; }
+    void EventIdCountAdd(const int32_t id)
     {
-        return isSync_.Value();
-    }
-    bool HasRecord() const
-    {
-        return hasRecord_.Value();
-    }
-    void SetRecord(bool flag)
-    {
-        return hasRecord_.Set(flag);
-    }
-    void SetEventOwner(EventOwner owner)
-    {
-        eventOwner_ = owner;
-    }
-    EventOwner EventOwner_() const
-    {
-        return eventOwner_;
-    }
-    bool HasReset() const
-    {
-        return hasReset_.Value();
-    }
-    void SetHasReset(bool flag)
-    {
-        return hasReset_.Set(flag);
-    }
-    bool IsNewMode() const {
-        return isNewMode_;
-    }
-	bool IsIdAllocFromDrv() const
-    {
-        return isIdAllocFromDrv_;
-    }
-    void SetDestroySync(bool flag) {
-        isDestroySync_ = flag;
-    }
-    bool GetDestroySync() const {
-        return isDestroySync_;
-    }
-    void EventIdCountAdd(const int32_t id) {
         const std::lock_guard<std::mutex> lock(idMapMutex_);
         if (idMap_.find(id) != idMap_.end()) {
             idMap_[id]++;
@@ -208,49 +155,24 @@ public:
             idMap_[id] = 1;
         }
     }
-	void SetRecordPos(uint16_t pos)
-    {
-        recordPos_ = pos;
-    }
+    void SetRecordPos(uint16_t pos) { recordPos_ = pos; }
 
     void EventIdCountSub(const int32_t id, bool isFreeId = false);
     virtual void TryFreeLastEventId();
     virtual bool TryFreeEventIdAndCheckCanBeDelete(const int32_t id, bool isNeedDestroy);
-    virtual void SetIsNeedDestroy(bool flag) {
-        isNeedDestroy_.Set(flag);
-    }
+    virtual void SetIsNeedDestroy(bool flag) { isNeedDestroy_.Set(flag); }
     Notifier* FindFromNotifierMap(uint32_t streamId, uint16_t taskId);
-    void InsertToNotifierMap(uint32_t streamId, uint16_t taskId, Notifier *value);
+    void InsertToNotifierMap(uint32_t streamId, uint16_t taskId, Notifier* value);
     void DeleteFromNotifierMap(uint32_t streamId, uint16_t taskId);
     void RefreshEventId(int32_t eventid);
     virtual rtError_t ClearRecordStatus();
-    virtual Device *Device_() const
-    {
-        return device_;
-    }
-    virtual Context *Context_() const
-    {
-        return context_;
-    }
-    void SetCaptureEvent(Event *captureEvt)
-    {
-        captureEvent_ = captureEvt;
-    }
-    Event *GetCaptureEvent(void) const
-    {
-        return captureEvent_;
-    }
-    void SetCaptureStream(Stream * const stream)
-    {
-        captureStream_ = stream;
-    }
-    Stream *GetCaptureStream(void) const
-    {
-        return captureStream_;
-    }
-    std::mutex &GetCaptureMutex(void) {
-        return captureMutex_;
-    }
+    virtual Device* Device_() const { return device_; }
+    virtual Context* Context_() const { return context_; }
+    void SetCaptureEvent(Event* captureEvt) { captureEvent_ = captureEvt; }
+    Event* GetCaptureEvent(void) const { return captureEvent_; }
+    void SetCaptureStream(Stream* const stream) { captureStream_ = stream; }
+    Stream* GetCaptureStream(void) const { return captureStream_; }
+    std::mutex& GetCaptureMutex(void) { return captureMutex_; }
 
     bool IsCaptureStreamWaited(void) const
     {
@@ -258,74 +180,68 @@ public:
         return waitTskStreamList_.size();
     }
 
-    void InsertWaitTaskStream(Stream * const stm)
+    void InsertWaitTaskStream(Stream* const stm)
     {
         const std::lock_guard<std::mutex> lock(waitStmMutex_);
         waitTskStreamList_.insert(stm);
     }
 
-    CaptureModel *GetCaptureModel(void) const;
+    CaptureModel* GetCaptureModel(void) const;
     bool IsCapturing() const;
-    bool IsRecordOrigCaptureStream(const Stream * const stm) const;
-    bool ToBeCaptured(const Stream * const stm) const;
-    void SoftwareModeEnable(void)
-    {
-        isHardwareMode_ = false;
-    }
+    bool IsRecordOrigCaptureStream(const Stream* const stm) const;
+    bool ToBeCaptured(const Stream* const stm) const;
+    void SoftwareModeEnable(void) { isHardwareMode_ = false; }
 
-    bool IsHardwareMode(void) const
-    {
-        return isHardwareMode_;
-    }
+    bool IsHardwareMode(void) const { return isHardwareMode_; }
 
 protected:
     bool AreTaskMapsEmptyLocked();
-    Device           *device_;
-    RecordTaskInfo   latestRecord_;
-    Atomic<bool>     isNeedDestroy_;
-    int32_t          eventId_;
-    uint16_t         recordPos_;
-    uint64_t         eventFlag_;
-    uint64_t         timestamp_;
-    bool             isNewMode_;
-    std::unordered_map<TaskInfo *, std::pair<Stream*, uint32_t>> waitTaskMap_;
-    std::unordered_map<TaskInfo *, std::pair<Stream*, uint32_t>> recordResetMap_;
-    std::mutex       eventLock_;
-    std::mutex       eventLockForRecord_;
-    std::mutex       idMapMutex_;
-    std::mutex       recordStateMutex_;
-    std::mutex       taskMapMutex_;
-    std::mutex       initMutex_;
-    Context          *context_;
+    Device* device_;
+    RecordTaskInfo latestRecord_;
+    Atomic<bool> isNeedDestroy_;
+    int32_t eventId_;
+    uint16_t recordPos_;
+    uint64_t eventFlag_;
+    uint64_t timestamp_;
+    bool isNewMode_;
+    std::unordered_map<TaskInfo*, std::pair<Stream*, uint32_t>> waitTaskMap_;
+    std::unordered_map<TaskInfo*, std::pair<Stream*, uint32_t>> recordResetMap_;
+    std::mutex eventLock_;
+    std::mutex eventLockForRecord_;
+    std::mutex idMapMutex_;
+    std::mutex recordStateMutex_;
+    std::mutex taskMapMutex_;
+    std::mutex initMutex_;
+    Context* context_;
 
 private:
-    rtInnerObject handle_ {};
+    rtInnerObject handle_{};
     bool HasPendingBusyWork();
-    rtError_t ProcessBusyWaitIteration(const Runtime * const rtInstance);
+    rtError_t ProcessBusyWaitIteration(const Runtime* const rtInstance);
     rtError_t WaitSoftwareEvent(Stream* const stm);
     rtError_t ExternalEventWaitProcess(Stream* const stm);
-    int32_t          freeEventId_;
-    uint64_t         timeline_;
-    bool             isNotify_;
-    bool             isEventSyncTimeout_;
-    bool             isIdAllocFromDrv_;
-    Atomic<bool>     isSync_;
-    Atomic<bool>     hasRecord_;
-    Atomic<bool>     hasReset_;
-    bool             isDestroySync_;
-    Event            *captureEvent_{nullptr};   // only for single-operator event
-    Stream           *captureStream_{nullptr};  // only for capture event
-    std::set<Stream *> waitTskStreamList_;      // only for capture event
-    void *eventAddr_{nullptr}; // only for capture event in software mode
+    int32_t freeEventId_;
+    uint64_t timeline_;
+    bool isNotify_;
+    bool isEventSyncTimeout_;
+    bool isIdAllocFromDrv_;
+    Atomic<bool> isSync_;
+    Atomic<bool> hasRecord_;
+    Atomic<bool> hasReset_;
+    bool isDestroySync_;
+    Event* captureEvent_{nullptr};        // only for single-operator event
+    Stream* captureStream_{nullptr};      // only for capture event
+    std::set<Stream*> waitTskStreamList_; // only for capture event
+    void* eventAddr_{nullptr};            // only for capture event in software mode
     std::mutex captureMutex_;
     std::mutex waitStmMutex_;
     std::unordered_map<int32_t, uint32_t> idMap_;
-    std::unordered_map<uint32_t, Notifier *> notifierMap_;
+    std::unordered_map<uint32_t, Notifier*> notifierMap_;
     EventOwner eventOwner_{EventOwner::EVENT_UNKNOWN};
     bool isHardwareMode_{true};
 };
-}
+} // namespace runtime
 
 } // namespace cce
 
-#endif  // CCE_RUNTIME_EVENT_HPP
+#endif // CCE_RUNTIME_EVENT_HPP

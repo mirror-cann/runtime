@@ -18,34 +18,34 @@
 namespace cce {
 namespace runtime {
 // DQS Task Init
-rtError_t DqsEnqueueTaskInit(TaskInfo *taskInfo, const Stream * const stream, const DqsTaskConfig *const cfg);
-rtError_t DqsDequeueTaskInit(TaskInfo *taskInfo, const Stream * const stream, const DqsTaskConfig *const cfg);
-rtError_t DqsFrameAlignTaskInit(TaskInfo *taskInfo, const Stream * const stream, const DqsTaskConfig *const cfg);
-rtError_t DqsZeroCopyTaskInit(TaskInfo *taskInfo, const Stream * const stream, const DqsTaskConfig *const cfg);
-rtError_t DqsConditionCopyTaskInit(TaskInfo *taskInfo, const Stream * const stream, const DqsTaskConfig *const cfg);
-rtError_t DqsMbufFreeTaskInit(TaskInfo *taskInfo, const Stream * const stream, const DqsTaskConfig *const cfg);
-rtError_t DqsSchedEndTaskInit(TaskInfo *taskInfo, const Stream * const stream, const DqsTaskConfig *const cfg);
-rtError_t DqsPrepareTaskInit(TaskInfo *taskInfo, const Stream * const stream,  const DqsTaskConfig *const cfg);
+rtError_t DqsEnqueueTaskInit(TaskInfo* taskInfo, const Stream* const stream, const DqsTaskConfig* const cfg);
+rtError_t DqsDequeueTaskInit(TaskInfo* taskInfo, const Stream* const stream, const DqsTaskConfig* const cfg);
+rtError_t DqsFrameAlignTaskInit(TaskInfo* taskInfo, const Stream* const stream, const DqsTaskConfig* const cfg);
+rtError_t DqsZeroCopyTaskInit(TaskInfo* taskInfo, const Stream* const stream, const DqsTaskConfig* const cfg);
+rtError_t DqsConditionCopyTaskInit(TaskInfo* taskInfo, const Stream* const stream, const DqsTaskConfig* const cfg);
+rtError_t DqsMbufFreeTaskInit(TaskInfo* taskInfo, const Stream* const stream, const DqsTaskConfig* const cfg);
+rtError_t DqsSchedEndTaskInit(TaskInfo* taskInfo, const Stream* const stream, const DqsTaskConfig* const cfg);
+rtError_t DqsPrepareTaskInit(TaskInfo* taskInfo, const Stream* const stream, const DqsTaskConfig* const cfg);
 
-rtError_t DqsInterChipPreProcTaskInit(TaskInfo *taskInfo, const uint32_t groupIdx, const DqsInterChipTaskType type);
-rtError_t DqsInterChipPostProcTaskInit(TaskInfo *taskInfo, const uint32_t groupIdx, const DqsInterChipTaskType type);
-rtError_t DqsInterChipMemcpyTaskInit(TaskInfo *taskInfo, const uint32_t groupIdx, const DqsInterChipTaskType type);
-rtError_t DqsInterChipNopTaskInit(TaskInfo *taskInfo, const uint32_t groupIdx, const DqsInterChipTaskType type);
-rtError_t DqsAdspcTaskInit(TaskInfo *taskInfo, const Stream * const stream, const DqsTaskConfig *const cfg);
+rtError_t DqsInterChipPreProcTaskInit(TaskInfo* taskInfo, const uint32_t groupIdx, const DqsInterChipTaskType type);
+rtError_t DqsInterChipPostProcTaskInit(TaskInfo* taskInfo, const uint32_t groupIdx, const DqsInterChipTaskType type);
+rtError_t DqsInterChipMemcpyTaskInit(TaskInfo* taskInfo, const uint32_t groupIdx, const DqsInterChipTaskType type);
+rtError_t DqsInterChipNopTaskInit(TaskInfo* taskInfo, const uint32_t groupIdx, const DqsInterChipTaskType type);
+rtError_t DqsAdspcTaskInit(TaskInfo* taskInfo, const Stream* const stream, const DqsTaskConfig* const cfg);
 
 // DQS Sqe Construct
-void ConstructSqeForDqsMbufFreeTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
-void ConstructSqeForDqsEnqueueTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
-void ConstructSqeForDqsDequeueTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
-void ConstructSqeForDqsZeroCopyTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
-void ConstructSqeForDqsConditionCopyTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
-void ConstructSqeForDqsSchedEndTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
-void ConstructSqeForDqsPrepareTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
-void ConstructSqeForDqsInterChipPreProcTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
-void ConstructSqeForDqsInterChipPostProcTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
-void ConstructSqeForDqsAdspcTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
-void ConstructSqeForDqsBatchDequeueTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
-void ConstructSqeForDqsFrameAlignTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo);
+void ConstructSqeForDqsMbufFreeTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
+void ConstructSqeForDqsEnqueueTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
+void ConstructSqeForDqsDequeueTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
+void ConstructSqeForDqsZeroCopyTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
+void ConstructSqeForDqsConditionCopyTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
+void ConstructSqeForDqsSchedEndTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
+void ConstructSqeForDqsPrepareTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
+void ConstructSqeForDqsInterChipPreProcTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
+void ConstructSqeForDqsInterChipPostProcTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
+void ConstructSqeForDqsAdspcTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
+void ConstructSqeForDqsBatchDequeueTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
+void ConstructSqeForDqsFrameAlignTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo);
 
 // DQS Print Error Info
 void PrintErrorInfoForDqsMbufFreeTask(TaskInfo* taskInfo, const uint32_t devId);
@@ -57,21 +57,19 @@ void PrintErrorInfoForDqsInterChipPostProcTask(TaskInfo* taskInfo, const uint32_
 void PrintErrorInfoForDqsAdspcTask(TaskInfo* taskInfo, const uint32_t devId);
 void PrintErrorInfoForDqsBatchDequeueTask(TaskInfo* taskInfo, const uint32_t devId);
 
-
 // DQS Task UnInit
-void DqsMbufFreeTaskUnInit(TaskInfo * const taskInfo);
-void DqsPrepareTaskUnInit(TaskInfo * const taskInfo);
-void DqsZeroCopyTaskUnInit(TaskInfo * const taskInfo);
-void DqsConditionCopyTaskUnInit(TaskInfo * const taskInfo);
-void DqsInterChipPreProcTaskUnInit(TaskInfo * const taskInfo);
-void DqsInterChipPostProcTaskUnInit(TaskInfo * const taskInfo);
-void DqsAdspcTaskUnInit(TaskInfo * const taskInfo);
-void DqsBatchDequeTaskUnInit(TaskInfo * const taskInfo);
-void DqsFrameAlignTaskUnInit(TaskInfo * const taskInfo);
+void DqsMbufFreeTaskUnInit(TaskInfo* const taskInfo);
+void DqsPrepareTaskUnInit(TaskInfo* const taskInfo);
+void DqsZeroCopyTaskUnInit(TaskInfo* const taskInfo);
+void DqsConditionCopyTaskUnInit(TaskInfo* const taskInfo);
+void DqsInterChipPreProcTaskUnInit(TaskInfo* const taskInfo);
+void DqsInterChipPostProcTaskUnInit(TaskInfo* const taskInfo);
+void DqsAdspcTaskUnInit(TaskInfo* const taskInfo);
+void DqsBatchDequeTaskUnInit(TaskInfo* const taskInfo);
+void DqsFrameAlignTaskUnInit(TaskInfo* const taskInfo);
 
 template <typename T>
-void InitDqsFunctionCallSqe(
-    T &sqe, const bool isWrCqe, const uint32_t taskId, const RtCondsSubType subType)
+void InitDqsFunctionCallSqe(T& sqe, const bool isWrCqe, const uint32_t taskId, const RtCondsSubType subType)
 {
     sqe.header.type = RT_DAVID_SQE_TYPE_COND;
     sqe.header.lock = 0U;

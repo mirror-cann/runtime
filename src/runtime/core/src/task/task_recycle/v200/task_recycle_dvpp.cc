@@ -38,13 +38,13 @@ namespace runtime {
 
 // =================================================== static 函数区 ======================================== //
 
-static inline void InvokeCallBack(const Device * const dev, const rtLogicCqReport_t &report,
-    rtDvppGrpCallback callBackFunc, uint32_t streamId)
+static inline void InvokeCallBack(
+    const Device* const dev, const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc, uint32_t streamId)
 {
     uint32_t userDeviceId = 0U;
     const rtError_t error = Runtime::Instance()->GetUserDevIdByDeviceId(dev->Id_(), &userDeviceId);
-    COND_RETURN_VOID((error != RT_ERROR_NONE), "Convert drv devId:%u is err:%#x",
-        dev->Id_(), static_cast<uint32_t>(error));
+    COND_RETURN_VOID(
+        (error != RT_ERROR_NONE), "Convert drv devId:%u is err:%#x", dev->Id_(), static_cast<uint32_t>(error));
     rtDvppGrpRptInfo_t dvppReport = {};
     dvppReport.deviceId = userDeviceId;
     dvppReport.streamId = streamId;
@@ -53,18 +53,20 @@ static inline void InvokeCallBack(const Device * const dev, const rtLogicCqRepor
     dvppReport.cqeErrorCode = GetStarsDefinedErrCode(report.errorType);
     dvppReport.accErrorCode = report.errorCode;
     callBackFunc(&dvppReport);
-    RT_LOG(RT_LOG_DEBUG, "dvppReport, report_stream_id=%u, report_task_id=%u, sqe_type=%hhu, cqeCode=%hhu, accErrorCode=%u.",
-        dvppReport.streamId, dvppReport.taskId, dvppReport.sqeType, dvppReport.cqeErrorCode,
-        dvppReport.accErrorCode);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "dvppReport, report_stream_id=%u, report_task_id=%u, sqe_type=%hhu, cqeCode=%hhu, accErrorCode=%u.",
+        dvppReport.streamId, dvppReport.taskId, dvppReport.sqeType, dvppReport.cqeErrorCode, dvppReport.accErrorCode);
 }
 
-static inline void InvokeCallBack(const Device * const dev, const rtLogicCqReport_t &report,
-    rtDvppGrpCallback callBackFunc, uint8_t sqeType, uint8_t cqeErrorCode, uint32_t streamId)
+static inline void InvokeCallBack(
+    const Device* const dev, const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc, uint8_t sqeType,
+    uint8_t cqeErrorCode, uint32_t streamId)
 {
     uint32_t userDeviceId = 0U;
     const rtError_t error = Runtime::Instance()->GetUserDevIdByDeviceId(dev->Id_(), &userDeviceId);
-    COND_RETURN_VOID((error != RT_ERROR_NONE), "Convert drv devId:%u is err:%#x",
-        dev->Id_(), static_cast<uint32_t>(error));
+    COND_RETURN_VOID(
+        (error != RT_ERROR_NONE), "Convert drv devId:%u is err:%#x", dev->Id_(), static_cast<uint32_t>(error));
     rtDvppGrpRptInfo_t dvppReport = {};
     dvppReport.deviceId = userDeviceId;
     dvppReport.streamId = streamId;
@@ -73,18 +75,20 @@ static inline void InvokeCallBack(const Device * const dev, const rtLogicCqRepor
     dvppReport.cqeErrorCode = cqeErrorCode;
     dvppReport.accErrorCode = report.errorCode;
     callBackFunc(&dvppReport);
-    RT_LOG(RT_LOG_DEBUG, "dvppReport, report_stream_id=%u, report_task_id=%u, sqe_type=%hhu, cqeCode=%hhu, accErrorCode=%u.",
-        dvppReport.streamId, dvppReport.taskId, dvppReport.sqeType, dvppReport.cqeErrorCode,
-        dvppReport.accErrorCode);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "dvppReport, report_stream_id=%u, report_task_id=%u, sqe_type=%hhu, cqeCode=%hhu, accErrorCode=%u.",
+        dvppReport.streamId, dvppReport.taskId, dvppReport.sqeType, dvppReport.cqeErrorCode, dvppReport.accErrorCode);
 }
 
-
-static rtError_t ReportLogicCq(Device * const dev, uint32_t streamId, rtLogicCqReport_t &report, rtDvppGrpCallback callBackFunc)
+static rtError_t ReportLogicCq(
+    Device* const dev, uint32_t streamId, rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc)
 {
-    TaskInfo *reportTask = GetTaskInfo(dev, streamId, static_cast<uint32_t>(report.sqHead));
+    TaskInfo* reportTask = GetTaskInfo(dev, streamId, static_cast<uint32_t>(report.sqHead));
     if (unlikely(reportTask == nullptr)) {
-        RT_LOG(RT_LOG_WARNING, "GetTask error, device_id=%u, stream_id=%hu, task_id=%hu.",
-            dev->Id_(), streamId, report.sqHead);
+        RT_LOG(
+            RT_LOG_WARNING, "GetTask error, device_id=%u, stream_id=%hu, task_id=%hu.", dev->Id_(), streamId,
+            report.sqHead);
         InvokeCallBack(dev, report, callBackFunc, streamId);
         ProcCqReportException(dev, report, nullptr, streamId);
         return RT_ERROR_NONE;
@@ -94,11 +98,13 @@ static rtError_t ReportLogicCq(Device * const dev, uint32_t streamId, rtLogicCqR
     RT_LOG(RT_LOG_DEBUG, "ReportLogicCq get taskType=%u.", taskType);
     if ((taskType == TS_TASK_TYPE_MULTIPLE_TASK) && (GetSendDavidSqeNum(reportTask) > 1U)) {
         if (!CompleteProcMultipleTaskReport(reportTask, report)) {
-            RT_LOG(RT_LOG_INFO, "MultipleTask not CompleteProc sqeType=%u, streamId=%u, taskId=%u.",
-                report.sqeType, streamId, report.sqHead);
+            RT_LOG(
+                RT_LOG_INFO, "MultipleTask not CompleteProc sqeType=%u, streamId=%u, taskId=%u.", report.sqeType,
+                streamId, report.sqHead);
             return RT_ERROR_STREAM_SYNC_TIMEOUT;
         }
-        InvokeCallBack(dev, report, callBackFunc, static_cast<uint8_t>(RT_STARS_SQE_TYPE_VIR_TYPE),
+        InvokeCallBack(
+            dev, report, callBackFunc, static_cast<uint8_t>(RT_STARS_SQE_TYPE_VIR_TYPE),
             GetStarsDefinedErrCode(reportTask->u.davinciMultiTaskInfo.errorType), streamId);
     } else {
         // check error and retry
@@ -120,7 +126,7 @@ static rtError_t ReportLogicCq(Device * const dev, uint32_t streamId, rtLogicCqR
 // =================================================== static 函数区 ======================================== //
 
 // ================================================== 对外出口区 ======================================== //
-bool ProcReportIsDvppErrorAndRetry(const rtLogicCqReport_t& report, TaskInfo *const reportTask)
+bool ProcReportIsDvppErrorAndRetry(const rtLogicCqReport_t& report, TaskInfo* const reportTask)
 {
     if (!IsNeedRetryTask(static_cast<uint16_t>(report.sqeType))) {
         return false;
@@ -141,28 +147,31 @@ bool ProcReportIsDvppErrorAndRetry(const rtLogicCqReport_t& report, TaskInfo *co
     }
 
     if (IsLogicCqInvalid(report.errorType)) {
-        RT_LOG(RT_LOG_ERROR, "Logic cqe invalid, sq_id=%hu, sq_head=%hu, error_code=%#x, error_type=%hhu, sqe_type=%hhu",
+        RT_LOG(
+            RT_LOG_ERROR, "Logic cqe invalid, sq_id=%hu, sq_head=%hu, error_code=%#x, error_type=%hhu, sqe_type=%hhu",
             report.sqId, report.sqHead, report.errorCode, report.errorType, report.sqeType);
         return true;
     }
 
     if (reportTask->u.starsCommTask.errorTimes != 0U) {
-        RT_LOG(RT_LOG_ERROR, "Dvpp task error, stream_id=%hu, task_id=%hu, sqeType=%hhu.",
-            reportTask->stream->Id_(), report.sqHead, report.sqeType);
+        RT_LOG(
+            RT_LOG_ERROR, "Dvpp task error, stream_id=%hu, task_id=%hu, sqeType=%hhu.", reportTask->stream->Id_(),
+            report.sqHead, report.sqeType);
         return false;
     }
 
     reportTask->u.starsCommTask.errorTimes++;
-    RT_LOG(RT_LOG_WARNING, "Dvpp task retry, stream_id=%hu, task_id=%hu, sqeType=%hhu.",
-        reportTask->stream->Id_(), report.sqHead, report.sqeType);
+    RT_LOG(
+        RT_LOG_WARNING, "Dvpp task retry, stream_id=%hu, task_id=%hu, sqeType=%hhu.", reportTask->stream->Id_(),
+        report.sqHead, report.sqeType);
     return true;
 }
 
-rtError_t DvppWaitGroup(const Device * const dev, const DvppGrp *grp, rtDvppGrpCallback callBackFunc,
-    const int32_t timeout)
+rtError_t DvppWaitGroup(
+    const Device* const dev, const DvppGrp* grp, rtDvppGrpCallback callBackFunc, const int32_t timeout)
 {
     rtLogicCqReport_t report = {};
-    Driver * const devDrv = dev->Driver_();
+    Driver* const devDrv = dev->Driver_();
     uint32_t cnt = 0U;
     const uint32_t logicCqId = grp->getLogicCqId();
 
@@ -175,7 +184,7 @@ rtError_t DvppWaitGroup(const Device * const dev, const DvppGrp *grp, rtDvppGrpC
     waitInfo.streamId = UINT32_MAX;
     waitInfo.taskId = UINT32_MAX;
 
-    rtError_t error = devDrv->LogicCqReportV2(waitInfo, RtPtrToPtr<uint8_t *, rtLogicCqReport_t *>(&report), 1U, cnt);
+    rtError_t error = devDrv->LogicCqReportV2(waitInfo, RtPtrToPtr<uint8_t*, rtLogicCqReport_t*>(&report), 1U, cnt);
     RT_LOG(RT_LOG_DEBUG, "Logic cq=%u, timeout=%dms, ret=%#x, cnt=%u.", logicCqId, timeout, error, cnt);
 
     if (error != RT_ERROR_NONE) {
@@ -188,14 +197,16 @@ rtError_t DvppWaitGroup(const Device * const dev, const DvppGrp *grp, rtDvppGrpC
 
     uint32_t streamId = 0U;
     error = dev->GetStreamSqCqManage()->GetStreamIdBySqId(report.sqId, streamId);
-    COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "get stream_id by sq_id failed, sq_id=%u, retCode=%#x.",
-        report.sqId, error);
-    RT_LOG(RT_LOG_DEBUG, "Get report: logic_cq=%u, sq_id=%u, stream_id=%hu, task_id=%u, code=%#x, "
-        "type=%hhu, sqe_type=%hhu.", logicCqId, report.sqId, streamId, report.sqHead, report.errorCode,
-        report.errorType, report.sqeType);
-    return ReportLogicCq(RtPtrToUnConstPtr<Device * const>(dev), streamId, report, callBackFunc);
+    COND_RETURN_ERROR(
+        (error != RT_ERROR_NONE), error, "get stream_id by sq_id failed, sq_id=%u, retCode=%#x.", report.sqId, error);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "Get report: logic_cq=%u, sq_id=%u, stream_id=%hu, task_id=%u, code=%#x, "
+        "type=%hhu, sqe_type=%hhu.",
+        logicCqId, report.sqId, streamId, report.sqHead, report.errorCode, report.errorType, report.sqeType);
+    return ReportLogicCq(RtPtrToUnConstPtr<Device* const>(dev), streamId, report, callBackFunc);
 }
 // ================================================== 对外出口区 ======================================== //
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -22,9 +22,7 @@
 namespace cce {
 namespace runtime {
 LabelAllocator::LabelAllocator(const uint16_t labelMax)
-    : NoCopy(),
-      labelMaxNum_(labelMax),
-      curInitLabelNum_(RT_MAX_LABEL_INIT_NUM)
+    : NoCopy(), labelMaxNum_(labelMax), curInitLabelNum_(RT_MAX_LABEL_INIT_NUM)
 {
     // init 64 label id first, add new id to list after alloc
     for (uint16_t i = 0U; i < RT_MAX_LABEL_INIT_NUM; i++) {
@@ -33,7 +31,7 @@ LabelAllocator::LabelAllocator(const uint16_t labelMax)
     }
 }
 
-rtError_t LabelAllocator::LabelIdAlloc(uint16_t &idAlloc)
+rtError_t LabelAllocator::LabelIdAlloc(uint16_t& idAlloc)
 {
     uint16_t labelId;
     mutex_.lock();
@@ -62,8 +60,8 @@ rtError_t LabelAllocator::LabelIdAlloc(uint16_t &idAlloc)
 rtError_t LabelAllocator::LabelIdFree(const uint16_t idFree)
 {
     if (idFree >= labelMaxNum_) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Value %hu for parameter idFree is invalid. Expected value: [0, %hu).",
-            idFree, labelMaxNum_);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Value %hu for parameter idFree is invalid. Expected value: [0, %hu).", idFree, labelMaxNum_);
         return RT_ERROR_LABEL_ID;
     }
 
@@ -80,7 +78,7 @@ rtError_t LabelAllocator::LabelIdFree(const uint16_t idFree)
     return RT_ERROR_NONE;
 }
 
-Label::Label(Model * const mdl)
+Label::Label(Model* const mdl)
     : NoCopy(),
       model_(mdl),
       labelId_(MAX_UINT16_NUM),
@@ -99,7 +97,7 @@ Label::~Label() noexcept
     model_ = nullptr;
 }
 
-rtError_t Label::LabelIdAlloc(uint16_t &idAlloc)
+rtError_t Label::LabelIdAlloc(uint16_t& idAlloc)
 {
     rtError_t ret;
     if (mgrType_ == LABEL_MGR_TYPE_MODEL) {
@@ -111,7 +109,7 @@ rtError_t Label::LabelIdAlloc(uint16_t &idAlloc)
             RT_LOG(RT_LOG_INFO, "label id alloc succ, label_id=%hu.", idAlloc);
         }
     } else {
-        LabelAllocator * const allocatorPtr = Runtime::Instance()->LabelAllocator_();
+        LabelAllocator* const allocatorPtr = Runtime::Instance()->LabelAllocator_();
         NULL_PTR_RETURN_MSG(allocatorPtr, RT_ERROR_LABEL_ALLOCATOR);
         ret = allocatorPtr->LabelIdAlloc(idAlloc);
         RT_LOG(RT_LOG_INFO, "label id alloc end, labelId=%hu.", idAlloc);
@@ -123,8 +121,8 @@ rtError_t Label::LabelIdFree(const uint16_t idFree)
 {
     rtError_t ret;
     if (mgrType_ == LABEL_MGR_TYPE_MODEL) {
-        COND_RETURN_WARN(model_ == nullptr, RT_ERROR_NONE,
-                         "model is null, don't need free label, label_id=%hu.", idFree);
+        COND_RETURN_WARN(
+            model_ == nullptr, RT_ERROR_NONE, "model is null, don't need free label, label_id=%hu.", idFree);
         ret = model_->LabelFree(idFree);
         if (ret == RT_ERROR_LABEL_MODEL_RELEASED) {
             model_ = nullptr;
@@ -132,14 +130,14 @@ rtError_t Label::LabelIdFree(const uint16_t idFree)
             return RT_ERROR_NONE;
         }
     } else {
-        LabelAllocator * const allocatorPtr = Runtime::Instance()->LabelAllocator_();
+        LabelAllocator* const allocatorPtr = Runtime::Instance()->LabelAllocator_();
         NULL_PTR_RETURN_MSG(allocatorPtr, RT_ERROR_LABEL_ALLOCATOR);
         ret = allocatorPtr->LabelIdFree(idFree);
     }
     return ret;
 }
 
-rtError_t Label::Setup(Context * const curCtx)
+rtError_t Label::Setup(Context* const curCtx)
 {
     context_ = curCtx;
     const rtError_t error = LabelIdAlloc(labelId_);
@@ -150,38 +148,43 @@ rtError_t Label::Setup(Context * const curCtx)
     return RT_ERROR_NONE;
 }
 
-rtError_t Label::Set(Stream * const stm)
+rtError_t Label::Set(Stream* const stm)
 {
     NULL_PTR_RETURN_MSG(stm->Model_(), RT_ERROR_STREAM_MODEL);
-    COND_RETURN_AND_MSG_OUTER((mgrType_ == LABEL_MGR_TYPE_MODEL) && (stm->Model_() != model_),
-        RT_ERROR_LABEL_MODEL, ErrorCode::EE1017, "rtLabelSet", "stream",
-        RtFmtMsg("Model (model_id=%d) bound to the stream is inconsistent with model (model_id=%d) to which the label belongs",
-        stm->Model_()->Id_(), model_->Id_()));
-    COND_RETURN_AND_MSG_OUTER((stream_ != nullptr) && (stream_ != stm), RT_ERROR_LABEL_STREAM, ErrorCode::EE1017,
+    COND_RETURN_AND_MSG_OUTER(
+        (mgrType_ == LABEL_MGR_TYPE_MODEL) && (stm->Model_() != model_), RT_ERROR_LABEL_MODEL, ErrorCode::EE1017,
         "rtLabelSet", "stream",
-        RtFmtMsg("The current stream (stream_id=%d) is inconsistent with the stream (stream_id=%d) associated with the label", 
-        stm->Id_(), stream_->Id_()));
-    COND_RETURN_AND_MSG_OUTER(setFlag_, RT_ERROR_LABEL_SET, ErrorCode::EE1018,
-        "rtLabelSet", "The label cannot be set repeatedly");
+        RtFmtMsg(
+            "Model (model_id=%d) bound to the stream is inconsistent with model (model_id=%d) to which the label "
+            "belongs",
+            stm->Model_()->Id_(), model_->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        (stream_ != nullptr) && (stream_ != stm), RT_ERROR_LABEL_STREAM, ErrorCode::EE1017, "rtLabelSet", "stream",
+        RtFmtMsg(
+            "The current stream (stream_id=%d) is inconsistent with the stream (stream_id=%d) associated with the "
+            "label",
+            stm->Id_(), stream_->Id_()));
+    COND_RETURN_AND_MSG_OUTER(
+        setFlag_, RT_ERROR_LABEL_SET, ErrorCode::EE1018, "rtLabelSet", "The label cannot be set repeatedly");
 
-    Device * const dev = context_->Device_();
-    COND_RETURN_AND_MSG_OUTER(((devDstAddr_ == nullptr) &&
-        (dev->GetTschVersion() >= static_cast<uint32_t>(TS_VERSION_MORE_LABEL))),
-        RT_ERROR_LABEL_PHY_ADDR_NULL, ErrorCode::EE1018,
-        "aclrtSetLabel", "Before setting the label using aclrtSetLabel, you need to call aclrtCreateLabelList to create a label list");
+    Device* const dev = context_->Device_();
+    COND_RETURN_AND_MSG_OUTER(
+        ((devDstAddr_ == nullptr) && (dev->GetTschVersion() >= static_cast<uint32_t>(TS_VERSION_MORE_LABEL))),
+        RT_ERROR_LABEL_PHY_ADDR_NULL, ErrorCode::EE1018, "aclrtSetLabel",
+        "Before setting the label using aclrtSetLabel, you need to call aclrtCreateLabelList to create a label list");
 
     TaskInfo submitTask = {};
     rtError_t errorReason;
-    TaskInfo *labelTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_LABEL_SET, errorReason);
+    TaskInfo* labelTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_LABEL_SET, errorReason);
     NULL_PTR_RETURN_MSG(labelTask, errorReason);
 
     rtError_t error = LabelSetTaskInit(labelTask, labelId_, devDstAddr_);
-    ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE, "Init label set task failed, retCode=%#x.",
-                         static_cast<uint32_t>(error));
+    ERROR_GOTO_MSG_INNER(
+        error, ERROR_RECYCLE, "Init label set task failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     error = dev->SubmitTask(labelTask, context_->TaskGenCallback_());
-    ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE, "Submit label set task failed, retCode=%#x.",
-                         static_cast<uint32_t>(error));
+    ERROR_GOTO_MSG_INNER(
+        error, ERROR_RECYCLE, "Submit label set task failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     setFlag_ = true;
     stream_ = stm;
@@ -194,34 +197,35 @@ ERROR_RECYCLE:
     return error;
 }
 
-rtError_t Label::SetStream(Stream * const stm)
+rtError_t Label::SetStream(Stream* const stm)
 {
-    COND_RETURN_ERROR_MSG_INNER(stream_ != nullptr, RT_ERROR_LABEL_STREAM,
+    COND_RETURN_ERROR_MSG_INNER(
+        stream_ != nullptr, RT_ERROR_LABEL_STREAM,
         "The current label has been set to another stream, label_id=%u, stream_id=%d.", Id_(), stream_->Id_());
 
     stream_ = stm;
     return RT_ERROR_NONE;
 }
 
-rtError_t Label::Switch(const void * const ptr, const rtCondition_t condition, const uint32_t val, Stream * const stm)
+rtError_t Label::Switch(const void* const ptr, const rtCondition_t condition, const uint32_t val, Stream* const stm)
 {
     NULL_PTR_RETURN_MSG(stm, RT_ERROR_STREAM_NULL);
     NULL_PTR_RETURN_MSG(stm->Model_(), RT_ERROR_LABEL_MODEL);
 
-    Device * const dev = context_->Device_();
+    Device* const dev = context_->Device_();
 
     TaskInfo submitTask = {};
     rtError_t errorReason;
-    TaskInfo *labelTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_LABEL_SWITCH, errorReason);
+    TaskInfo* labelTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_LABEL_SWITCH, errorReason);
     NULL_PTR_RETURN_MSG(labelTask, errorReason);
 
     rtError_t error = LabelSwitchTaskInit(labelTask, ptr, condition, val, labelId_);
-    ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE, "Init label switch task failed, retCode=%#x.",
-                         static_cast<uint32_t>(error));
+    ERROR_GOTO_MSG_INNER(
+        error, ERROR_RECYCLE, "Init label switch task failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     error = dev->SubmitTask(labelTask, context_->TaskGenCallback_());
-    ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE, "Submit label switch task failed, retCode=%#x.",
-                         static_cast<uint32_t>(error));
+    ERROR_GOTO_MSG_INNER(
+        error, ERROR_RECYCLE, "Submit label switch task failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     GET_THREAD_TASKID_AND_STREAMID(labelTask, stm->Id_());
 
@@ -232,25 +236,25 @@ ERROR_RECYCLE:
     return error;
 }
 
-rtError_t Label::Goto(Stream * const stm)
+rtError_t Label::Goto(Stream* const stm)
 {
     NULL_PTR_RETURN_MSG(stm, RT_ERROR_STREAM_NULL);
     NULL_PTR_RETURN_MSG(stm->Model_(), RT_ERROR_LABEL_MODEL);
 
-    Device * const dev = context_->Device_();
+    Device* const dev = context_->Device_();
 
     TaskInfo submitTask = {};
     rtError_t errorReason;
-    TaskInfo *labelTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_LABEL_GOTO, errorReason);
+    TaskInfo* labelTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_LABEL_GOTO, errorReason);
     NULL_PTR_RETURN_MSG(labelTask, errorReason);
 
     rtError_t error = LabelGotoTaskInit(labelTask, labelId_);
-    ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE, "Init label goto task failed, retCode=%#x.",
-                         static_cast<uint32_t>(error));
+    ERROR_GOTO_MSG_INNER(
+        error, ERROR_RECYCLE, "Init label goto task failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     error = dev->SubmitTask(labelTask, context_->TaskGenCallback_());
-    ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE, "Submit label goto task failed, retCode=%#x.",
-                         static_cast<uint32_t>(error));
+    ERROR_GOTO_MSG_INNER(
+        error, ERROR_RECYCLE, "Submit label goto task failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     GET_THREAD_TASKID_AND_STREAMID(labelTask, stm->Id_());
 
@@ -261,23 +265,23 @@ ERROR_RECYCLE:
     return error;
 }
 
-rtError_t Label::StreamGoto(Stream * const stm)
+rtError_t Label::StreamGoto(Stream* const stm)
 {
     NULL_PTR_RETURN_MSG(stm, RT_ERROR_STREAM_NULL);
     NULL_PTR_RETURN_MSG(stm->Model_(), RT_ERROR_LABEL_MODEL);
 
-    Device * const dev = context_->Device_();
+    Device* const dev = context_->Device_();
     rtError_t error = RT_ERROR_NONE;
     TaskInfo submitTask = {};
     rtError_t errorReason;
 
-    TaskInfo *labelTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_STREAM_LABEL_GOTO, errorReason);
+    TaskInfo* labelTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_STREAM_LABEL_GOTO, errorReason);
     NULL_PTR_RETURN_MSG(labelTask, errorReason);
 
     (void)StreamLabelGotoTaskInit(labelTask, labelId_);
     error = dev->SubmitTask(labelTask, context_->TaskGenCallback_());
-    ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE, "Submit stream label goto task failed, retCode=%#x.",
-                         static_cast<uint32_t>(error));
+    ERROR_GOTO_MSG_INNER(
+        error, ERROR_RECYCLE, "Submit stream label goto task failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     GET_THREAD_TASKID_AND_STREAMID(labelTask, stm->Id_());
 
@@ -288,12 +292,12 @@ ERROR_RECYCLE:
     return error;
 }
 
-rtError_t Label::SetLabelDevAddr(void * const addr)
+rtError_t Label::SetLabelDevAddr(void* const addr)
 {
-    COND_RETURN_ERROR_MSG_INNER(devDstAddr_ != nullptr, RT_ERROR_SAME_LABELS_IN_SWITCH,
-        "Label address is set repeatedly.");
+    COND_RETURN_ERROR_MSG_INNER(
+        devDstAddr_ != nullptr, RT_ERROR_SAME_LABELS_IN_SWITCH, "Label address is set repeatedly.");
     devDstAddr_ = addr;
     return RT_ERROR_NONE;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

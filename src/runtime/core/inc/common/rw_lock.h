@@ -17,7 +17,7 @@ namespace cce {
 namespace runtime {
 class ReadProtect {
 public:
-    explicit ReadProtect(mmRWLock_t *const rLock) : lock_(rLock)
+    explicit ReadProtect(mmRWLock_t* const rLock) : lock_(rLock)
     {
         if (unlikely(lock_ == nullptr)) {
             return;
@@ -33,12 +33,12 @@ public:
     }
 
 private:
-    mmRWLock_t *lock_;
+    mmRWLock_t* lock_;
 };
 
 class WriteProtect {
 public:
-    explicit WriteProtect(mmRWLock_t *const wLock) : lock_(wLock)
+    explicit WriteProtect(mmRWLock_t* const wLock) : lock_(wLock)
     {
         if (unlikely(lock_ == nullptr)) {
             return;
@@ -54,9 +54,9 @@ public:
     }
 
 private:
-  mmRWLock_t *lock_;
+    mmRWLock_t* lock_;
 };
 
-}
-}
-#endif  // __CCE_RUNTIME_RWLOCK_H__
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_RWLOCK_H__

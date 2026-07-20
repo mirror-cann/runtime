@@ -90,16 +90,17 @@ static const std::unordered_set<RtOptionalFeatureType> CHIP_MC62CM12A_FEATURE{
     RtOptionalFeatureType::RT_FEATURE_DEVICE_MEM_COPY_DOT_D2D_ONLY,
     RtOptionalFeatureType::RT_FEATURE_KERNEL_ARGS_FROM_STREAM_POOL,
     RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP,
-    RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP_THREAD_LOCAL
-};
+    RtOptionalFeatureType::RT_FEATURE_DEVICE_GROUP_THREAD_LOCAL};
 
 REGISTER_CHIP_FEATURE_SET(CHIP_MC62CM12A, CHIP_MC62CM12A_FEATURE);
 
 static constexpr uint32_t CQE_DEPTH = 1024U;
 
 static constexpr uint32_t RT_STARS_MAX_KERNEL_CREDIT_UINT32 = 254U; // STARS MAX KERNEL_CREDIT = 255.
-static constexpr uint32_t RT_STARS_MC62CM12A_DEFAULT_KERNEL_CREDIT_UINT32 = 9U; // The STARS MC62CM12A reference time is 301.989ms.
-static constexpr double RT_STARS_MC62CM12A_TASK_KERNEL_CREDIT_SCALE_US = RT_MC_KERNEL_CREDIT_SCALE; // 2^24 / 500M *1000*1000(us)
+static constexpr uint32_t RT_STARS_MC62CM12A_DEFAULT_KERNEL_CREDIT_UINT32 =
+    9U;                                                             // The STARS MC62CM12A reference time is 301.989ms.
+static constexpr double RT_STARS_MC62CM12A_TASK_KERNEL_CREDIT_SCALE_US =
+    RT_MC_KERNEL_CREDIT_SCALE;                                      // 2^24 / 500M *1000*1000(us)
 constexpr uint32_t RT_MC62CM12A_CORE_NUM_PER_DIE = 8U;
 
 static const DevProperties CHIP_MC62CM12A_PROPERTIES = {
@@ -147,10 +148,9 @@ static const DevProperties CHIP_MC62CM12A_PROPERTIES = {
     .starsDefaultKernelCredit = RT_STARS_MC62CM12A_DEFAULT_KERNEL_CREDIT_UINT32,
     .KernelCreditScale = RT_STARS_MC62CM12A_TASK_KERNEL_CREDIT_SCALE_US,
     .isSupportInitFuncCallPara = true,
-    .rtsqVirtualAddr = {DAVID_SIMPLE_RTSQ_FSM_SEL_REG,
-        STARS_SIMPLE_SQ_ENABLE_OFFSET,
-        DAVID_SIMPLE_SQ_TAIL_OFFSET,
-        STARS_SIMPLE_SQ_HEAD_OFFSET},
+    .rtsqVirtualAddr =
+        {DAVID_SIMPLE_RTSQ_FSM_SEL_REG, STARS_SIMPLE_SQ_ENABLE_OFFSET, DAVID_SIMPLE_SQ_TAIL_OFFSET,
+         STARS_SIMPLE_SQ_HEAD_OFFSET},
     .rtsqFsmStateAddrCalMethod = RtsqFsmStateAddrCalMethod::FSM_ADDR_CALCULATE_STATIC,
     .starsBaseAddrMethod = StarsBaseAddrMethod::STARS_BASE_CALCULATE_BY_DRIVER,
     .rtSqEnableAddrCalMethod = RtSqEnableAddrCalMethod::RT_SQ_ENABLE_ADDR_CAL_STATIC,
@@ -245,5 +245,5 @@ static const DevProperties CHIP_MC62CM12A_PROPERTIES = {
 };
 
 REGISTER_DEV_PROPERTIES(CHIP_MC62CM12A, CHIP_MC62CM12A_PROPERTIES);
-}
-}
+} // namespace runtime
+} // namespace cce

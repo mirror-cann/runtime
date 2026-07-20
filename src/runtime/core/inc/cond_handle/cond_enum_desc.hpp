@@ -24,15 +24,33 @@ static inline std::string WriteValueSizeTypeToString(const rtWriteValueSizeType_
 {
     std::string desc;
     switch (type) {
-        case WRITE_VALUE_SIZE_TYPE_INVALID: desc = "WRITE_VALUE_SIZE_TYPE_INVALID(0)"; break;
-        case WRITE_VALUE_SIZE_TYPE_8BIT: desc = "WRITE_VALUE_SIZE_TYPE_8BIT(1)"; break;
-        case WRITE_VALUE_SIZE_TYPE_16BIT: desc = "WRITE_VALUE_SIZE_TYPE_16BIT(2)"; break;
-        case WRITE_VALUE_SIZE_TYPE_32BIT: desc = "WRITE_VALUE_SIZE_TYPE_32BIT(3)"; break;
-        case WRITE_VALUE_SIZE_TYPE_64BIT: desc = "WRITE_VALUE_SIZE_TYPE_64BIT(4)"; break;
-        case WRITE_VALUE_SIZE_TYPE_128BIT: desc = "WRITE_VALUE_SIZE_TYPE_128BIT(5)"; break;
-        case WRITE_VALUE_SIZE_TYPE_256BIT: desc = "WRITE_VALUE_SIZE_TYPE_256BIT(6)"; break;
-        case WRITE_VALUE_SIZE_TYPE_BUFF: desc = "WRITE_VALUE_SIZE_TYPE_BUFF(7)"; break;
-        default: desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(type)); break;
+        case WRITE_VALUE_SIZE_TYPE_INVALID:
+            desc = "WRITE_VALUE_SIZE_TYPE_INVALID(0)";
+            break;
+        case WRITE_VALUE_SIZE_TYPE_8BIT:
+            desc = "WRITE_VALUE_SIZE_TYPE_8BIT(1)";
+            break;
+        case WRITE_VALUE_SIZE_TYPE_16BIT:
+            desc = "WRITE_VALUE_SIZE_TYPE_16BIT(2)";
+            break;
+        case WRITE_VALUE_SIZE_TYPE_32BIT:
+            desc = "WRITE_VALUE_SIZE_TYPE_32BIT(3)";
+            break;
+        case WRITE_VALUE_SIZE_TYPE_64BIT:
+            desc = "WRITE_VALUE_SIZE_TYPE_64BIT(4)";
+            break;
+        case WRITE_VALUE_SIZE_TYPE_128BIT:
+            desc = "WRITE_VALUE_SIZE_TYPE_128BIT(5)";
+            break;
+        case WRITE_VALUE_SIZE_TYPE_256BIT:
+            desc = "WRITE_VALUE_SIZE_TYPE_256BIT(6)";
+            break;
+        case WRITE_VALUE_SIZE_TYPE_BUFF:
+            desc = "WRITE_VALUE_SIZE_TYPE_BUFF(7)";
+            break;
+        default:
+            desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(type));
+            break;
     }
     return desc;
 }
@@ -41,8 +59,12 @@ static inline std::string CondHandleFlagToString(const rtCondHandleFlag_t flag)
 {
     std::string desc;
     switch (flag) {
-        case RT_COND_HANDLE_ASSIGN_DEFAULT: desc = "COND_HANDLE_ASSIGN_DEFAULT(1)"; break;
-        default: desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(flag)); break;
+        case RT_COND_HANDLE_ASSIGN_DEFAULT:
+            desc = "COND_HANDLE_ASSIGN_DEFAULT(1)";
+            break;
+        default:
+            desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(flag));
+            break;
     }
     return desc;
 }
@@ -51,11 +73,21 @@ static inline std::string CondTaskTypeToString(const rtCondTaskType_t type)
 {
     std::string desc;
     switch (type) {
-        case RT_COND_TASK_TYPE_IF: desc = "COND_TASK_TYPE_IF(0)"; break;
-        case RT_COND_TASK_TYPE_WHILE: desc = "COND_TASK_TYPE_WHILE(1)"; break;
-        case RT_COND_TASK_TYPE_SWITCH: desc = "COND_TASK_TYPE_SWITCH(2)"; break;
-        case RT_COND_TASK_TYPE_MAX: desc = "COND_TASK_TYPE_MAX(3)"; break;
-        default: desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(type)); break;
+        case RT_COND_TASK_TYPE_IF:
+            desc = "COND_TASK_TYPE_IF(0)";
+            break;
+        case RT_COND_TASK_TYPE_WHILE:
+            desc = "COND_TASK_TYPE_WHILE(1)";
+            break;
+        case RT_COND_TASK_TYPE_SWITCH:
+            desc = "COND_TASK_TYPE_SWITCH(2)";
+            break;
+        case RT_COND_TASK_TYPE_MAX:
+            desc = "COND_TASK_TYPE_MAX(3)";
+            break;
+        default:
+            desc = RtFmtMsg("UNKNOWN(%d)", static_cast<int32_t>(type));
+            break;
     }
     return desc;
 }

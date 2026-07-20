@@ -31,7 +31,8 @@ rtError_t CmoTaskLaunch(const rtCmoTaskInfo_t* const taskInfo, Stream* const stm
     TaskInfo* rtCmoTask = nullptr;
     uint32_t pos = 0xFFFFU;
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check stream, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
     Stream* dstStm = stm;
     std::function<void()> const errRecycle = [&rtCmoTask, &stm, &pos, &dstStm]() {
         TaskUnInitProc(rtCmoTask);
@@ -56,7 +57,8 @@ rtError_t CmoTaskLaunch(const rtCmoTaskInfo_t* const taskInfo, Stream* const stm
     stm->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), rtCmoTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "Failed to recycle task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to recycle task, stream_id=%d, retCode=%#x.", stm->Id_(), static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 

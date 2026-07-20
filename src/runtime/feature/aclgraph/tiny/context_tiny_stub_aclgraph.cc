@@ -20,7 +20,7 @@ rtError_t Context::TryRecycleCaptureModelResource(
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t Context::TryRecycleCaptureModelJettyResource(const CaptureModel * const excludeMdl, JettyType type)
+rtError_t Context::TryRecycleCaptureModelJettyResource(const CaptureModel* const excludeMdl, JettyType type)
 {
     UNUSED(excludeMdl);
     UNUSED(type);

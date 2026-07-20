@@ -26,30 +26,30 @@ namespace runtime {
 // 5: runtime support get tslog to host.
 // 6: runtime support send device id for 1980
 // 7: runtime support MC2 error proc for 1971
-constexpr uint32_t RUNTIME_BUILD_VERSION = 7U;  // 后续不演进
+constexpr uint32_t RUNTIME_BUILD_VERSION = 7U; // 后续不演进
 
 // 枚举值所有芯片形态统一编码, 添加前请评审, 请勿私自添加
 typedef enum {
     // 0: The version number starts from zero and increases by 1 each time.
-    RUNTIME_FEATURE_BASE                       = 0,
+    RUNTIME_FEATURE_BASE = 0,
     // 1: runtime support 64k label info and support switch by index for vm machine.
-    RUNTIME_FEATURE_MORE_LABEL                 = 1,
+    RUNTIME_FEATURE_MORE_LABEL = 1,
     // 2: runtime support extend aic error registers.
-    RUNTIME_FEATURE_AIC_ERR_EXT_REG            = 2,
+    RUNTIME_FEATURE_AIC_ERR_EXT_REG = 2,
     // 3: runtime support event/notiry wait snapshot.
-    RUNTIME_FEATURE_SNAPSHOT_ERR               = 3,
+    RUNTIME_FEATURE_SNAPSHOT_ERR = 3,
     // 4: runtime support rtMemcpyD2DAddrAsync.
-    RUNTIME_FEATURE_D2D_CPY_OFFSET             = 4,
+    RUNTIME_FEATURE_D2D_CPY_OFFSET = 4,
     // 5: runtime support get tslog to host.
-    RUNTIME_FEATURE_LOG_TOHOST                 = 5,
+    RUNTIME_FEATURE_LOG_TOHOST = 5,
     // 6: runtime support send device id for 1980
-    RUNTIME_FEATURE_SEND_DEVICE_ID             = 6,
+    RUNTIME_FEATURE_SEND_DEVICE_ID = 6,
     // 7: runtime support MC2 error proc for 1971
-    RUNTIME_FEATURE_MC2_ENHANCE                = 7,
+    RUNTIME_FEATURE_MC2_ENHANCE = 7,
     // 8: runtime support acl graph expand stream
-    RUNTIME_FEATURE_STREAM_EXPAND              = 8,
+    RUNTIME_FEATURE_STREAM_EXPAND = 8,
     // 9: runtime support stars v2 acl graph expand stream
-    RUNTIME_FEATURE_STREAM_EXPAND_V2           = 9
+    RUNTIME_FEATURE_STREAM_EXPAND_V2 = 9
 } RtRunTimeFeature;
 
 // 枚举值与TSCH保持一致
@@ -105,44 +105,44 @@ typedef enum {
     TS_FEATURE_QUERY_STREAM_OVERFLOW_STATUS = 48, // support query overflow bit
     TS_FEATURE_AICORE_TIMEOUT_DFX = 49,
     TS_FEATURE_FLIP_TASK_WITH_STREAM_ID = 50,
-    TS_FEATURE_ACLGRAPH_COND_OP = 51, //ACL Grpah support cond op
+    TS_FEATURE_ACLGRAPH_COND_OP = 51, // ACL Grpah support cond op
 } rtTschFeature;
 
 typedef enum {
-    TS_BRANCH_TRUNK     = 0,    /* br_hisi_trunk_ai */
-    TS_BRANCH_V1R1C30   = 1,    /* br_florence_v100r001c30_main */
-    TS_BRANCH_V1R1C13   = 2,    /* br_milan_v100r001c13_main */
-    TS_BRANCH_V1R1C15   = 3,    /* br_milan_v100r001c15_main */
-    TS_BRANCH_V1R1C17   = 4,    /* br_milan_v100r001c17_main */
-    TS_BRANCH_V1R1C18   = 5     /* br_milan_v100r001c18_main */
+    TS_BRANCH_TRUNK = 0,   /* br_hisi_trunk_ai */
+    TS_BRANCH_V1R1C30 = 1, /* br_florence_v100r001c30_main */
+    TS_BRANCH_V1R1C13 = 2, /* br_milan_v100r001c13_main */
+    TS_BRANCH_V1R1C15 = 3, /* br_milan_v100r001c15_main */
+    TS_BRANCH_V1R1C17 = 4, /* br_milan_v100r001c17_main */
+    TS_BRANCH_V1R1C18 = 5  /* br_milan_v100r001c18_main */
 } RtTschBranch;
 
 typedef enum {
-    RT_FEATURE_STARS_COMPATIBILITY          = 0,
-    RT_FEATURE_IPC_NOTICE_DC                = 1,
-    RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX     = 2,
-    RT_FEATURE_OVER_FLOW_DEBUG              = 3,
-    RT_FEATURE_D2D_ADDR_ASYNC               = 4,
-    RT_FEATURE_FLIPTASK                     = 5,
-    RT_FEATURE_FFTSPLUS_TIMEOUT             = 6,
-    RT_FEATURE_MC2_RTS_SUPPORT_HCCL         = 7,
-    RT_FEATURE_IPC_NOTICE_CLOUD_V2          = 8,
-    RT_FEATURE_MC2_RTS_SUPPORT_HCCL_DC      = 9,
-    RT_FEATURE_SUPPORT_REDUCEASYNC_V2_DC    = 10,
-    RT_FEATURE_TILING_KEY_SINK              = 11,
-    RT_FEATURE_MC2_ENHANCE                  = 12,
+    RT_FEATURE_STARS_COMPATIBILITY = 0,
+    RT_FEATURE_IPC_NOTICE_DC = 1,
+    RT_FEATURE_FFTSPLUS_TASKID_SAME_FIX = 2,
+    RT_FEATURE_OVER_FLOW_DEBUG = 3,
+    RT_FEATURE_D2D_ADDR_ASYNC = 4,
+    RT_FEATURE_FLIPTASK = 5,
+    RT_FEATURE_FFTSPLUS_TIMEOUT = 6,
+    RT_FEATURE_MC2_RTS_SUPPORT_HCCL = 7,
+    RT_FEATURE_IPC_NOTICE_CLOUD_V2 = 8,
+    RT_FEATURE_MC2_RTS_SUPPORT_HCCL_DC = 9,
+    RT_FEATURE_SUPPORT_REDUCEASYNC_V2_DC = 10,
+    RT_FEATURE_TILING_KEY_SINK = 11,
+    RT_FEATURE_MC2_ENHANCE = 12,
     RT_FEATURE_FFTSPLUS_TASKID_SAME_FOR_ALL = 13,
-    RT_FEATURE_TASK_ABORT                   = 14,
-    RT_FEATURE_MAX                          = 15
+    RT_FEATURE_TASK_ABORT = 14,
+    RT_FEATURE_MAX = 15
 } rtFeature;
 
-constexpr uint32_t RUNTIME_CAPABILITY_LEN = 2048U;    // runtime能力集长度2k
-constexpr uint32_t TSCH_CAPABILITY_LEN = 10240U;   // TSCH能力集长度10k
-constexpr uint32_t RTS_TIMEOUT_STREAM_SNAPSHOT_LEN = (1024U * 17U);  // 17k
+constexpr uint32_t RUNTIME_CAPABILITY_LEN = 2048U;                  // runtime能力集长度2k
+constexpr uint32_t TSCH_CAPABILITY_LEN = 10240U;                    // TSCH能力集长度10k
+constexpr uint32_t RTS_TIMEOUT_STREAM_SNAPSHOT_LEN = (1024U * 17U); // 17k
 constexpr uint32_t RUNTME_TSCH_CAPABILITY_LEN = 12288U; // ((RUNTIME_CAPABILITY_LEN) + (TSCH_CAPABILITY_LEN))
 constexpr uint32_t ONE_BYTE_BITS = 8U;
 constexpr uint32_t RINGBUFFER_CAPABILITY_MAGIC = 0xA55A2022U;
- 
+
 struct RtsCapabilityHeader {
     uint32_t magic;
     uint32_t head;
@@ -150,12 +150,12 @@ struct RtsCapabilityHeader {
     uint32_t depth;
     uint32_t reserved[4];
 };
- 
+
 struct RuntimeCapability {
     RtsCapabilityHeader header;
     uint8_t capability[RUNTIME_CAPABILITY_LEN - sizeof(RtsCapabilityHeader)];
 };
- 
+
 struct TschCapability {
     RtsCapabilityHeader header;
     uint8_t capability[TSCH_CAPABILITY_LEN - sizeof(RtsCapabilityHeader)];
@@ -163,13 +163,13 @@ struct TschCapability {
 
 // not use for new feature, please use CheckFeatureSupport
 bool CheckFeatureIsSupportOld(const uint32_t tschVersion, rtFeature feature);
-bool CheckSupportMC2Feature(Device * const dev);
-const uint32_t *GetRtCapabilityTbl(void);
+bool CheckSupportMC2Feature(Device* const dev);
+const uint32_t* GetRtCapabilityTbl(void);
 uint32_t GetRtCapabilityTblLen(void);
 void FeatureToTsVersionInit(void);
 bool CheckSupportTilingKeyWhenCompile(); // only use when compile
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_CAPABILITY_HPP__
+#endif // __CCE_RUNTIME_CAPABILITY_HPP__

@@ -12,7 +12,7 @@
 
 namespace cce {
 namespace runtime {
-rtError_t InitPrintf(void *addr, const size_t blockSize, const Device * const dev)
+rtError_t InitPrintf(void* addr, const size_t blockSize, const Device* const dev)
 {
     UNUSED(addr);
     UNUSED(blockSize);
@@ -20,7 +20,7 @@ rtError_t InitPrintf(void *addr, const size_t blockSize, const Device * const de
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ParsePrintf(void *addr, const size_t blockSize, Driver *curDrv)
+rtError_t ParsePrintf(void* addr, const size_t blockSize, Driver* curDrv)
 {
     UNUSED(addr);
     UNUSED(blockSize);
@@ -28,7 +28,7 @@ rtError_t ParsePrintf(void *addr, const size_t blockSize, Driver *curDrv)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t InitSimtPrintf(void *addr, const size_t blockSize, Driver *curDrv)
+rtError_t InitSimtPrintf(void* addr, const size_t blockSize, Driver* curDrv)
 {
     UNUSED(addr);
     UNUSED(blockSize);
@@ -36,7 +36,7 @@ rtError_t InitSimtPrintf(void *addr, const size_t blockSize, Driver *curDrv)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ParseSimtPrintf(void *addr, const size_t blockSize, Driver *curDrv, const Device * const dev)
+rtError_t ParseSimtPrintf(void* addr, const size_t blockSize, Driver* curDrv, const Device* const dev)
 {
     UNUSED(addr);
     UNUSED(blockSize);
@@ -45,5 +45,5 @@ rtError_t ParseSimtPrintf(void *addr, const size_t blockSize, Driver *curDrv, co
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

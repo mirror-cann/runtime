@@ -14,9 +14,6 @@
 namespace cce {
 namespace runtime {
 
-Api *CreateImplAndGet()
-{
-    return new (std::nothrow) ApiImpl();
-}
-}  // namespace runtime
-}  // namespace cce
+Api* CreateImplAndGet() { return new (std::nothrow) ApiImpl(); }
+} // namespace runtime
+} // namespace cce

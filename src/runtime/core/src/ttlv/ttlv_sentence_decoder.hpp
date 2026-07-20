@@ -21,20 +21,14 @@ constexpr uint32_t RT_DESC_SUFFIX_IDX = 2U;
 // defined for sentence line
 class TTLVSentenceDecoder {
 public:
-    TTLVSentenceDecoder() : tag_(MAX_UINT16_NUM) {};
+    TTLVSentenceDecoder() : tag_(MAX_UINT16_NUM){};
     explicit TTLVSentenceDecoder(uint16_t tag) : tag_(tag) {}
     virtual ~TTLVSentenceDecoder() = default;
-    void AddWord(TTLVWordDecoder &word)
-    {
-        decoderWord_.emplace_back(word);
-    }
+    void AddWord(TTLVWordDecoder& word) { decoderWord_.emplace_back(word); }
 
-    void AddErrMsg(TTLVErrMsgDecoder &word)
-    {
-        decoderErrMsg_.emplace_back(word);
-    }
+    void AddErrMsg(TTLVErrMsgDecoder& word) { decoderErrMsg_.emplace_back(word); }
 
-    TTLVErrMsgDecoder &GetRecentErrMsg()
+    TTLVErrMsgDecoder& GetRecentErrMsg()
     {
         if (decoderErrMsg_.empty()) {
             TTLVErrMsgDecoder errMsg;
@@ -43,17 +37,15 @@ public:
         return *(decoderErrMsg_.end() - 1);
     }
 
-    const std::vector<TTLVErrMsgDecoder> &GetErrMsgDecoder() const
-    {
-        return decoderErrMsg_;
-    }
-    void PrintOut(std::string &outStr);
-    void PrintErrMsg(std::string &outStr, const std::string &space);
+    const std::vector<TTLVErrMsgDecoder>& GetErrMsgDecoder() const { return decoderErrMsg_; }
+    void PrintOut(std::string& outStr);
+    void PrintErrMsg(std::string& outStr, const std::string& space);
+
 private:
     std::vector<TTLVWordDecoder> decoderWord_; // for specific sentence word, task id, stream id etc.
     std::vector<TTLVErrMsgDecoder> decoderErrMsg_;
-    uint16_t tag_;        // used for define how to orgnize the message
+    uint16_t tag_;                             // used for define how to orgnize the message
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // RT_RUNTIME_TTLV_SENTENCE_DECODER_HPP

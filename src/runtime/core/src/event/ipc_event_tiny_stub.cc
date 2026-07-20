@@ -11,47 +11,54 @@
 
 namespace cce {
 namespace runtime {
-IpcEvent::IpcEvent(Device *device, uint64_t eventFlag, Context *ctx)
-    : Event(device, eventFlag, ctx, false ,true), device_(device), eventFlag_(eventFlag), context_(ctx),
-      ipcHandlePa_(nullptr), ipcHandleVa_(nullptr), currentDeviceMem_(nullptr),currentHostMem_(nullptr),
-      deviceMemPa_(nullptr), hostMemPa_(nullptr), ipcHandle_(0U), deviceMemSize_(0U),
-      totalTaskCnt_(0U), isNeedDestroy_(false), mapFlag_(0U), eventStatus_(INIT)
+IpcEvent::IpcEvent(Device* device, uint64_t eventFlag, Context* ctx)
+    : Event(device, eventFlag, ctx, false, true),
+      device_(device),
+      eventFlag_(eventFlag),
+      context_(ctx),
+      ipcHandlePa_(nullptr),
+      ipcHandleVa_(nullptr),
+      currentDeviceMem_(nullptr),
+      currentHostMem_(nullptr),
+      deviceMemPa_(nullptr),
+      hostMemPa_(nullptr),
+      ipcHandle_(0U),
+      deviceMemSize_(0U),
+      totalTaskCnt_(0U),
+      isNeedDestroy_(false),
+      mapFlag_(0U),
+      eventStatus_(INIT)
 {}
 
-IpcEvent::~IpcEvent() noexcept
-{
-}
+IpcEvent::~IpcEvent() noexcept {}
 
-rtError_t IpcEvent::Setup()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t IpcEvent::Setup() { return RT_ERROR_NONE; }
 
-rtError_t IpcEvent::IpcEventRecord(Stream * const stm)
+rtError_t IpcEvent::IpcEventRecord(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_NONE;
 }
 
-rtError_t IpcEvent::IpcEventWait(Stream * const stm)
+rtError_t IpcEvent::IpcEventWait(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_NONE;
 }
 
-rtError_t IpcEvent::IpcEventRecordStarsV2(Stream * const stm)
-{
-    UNUSED(stm);
-    return RT_ERROR_NONE;
-}
- 
-rtError_t IpcEvent::IpcEventWaitStarsV2(Stream * const stm)
+rtError_t IpcEvent::IpcEventRecordStarsV2(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_NONE;
 }
 
-rtError_t IpcEvent::IpcEventQuery(rtEventStatus_t * const status)
+rtError_t IpcEvent::IpcEventWaitStarsV2(Stream* const stm)
+{
+    UNUSED(stm);
+    return RT_ERROR_NONE;
+}
+
+rtError_t IpcEvent::IpcEventQuery(rtEventStatus_t* const status)
 {
     UNUSED(status);
     return RT_ERROR_NONE;
@@ -70,9 +77,6 @@ bool IpcEvent::TryFreeEventIdAndCheckCanBeDelete(const int32_t id, bool isNeedDe
     return true;
 }
 
-rtError_t IpcEvent::ReleaseDrvResource()
-{
-    return RT_ERROR_NONE;
-}
-} 
-}
+rtError_t IpcEvent::ReleaseDrvResource() { return RT_ERROR_NONE; }
+} // namespace runtime
+} // namespace cce

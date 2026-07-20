@@ -29,87 +29,87 @@ struct MbufTraceRegParam {
 };
 
 struct CondMbufTraceFc {
-    RtStarsCondOpLLWI              llwiBlkIdMask;
-    RtStarsCondOpLHWI              lhwiBlkIdMask;
-    RtStarsCondOpOp                andWithBlkIdMask;
-    RtStarsCondOpImmSLLI           srliForGetBlkId;
+    RtStarsCondOpLLWI llwiBlkIdMask;
+    RtStarsCondOpLHWI lhwiBlkIdMask;
+    RtStarsCondOpOp andWithBlkIdMask;
+    RtStarsCondOpImmSLLI srliForGetBlkId;
 
-    RtStarsCondOpLLWI              llwiAddrOffset;
-    RtStarsCondOpLHWI              lhwiAddrOffset;
-    RtStarsCondOpOp                multGetAddrOffset;
+    RtStarsCondOpLLWI llwiAddrOffset;
+    RtStarsCondOpLHWI lhwiAddrOffset;
+    RtStarsCondOpOp multGetAddrOffset;
 
-    RtStarsCondOpLLWI              llwiTraceBaseAddr;
-    RtStarsCondOpLHWI              lhwiTraceBaseAddr;
-    RtStarsCondOpOp                addiGetRealOpTraceAddr;
-    RtStarsCondOpLoad              ldrTraceOpAddr;
-    RtStarsSetCsrJumpPc            jumpTraceNop;
-    RtStarsCondOpBranch            beqForBranch;
+    RtStarsCondOpLLWI llwiTraceBaseAddr;
+    RtStarsCondOpLHWI lhwiTraceBaseAddr;
+    RtStarsCondOpOp addiGetRealOpTraceAddr;
+    RtStarsCondOpLoad ldrTraceOpAddr;
+    RtStarsSetCsrJumpPc jumpTraceNop;
+    RtStarsCondOpBranch beqForBranch;
 
-    RtStarsCondOpLLWI              llwiTraceBlockSizeAddr;
-    RtStarsCondOpLHWI              lhwiTraceBlockSizeAddr;
+    RtStarsCondOpLLWI llwiTraceBlockSizeAddr;
+    RtStarsCondOpLHWI lhwiTraceBlockSizeAddr;
 
-    RtStarsCondOpLLWI              llwiBlkSizeOffset;
-    RtStarsCondOpLHWI              lhwiBlkSizeOffset;
-    RtStarsCondOpOp                multGetBlkSizeOffset;
+    RtStarsCondOpLLWI llwiBlkSizeOffset;
+    RtStarsCondOpLHWI lhwiBlkSizeOffset;
+    RtStarsCondOpOp multGetBlkSizeOffset;
 
-    RtStarsCondOpOp                addiGetRealOpBlockAddr;
-    RtStarsCondOpLoad              ldrTraceBlockSizeAddr;
+    RtStarsCondOpOp addiGetRealOpBlockAddr;
+    RtStarsCondOpLoad ldrTraceBlockSizeAddr;
 
-    RtStarsCondOpOp                muliGetOffset;
-    RtStarsCondOpOp                addiGetTraceAddr;
+    RtStarsCondOpOp muliGetOffset;
+    RtStarsCondOpOp addiGetTraceAddr;
 
-    RtStarsCondOpLLWI              llwiOpTypeOffset;
-    RtStarsCondOpLHWI              lhwiOpTypeOffset;
-    RtStarsCondOpOp                addiGetOpTypeAddr;
+    RtStarsCondOpLLWI llwiOpTypeOffset;
+    RtStarsCondOpLHWI lhwiOpTypeOffset;
+    RtStarsCondOpOp addiGetOpTypeAddr;
 
-    RtStarsCondOpLLWI              llwiOpType;
-    RtStarsCondOpLHWI              lhwiOpType;
-    RtStarsCondOpStore             storeOpType;
+    RtStarsCondOpLLWI llwiOpType;
+    RtStarsCondOpLHWI lhwiOpType;
+    RtStarsCondOpStore storeOpType;
 
-    RtStarsCondOpLLWI              llwiOwnIdAddr;
-    RtStarsCondOpLHWI              lhwiOwnIdAddr;
-    RtStarsCondOpLLWI              llwiStreamId;
-    RtStarsCondOpLHWI              lhwiStreamId;
-    RtStarsCondOpOp                addiGetOwnIdOpAddr;
-    RtStarsCondOpStore             storeOwnerId;
+    RtStarsCondOpLLWI llwiOwnIdAddr;
+    RtStarsCondOpLHWI lhwiOwnIdAddr;
+    RtStarsCondOpLLWI llwiStreamId;
+    RtStarsCondOpLHWI lhwiStreamId;
+    RtStarsCondOpOp addiGetOwnIdOpAddr;
+    RtStarsCondOpStore storeOwnerId;
 
-    RtStarsCondOpLLWI              llwiOwnIdOccpySize;
-    RtStarsCondOpLHWI              lhwiOwnIdOccpySize;
-    RtStarsCondOpOp                addiGetLeft1BitOpAddr;
-    RtStarsCondOpStore             storeLeft1BitTo0;
+    RtStarsCondOpLLWI llwiOwnIdOccpySize;
+    RtStarsCondOpLHWI lhwiOwnIdOccpySize;
+    RtStarsCondOpOp addiGetLeft1BitOpAddr;
+    RtStarsCondOpStore storeLeft1BitTo0;
 
-    RtStarsCondOpLLWI              llwiQidAddrOffset;
-    RtStarsCondOpLHWI              lhwiQidAddrOffset;
-    RtStarsCondOpOp                multGetQidOffset;
+    RtStarsCondOpLLWI llwiQidAddrOffset;
+    RtStarsCondOpLHWI lhwiQidAddrOffset;
+    RtStarsCondOpOp multGetQidOffset;
 
-    RtStarsCondOpLLWI              llwiQidBaseAddr;
-    RtStarsCondOpLHWI              lhwiQidBaseAddr;
-    RtStarsCondOpOp                addiGetOpQidAddr;
+    RtStarsCondOpLLWI llwiQidBaseAddr;
+    RtStarsCondOpLHWI lhwiQidBaseAddr;
+    RtStarsCondOpOp addiGetOpQidAddr;
 
-    RtStarsCondOpLLWI              llwiQidOffset;
-    RtStarsCondOpLHWI              lhwiQidOffset;
-    RtStarsCondOpOp                addiGetQidAddr;
+    RtStarsCondOpLLWI llwiQidOffset;
+    RtStarsCondOpLHWI lhwiQidOffset;
+    RtStarsCondOpOp addiGetQidAddr;
 
-    RtStarsCondOpLoad              ldrDstQid;
-    RtStarsCondOpStore             storeQid;
+    RtStarsCondOpLoad ldrDstQid;
+    RtStarsCondOpStore storeQid;
 
-    RtStarsCondOpLLWI              llwiUpdateTimeOffset;
-    RtStarsCondOpLHWI              lhwiUpdateTimeOffset;
-    RtStarsCondOpOp                addiGetUpdateTimeAddr;
+    RtStarsCondOpLLWI llwiUpdateTimeOffset;
+    RtStarsCondOpLHWI lhwiUpdateTimeOffset;
+    RtStarsCondOpOp addiGetUpdateTimeAddr;
 
-    RtStarsCondOpLLWI              llwiAxiUserVaCfgMask;
-    RtStarsCondOpLLWI              llwiLpSysCntAddr;
-    RtStarsCondOpLHWI              lhwiLpSysCntAddr;
-    RtStarsCondOpLoad              ldrLpSysCntAddr;
-    RtStarsCondOpSystemCsr         csrrcForLpSysCntAddr;
-    RtStarsCondOpLoad              ldrLpSysCnt;
-    RtStarsCondOpSystemCsr         csrrsForLpSysCntAddr;
+    RtStarsCondOpLLWI llwiAxiUserVaCfgMask;
+    RtStarsCondOpLLWI llwiLpSysCntAddr;
+    RtStarsCondOpLHWI lhwiLpSysCntAddr;
+    RtStarsCondOpLoad ldrLpSysCntAddr;
+    RtStarsCondOpSystemCsr csrrcForLpSysCntAddr;
+    RtStarsCondOpLoad ldrLpSysCnt;
+    RtStarsCondOpSystemCsr csrrsForLpSysCntAddr;
 
-    RtStarsCondOpStore             storeUpdateTime;
-    RtStarsCondOpNop               nop;
+    RtStarsCondOpStore storeUpdateTime;
+    RtStarsCondOpNop nop;
 };
 
 #pragma pack(pop)
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // __CCE_RUNTIME_STARS_COND_ISA_MBUF_TRACE_HPP__

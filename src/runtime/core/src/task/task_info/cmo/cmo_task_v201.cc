@@ -15,13 +15,13 @@
 namespace cce {
 namespace runtime {
 
-void ConstructDavidSqeForCmoTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForCmoTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
-    Stream * const stm = taskInfo->stream;
-    Model *cmoModel = stm->Model_();
-    CmoTaskInfo * const cmoTsk = &(taskInfo->u.cmoTask);
+    Stream* const stm = taskInfo->stream;
+    Model* cmoModel = stm->Model_();
+    CmoTaskInfo* const cmoTsk = &(taskInfo->u.cmoTask);
     if (cmoModel == nullptr) {
         if ((cmoTsk->cmoSqeInfo.opCode == RT_CMO_PREFETCH) || (cmoTsk->cmoSqeInfo.opCode == RT_CMO_WRITEBACK)) {
             ConstructDavidCmoSqe(taskInfo, davidSqe, sqBaseAddr);
@@ -58,5 +58,5 @@ static bool CmoTaskRegister()
 
 static bool g_cmoTaskRegister = CmoTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

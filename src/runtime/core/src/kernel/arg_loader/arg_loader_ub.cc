@@ -21,50 +21,45 @@ namespace cce {
 
 namespace runtime {
 
-UbArgLoader::UbArgLoader(Device * const dev)
-    : NoCopy(), device_(dev), argAllocator_(nullptr), superArgAllocator_(nullptr),
-    handleAllocator_(nullptr)
-{
-}
+UbArgLoader::UbArgLoader(Device* const dev)
+    : NoCopy(), device_(dev), argAllocator_(nullptr), superArgAllocator_(nullptr), handleAllocator_(nullptr)
+{}
 
-UbArgLoader::~UbArgLoader()
-{
-    TearDown();
-}
+UbArgLoader::~UbArgLoader() { TearDown(); }
 
 rtError_t UbArgLoader::Init()
 {
     argAllocator_ = new (std::nothrow) H2DCopyMgr(
         device_, UB_ARG_MAX_ENTRY_SIZE, UB_ARG_INIT_CNT, device_->GetDevProperties().maxSupportTaskNum,
         BufferAllocator::LINEAR, COPY_POLICY_UB);
-    COND_RETURN_AND_MSG_OUTER(argAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(H2DCopyMgr), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        argAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
 
     superArgAllocator_ = new (std::nothrow) H2DCopyMgr(
         device_, UB_ARG_MAX_SUPER_ENTRY_SIZE, UB_ARG_SUPER_INIT_CNT, device_->GetDevProperties().maxSupportTaskNum,
         BufferAllocator::LINEAR, COPY_POLICY_UB);
-    COND_RETURN_AND_MSG_OUTER(superArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(H2DCopyMgr), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        superArgAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(H2DCopyMgr), "new");
 
     handleAllocator_ = new (std::nothrow) BufferAllocator(
         static_cast<uint32_t>(sizeof(UbHandle)), UB_ARG_INIT_CNT, device_->GetDevProperties().maxSupportTaskNum);
-    COND_RETURN_AND_MSG_OUTER(handleAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(BufferAllocator), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        handleAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(BufferAllocator), "new");
     RT_LOG(RT_LOG_INFO, "new argAllocator and handleAllocator success.");
 
     return RT_ERROR_NONE;
 }
 
-void UbArgLoader::ReleaseDevArgPool(UbHandle * const argHandle)
+void UbArgLoader::ReleaseDevArgPool(UbHandle* const argHandle)
 {
     argHandle->argsAlloc->FreeDevMem(argHandle->kerArgs);
     RT_LOG(RT_LOG_DEBUG, "Release args dev loader mem.");
 }
 
-void UbArgLoader::ReleaseDynamic(UbHandle * const argHandle)
+void UbArgLoader::ReleaseDynamic(UbHandle* const argHandle)
 {
-    void *devPtr = argHandle->kerArgs;
-    void *hostPtr = argHandle->hostAddr;
+    void* devPtr = argHandle->kerArgs;
+    void* hostPtr = argHandle->hostAddr;
 
     if (devPtr != nullptr) {
         (void)device_->Driver_()->DevMemFree(devPtr, device_->Id_());
@@ -77,7 +72,7 @@ void UbArgLoader::ReleaseDynamic(UbHandle * const argHandle)
     if (argHandle->memTsegInfo != nullptr) {
         (void)device_->Driver_()->PutTsegInfo(device_->Id_(), &(argHandle->memTsegInfo->hostTsegInfo));
         (void)device_->Driver_()->PutTsegInfo(device_->Id_(), &(argHandle->memTsegInfo->devTsegInfo));
-        (void)device_->Driver_()->HostMemFree(static_cast<void *>(argHandle->memTsegInfo));
+        (void)device_->Driver_()->HostMemFree(static_cast<void*>(argHandle->memTsegInfo));
         RT_LOG(RT_LOG_DEBUG, "Recycle args dynamic tseg info, device_id=%u.", device_->Id_());
     }
     argHandle->kerArgs = nullptr;
@@ -85,13 +80,13 @@ void UbArgLoader::ReleaseDynamic(UbHandle * const argHandle)
     argHandle->memTsegInfo = nullptr;
 }
 
-rtError_t UbArgLoader::Release(void * const argHandle)
+rtError_t UbArgLoader::Release(void* const argHandle)
 {
     if (argHandle == nullptr) {
         return RT_ERROR_NONE;
     }
 
-    UbHandle *hdl = static_cast<UbHandle *>(argHandle);
+    UbHandle* hdl = static_cast<UbHandle*>(argHandle);
     if (hdl->argsAlloc != nullptr) {
         ReleaseDevArgPool(hdl);
     } else {
@@ -102,17 +97,17 @@ rtError_t UbArgLoader::Release(void * const argHandle)
     return RT_ERROR_NONE;
 }
 
-rtError_t UbArgLoader::AllocDevArgPool(const uint32_t size, UbHandle * const argHandle, void **devTsegInfo,
-    void **hostTsegInfo)
+rtError_t UbArgLoader::AllocDevArgPool(
+    const uint32_t size, UbHandle* const argHandle, void** devTsegInfo, void** hostTsegInfo)
 {
     uint64_t hostAddr = 0U;
-    H2DCopyMgr *ubArgAllocator = (size > UB_ARG_MAX_ENTRY_SIZE) ? superArgAllocator_ : argAllocator_;
+    H2DCopyMgr* ubArgAllocator = (size > UB_ARG_MAX_ENTRY_SIZE) ? superArgAllocator_ : argAllocator_;
 
-    void *devAddr = ubArgAllocator->AllocDevMem();
+    void* devAddr = ubArgAllocator->AllocDevMem();
     if (devAddr == nullptr) {
         return RT_ERROR_MEMORY_ALLOCATION;
     }
-    hostAddr = ubArgAllocator->GetUbHostAddr(RtPtrToValue<const void *>(devAddr), devTsegInfo, hostTsegInfo);
+    hostAddr = ubArgAllocator->GetUbHostAddr(RtPtrToValue<const void*>(devAddr), devTsegInfo, hostTsegInfo);
     if (hostAddr == 0U) {
         ubArgAllocator->FreeDevMem(devAddr);
         return RT_ERROR_MEMORY_ALLOCATION;
@@ -121,46 +116,49 @@ rtError_t UbArgLoader::AllocDevArgPool(const uint32_t size, UbHandle * const arg
     RT_LOG(RT_LOG_DEBUG, "Alloc args dev loader mem success.");
 
     argHandle->kerArgs = devAddr;
-    argHandle->hostAddr = RtValueToPtr<void *>(hostAddr);
+    argHandle->hostAddr = RtValueToPtr<void*>(hostAddr);
     argHandle->argsAlloc = ubArgAllocator;
     return RT_ERROR_NONE;
 }
 
-rtError_t UbArgLoader::AllocDynamic(const uint32_t size, UbHandle * const argHandle, void **devTsegInfo,
-    void **hostTsegInfo)
+rtError_t UbArgLoader::AllocDynamic(
+    const uint32_t size, UbHandle* const argHandle, void** devTsegInfo, void** hostTsegInfo)
 {
-    void *devAddr = nullptr;
-    void *hostAddr = nullptr;
-    void *tsegInfoAddr = nullptr;
+    void* devAddr = nullptr;
+    void* hostAddr = nullptr;
+    void* tsegInfoAddr = nullptr;
 
-    rtError_t error = device_->Driver_()->DevMemAlloc(&devAddr, static_cast<uint64_t>(size), RT_MEMORY_HBM, device_->Id_());
+    rtError_t error =
+        device_->Driver_()->DevMemAlloc(&devAddr, static_cast<uint64_t>(size), RT_MEMORY_HBM, device_->Id_());
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "Failed to allocate args dynamic device memory, retCode=%#x, size=%u, device_id=%u.",
-            error, size, device_->Id_());
+        RT_LOG(
+            RT_LOG_ERROR, "Failed to allocate args dynamic device memory, retCode=%#x, size=%u, device_id=%u.", error,
+            size, device_->Id_());
         return error;
     }
 
     error = device_->Driver_()->HostMemAlloc(&hostAddr, static_cast<uint64_t>(size), device_->Id_());
     if (error != RT_ERROR_NONE) {
         (void)device_->Driver_()->DevMemFree(devAddr, device_->Id_());
-        RT_LOG(RT_LOG_ERROR, "Failed to allocate args dynamic host memory, retCode=%#x, size=%u, device_id=%u.",
-            error, size, device_->Id_());
+        RT_LOG(
+            RT_LOG_ERROR, "Failed to allocate args dynamic host memory, retCode=%#x, size=%u, device_id=%u.", error,
+            size, device_->Id_());
         return error;
     }
 
     error = device_->Driver_()->HostMemAlloc(&tsegInfoAddr, sizeof(struct memTsegInfo), device_->Id_());
     ERROR_PROC_RETURN_MSG_INNER(error, (void)device_->Driver_()->HostMemFree(hostAddr);
-                                       (void)device_->Driver_()->DevMemFree(devAddr, device_->Id_());,
-                                       "Alloc mem for tseg info failed, retCode=%#x, size=%zu, device_id=%u.",
-                                       error, sizeof(struct memTsegInfo), device_->Id_());
-    
-    argHandle->memTsegInfo = (struct memTsegInfo *)tsegInfoAddr;
-    error = GetMemTsegInfo(device_, devAddr, hostAddr, static_cast<uint64_t>(size), &(argHandle->memTsegInfo->devTsegInfo),
+                                (void)device_->Driver_()->DevMemFree(devAddr, device_->Id_());
+                                , "Alloc mem for tseg info failed, retCode=%#x, size=%zu, device_id=%u.", error,
+                                sizeof(struct memTsegInfo), device_->Id_());
+
+    argHandle->memTsegInfo = (struct memTsegInfo*)tsegInfoAddr;
+    error = GetMemTsegInfo(
+        device_, devAddr, hostAddr, static_cast<uint64_t>(size), &(argHandle->memTsegInfo->devTsegInfo),
         &(argHandle->memTsegInfo->hostTsegInfo));
-    ERROR_PROC_RETURN_MSG_INNER(error, (void)device_->Driver_()->HostMemFree(argHandle->memTsegInfo);
-                                       argHandle->memTsegInfo = nullptr;,
-                                       "Failed to get tseg info, retCode=%#x, size=%u, device_id=%u.",
-                                       error, size, device_->Id_());
+    ERROR_PROC_RETURN_MSG_INNER(
+        error, (void)device_->Driver_()->HostMemFree(argHandle->memTsegInfo); argHandle->memTsegInfo = nullptr;
+        , "Failed to get tseg info, retCode=%#x, size=%u, device_id=%u.", error, size, device_->Id_());
 
     RT_LOG(RT_LOG_DEBUG, "Alloc args dynamic mem success.");
 
@@ -174,15 +172,15 @@ rtError_t UbArgLoader::AllocDynamic(const uint32_t size, UbHandle * const argHan
 rtError_t UbArgLoader::AllocCopyPtr(const uint32_t size, StarsArgLoaderResult* const result)
 {
     rtError_t error = RT_ERROR_NONE;
-    UbHandle *argHandle = nullptr;
+    UbHandle* argHandle = nullptr;
 
     result->handle = handleAllocator_->AllocItem();
-    COND_RETURN_AND_MSG_OUTER(result->handle == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(UbHandle), "new");
-    argHandle = static_cast<UbHandle *>(result->handle);
+    COND_RETURN_AND_MSG_OUTER(
+        result->handle == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(UbHandle), "new");
+    argHandle = static_cast<UbHandle*>(result->handle);
     argHandle->argsAlloc = nullptr;
-    void *devTsegInfo = nullptr;
-    void *hostTsegInfo = nullptr;
+    void* devTsegInfo = nullptr;
+    void* hostTsegInfo = nullptr;
 
     if (size <= UB_ARG_MAX_SUPER_ENTRY_SIZE) {
         error = AllocDevArgPool(size, argHandle, &devTsegInfo, &hostTsegInfo);
@@ -201,5 +199,5 @@ rtError_t UbArgLoader::AllocCopyPtr(const uint32_t size, StarsArgLoaderResult* c
     return error;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

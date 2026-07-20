@@ -17,32 +17,31 @@
 #include "rts_snapshot.h"
 
 // For any api that involves modifications to device resources, this should be added
-#define GLOBAL_STATE_WAIT_IF_LOCKED() \
-    GlobalStateManager::GetInstance().WaitIfLocked(__func__)
+#define GLOBAL_STATE_WAIT_IF_LOCKED() GlobalStateManager::GetInstance().WaitIfLocked(__func__)
 
 namespace cce {
 namespace runtime {
 class GlobalStateManager {
 public:
-    static GlobalStateManager &GetInstance();
-    std::mutex &GetStateMtx();
+    static GlobalStateManager& GetInstance();
+    std::mutex& GetStateMtx();
     rtError_t Locked();
     rtError_t Unlocked();
     // Called when the process exits, unblocks unconditionally, and does not report errors.
     void ForceUnlocked();
     // Check the status; if blocked, wait.
-    void WaitIfLocked(const char *name);
+    void WaitIfLocked(const char* name);
     rtProcessState GetCurrentState() const;
     void SetCurrentState(const rtProcessState state);
-    void IncBackgroundThreadCount(const char *name);
-    void DecBackgroundThreadCount(const char *name);
+    void IncBackgroundThreadCount(const char* name);
+    void DecBackgroundThreadCount(const char* name);
     // Background thread checks the status and waits if it is blocked.
-    void BackgroundThreadWaitIfLocked(const char *name);
-    static const char *StateToString(const rtProcessState state);
+    void BackgroundThreadWaitIfLocked(const char* name);
+    static const char* StateToString(const rtProcessState state);
 
 private:
-    GlobalStateManager(const GlobalStateManager &) = delete;
-    GlobalStateManager &operator=(const GlobalStateManager &) = delete;
+    GlobalStateManager(const GlobalStateManager&) = delete;
+    GlobalStateManager& operator=(const GlobalStateManager&) = delete;
     GlobalStateManager() = default;
     ~GlobalStateManager() = default;
     rtError_t WaitForAllBackgroundThreadLocked() const;
@@ -53,10 +52,10 @@ private:
     std::atomic<rtProcessState> currentState_{RT_PROCESS_STATE_RUNNING};
 
     // 监控线程的管理
-    std::atomic<uint32_t> backgroundThreadCount_{0};        // 需要阻塞的背景线程个数
-    std::atomic<uint32_t> lockedBackgroundThreadCount_{0};  // 已经阻塞的背景线程个数
+    std::atomic<uint32_t> backgroundThreadCount_{0};       // 需要阻塞的背景线程个数
+    std::atomic<uint32_t> lockedBackgroundThreadCount_{0}; // 已经阻塞的背景线程个数
 };
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif

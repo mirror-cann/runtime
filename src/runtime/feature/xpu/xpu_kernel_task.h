@@ -18,11 +18,11 @@ namespace cce {
 namespace runtime {
 
 void XpuPrintAICpuErrorInfoForDavinciTask(TaskInfo* taskInfo, const uint32_t devId);
-void TprtDavinciTaskUnInit(TaskInfo *taskInfo);
+void TprtDavinciTaskUnInit(TaskInfo* taskInfo);
 void DoCompleteSuccessForXpuDavinciTask(TaskInfo* taskInfo, const uint32_t devId);
-void SetTprtResultForDavinciTask(TaskInfo* taskInfo, const TprtLogicCqReport_t &logicCq);
-void ConstructTprtAICpuSqeForDavinciTask(TaskInfo *taskInfo, TprtSqe_t * const command);
+void SetTprtResultForDavinciTask(TaskInfo* taskInfo, const TprtLogicCqReport_t& logicCq);
+void ConstructTprtAICpuSqeForDavinciTask(TaskInfo* taskInfo, TprtSqe_t* const command);
 
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

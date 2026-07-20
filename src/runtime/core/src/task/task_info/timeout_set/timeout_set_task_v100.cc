@@ -17,11 +17,11 @@
 namespace cce {
 namespace runtime {
 #if F_DESC("TaskTimeoutSetTask")
-static void ConstructSqeForTimeoutSetTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForTimeoutSetTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    TimeoutSetTaskInfo * const timeoutSetTask = &(taskInfo->u.timeoutSetTask);
-    Stream * const stm = taskInfo->stream;
-    RtStarsAicpuControlSqe *const sqe = &(command->aicpuControlSqe);
+    TimeoutSetTaskInfo* const timeoutSetTask = &(taskInfo->u.timeoutSetTask);
+    Stream* const stm = taskInfo->stream;
+    RtStarsAicpuControlSqe* const sqe = &(command->aicpuControlSqe);
     sqe->header.type = RT_STARS_SQE_TYPE_AICPU;
     sqe->header.l1_lock = 0U;
     sqe->header.l1_unlock = 0U;
@@ -65,8 +65,9 @@ static void ConstructSqeForTimeoutSetTask(TaskInfo* taskInfo, rtStarsSqe_t *cons
 
     sqe->dest_pid = 0U;
     PrintSqe(command, "TaskTimeoutSetTask");
-    RT_LOG(RT_LOG_INFO, "TaskTimeoutSetTask ConstructSqe finish, topic_type=%u, cmd_type=%u",
-           static_cast<uint32_t>(sqe->topic_type), sqe->usr_data.cmd_type);
+    RT_LOG(
+        RT_LOG_INFO, "TaskTimeoutSetTask ConstructSqe finish, topic_type=%u, cmd_type=%u",
+        static_cast<uint32_t>(sqe->topic_type), sqe->usr_data.cmd_type);
 }
 #endif
 
@@ -83,7 +84,7 @@ static bool TimeoutSetTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommon,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_TASK_TIMEOUT_SET, funcs);
     }
@@ -93,5 +94,5 @@ static bool TimeoutSetTaskRegister()
 
 static bool g_timeoutSetTaskRegister = TimeoutSetTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

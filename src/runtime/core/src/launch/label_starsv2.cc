@@ -23,9 +23,11 @@ rtError_t CondLabelSwitchByIndex(void* const ptr, const uint32_t maxIndex, void*
     const int32_t streamId = stm->Id_();
     TaskInfo* rtStreamLabelSwitchIndexTask = nullptr;
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check if task can be sent, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check if task can be sent, stream_id=%d, retCode=%#x.", streamId,
+        static_cast<uint32_t>(error));
     std::function<void()> const errRecycle = [&rtStreamLabelSwitchIndexTask, &stm, &pos, &dstStm]() {
         TaskUnInitProc(rtStreamLabelSwitchIndexTask);
         TaskRollBack(dstStm, pos);
@@ -58,32 +60,31 @@ rtError_t CondLabelSwitchByIndex(void* const ptr, const uint32_t maxIndex, void*
 
 rtError_t CondLabelSet(Label* const lbl, Stream* const stm)
 {
-    COND_RETURN_AND_MSG_OUTER(stm->Model_() == nullptr, RT_ERROR_STREAM_MODEL,
-        ErrorCode::EE1017, "Label setting", "stream",
+    COND_RETURN_AND_MSG_OUTER(
+        stm->Model_() == nullptr, RT_ERROR_STREAM_MODEL, ErrorCode::EE1017, "Label setting", "stream",
         "The stream must be bound to a model for label set operation");
     COND_RETURN_AND_MSG_OUTER(
         (lbl->MgrType_() == Label::LABEL_MGR_TYPE_MODEL) && (stm->Model_() != lbl->Model_()), RT_ERROR_LABEL_MODEL,
-        ErrorCode::EE1017, "Label setting", "label",
-        "Label and stream must be bound to the same model");
+        ErrorCode::EE1017, "Label setting", "label", "Label and stream must be bound to the same model");
     COND_RETURN_AND_MSG_OUTER(
-        (lbl->Stream_() != nullptr) && (lbl->Stream_() != stm), RT_ERROR_LABEL_STREAM,
-        ErrorCode::EE1017, "Label setting", "label",
-        "Label is already bound to another stream");
-    COND_RETURN_AND_MSG_OUTER(lbl->SetFlag_(), RT_ERROR_LABEL_SET,
-        ErrorCode::EE1017, "Label setting", "label",
+        (lbl->Stream_() != nullptr) && (lbl->Stream_() != stm), RT_ERROR_LABEL_STREAM, ErrorCode::EE1017,
+        "Label setting", "label", "Label is already bound to another stream");
+    COND_RETURN_AND_MSG_OUTER(
+        lbl->SetFlag_(), RT_ERROR_LABEL_SET, ErrorCode::EE1017, "Label setting", "label",
         "Label has already been set, cannot set again");
     COND_RETURN_AND_MSG_OUTER(
-        (lbl->DevDstAddr_() == nullptr), RT_ERROR_LABEL_PHY_ADDR_NULL,
-        ErrorCode::EE1017, "Label setting", "label",
+        (lbl->DevDstAddr_() == nullptr), RT_ERROR_LABEL_PHY_ADDR_NULL, ErrorCode::EE1017, "Label setting", "label",
         "Call rtLabelListCpy before setting label task");
 
     TaskInfo* labelTask = nullptr;
     uint32_t pos = 0xFFFFU;
     const int32_t streamId = stm->Id_();
     rtError_t error = CheckTaskCanSend(stm);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check if task can be sent, stream_id=%d, retCode=%#x.", streamId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check if task can be sent, stream_id=%d, retCode=%#x.", streamId,
+        static_cast<uint32_t>(error));
 
-    Stream *dstStm = stm;
+    Stream* dstStm = stm;
 
     stm->StreamLock();
     error = AllocTaskInfoForCapture(&labelTask, stm, pos, dstStm);
@@ -100,8 +101,8 @@ rtError_t CondLabelSet(Label* const lbl, Stream* const stm)
     SetSqPos(labelTask, realPos);
 
     error = DavidSendTask(labelTask, dstStm);
-    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(labelTask); TaskRollBack(dstStm, pos); stm->StreamUnLock();,
-                                "label task submit failed, stream_id=%d, pos=%u, retCode=%#x.", dstStm->Id_(), pos,
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(labelTask); TaskRollBack(dstStm, pos); stm->StreamUnLock();
+                                , "label task submit failed, stream_id=%d, pos=%u, retCode=%#x.", dstStm->Id_(), pos,
                                 static_cast<uint32_t>(error));
 
     stm->StreamUnLock();

@@ -14,31 +14,23 @@
 
 namespace cce {
 namespace runtime {
-H2HCopyMgr::H2HCopyMgr(const uint32_t size, const uint32_t initCnt,
-    const uint32_t maxCnt, const BufferAllocator::Strategy stg, H2HCopyPolicy policy)
-    : NoCopy(),
-      policy_(policy)
+H2HCopyMgr::H2HCopyMgr(
+    const uint32_t size, const uint32_t initCnt, const uint32_t maxCnt, const BufferAllocator::Strategy stg,
+    H2HCopyPolicy policy)
+    : NoCopy(), policy_(policy)
 {
     if (policy_ == H2HCopyPolicy::H2H_COPY_POLICY_SYNC) {
-        argAllocator_ = new (std::nothrow) BufferAllocator(size, initCnt, maxCnt,
-            stg,  &MallocBuffer, &FreeBuffer, nullptr);
+        argAllocator_ =
+            new (std::nothrow) BufferAllocator(size, initCnt, maxCnt, stg, &MallocBuffer, &FreeBuffer, nullptr);
     }
     RT_LOG(RT_LOG_INFO, "alloc h2h copy buff success, policy %d", policy_);
 }
 
-H2HCopyMgr::H2HCopyMgr(H2HCopyPolicy policy)
-    : NoCopy(),
-      policy_(policy)
-{
-}
+H2HCopyMgr::H2HCopyMgr(H2HCopyPolicy policy) : NoCopy(), policy_(policy) {}
 
-H2HCopyMgr::~H2HCopyMgr()
-{
-    DELETE_O(argAllocator_);
-}
+H2HCopyMgr::~H2HCopyMgr() { DELETE_O(argAllocator_); }
 
-
-void *H2HCopyMgr::AllocHostMem(const bool isLogError) const
+void* H2HCopyMgr::AllocHostMem(const bool isLogError) const
 {
     if (unlikely(argAllocator_ == nullptr)) {
         RT_LOG(RT_LOG_ERROR, "alloc argAllocator_ failed!");
@@ -50,9 +42,9 @@ void *H2HCopyMgr::AllocHostMem(const bool isLogError) const
     return nullptr;
 }
 
-void *H2HCopyMgr::AllocHostMem(const uint32_t size) const
+void* H2HCopyMgr::AllocHostMem(const uint32_t size) const
 {
-    void *addr = nullptr;
+    void* addr = nullptr;
     addr = malloc(size);
     if (addr == nullptr) {
         RT_LOG(RT_LOG_ERROR, "malloc host addr failed.");
@@ -61,7 +53,7 @@ void *H2HCopyMgr::AllocHostMem(const uint32_t size) const
     return addr;
 }
 
-void H2HCopyMgr::FreeHostMem(void *item) const
+void H2HCopyMgr::FreeHostMem(void* item) const
 {
     if (item == nullptr) {
         RT_LOG(RT_LOG_ERROR, "free item is null!");
@@ -76,7 +68,7 @@ void H2HCopyMgr::FreeHostMem(void *item) const
     argAllocator_->FreeByItem(item);
 }
 
-rtError_t H2HCopyMgr::H2DMemCopy(void *dst, const void * const src, const uint32_t size) const
+rtError_t H2HCopyMgr::H2DMemCopy(void* dst, const void* const src, const uint32_t size) const
 {
     if (dst == nullptr || src == nullptr) {
         RT_LOG(RT_LOG_ERROR, "destination address, source address parameters are illegal");
@@ -85,16 +77,18 @@ rtError_t H2HCopyMgr::H2DMemCopy(void *dst, const void * const src, const uint32
     uint32_t offset = 0U;
     uint32_t remaining = 0U;
     uint32_t curSize = 0U;
-    void *dest = dst;
-    const void *srcAddr = src;
-    void* nonConstSrc = RtPtrToUnConstPtr<void *>(srcAddr);
+    void* dest = dst;
+    const void* srcAddr = src;
+    void* nonConstSrc = RtPtrToUnConstPtr<void*>(srcAddr);
     if (policy_ == H2HCopyPolicy::H2H_COPY_POLICY_SYNC) {
         while (offset < size) {
             remaining = size - offset;
             curSize = (remaining < SECUREC_MEM_MAX_LEN) ? remaining : SECUREC_MEM_MAX_LEN;
-            const errno_t ret = memcpy_s(RtValueToPtr<void *>(RtPtrToValue<void *>(dest) + offset), static_cast<size_t>(curSize),
-                RtValueToPtr<void *>(RtPtrToValue<void *>(nonConstSrc) + offset), static_cast<size_t>(curSize));
-            COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_INVALID_VALUE,
+            const errno_t ret = memcpy_s(
+                RtValueToPtr<void*>(RtPtrToValue<void*>(dest) + offset), static_cast<size_t>(curSize),
+                RtValueToPtr<void*>(RtPtrToValue<void*>(nonConstSrc) + offset), static_cast<size_t>(curSize));
+            COND_RETURN_ERROR_MSG_CALL(
+                ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_INVALID_VALUE,
                 "%s failed. Reason: Standard function memcpy_s failed. [Errno %d] %s. size=%u, offset=%u, kind=%d.",
                 __func__, ret, strerror(ret), size, offset, RT_MEMCPY_HOST_TO_HOST);
             offset += curSize;
@@ -103,10 +97,10 @@ rtError_t H2HCopyMgr::H2DMemCopy(void *dst, const void * const src, const uint32
     return RT_ERROR_NONE;
 }
 
-void *H2HCopyMgr::MallocBuffer(const size_t size, void * const para)
+void* H2HCopyMgr::MallocBuffer(const size_t size, void* const para)
 {
     UNUSED(para);
-    void *addr = nullptr;
+    void* addr = nullptr;
     addr = malloc(size);
     if (addr == nullptr) {
         RT_LOG(RT_LOG_ERROR, "malloc Host addr failed, retCode=%#x, size=%u(bytes)", size);
@@ -115,7 +109,7 @@ void *H2HCopyMgr::MallocBuffer(const size_t size, void * const para)
     return addr;
 }
 
-void H2HCopyMgr::FreeBuffer(void * const addr, void * const para)
+void H2HCopyMgr::FreeBuffer(void* const addr, void* const para)
 {
     UNUSED(para);
     if (addr != nullptr) {
@@ -123,5 +117,5 @@ void H2HCopyMgr::FreeBuffer(void * const addr, void * const para)
     }
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

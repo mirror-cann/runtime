@@ -13,20 +13,17 @@
 namespace cce {
 namespace runtime {
 
-DeviceSqCqPool::DeviceSqCqPool(Device * const dev)
-    : NoCopy(),
-      device_(dev)
-{
-}
+DeviceSqCqPool::DeviceSqCqPool(Device* const dev) : NoCopy(), device_(dev) {}
 DeviceSqCqPool::~DeviceSqCqPool()
 {
-    RT_LOG(RT_LOG_DEBUG, "free sq cq pool deviceId=%u, tsId=%u, occupyList_size=%u, freeList_size=%u",
-        device_->Id_(), device_->DevGetTsId(), deviceSqCqOccupyList_.size(), deviceSqCqFreeList_.size());
-    for (const auto &sqCqOccupyMember : deviceSqCqOccupyList_) {
+    RT_LOG(
+        RT_LOG_DEBUG, "free sq cq pool deviceId=%u, tsId=%u, occupyList_size=%u, freeList_size=%u", device_->Id_(),
+        device_->DevGetTsId(), deviceSqCqOccupyList_.size(), deviceSqCqFreeList_.size());
+    for (const auto& sqCqOccupyMember : deviceSqCqOccupyList_) {
         RT_LOG(RT_LOG_DEBUG, "deviceSqCqOccupyList_ sqId=%u, cqId=%u", sqCqOccupyMember.sqId, sqCqOccupyMember.cqId);
         FreeSqCqToDrv(sqCqOccupyMember.sqId, sqCqOccupyMember.cqId);
     }
-    for (const auto &sqCqFreeMember : deviceSqCqFreeList_) {
+    for (const auto& sqCqFreeMember : deviceSqCqFreeList_) {
         RT_LOG(RT_LOG_DEBUG, "deviceSqCqFreeList_ sqId=%u, cqId=%u", sqCqFreeMember.sqId, sqCqFreeMember.cqId);
         FreeSqCqToDrv(sqCqFreeMember.sqId, sqCqFreeMember.cqId);
     }
@@ -35,12 +32,9 @@ DeviceSqCqPool::~DeviceSqCqPool()
     deviceSqCqFreeList_.clear();
 }
 
-rtError_t DeviceSqCqPool::Init(void) const
-{
-    return RT_ERROR_NONE;
-}
+rtError_t DeviceSqCqPool::Init(void) const { return RT_ERROR_NONE; }
 
-void DeviceSqCqPool::FillStreamAttrSimt(rtStreamInfoExMsg_t &infoEX) const
+void DeviceSqCqPool::FillStreamAttrSimt(rtStreamInfoExMsg_t& infoEX) const
 {
     if (!device_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_SIMT)) {
         return;
@@ -59,14 +53,17 @@ void DeviceSqCqPool::FillStreamAttrSimt(rtStreamInfoExMsg_t &infoEX) const
     infoEX.body.kisSimtDvgWarpStkSize = device_->GetSimtDvgWarpStkSize();
     infoEX.body.poolId = device_->GetPoolId();
     infoEX.body.poolIdMax = device_->GetPoolIdMax();
-    RT_LOG(RT_LOG_DEBUG, "Alloc sq cq info: validFlag=%llu, poolId=%u, poolIdMax=%u, stackPhyAddr=%#llx,"
-           " WarpStkSize=%u, DvgWarpStkSize=%u.",
-           infoEX.body.validFlag, infoEX.body.poolId, infoEX.body.poolIdMax, stackPhyAddr, 
-           infoEX.body.kisSimtWarpStkSize, infoEX.body.kisSimtDvgWarpStkSize);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "Alloc sq cq info: validFlag=%llu, poolId=%u, poolIdMax=%u, stackPhyAddr=%#llx,"
+        " WarpStkSize=%u, DvgWarpStkSize=%u.",
+        infoEX.body.validFlag, infoEX.body.poolId, infoEX.body.poolIdMax, stackPhyAddr, infoEX.body.kisSimtWarpStkSize,
+        infoEX.body.kisSimtDvgWarpStkSize);
     return;
 }
 
-rtError_t DeviceSqCqPool::AllocSqCqFromDrv(rtDeviceSqCqInfo_t * const sqCqInfo, const uint32_t drvFlag, const int32_t retryCount) const
+rtError_t DeviceSqCqPool::AllocSqCqFromDrv(
+    rtDeviceSqCqInfo_t* const sqCqInfo, const uint32_t drvFlag, const int32_t retryCount) const
 {
     rtStreamAllocInfo_t info = {};
     constexpr uint32_t streamId = UINT32_MAX;
@@ -74,8 +71,8 @@ rtError_t DeviceSqCqPool::AllocSqCqFromDrv(rtDeviceSqCqInfo_t * const sqCqInfo, 
     (void)memset_s(&infoEx, sizeof(rtStreamInfoExMsg_t), 0, sizeof(rtStreamInfoExMsg_t));
     info.streamId = streamId;
     info.priority = 0U;
-    info.satMode = static_cast<uint32_t>
-        ((device_->GetSatMode() == RT_OVERFLOW_MODE_INFNAN) ? RT_OVERFLOW_MODE_INFNAN : RT_OVERFLOW_MODE_SATURATION);
+    info.satMode = static_cast<uint32_t>(
+        (device_->GetSatMode() == RT_OVERFLOW_MODE_INFNAN) ? RT_OVERFLOW_MODE_INFNAN : RT_OVERFLOW_MODE_SATURATION);
     info.overflowEn = false; // capture stream use default flag
     info.threadDisableFlag = static_cast<uint32_t>(Runtime::Instance()->GetDisableThread());
     info.shareSqId = device_->GetShareSqId();
@@ -86,11 +83,10 @@ rtError_t DeviceSqCqPool::AllocSqCqFromDrv(rtDeviceSqCqInfo_t * const sqCqInfo, 
         FillStreamAttrSimt(infoEx);
     }
 
-    const rtError_t error = device_->Driver_()->NormalSqCqAllocate(device_->Id_(),
-        device_->DevGetTsId(), drvFlag, &sqCqInfo->sqId, &sqCqInfo->cqId,
-        RtPtrToPtr<uint32_t *, rtStreamAllocInfo_t *>(&info), static_cast<uint32_t>(sizeof(info)),
-        RtPtrToPtr<uint32_t *, rtStreamInfoExMsg_t *>(&infoEx), static_cast<uint32_t>(sizeof(infoEx)),
-        retryCount);
+    const rtError_t error = device_->Driver_()->NormalSqCqAllocate(
+        device_->Id_(), device_->DevGetTsId(), drvFlag, &sqCqInfo->sqId, &sqCqInfo->cqId,
+        RtPtrToPtr<uint32_t*, rtStreamAllocInfo_t*>(&info), static_cast<uint32_t>(sizeof(info)),
+        RtPtrToPtr<uint32_t*, rtStreamInfoExMsg_t*>(&infoEx), static_cast<uint32_t>(sizeof(infoEx)), retryCount);
     COND_RETURN_INFO(error == RT_ERROR_DRV_NO_RESOURCES, RT_ERROR_DRV_NO_RESOURCES, "no resource");
     if (unlikely(error != RT_ERROR_NONE)) {
         ERROR_RETURN(error, "[DeviceSqCqPool]Failed to alloc sq cq, retCode=%#x.", static_cast<uint32_t>(error));
@@ -105,31 +101,33 @@ rtError_t DeviceSqCqPool::SetSqRegVirtualAddrToDevice(const uint32_t sqId, const
 {
     rtError_t error = RT_ERROR_NONE;
     if ((device_->GetSqVirtualArrBaseAddr_() != nullptr) && (sqRegVirtualAddr != 0ULL)) {
-        uint64_t *deviceMemForVirAddr = RtPtrToPtr<uint64_t *, void *>(device_->GetSqVirtualArrBaseAddr_()) + sqId;
-        error = device_->Driver_()->MemCopySync(RtPtrToPtr<void *, uint64_t *>(deviceMemForVirAddr), sizeof(uint64_t),
-            RtPtrToPtr<const void *, const uint64_t *>(&sqRegVirtualAddr), sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
+        uint64_t* deviceMemForVirAddr = RtPtrToPtr<uint64_t*, void*>(device_->GetSqVirtualArrBaseAddr_()) + sqId;
+        error = device_->Driver_()->MemCopySync(
+            RtPtrToPtr<void*, uint64_t*>(deviceMemForVirAddr), sizeof(uint64_t),
+            RtPtrToPtr<const void*, const uint64_t*>(&sqRegVirtualAddr), sizeof(uint64_t), RT_MEMCPY_HOST_TO_DEVICE);
     }
     RT_LOG(RT_LOG_DEBUG, "Alloc sq cq info: sq_id=%u, error=%u", sqId, error);
 
     return error;
 }
 
-rtError_t DeviceSqCqPool::AllocSqRegVirtualAddr(const uint32_t sqId, uint64_t &sqRegVirtualAddr) const
+rtError_t DeviceSqCqPool::AllocSqRegVirtualAddr(const uint32_t sqId, uint64_t& sqRegVirtualAddr) const
 {
     uint32_t addrLen = 0U;
     auto driver = device_->Driver_();
-    rtError_t error = driver->GetSqRegVirtualAddrBySqid(static_cast<int32_t>(device_->Id_()),
-        device_->DevGetTsId(), sqId, &sqRegVirtualAddr, &addrLen);
+    rtError_t error = driver->GetSqRegVirtualAddrBySqid(
+        static_cast<int32_t>(device_->Id_()), device_->DevGetTsId(), sqId, &sqRegVirtualAddr, &addrLen);
     ERROR_RETURN(error, "Failed to get sq reg virtual addr, deviceId=%u, sqId=%u.", device_->Id_(), sqId);
     RT_LOG(RT_LOG_DEBUG, "Success to get sq=%u sq reg virtual addr length=%u.", sqId, addrLen);
 
     error = SetSqRegVirtualAddrToDevice(sqId, sqRegVirtualAddr);
     if (error != RT_ERROR_NONE) {
-        if (driver->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_MAP_SQ_ADDR_TO_USER_SPACE))  {
+        if (driver->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_MAP_SQ_ADDR_TO_USER_SPACE)) {
             (void)driver->UnmapSqRegVirtualAddrBySqid(
                 static_cast<int32_t>(device_->Id_()), device_->DevGetTsId(), sqId);
         }
-        RT_LOG(RT_LOG_ERROR, "Failed to copy sqid=%u virtual addr to device, error=%#x.", sqId,
+        RT_LOG(
+            RT_LOG_ERROR, "Failed to copy sqid=%u virtual addr to device, error=%#x.", sqId,
             static_cast<uint32_t>(error));
         return error;
     }
@@ -139,7 +137,8 @@ rtError_t DeviceSqCqPool::AllocSqRegVirtualAddr(const uint32_t sqId, uint64_t &s
 
 rtError_t DeviceSqCqPool::BatchAllocSqCq(const uint32_t allcocNum, const int32_t retryCount)
 {
-    COND_RETURN_INFO((deviceSqCqFreeList_.size() + deviceSqCqOccupyList_.size() + allcocNum) > RT_DEVICE_SQCQ_RES_MAX_NUM,
+    COND_RETURN_INFO(
+        (deviceSqCqFreeList_.size() + deviceSqCqOccupyList_.size() + allcocNum) > RT_DEVICE_SQCQ_RES_MAX_NUM,
         RT_ERROR_DEVICE_SQCQ_POOL_RESOURCE_FULL,
         "The number of sq cq resouces has reached the maximum free_size=%u, occupy_size=%u, need allcocNum=%u.",
         deviceSqCqFreeList_.size(), deviceSqCqOccupyList_.size(), allcocNum);
@@ -148,18 +147,20 @@ rtError_t DeviceSqCqPool::BatchAllocSqCq(const uint32_t allcocNum, const int32_t
     for (uint32_t loop = 0U; loop < allcocNum; loop++) {
         (void)memset_s(&sqCqInfo, sizeof(sqCqInfo), 0x0, sizeof(sqCqInfo));
         rtError_t error = AllocSqCqFromDrv(&sqCqInfo, TSDRV_FLAG_NO_SQ_MEM, retryCount);
-        COND_RETURN_INFO((error != RT_ERROR_NONE), error, "alloc sq cq, loop=%u, retCode=%#x.",
-            loop, static_cast<uint32_t>(error));
+        COND_RETURN_INFO(
+            (error != RT_ERROR_NONE), error, "alloc sq cq, loop=%u, retCode=%#x.", loop, static_cast<uint32_t>(error));
 
         error = AllocSqRegVirtualAddr(sqCqInfo.sqId, sqCqInfo.sqRegVirtualAddr);
         /* Failure rollback: The SQ and CQ requested in the current loop need to be released;
            instead, those obtained in previous loops are retained in the freeList. */
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreeSqCqToDrv(sqCqInfo.sqId, sqCqInfo.cqId),
+        COND_PROC_RETURN_ERROR(
+            error != RT_ERROR_NONE, error, (void)FreeSqCqToDrv(sqCqInfo.sqId, sqCqInfo.cqId),
             "Failed to alloc sq reg addr, loop=%u, retCode=%#x.", loop, static_cast<uint32_t>(error));
 
         deviceSqCqFreeList_.push_back(sqCqInfo);
-        RT_LOG(RT_LOG_DEBUG, "Alloc SqCq: sq_id=%u, cq_id=%u, virtualAddr=%u, error=%u",
-            sqCqInfo.sqId, sqCqInfo.cqId, sqCqInfo.sqRegVirtualAddr, error);
+        RT_LOG(
+            RT_LOG_DEBUG, "Alloc SqCq: sq_id=%u, cq_id=%u, virtualAddr=%u, error=%u", sqCqInfo.sqId, sqCqInfo.cqId,
+            sqCqInfo.sqRegVirtualAddr, error);
     }
 
     return RT_ERROR_NONE;
@@ -171,13 +172,12 @@ void DeviceSqCqPool::PreAllocSqCq(void)
 
     const std::lock_guard<std::mutex> deviceSqCqLock(deviceSqCqLock_);
     const rtError_t error = BatchAllocSqCq(1U, 0); // alloc sq cq only once
-    COND_RETURN_VOID_WARN(error != RT_ERROR_NONE, "alloc sq cq from hal, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_VOID_WARN(error != RT_ERROR_NONE, "alloc sq cq from hal, retCode=%#x.", static_cast<uint32_t>(error));
 
     return;
 }
 
-rtError_t DeviceSqCqPool::AllocSqCq(const uint32_t allcocNum, rtDeviceSqCqInfo_t * const sqCqList)
+rtError_t DeviceSqCqPool::AllocSqCq(const uint32_t allcocNum, rtDeviceSqCqInfo_t* const sqCqList)
 {
     RT_LOG(RT_LOG_DEBUG, "deviceId=%u, tsId=%u, allcocNum=%u", device_->Id_(), device_->DevGetTsId(), allcocNum);
     if ((allcocNum == 0U) || (sqCqList == nullptr)) {
@@ -186,11 +186,13 @@ rtError_t DeviceSqCqPool::AllocSqCq(const uint32_t allcocNum, rtDeviceSqCqInfo_t
     const std::lock_guard<std::mutex> deviceSqCqLock(deviceSqCqLock_);
     if (deviceSqCqFreeList_.size() < allcocNum) {
         const rtError_t error = BatchAllocSqCq(allcocNum - static_cast<uint32_t>(deviceSqCqFreeList_.size()));
-        COND_RETURN_INFO((error != RT_ERROR_NONE), error, "Unable to allocate SQ and CQ, allocNum=%u, retCode=%#x.",
-            allcocNum, static_cast<uint32_t>(error));
+        COND_RETURN_INFO(
+            (error != RT_ERROR_NONE), error, "Unable to allocate SQ and CQ, allocNum=%u, retCode=%#x.", allcocNum,
+            static_cast<uint32_t>(error));
     }
-    RT_LOG(RT_LOG_DEBUG, "before deviceId=%u, tsId=%u, occupyList_size=%u, freeList_size=%u",
-        device_->Id_(), device_->DevGetTsId(), deviceSqCqOccupyList_.size(), deviceSqCqFreeList_.size());
+    RT_LOG(
+        RT_LOG_DEBUG, "before deviceId=%u, tsId=%u, occupyList_size=%u, freeList_size=%u", device_->Id_(),
+        device_->DevGetTsId(), deviceSqCqOccupyList_.size(), deviceSqCqFreeList_.size());
     rtDeviceSqCqInfo_t sqCqInfo = {};
     uint32_t hasAllcocNum = 0;
     while ((hasAllcocNum < allcocNum) && (deviceSqCqFreeList_.size() != 0U)) {
@@ -201,31 +203,33 @@ rtError_t DeviceSqCqPool::AllocSqCq(const uint32_t allcocNum, rtDeviceSqCqInfo_t
         hasAllcocNum++;
     }
 
-    RT_LOG(RT_LOG_DEBUG, "after deviceId=%u, tsId=%u, occupyList_size=%u, freeList_size=%u",
-        device_->Id_(), device_->DevGetTsId(), deviceSqCqOccupyList_.size(), deviceSqCqFreeList_.size());
+    RT_LOG(
+        RT_LOG_DEBUG, "after deviceId=%u, tsId=%u, occupyList_size=%u, freeList_size=%u", device_->Id_(),
+        device_->DevGetTsId(), deviceSqCqOccupyList_.size(), deviceSqCqFreeList_.size());
 
     return RT_ERROR_NONE;
 }
 
-rtError_t DeviceSqCqPool::AllocSqCqForAutoSplit(rtDeviceSqCqInfo_t * const sqCqInfo) const
+rtError_t DeviceSqCqPool::AllocSqCqForAutoSplit(rtDeviceSqCqInfo_t* const sqCqInfo) const
 {
     RT_LOG(RT_LOG_DEBUG, "deviceId=%u, tsId=%u", device_->Id_(), device_->DevGetTsId());
-    COND_RETURN_INFO((sqCqInfo == nullptr), RT_ERROR_INVALID_VALUE,
-        "sqCqInfo is nullptr, deviceId=%u.", device_->Id_());
+    COND_RETURN_INFO(
+        (sqCqInfo == nullptr), RT_ERROR_INVALID_VALUE, "sqCqInfo is nullptr, deviceId=%u.", device_->Id_());
     uint32_t drvFlag = static_cast<uint32_t>(TSDRV_FLAG_NO_SQ_MEM);
     if (Runtime::Instance()->GetConnectUbFlag()) {
         drvFlag |= static_cast<uint32_t>(TSDRV_FLAG_TASK_SINK_SQ);
     }
     rtError_t error = AllocSqCqFromDrv(sqCqInfo, drvFlag, PRE_ALLOC_SQ_CQ_RETRY_MAX_COUNT);
-    COND_RETURN_INFO((error != RT_ERROR_NONE), error, "alloc sq cq, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_INFO((error != RT_ERROR_NONE), error, "alloc sq cq, retCode=%#x.", static_cast<uint32_t>(error));
     error = AllocSqRegVirtualAddr(sqCqInfo->sqId, sqCqInfo->sqRegVirtualAddr);
     /* Failure rollback: Free the SQ/CQ just allocated from driver */
-    COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, (void)FreeSqCqToDrv(sqCqInfo->sqId, sqCqInfo->cqId),
+    COND_PROC_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, (void)FreeSqCqToDrv(sqCqInfo->sqId, sqCqInfo->cqId),
         "Failed to alloc sq reg addr, retCode=%#x.", static_cast<uint32_t>(error));
 
-    RT_LOG(RT_LOG_DEBUG, "Alloc SqCq: sq_id=%u, cq_id=%u, drvFlag=0x%x, error=%u",
-        sqCqInfo->sqId, sqCqInfo->cqId, drvFlag, error);
+    RT_LOG(
+        RT_LOG_DEBUG, "Alloc SqCq: sq_id=%u, cq_id=%u, drvFlag=0x%x, error=%u", sqCqInfo->sqId, sqCqInfo->cqId, drvFlag,
+        error);
 
     return RT_ERROR_NONE;
 }
@@ -236,14 +240,15 @@ rtError_t DeviceSqCqPool::FreeSqCqToDrv(const uint32_t sqId, const uint32_t cqId
         constexpr uint32_t drvFlag = 0U;
         RT_LOG(RT_LOG_DEBUG, "free SqCq: sq_id=%u, cq_id=%u", sqId, cqId);
 
-        const rtError_t error = device_->Driver_()->NormalSqCqFree(device_->Id_(), device_->DevGetTsId(), drvFlag, sqId, cqId);
+        const rtError_t error =
+            device_->Driver_()->NormalSqCqFree(device_->Id_(), device_->DevGetTsId(), drvFlag, sqId, cqId);
         ERROR_RETURN(error, "Failed to free sq cq, retCode=%#x.", static_cast<uint32_t>(error));
     }
 
     return RT_ERROR_NONE;
 }
 
-rtError_t DeviceSqCqPool::FreeSqCqLazy(const rtDeviceSqCqInfo_t * const sqCqList, const uint32_t freeNum)
+rtError_t DeviceSqCqPool::FreeSqCqLazy(const rtDeviceSqCqInfo_t* const sqCqList, const uint32_t freeNum)
 {
     RT_LOG(RT_LOG_DEBUG, "deviceId=%u, tsId=%u, freeNum=%u", device_->Id_(), device_->DevGetTsId(), freeNum);
     if ((freeNum == 0U) || (sqCqList == nullptr)) {
@@ -253,15 +258,16 @@ rtError_t DeviceSqCqPool::FreeSqCqLazy(const rtDeviceSqCqInfo_t * const sqCqList
     for (uint32_t listId = 0; listId < freeNum; listId++) {
         uint32_t sqId = sqCqList[listId].sqId;
         uint32_t cqId = sqCqList[listId].cqId;
-        auto it = std::find_if(deviceSqCqOccupyList_.begin(), deviceSqCqOccupyList_.end(),
-            [sqId, cqId](const rtDeviceSqCqInfo_t& info) {
-                return (info.sqId == sqId) && (info.cqId == cqId);
-            });
+        auto it = std::find_if(
+            deviceSqCqOccupyList_.begin(), deviceSqCqOccupyList_.end(),
+            [sqId, cqId](const rtDeviceSqCqInfo_t& info) { return (info.sqId == sqId) && (info.cqId == cqId); });
         if (it != deviceSqCqOccupyList_.end()) {
             (void)deviceSqCqOccupyList_.erase(it);
             deviceSqCqFreeList_.push_back(sqCqList[listId]);
         }
-        RT_LOG(RT_LOG_DEBUG, "deviceId=%u, tsId=%u, sqId=%u, cqId=%u, occupyList_size=%u, freeList_size=%u, isMatchSqIdCqId=%u",
+        RT_LOG(
+            RT_LOG_DEBUG,
+            "deviceId=%u, tsId=%u, sqId=%u, cqId=%u, occupyList_size=%u, freeList_size=%u, isMatchSqIdCqId=%u",
             device_->Id_(), device_->DevGetTsId(), sqCqList[listId].sqId, sqCqList[listId].cqId,
             deviceSqCqOccupyList_.size(), deviceSqCqFreeList_.size(), (it != deviceSqCqOccupyList_.end()));
     }
@@ -269,7 +275,7 @@ rtError_t DeviceSqCqPool::FreeSqCqLazy(const rtDeviceSqCqInfo_t * const sqCqList
     return RT_ERROR_NONE;
 }
 
-rtError_t DeviceSqCqPool::FreeSqCqImmediately(const rtDeviceSqCqInfo_t * const sqCqList, const uint32_t freeNum)
+rtError_t DeviceSqCqPool::FreeSqCqImmediately(const rtDeviceSqCqInfo_t* const sqCqList, const uint32_t freeNum)
 {
     RT_LOG(RT_LOG_DEBUG, "deviceId=%u, tsId=%u, freeNum=%u", device_->Id_(), device_->DevGetTsId(), freeNum);
     if ((freeNum == 0U) || (sqCqList == nullptr)) {
@@ -279,20 +285,22 @@ rtError_t DeviceSqCqPool::FreeSqCqImmediately(const rtDeviceSqCqInfo_t * const s
     for (uint32_t listId = 0; listId < freeNum; listId++) {
         uint32_t sqId = sqCqList[listId].sqId;
         uint32_t cqId = sqCqList[listId].cqId;
-        auto it = std::find_if(deviceSqCqOccupyList_.begin(), deviceSqCqOccupyList_.end(),
-            [sqId, cqId](const rtDeviceSqCqInfo_t& info) {
-                return (info.sqId == sqId) && (info.cqId == cqId);
-            });
+        auto it = std::find_if(
+            deviceSqCqOccupyList_.begin(), deviceSqCqOccupyList_.end(),
+            [sqId, cqId](const rtDeviceSqCqInfo_t& info) { return (info.sqId == sqId) && (info.cqId == cqId); });
         if (it != deviceSqCqOccupyList_.end()) {
             const rtError_t error = FreeSqCqToDrv(sqCqList[listId].sqId, sqCqList[listId].cqId);
             if (error != RT_ERROR_NONE) {
-                RT_LOG(RT_LOG_EVENT, "FreeSqCqToDrv fail deviceId=%u, tsId=%u, sqId=%u, cqId=%u",
-                    device_->Id_(), device_->DevGetTsId(), sqCqList[listId].sqId, sqCqList[listId].cqId);
+                RT_LOG(
+                    RT_LOG_EVENT, "FreeSqCqToDrv fail deviceId=%u, tsId=%u, sqId=%u, cqId=%u", device_->Id_(),
+                    device_->DevGetTsId(), sqCqList[listId].sqId, sqCqList[listId].cqId);
                 continue;
             }
             (void)deviceSqCqOccupyList_.erase(it);
         }
-        RT_LOG(RT_LOG_DEBUG, "deviceId=%u, tsId=%u, sqId=%u, cqId=%u, occupyList_size=%u, freeList_size=%u, isMatchSqIdCqId=%u",
+        RT_LOG(
+            RT_LOG_DEBUG,
+            "deviceId=%u, tsId=%u, sqId=%u, cqId=%u, occupyList_size=%u, freeList_size=%u, isMatchSqIdCqId=%u",
             device_->Id_(), device_->DevGetTsId(), sqCqList[listId].sqId, sqCqList[listId].cqId,
             deviceSqCqOccupyList_.size(), deviceSqCqFreeList_.size(), (it != deviceSqCqOccupyList_.end()));
     }
@@ -303,8 +311,9 @@ rtError_t DeviceSqCqPool::FreeSqCqImmediately(const rtDeviceSqCqInfo_t * const s
 uint32_t DeviceSqCqPool::GetSqCqPoolTotalResNum(void)
 {
     const std::lock_guard<std::mutex> deviceSqCqLock(deviceSqCqLock_);
-    RT_LOG(RT_LOG_DEBUG, "deviceId=%u, tsId=%u, occupyList_size=%u, freeList_size=%u",
-        device_->Id_(), device_->DevGetTsId(), deviceSqCqOccupyList_.size(), deviceSqCqFreeList_.size());
+    RT_LOG(
+        RT_LOG_DEBUG, "deviceId=%u, tsId=%u, occupyList_size=%u, freeList_size=%u", device_->Id_(),
+        device_->DevGetTsId(), deviceSqCqOccupyList_.size(), deviceSqCqFreeList_.size());
 
     return static_cast<uint32_t>(deviceSqCqFreeList_.size() + deviceSqCqOccupyList_.size());
 }
@@ -339,8 +348,8 @@ void DeviceSqCqPool::FreeOccupyList(void)
 }
 
 void DeviceSqCqPool::FreeReallocatedSqCqToDrv(
-    const std::list<rtDeviceSqCqInfo_t>::iterator begin,
-    const std::list<rtDeviceSqCqInfo_t>::iterator end) const {
+    const std::list<rtDeviceSqCqInfo_t>::iterator begin, const std::list<rtDeviceSqCqInfo_t>::iterator end) const
+{
     for (auto it = begin; it != end; ++it) {
         (void)FreeSqCqToDrv(it->sqId, it->cqId);
     }
@@ -352,14 +361,16 @@ rtError_t DeviceSqCqPool::ReAllocSqCqForFreeList(void)
 
     for (auto it = deviceSqCqFreeList_.begin(); it != deviceSqCqFreeList_.end(); ++it) {
         rtError_t error = AllocSqCqFromDrv(&(*it), drvFlag);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, FreeReallocatedSqCqToDrv(deviceSqCqFreeList_.begin(), it),
+        COND_PROC_RETURN_ERROR(
+            error != RT_ERROR_NONE, error, FreeReallocatedSqCqToDrv(deviceSqCqFreeList_.begin(), it),
             "Fail to realloc sqcq from driver, deviceId=%u, sqId=%u.", device_->Id_(), it->sqId);
         error = AllocSqRegVirtualAddr(it->sqId, it->sqRegVirtualAddr);
-        COND_PROC_RETURN_ERROR(error != RT_ERROR_NONE, error, FreeReallocatedSqCqToDrv(deviceSqCqFreeList_.begin(), ++it),
+        COND_PROC_RETURN_ERROR(
+            error != RT_ERROR_NONE, error, FreeReallocatedSqCqToDrv(deviceSqCqFreeList_.begin(), ++it),
             "Failed to alloc sq reg addr from driver, retCode=%#x.", static_cast<uint32_t>(error));
     }
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

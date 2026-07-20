@@ -14,19 +14,19 @@
 
 namespace cce {
 namespace runtime {
-DeviceStateCallbackManager &DeviceStateCallbackManager::Instance()
+DeviceStateCallbackManager& DeviceStateCallbackManager::Instance()
 {
     static DeviceStateCallbackManager insManager;
     return insManager;
 }
 
-rtError_t DeviceStateCallbackManager::RegDeviceStateCallback(const char_t *regName, void *callback, void *args,
-    DeviceStateCallback type, rtDevCallBackDir_t notifyPos)
+rtError_t DeviceStateCallbackManager::RegDeviceStateCallback(
+    const char_t* regName, void* callback, void* args, DeviceStateCallback type, rtDevCallBackDir_t notifyPos)
 {
     const std::unique_lock<std::mutex> cbMapLock(mapMutex_);
     std::string tmpName(regName);
     if (callback == nullptr) {
-        (void) callbackMap_.erase(tmpName);
+        (void)callbackMap_.erase(tmpName);
         RT_LOG(RT_LOG_DEBUG, "unregister device state callback finish, name:%s.", regName);
         return RT_ERROR_NONE;
     }
@@ -36,22 +36,26 @@ rtError_t DeviceStateCallbackManager::RegDeviceStateCallback(const char_t *regNa
         callbackMap_[regName].callbackV2 = nullptr;
         callbackMap_[regName].args = nullptr;
         callbackMap_[regName].notifyPos = notifyPos;
-    } else if(type == DeviceStateCallback::RTS_DEVICE_STATE_CALLBACK) {
-        COND_RETURN_AND_MSG_OUTER(callbackMap_.count(regName) > 0, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011, "Registering the device status callback function",
-            regName, "regName", "The callback function " + std::string(regName) +
-            " has been registered and cannot be registered again");
+    } else if (type == DeviceStateCallback::RTS_DEVICE_STATE_CALLBACK) {
+        COND_RETURN_AND_MSG_OUTER(
+            callbackMap_.count(regName) > 0, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+            "Registering the device status callback function", regName, "regName",
+            "The callback function " + std::string(regName) + " has been registered and cannot be registered again");
         callbackMap_[regName].callback = nullptr;
         callbackMap_[regName].callbackV2 = RtPtrToPtr<rtsDeviceStateCallback>(callback);
         callbackMap_[regName].args = args;
         callbackMap_[regName].notifyPos = DEV_CB_POS_END;
     } else {
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1003, "Registering the device status callback function", DeviceStateCallbackToString(type), "type",
-            "RT_DEVICE_STATE_CALLBACK(0) or RTS_DEVICE_STATE_CALLBACK(1)");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1003, "Registering the device status callback function", DeviceStateCallbackToString(type),
+            "type", "RT_DEVICE_STATE_CALLBACK(0) or RTS_DEVICE_STATE_CALLBACK(1)");
         return RT_ERROR_INVALID_VALUE;
     }
 
     callbackMap_[regName].type = type;
-    RT_LOG(RT_LOG_DEBUG, "register device state callback finish, name:%s, notifyPos:%d, type:%u.", regName, notifyPos, type);
+    RT_LOG(
+        RT_LOG_DEBUG, "register device state callback finish, name:%s, notifyPos:%d, type:%u.", regName, notifyPos,
+        type);
     return RT_ERROR_NONE;
 }
 
@@ -64,8 +68,8 @@ void DeviceStateCallbackManager::ProfNotify(const uint32_t deviceId, const bool 
     }
 }
 
-void DeviceStateCallbackManager::Notify(const uint32_t deviceId, const bool isOpen, const rtDevCallBackDir_t notifyPos,
-    rtDeviceState deviceState)
+void DeviceStateCallbackManager::Notify(
+    const uint32_t deviceId, const bool isOpen, const rtDevCallBackDir_t notifyPos, rtDeviceState deviceState)
 {
     std::string isOpenStr;
     if (isOpen) {
@@ -77,13 +81,15 @@ void DeviceStateCallbackManager::Notify(const uint32_t deviceId, const bool isOp
     if (notifyPos == DEV_CB_POS_BACK) {
         const auto profRet = MsprofNotifySetDevice(0, deviceId, isOpen);
         if (profRet != MSPROF_ERROR_NONE) {
-            RT_LOG(RT_LOG_WARNING, "MsprofNotifySetDevice maybe profiling is closed, ret = %#x", static_cast<uint32_t>(profRet));
+            RT_LOG(
+                RT_LOG_WARNING, "MsprofNotifySetDevice maybe profiling is closed, ret = %#x",
+                static_cast<uint32_t>(profRet));
         }
     }
     uint32_t userDeviceId = 0U;
     const rtError_t error = Runtime::Instance()->GetUserDevIdByDeviceId(deviceId, &userDeviceId);
-    COND_RETURN_VOID(error != RT_ERROR_NONE, "Get logicDeviceId:%u failed, err:%#x",
-        deviceId, static_cast<uint32_t>(error));
+    COND_RETURN_VOID(
+        error != RT_ERROR_NONE, "Get logicDeviceId:%u failed, err:%#x", deviceId, static_cast<uint32_t>(error));
 
     // Avoid callback function use long time lock,so copy to tmp map to call callback function.
     std::unordered_map<std::string, DeviceStateCallbackInfo> notifyMap;
@@ -91,7 +97,7 @@ void DeviceStateCallbackManager::Notify(const uint32_t deviceId, const bool isOp
         const std::unique_lock<std::mutex> cbMapLock(mapMutex_);
         notifyMap.insert(callbackMap_.cbegin(), callbackMap_.cend());
     }
-    for (const auto &info:notifyMap) {
+    for (const auto& info : notifyMap) {
         RT_LOG(RT_LOG_DEBUG, "notify [%s] device state start.", info.first.c_str());
         const DeviceStateCallback type = info.second.type;
         if (type == DeviceStateCallback::RT_DEVICE_STATE_CALLBACK) {
@@ -102,7 +108,7 @@ void DeviceStateCallbackManager::Notify(const uint32_t deviceId, const bool isOp
             callback(userDeviceId, isOpen);
         } else if (type == DeviceStateCallback::RTS_DEVICE_STATE_CALLBACK) {
             auto callback = info.second.callbackV2;
-            void *args = info.second.args;
+            void* args = info.second.args;
             callback(userDeviceId, deviceState, args);
         } else {
             RT_LOG(RT_LOG_ERROR, "notify device state type:%u is invalid.", type);
@@ -111,5 +117,5 @@ void DeviceStateCallbackManager::Notify(const uint32_t deviceId, const bool isOp
         RT_LOG(RT_LOG_DEBUG, "notify [%s] device state end.", info.first.c_str());
     }
 }
-}
-}
+} // namespace runtime
+} // namespace cce

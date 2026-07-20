@@ -16,7 +16,7 @@ using namespace cce::runtime;
 
 #ifdef __cplusplus
 extern "C" {
-#endif  // __cplusplus
+#endif // __cplusplus
 
 static rtError_t CheckSnapShotFeatureSupport()
 {
@@ -24,7 +24,9 @@ static rtError_t CheckSnapShotFeatureSupport()
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
     const rtChipType_t chipType = rtInstance->GetChipType();
     if (!IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DFX_PROCESS_SNAPSHOT)) {
-        RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support process Snapshot feature.", static_cast<int32_t>(rtInstance->GetChipType()));
+        RT_LOG(
+            RT_LOG_WARNING, "chip type(%d) does not support process Snapshot feature.",
+            static_cast<int32_t>(rtInstance->GetChipType()));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
     return RT_ERROR_NONE;
@@ -34,11 +36,11 @@ VISIBILITY_DEFAULT
 rtError_t rtSnapShotProcessLock()
 {
     rtError_t error = CheckSnapShotFeatureSupport();
-    if(error != RT_ERROR_NONE) {
+    if (error != RT_ERROR_NONE) {
         return error;
     }
 
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     error = apiInstance->SnapShotProcessLock();
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -49,11 +51,11 @@ VISIBILITY_DEFAULT
 rtError_t rtSnapShotProcessUnlock()
 {
     rtError_t error = CheckSnapShotFeatureSupport();
-    if(error != RT_ERROR_NONE) {
+    if (error != RT_ERROR_NONE) {
         return error;
     }
 
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     error = apiInstance->SnapShotProcessUnlock();
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -61,10 +63,10 @@ rtError_t rtSnapShotProcessUnlock()
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtSnapShotProcessGetState(rtProcessState *state)
+rtError_t rtSnapShotProcessGetState(rtProcessState* state)
 {
     const rtError_t error = CheckSnapShotFeatureSupport();
-    if(error != RT_ERROR_NONE) {
+    if (error != RT_ERROR_NONE) {
         return error;
     }
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(state, RT_ERROR_INVALID_VALUE);
@@ -76,11 +78,11 @@ VISIBILITY_DEFAULT
 rtError_t rtSnapShotProcessBackup()
 {
     rtError_t error = CheckSnapShotFeatureSupport();
-    if(error != RT_ERROR_NONE) {
+    if (error != RT_ERROR_NONE) {
         return error;
     }
 
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     error = apiInstance->SnapShotProcessBackup();
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -92,11 +94,11 @@ VISIBILITY_DEFAULT
 rtError_t rtSnapShotProcessRestore()
 {
     rtError_t error = CheckSnapShotFeatureSupport();
-    if(error != RT_ERROR_NONE) {
+    if (error != RT_ERROR_NONE) {
         return error;
     }
 
-    Api *const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     error = apiInstance->SnapShotProcessRestore();
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -105,14 +107,14 @@ rtError_t rtSnapShotProcessRestore()
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtSnapShotCallbackRegister(rtSnapShotStage stage, rtSnapShotCallBack callback, void *args)
+rtError_t rtSnapShotCallbackRegister(rtSnapShotStage stage, rtSnapShotCallBack callback, void* args)
 {
     rtError_t error = CheckSnapShotFeatureSupport();
-    if(error != RT_ERROR_NONE) {
+    if (error != RT_ERROR_NONE) {
         return error;
     }
 
-    Api *const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     error = apiInstance->SnapShotCallbackRegister(stage, callback, args);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -123,11 +125,11 @@ VISIBILITY_DEFAULT
 RTS_API rtError_t rtSnapShotCallbackUnregister(rtSnapShotStage stage, rtSnapShotCallBack callback)
 {
     rtError_t error = CheckSnapShotFeatureSupport();
-    if(error != RT_ERROR_NONE) {
+    if (error != RT_ERROR_NONE) {
         return error;
     }
 
-    Api *const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     error = apiInstance->SnapShotCallbackUnregister(stage, callback);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -136,4 +138,4 @@ RTS_API rtError_t rtSnapShotCallbackUnregister(rtSnapShotStage stage, rtSnapShot
 
 #ifdef __cplusplus
 }
-#endif  // __cplusplus
+#endif // __cplusplus

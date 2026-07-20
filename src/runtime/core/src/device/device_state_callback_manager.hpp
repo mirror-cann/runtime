@@ -17,22 +17,23 @@
 namespace cce {
 namespace runtime {
 class DeviceStateCallbackManager {
-
-struct DeviceStateCallbackInfo{
-    DeviceStateCallback     type;
-    rtDeviceStateCallback   callback;
-    rtsDeviceStateCallback  callbackV2;
-    void                    *args;
-    rtDevCallBackDir_t      notifyPos;
-};
+    struct DeviceStateCallbackInfo {
+        DeviceStateCallback type;
+        rtDeviceStateCallback callback;
+        rtsDeviceStateCallback callbackV2;
+        void* args;
+        rtDevCallBackDir_t notifyPos;
+    };
 
 public:
-    static DeviceStateCallbackManager &Instance();
+    static DeviceStateCallbackManager& Instance();
 
-    rtError_t RegDeviceStateCallback(const char_t *regName, void *callback, void *args,
-        DeviceStateCallback type, rtDevCallBackDir_t notifyPos = DEV_CB_POS_BACK);
+    rtError_t RegDeviceStateCallback(
+        const char_t* regName, void* callback, void* args, DeviceStateCallback type,
+        rtDevCallBackDir_t notifyPos = DEV_CB_POS_BACK);
 
-    void Notify(const uint32_t deviceId, const bool isOpen, const rtDevCallBackDir_t notifyPos, rtDeviceState deviceState);
+    void Notify(
+        const uint32_t deviceId, const bool isOpen, const rtDevCallBackDir_t notifyPos, rtDeviceState deviceState);
     void ProfNotify(const uint32_t deviceId, const bool isOpen) const;
 
 private:
@@ -40,20 +41,20 @@ private:
 
     ~DeviceStateCallbackManager() = default;
 
-    DeviceStateCallbackManager(const DeviceStateCallbackManager &other) = delete;
+    DeviceStateCallbackManager(const DeviceStateCallbackManager& other) = delete;
 
-    DeviceStateCallbackManager &operator=(const DeviceStateCallbackManager &other) = delete;
+    DeviceStateCallbackManager& operator=(const DeviceStateCallbackManager& other) = delete;
 
-    DeviceStateCallbackManager(DeviceStateCallbackManager &&other) = delete;
+    DeviceStateCallbackManager(DeviceStateCallbackManager&& other) = delete;
 
-    DeviceStateCallbackManager &operator=(DeviceStateCallbackManager &&other) = delete;
+    DeviceStateCallbackManager& operator=(DeviceStateCallbackManager&& other) = delete;
 
 private:
     std::unordered_map<std::string, DeviceStateCallbackInfo> callbackMap_;
     std::mutex mapMutex_;
 };
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_DEVICE_STATE_CALLBACK_MANAGER_HPP

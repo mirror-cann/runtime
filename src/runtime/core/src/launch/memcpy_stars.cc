@@ -23,7 +23,7 @@ namespace cce {
 namespace runtime {
 
 static void InitStarsSdmaSqe(
-    rtStarsSdmaSqe_t *sdmaSqe, const uint64_t count, const Stream * const stm, const rtTaskCfgInfo_t * const cfgInfo)
+    rtStarsSdmaSqe_t* sdmaSqe, const uint64_t count, const Stream* const stm, const rtTaskCfgInfo_t* const cfgInfo)
 {
     if (cfgInfo != nullptr) {
         sdmaSqe->qos = cfgInfo->qos;
@@ -48,15 +48,16 @@ static void InitStarsSdmaSqe(
     sdmaSqe->length = static_cast<uint32_t>(count);
 }
 
-rtError_t MemcopyAsyncPtr(void * const memcpyAddrInfo, const uint64_t destMax, const uint64_t count,
-    Stream *stm, const std::shared_ptr<void> &guardMem, const rtTaskCfgInfo_t * const cfgInfo, const bool isMemcpyDesc)
+rtError_t MemcopyAsyncPtr(
+    void* const memcpyAddrInfo, const uint64_t destMax, const uint64_t count, Stream* stm,
+    const std::shared_ptr<void>& guardMem, const rtTaskCfgInfo_t* const cfgInfo, const bool isMemcpyDesc)
 {
     UNUSED(destMax);
     rtError_t error;
     rtTaskGenCallback callback = nullptr;
     TaskInfo submitTask = {};
     rtError_t errorReason;
-    TaskInfo *cpyAsyncTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_MEMCPY, errorReason);
+    TaskInfo* cpyAsyncTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_MEMCPY, errorReason);
     NULL_PTR_RETURN_MSG(cpyAsyncTask, errorReason);
 
     rtStarsSdmaSqe_t sdmaSqe = {};
@@ -69,29 +70,28 @@ rtError_t MemcopyAsyncPtr(void * const memcpyAddrInfo, const uint64_t destMax, c
     } else {
         InitStarsSdmaSqe(&sdmaSqe, count, stm, cfgInfo);
     }
-    RT_LOG(RT_LOG_INFO, "memcpyAddrInfo=0x%lx , qos=%u",
-        RtPtrToValue<void *>(memcpyAddrInfo), sdmaSqe.qos);
-    Device * const dev = stm->Device_();
-    const auto recycleTask = [&dev, &cpyAsyncTask]() {
-        (void)dev->GetTaskFactory()->Recycle(cpyAsyncTask);
-    };
+    RT_LOG(RT_LOG_INFO, "memcpyAddrInfo=0x%lx , qos=%u", RtPtrToValue<void*>(memcpyAddrInfo), sdmaSqe.qos);
+    Device* const dev = stm->Device_();
+    const auto recycleTask = [&dev, &cpyAsyncTask]() { (void)dev->GetTaskFactory()->Recycle(cpyAsyncTask); };
     if (dev->Driver_()->GetRunMode() == RT_RUN_MODE_ONLINE) {
         error = dev->Driver_()->MemCopySync(memcpyAddrInfo, flushSize, &sdmaSqe, copySize, RT_MEMCPY_HOST_TO_DEVICE);
         if (error != RT_ERROR_NONE) {
-            ERROR_PROC_RETURN_MSG_INNER(error, recycleTask();,
-                "Failed to memory copy stream info, device_id=%u, size=%" PRIu64 ", retCode=%#x.",
-                dev->Id_(), copySize, error);
+            ERROR_PROC_RETURN_MSG_INNER(
+                error, recycleTask();,
+                                     "Failed to memory copy stream info, device_id=%u, size=%" PRIu64 ", retCode=%#x.",
+                                     dev->Id_(), copySize, error);
         }
-        error = dev->Driver_()->DevMemFlushCache(RtPtrToValue<void *>(memcpyAddrInfo), flushSize);
+        error = dev->Driver_()->DevMemFlushCache(RtPtrToValue<void*>(memcpyAddrInfo), flushSize);
         if (error != RT_ERROR_NONE) {
-            ERROR_PROC_RETURN_MSG_INNER(error, recycleTask();, "Failed to flush stream info, device_id=%u, retCode=%#x",
-                dev->Id_(), error);
+            ERROR_PROC_RETURN_MSG_INNER(error, recycleTask();
+                                        , "Failed to flush stream info, device_id=%u, retCode=%#x", dev->Id_(), error);
         }
     } else {
         error = dev->Driver_()->MemCopySync(memcpyAddrInfo, flushSize, &sdmaSqe, copySize, RT_MEMCPY_HOST_TO_DEVICE);
         if (error != RT_ERROR_NONE) {
-            ERROR_PROC_RETURN_MSG_INNER(error, recycleTask();,
-                "Failed to memory copy stream info, device_id=%u, retCode=%#x", dev->Id_(), error);
+            ERROR_PROC_RETURN_MSG_INNER(error, recycleTask();
+                                        , "Failed to memory copy stream info, device_id=%u, retCode=%#x", dev->Id_(),
+                                        error);
         }
     }
 
@@ -116,9 +116,10 @@ rtError_t MemcopyAsyncPtr(void * const memcpyAddrInfo, const uint64_t destMax, c
     return RT_ERROR_NONE;
 }
 
-rtError_t Memcpy2DAsync(void * const dst, const uint64_t dstPitch, const void * const src,
-    const uint64_t srcPitch, const uint64_t width, const uint64_t height, const rtMemcpyKind_t kind,
-    uint64_t * const realSize, Stream * const stm, const uint64_t fixedSize)
+rtError_t Memcpy2DAsync(
+    void* const dst, const uint64_t dstPitch, const void* const src, const uint64_t srcPitch, const uint64_t width,
+    const uint64_t height, const rtMemcpyKind_t kind, uint64_t* const realSize, Stream* const stm,
+    const uint64_t fixedSize)
 {
     TaskInfo submitTask = {};
     rtError_t errorReason;
@@ -128,11 +129,9 @@ rtError_t Memcpy2DAsync(void * const dst, const uint64_t dstPitch, const void * 
         return RT_ERROR_STREAM_NULL;
     }
 
-    TaskInfo *taskAsync2d = stm->AllocTask(&submitTask, TS_TASK_TYPE_MEMCPY, errorReason);
+    TaskInfo* taskAsync2d = stm->AllocTask(&submitTask, TS_TASK_TYPE_MEMCPY, errorReason);
     NULL_PTR_RETURN_MSG(taskAsync2d, errorReason);
-    const auto recycleTask = [&stm, &taskAsync2d]() {
-        (void)stm->Device_()->GetTaskFactory()->Recycle(taskAsync2d);
-    };
+    const auto recycleTask = [&stm, &taskAsync2d]() { (void)stm->Device_()->GetTaskFactory()->Recycle(taskAsync2d); };
 
     rtError_t error = MemcpyAsyncTaskInitV2(taskAsync2d, dst, dstPitch, src, srcPitch, width, height, kind, fixedSize);
     if (error != RT_ERROR_NONE) {
@@ -153,7 +152,7 @@ rtError_t Memcpy2DAsync(void * const dst, const uint64_t dstPitch, const void * 
     GET_THREAD_TASKID_AND_STREAMID(taskAsync2d, stm->AllocTaskStreamId());
     return RT_ERROR_NONE;
 }
-    
+
 rtError_t MemcopyAsync(
     void* const dst, const uint64_t destMax, const void* const src, const uint64_t cpySize, const rtMemcpyKind_t kind,
     Stream* const stm, uint64_t* const realSize, const std::shared_ptr<void>& guardMem,
@@ -190,8 +189,8 @@ ERROR_RECYCLE:
     return error;
 }
 
-rtError_t DevMemSetAsyncByMemset(Stream * const stm, void * const ptr,
-    const uint64_t destMax, const uint32_t fillVal, const uint64_t fillCount)
+rtError_t DevMemSetAsyncByMemset(
+    Stream* const stm, void* const ptr, const uint64_t destMax, const uint32_t fillVal, const uint64_t fillCount)
 {
     UNUSED(stm);
     UNUSED(ptr);

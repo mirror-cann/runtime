@@ -12,13 +12,13 @@
 namespace cce {
 namespace runtime {
 TIMESTAMP_EXTERN(FftsPlusTaskInit);
-rtError_t Context::FftsPlusTaskLaunch(const rtFftsPlusTaskInfo_t * const fftsPlusTaskInfo, Stream * const stm,
-                                      const uint32_t flag)
+rtError_t Context::FftsPlusTaskLaunch(
+    const rtFftsPlusTaskInfo_t* const fftsPlusTaskInfo, Stream* const stm, const uint32_t flag)
 {
     UNUSED(fftsPlusTaskInfo);
     UNUSED(stm);
     UNUSED(flag);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

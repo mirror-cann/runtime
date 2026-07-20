@@ -20,7 +20,7 @@ uint8_t GetHeadUpdateFlag(uint64_t allocTimes)
     return 1U;
 }
 
-void ConstructDavidAsyncUbDbSqe(TaskInfo * const taskInfo, rtDavidSqe_t *const command)
+void ConstructDavidAsyncUbDbSqe(TaskInfo* const taskInfo, rtDavidSqe_t* const command)
 {
     UNUSED(taskInfo);
     UNUSED(command);

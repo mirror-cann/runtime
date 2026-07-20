@@ -17,10 +17,7 @@
 namespace cce {
 namespace runtime {
 
-IoctlUtil::IoctlUtil()
-{
-    (void)OpenFd();
-}
+IoctlUtil::IoctlUtil() { (void)OpenFd(); }
 
 IoctlUtil::~IoctlUtil()
 {
@@ -35,9 +32,9 @@ rtError_t IoctlUtil::OpenFd()
 {
     std::lock_guard<std::mutex> lock(mutex_);
     const int32_t fd = mmOpen2(starsFile_.c_str(), O_RDWR, M_UMASK_USRREAD | M_UMASK_USRWRITE);
-    COND_RETURN_ERROR((fd < 0), RT_ERROR_DRV_IOCTRL,
-        "runtime open stars file failed, fd[%d], reason[%s], errno[%d].",
-        fd, strerror(errno), errno);
+    COND_RETURN_ERROR(
+        (fd < 0), RT_ERROR_DRV_IOCTRL, "runtime open stars file failed, fd[%d], reason[%s], errno[%d].", fd,
+        strerror(errno), errno);
 
     starsFd_ = fd; // starsFd_ is global variable
     RT_LOG(RT_LOG_INFO, "runtime open stars file success, fd[%d], path=[%s]", fd, starsFile_.c_str());
@@ -57,7 +54,7 @@ rtError_t IoctlUtil::CloseFd()
     return RT_ERROR_NONE;
 }
 
-rtError_t IoctlUtil::IoctlByCmd(const stars_ioctl_cmd_t cmd, const stars_ioctl_cmd_args_t *args)
+rtError_t IoctlUtil::IoctlByCmd(const stars_ioctl_cmd_t cmd, const stars_ioctl_cmd_args_t* args)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     COND_RETURN_ERROR((starsFd_ < 0), RT_ERROR_DRV_IOCTRL, "fd_[%d] is invalid", starsFd_);
@@ -74,5 +71,5 @@ IoctlUtil& IoctlUtil::GetInstance()
     return instance;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

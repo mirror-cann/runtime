@@ -32,19 +32,11 @@
 namespace cce {
 namespace runtime {
 
-TaskFactory::TaskFactory(Device * const dev)
-    : NoCopy(),
-      allocator_(nullptr),
-      exitFlag_(false),
-      retryCount_(0UL),
-      device_(dev)
-{
-}
+TaskFactory::TaskFactory(Device* const dev)
+    : NoCopy(), allocator_(nullptr), exitFlag_(false), retryCount_(0UL), device_(dev)
+{}
 
-TaskFactory::~TaskFactory()
-{
-    TearDown();
-}
+TaskFactory::~TaskFactory() { TearDown(); }
 
 void TaskFactory::TearDown() noexcept
 {
@@ -68,8 +60,8 @@ rtError_t TaskFactory::Init()
 {
     allocator_ = new (std::nothrow)
         TaskAllocator(GetTaskMaxSize(), INIT_TASK_CAPACITY, device_->GetDevProperties().maxSupportTaskNum);
-    COND_RETURN_AND_MSG_OUTER(allocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(TaskAllocator), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        allocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(TaskAllocator), "new");
     RT_LOG(RT_LOG_DEBUG, "TaskFactory::Init ok, alloc size is %zu.", sizeof(TaskAllocator));
     return RT_ERROR_NONE;
 }
@@ -86,10 +78,10 @@ uint32_t TaskFactory::GetTaskMaxSize()
     return size;
 }
 
-int32_t TaskFactory::Recycle(TaskInfo *const taskPtr)
+int32_t TaskFactory::Recycle(TaskInfo* const taskPtr)
 {
     int32_t id = static_cast<int32_t>(taskPtr->id);
-    Stream *streamPtr = taskPtr->stream;
+    Stream* streamPtr = taskPtr->stream;
 
     if (streamPtr->IsCtrlStream()) {
         TaskUnInitProc(taskPtr);
@@ -128,7 +120,7 @@ int32_t TaskFactory::Recycle(TaskInfo *const taskPtr)
     return 0;
 }
 
-void TaskFactory::TryTaskReclaim(Stream *const streamPtr) const
+void TaskFactory::TryTaskReclaim(Stream* const streamPtr) const
 {
     if (streamPtr->IsSeparateSendAndRecycle()) {
         if (!streamPtr->Device_()->GetIsDoingRecycling()) {
@@ -142,7 +134,7 @@ void TaskFactory::TryTaskReclaim(Stream *const streamPtr) const
     streamPtr->StreamSyncUnLock();
 }
 
-int32_t TaskFactory::TryAgainAlloc(Stream *const streamPtr, rtError_t &errCode)
+int32_t TaskFactory::TryAgainAlloc(Stream* const streamPtr, rtError_t& errCode)
 {
     int32_t id;
     constexpr uint32_t maxCount = 1000U;
@@ -173,14 +165,14 @@ int32_t TaskFactory::TryAgainAlloc(Stream *const streamPtr, rtError_t &errCode)
     } while (countNum < maxCount);
     retryCount_--;
 
-    COND_LOG_ERROR(countNum >= maxCount, "Alloc task id failed, retry times=%u, stream_id=%d",
-        countNum, streamPtr->Id_());
+    COND_LOG_ERROR(
+        countNum >= maxCount, "Alloc task id failed, retry times=%u, stream_id=%d", countNum, streamPtr->Id_());
     return id;
 }
 
-TaskInfo *TaskFactory::GetTask(const int32_t streamId, const uint16_t id)
+TaskInfo* TaskFactory::GetTask(const int32_t streamId, const uint16_t id)
 {
-    Stream *recycleStm = nullptr;
+    Stream* recycleStm = nullptr;
     (void)device_->GetStreamSqCqManage()->GetStreamById(static_cast<uint32_t>(streamId), &recycleStm);
     if ((recycleStm != nullptr) && (recycleStm->taskResMang_ != nullptr)) {
         return recycleStm->taskResMang_->GetTaskInfo((id != MAX_UINT16_NUM) ? id : 0U);
@@ -189,11 +181,12 @@ TaskInfo *TaskFactory::GetTask(const int32_t streamId, const uint16_t id)
 
     rtError_t errCode = RT_ERROR_NONE;
     const bool serialId = Runtime::Instance()->GetDisableThread();
-    return RtPtrToPtr<TaskInfo *, void *>(serialId ? allocator_->GetItemBySerial(streamId, static_cast<int32_t>(id)) :
-        allocator_->GetItemById(streamId, static_cast<int32_t>(id), errCode));
+    return RtPtrToPtr<TaskInfo*, void*>(
+        serialId ? allocator_->GetItemBySerial(streamId, static_cast<int32_t>(id)) :
+                   allocator_->GetItemById(streamId, static_cast<int32_t>(id), errCode));
 }
 
-void TaskFactory::SetSerialId(const Stream *const streamPtr, TaskInfo *const taskPtr)
+void TaskFactory::SetSerialId(const Stream* const streamPtr, TaskInfo* const taskPtr)
 {
     if (streamPtr->IsCtrlStream()) {
         return;
@@ -204,7 +197,7 @@ void TaskFactory::SetSerialId(const Stream *const streamPtr, TaskInfo *const tas
     }
 }
 
-void TaskFactory::ClearSerialVecId(const Stream *const streamPtr)
+void TaskFactory::ClearSerialVecId(const Stream* const streamPtr)
 {
     if (streamPtr->IsCtrlStream()) {
         return;
@@ -215,12 +208,9 @@ void TaskFactory::ClearSerialVecId(const Stream *const streamPtr)
     }
 }
 
-void TaskFactory::FreeStreamRes(const int32_t streamId)
-{
-    allocator_->FreeStreamRes(streamId);
-}
+void TaskFactory::FreeStreamRes(const int32_t streamId) { allocator_->FreeStreamRes(streamId); }
 
-TaskInfo* TaskFactory::Alloc(Stream *stream, tsTaskType_t taskType, rtError_t &errCode)
+TaskInfo* TaskFactory::Alloc(Stream* stream, tsTaskType_t taskType, rtError_t& errCode)
 {
     NULL_PTR_RETURN(stream, nullptr);
     if (stream->IsCtrlStream()) {
@@ -232,17 +222,17 @@ TaskInfo* TaskFactory::Alloc(Stream *stream, tsTaskType_t taskType, rtError_t &e
     if (!(stream->IsTaskSink())) {
         if (unlikely(id < 0)) {
             id = TryAgainAlloc(stream, errCode);
-            COND_RETURN_ERROR_MSG_INNER(exitFlag_ || (id < 0), nullptr, "Failed to alloc task id, stream_id=%d.",
-                stream->Id_());
+            COND_RETURN_ERROR_MSG_INNER(
+                exitFlag_ || (id < 0), nullptr, "Failed to alloc task id, stream_id=%d.", stream->Id_());
         }
     } else {
         COND_RETURN_ERROR_MSG_INNER(id < 0, nullptr, "Failed to alloc task id, stream_id=%d.", stream->Id_());
         stream->PushPersistentTaskID(static_cast<uint32_t>(id));
     }
 
-    void *task_addr = allocator_->GetItemById(stream->Id_(), id, errCode);
+    void* task_addr = allocator_->GetItemById(stream->Id_(), id, errCode);
     if (task_addr != nullptr) {
-        TaskInfo *task = (TaskInfo*)task_addr;
+        TaskInfo* task = (TaskInfo*)task_addr;
         (void)memset_s(task, sizeof(TaskInfo), 0, sizeof(TaskInfo));
         task->type = taskType;
         InitByStream(task, stream);
@@ -254,5 +244,5 @@ TaskInfo* TaskFactory::Alloc(Stream *stream, tsTaskType_t taskType, rtError_t &e
     return nullptr;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

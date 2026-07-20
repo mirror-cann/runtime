@@ -18,7 +18,7 @@ namespace cce {
 namespace runtime {
 
 #pragma pack(push)
-#pragma pack (1)
+#pragma pack(1)
 
 struct rtStarsSdmaSqe_t {
     uint32_t opcode : 8;
@@ -84,7 +84,7 @@ struct RtStarsPcieDmaSqe {
 struct RtStarsRdmaSinkSqe1 {
     rtStarsSqeHeader_t sqeHeader;
 
-    uint8_t condsSubType;  // CONDS_SUB_TYPE_RDMA_1, 1910b tiny only
+    uint8_t condsSubType; // CONDS_SUB_TYPE_RDMA_1, 1910b tiny only
     uint8_t reserved0[3];
     uint16_t reserved1;
     uint8_t kernelCredit;
@@ -104,7 +104,7 @@ struct RtStarsRdmaSinkSqe1 {
 struct RtStarsRdmaSinkSqe2 {
     rtStarsSqeHeader_t sqeHeader;
 
-    uint8_t condsSubType;  // CONDS_SUB_TYPE_RDMA_2, 1910b tiny only
+    uint8_t condsSubType; // CONDS_SUB_TYPE_RDMA_2, 1910b tiny only
     uint8_t reserved0[3];
     uint16_t reserved1;
     uint8_t kernelCredit;
@@ -189,29 +189,29 @@ struct RtStarsMemcpyAsyncPtrSqe {
 
 struct RtLiteStarsSdmaPyload {
     /* dw0 */
-    uint32_t opcode          : 8;
-    uint32_t sssv            : 1;
-    uint32_t dssv            : 1;
-    uint32_t sns             : 1;
-    uint32_t dns             : 1;
-    uint32_t sro             : 1;
-    uint32_t dro             : 1;
-    uint32_t stride          : 2;
-    uint32_t ie              : 1;
-    uint32_t compEn          : 1;
-    uint32_t reserved0      : 14;
+    uint32_t opcode : 8;
+    uint32_t sssv : 1;
+    uint32_t dssv : 1;
+    uint32_t sns : 1;
+    uint32_t dns : 1;
+    uint32_t sro : 1;
+    uint32_t dro : 1;
+    uint32_t stride : 2;
+    uint32_t ie : 1;
+    uint32_t compEn : 1;
+    uint32_t reserved0 : 14;
     /* dw1 */
-    uint32_t sqeId          : 16;
-    uint32_t mpamPartid      : 8;
-    uint32_t mpamns          : 1;
-    uint32_t pmg             : 2;
-    uint32_t qos             : 4;
-    uint32_t reserved1       : 1;
+    uint32_t sqeId : 16;
+    uint32_t mpamPartid : 8;
+    uint32_t mpamns : 1;
+    uint32_t pmg : 2;
+    uint32_t qos : 4;
+    uint32_t reserved1 : 1;
     /* dw2 */
-    uint32_t srcStreamid    : 16;
+    uint32_t srcStreamid : 16;
     uint32_t srcSubstreamid : 16;
     /* dw3 */
-    uint32_t dstStreamid    : 16;
+    uint32_t dstStreamid : 16;
     uint32_t dstSubstreamid : 16;
     /* dw4 dw5 */
     uint32_t srcAddrL;
@@ -220,11 +220,11 @@ struct RtLiteStarsSdmaPyload {
     uint32_t dstAddrL;
     uint32_t dstAddrH;
     /* dw8 */
-    uint32_t lengthMove    : 32;
+    uint32_t lengthMove : 32;
     /* dw9 dw10 dw11 */
-    uint32_t srcStrideLen  : 32;
-    uint32_t dstStrideLen  : 32;
-    uint32_t strideNum     : 32;
+    uint32_t srcStrideLen : 32;
+    uint32_t dstStrideLen : 32;
+    uint32_t strideNum : 32;
 };
 
 struct RtLiteStarsSqeHeadDw0 {
@@ -240,7 +240,7 @@ struct RtLiteStarsSqeHeadDw0 {
 
 struct RtLiteStarsSqeHeadDw1 {
     uint32_t rtStreamId : 16;
-    uint32_t taskId: 16;
+    uint32_t taskId : 16;
 };
 
 struct RtLiteStarsSqeHeadDw2 {
@@ -316,6 +316,6 @@ struct RtLiteStarsRdmaSqe {
 
 #pragma pack(pop)
 
-}  // namespace runtime
-}  // namespace cce
-#endif  // CCE_RUNTIME_STARS_DMA_HPP
+} // namespace runtime
+} // namespace cce
+#endif // CCE_RUNTIME_STARS_DMA_HPP

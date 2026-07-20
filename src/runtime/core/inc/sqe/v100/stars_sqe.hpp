@@ -22,31 +22,31 @@ namespace cce {
 namespace runtime {
 
 enum rtStarsSqeType {
-    RT_STARS_SQE_TYPE_FFTS            = 0, // FFTS
-    RT_STARS_SQE_TYPE_AICPU           = 1, // AICPU
-    RT_STARS_SQE_TYPE_PLACE_HOLDER    = 3, // PLACE_HOLDER
-    RT_STARS_SQE_TYPE_EVENT_RECORD    = 4, // EVENT_RECORD
-    RT_STARS_SQE_TYPE_EVENT_WAIT      = 5, // EVENT_WAIT
-    RT_STARS_SQE_TYPE_NOTIFY_RECORD   = 6, // NOTIFY_RECORD
-    RT_STARS_SQE_TYPE_NOTIFY_WAIT     = 7, // NOTIFY_WAIT
-    RT_STARS_SQE_TYPE_WRITE_VALUE     = 8, // for EVENT_RESET task
-    RT_STARS_SQE_TYPE_SDMA            = 11, // SDMA
-    RT_STARS_SQE_TYPE_VPC             = 12, // VPC
-    RT_STARS_SQE_TYPE_JPEGE           = 13, // JPEGE
-    RT_STARS_SQE_TYPE_JPEGD           = 14, // JPEGD
-    RT_STARS_SQE_TYPE_DSA             = 15, // DSA
-    RT_STARS_SQE_TYPE_ROCCE           = 16, // RoCCE
-    RT_STARS_SQE_TYPE_PCIE_DMA        = 17, // PCIE_DMA
-    RT_STARS_SQE_TYPE_RESV            = 18, // reserve
-    RT_STARS_SQE_TYPE_CDQM            = 19, // CDQM
-    RT_STARS_SQE_TYPE_COND            = 20, // condition
-    RT_STARS_SQE_TYPE_END             = 21,
-    RT_STARS_SQE_TYPE_INVALID         = 63, // STARS_SQE_TYPE_INVALID
-    RT_STARS_SQE_TYPE_VIR_TYPE        = 0xFF // DVPP virtual SQE TYPE
+    RT_STARS_SQE_TYPE_FFTS = 0,          // FFTS
+    RT_STARS_SQE_TYPE_AICPU = 1,         // AICPU
+    RT_STARS_SQE_TYPE_PLACE_HOLDER = 3,  // PLACE_HOLDER
+    RT_STARS_SQE_TYPE_EVENT_RECORD = 4,  // EVENT_RECORD
+    RT_STARS_SQE_TYPE_EVENT_WAIT = 5,    // EVENT_WAIT
+    RT_STARS_SQE_TYPE_NOTIFY_RECORD = 6, // NOTIFY_RECORD
+    RT_STARS_SQE_TYPE_NOTIFY_WAIT = 7,   // NOTIFY_WAIT
+    RT_STARS_SQE_TYPE_WRITE_VALUE = 8,   // for EVENT_RESET task
+    RT_STARS_SQE_TYPE_SDMA = 11,         // SDMA
+    RT_STARS_SQE_TYPE_VPC = 12,          // VPC
+    RT_STARS_SQE_TYPE_JPEGE = 13,        // JPEGE
+    RT_STARS_SQE_TYPE_JPEGD = 14,        // JPEGD
+    RT_STARS_SQE_TYPE_DSA = 15,          // DSA
+    RT_STARS_SQE_TYPE_ROCCE = 16,        // RoCCE
+    RT_STARS_SQE_TYPE_PCIE_DMA = 17,     // PCIE_DMA
+    RT_STARS_SQE_TYPE_RESV = 18,         // reserve
+    RT_STARS_SQE_TYPE_CDQM = 19,         // CDQM
+    RT_STARS_SQE_TYPE_COND = 20,         // condition
+    RT_STARS_SQE_TYPE_END = 21,
+    RT_STARS_SQE_TYPE_INVALID = 63,      // STARS_SQE_TYPE_INVALID
+    RT_STARS_SQE_TYPE_VIR_TYPE = 0xFF    // DVPP virtual SQE TYPE
 };
 
 #pragma pack(push)
-#pragma pack (1)
+#pragma pack(1)
 
 struct RtStarsWriteValueSqe {
     rtStarsSqeHeader_t header;
@@ -67,7 +67,7 @@ struct RtStarsWriteValueSqe {
     uint32_t awprot : 3;
     uint32_t va : 1; // 1 /* 1: virtual address; 0: phy addr */
 
-    uint32_t res7;  // event_id for event reset task
+    uint32_t res7;   // event_id for event reset task
     uint32_t sub_type;
 
     uint32_t write_value_part0;
@@ -184,10 +184,10 @@ struct RtStarsModelMaintaince {
 };
 
 struct RtStarsMaintaince {
-    uint8_t  sub_type; // force recyle
-    uint8_t  rsv;
+    uint8_t sub_type; // force recyle
+    uint8_t rsv;
     uint16_t target_id;
-    uint8_t  reserved[44];
+    uint8_t reserved[44];
 };
 struct RtMdlTaskUpdate {
     uint64_t descBufOffset; // rtFftsPlusTaskInfo_t-->descBuf
@@ -198,7 +198,7 @@ struct RtMdlTaskUpdate {
     uint16_t desStreamId;
     uint16_t destaskId;
     uint16_t exeStreamId;
-    uint8_t  reserved[8];
+    uint8_t reserved[8];
 };
 
 struct RtCommonCmd {
@@ -206,12 +206,12 @@ struct RtCommonCmd {
     uint16_t streamId; // for streamclear
     uint32_t notifyId; // for notifyreset
     uint16_t step;     // for streamclear
-    uint8_t  reserved[38];
+    uint8_t reserved[38];
 };
 
 struct RtStarsVersion {
     uint32_t buildVersion;
-    uint8_t  reserved[44];
+    uint8_t reserved[44];
 };
 
 struct RtDebugStatus {
@@ -224,8 +224,8 @@ struct RtRingBufferControl {
     uint64_t ringbuffer_phyAddr;
     uint64_t pid;
     uint32_t total_len;
-    uint8_t  ringbuffer_del_flag; // 0:create 1:delete
-    uint8_t  reserved[19];
+    uint8_t ringbuffer_del_flag; // 0:create 1:delete
+    uint8_t reserved[19];
 };
 
 struct RtGetDevMsg {
@@ -246,14 +246,14 @@ struct RtMemCpyAsyncWithoutSdma {
 
 struct RtFlipTaskTag {
     uint16_t flipNumReport;
-    uint16_t subType;       // 0：使用当前流的streamId上报, 1：使用task中携带的streamId上报
+    uint16_t subType; // 0：使用当前流的streamId上报, 1：使用task中携带的streamId上报
     uint32_t streamId;
     uint8_t reserved[40];
 };
 
 struct RtMemWaitTask {
     uint16_t dest_sqe_pos;
-    uint8_t  reserved[46];
+    uint8_t reserved[46];
 };
 
 struct RtUpdateAddrTaskTag {
@@ -292,7 +292,7 @@ struct RtStarsPhSqe {
         RtStreamOverflowSwitch stream_overflow_switch_info;
         RtGetDevMsg get_dev_msg_info;
         RtStreamSetTag stream_set_tag_info;
-        RtDebugStatus  debugStatusInfo;
+        RtDebugStatus debugStatusInfo;
         RtFlipTaskTag flip_task_info;
         RtUpdateAddrTaskTag updateAddrInfo;
         RtAicpuInfoLoad ai_cpu_load_info;
@@ -409,7 +409,7 @@ struct rtStarsLabelGotoSqe_t {
 struct RtStarsGetFloatStatusSqe {
     rtStarsSqeHeader_t sqeHeader;
 
-    uint8_t conds_sub_type;  // CONDS_SUB_TYPE_LABEL_GET_FLOAT_STATUS, 1910b tiny only
+    uint8_t conds_sub_type; // CONDS_SUB_TYPE_LABEL_GET_FLOAT_STATUS, 1910b tiny only
     uint8_t reserved0[3];
     uint16_t reserved1;
     uint8_t kernel_credit;
@@ -426,7 +426,7 @@ struct RtStarsGetFloatStatusSqe {
 struct RtStarsFunctionCallSqe {
     rtStarsSqeHeader_t sqeHeader;
 
-    uint8_t conds_sub_type;  // CONDS_SUB_TYPE_STREAM_ACTIVE, 1910b tiny only
+    uint8_t conds_sub_type; // CONDS_SUB_TYPE_STREAM_ACTIVE, 1910b tiny only
     uint8_t reserved0[3];
     uint16_t reserved1;
     uint8_t kernel_credit;
@@ -446,19 +446,19 @@ struct rtLiteStarsWrValPyload_t {
     uint32_t writeAddrLow;
     /* dw1 */
     uint32_t writeAddrHigh : 17;
-    uint32_t reserved        : 3;
-    uint32_t awsize          : 3;
-    uint32_t snoop           : 1;
-    uint32_t awcache         : 4;
-    uint32_t awprot          : 3;
-    uint32_t vaEnable        : 1;
+    uint32_t reserved : 3;
+    uint32_t awsize : 3;
+    uint32_t snoop : 1;
+    uint32_t awcache : 4;
+    uint32_t awprot : 3;
+    uint32_t vaEnable : 1;
     /* dw2 - 3 */
     uint32_t reserved0[2];
     /* dw4 - 11 */
     uint32_t wrData[8];
 };
 
-typedef struct  {
+typedef struct {
     uint32_t payload[12]; // common sqe payload length : 12 DW
 } rtLiteStarsPyload_t;
 
@@ -502,6 +502,6 @@ union rtStarsSqe_t final {
 
 #pragma pack(pop)
 
-}  // namespace runtime
-}  // namespace cce
-#endif  // CCE_RUNTIME_STARS_SQE_HPP
+} // namespace runtime
+} // namespace cce
+#endif // CCE_RUNTIME_STARS_SQE_HPP

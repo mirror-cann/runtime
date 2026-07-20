@@ -12,15 +12,14 @@
 
 namespace cce {
 namespace runtime {
-CbSubscribe::CbSubscribe(const uint32_t maxGrpNum)
-    : NoCopy(), grpIdBitmap_(maxGrpNum), grpIdWaitBitmap_(maxGrpNum)
+CbSubscribe::CbSubscribe(const uint32_t maxGrpNum) : NoCopy(), grpIdBitmap_(maxGrpNum), grpIdWaitBitmap_(maxGrpNum)
 {
     maxGroupNum_ = maxGrpNum;
 }
 
 CbSubscribe::~CbSubscribe()
 {
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     if (Runtime::IsProcessExiting(rt)) {
         DeleteAllHostOnly();
         return;
@@ -28,8 +27,8 @@ CbSubscribe::~CbSubscribe()
     DeleteAll();
 }
 
-rtError_t CbSubscribe::AssignGroupId(const uint64_t threadId, const Stream * const stm,
-                                     ThreadIdMapIt &it, int32_t &groupId)
+rtError_t CbSubscribe::AssignGroupId(
+    const uint64_t threadId, const Stream* const stm, ThreadIdMapIt& it, int32_t& groupId)
 {
     if (it != subscribeMapByThreadId_.end()) {
         groupId = it->second.begin()->second.begin()->second.groupId;
@@ -38,7 +37,7 @@ rtError_t CbSubscribe::AssignGroupId(const uint64_t threadId, const Stream * con
 
     std::vector<int32_t> lockedGrpIds;
     const std::function<void()> func = [=, &lockedGrpIds]() {
-        for (auto &gpId : lockedGrpIds) {
+        for (auto& gpId : lockedGrpIds) {
             grpIdBitmap_.FreeId(gpId);
         }
     };
@@ -66,18 +65,19 @@ rtError_t CbSubscribe::AssignGroupId(const uint64_t threadId, const Stream * con
     return RT_ERROR_NONE;
 }
 
-rtError_t CbSubscribe::CheckForInsert(const uint64_t threadId, Stream * const stm, ThreadIdMapIt &threadIdIter,
-    DevIdTsIdMapIt &devIdTsIdIter, StreamMapIt &streamIter)
+rtError_t CbSubscribe::CheckForInsert(
+    const uint64_t threadId, Stream* const stm, ThreadIdMapIt& threadIdIter, DevIdTsIdMapIt& devIdTsIdIter,
+    StreamMapIt& streamIter)
 {
     if (CheckExistInStreamMap(stm)) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR,
-            "Stream already exists in stream map, streamId=%d, devId=%u, threadId=%" PRIu64,
-            stm->Id_(), stm->Device_()->Id_(), threadId);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Stream already exists in stream map, streamId=%d, devId=%u, threadId=%" PRIu64, stm->Id_(),
+            stm->Device_()->Id_(), threadId);
         return RT_ERROR_SUBSCRIBE_STREAM;
     }
     if (CheckExistInThreadMap(threadId, stm, threadIdIter, devIdTsIdIter, streamIter)) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Stream already exists in thread map, streamId=%d, threadId=%" PRIu64,
-            stm->Id_(), threadId);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Stream already exists in thread map, streamId=%d, threadId=%" PRIu64, stm->Id_(), threadId);
         return RT_ERROR_SUBSCRIBE_THREAD;
     }
     if ((threadIdIter != subscribeMapByThreadId_.end()) && (devIdTsIdIter == threadIdIter->second.end())) {
@@ -90,7 +90,8 @@ rtError_t CbSubscribe::CheckForInsert(const uint64_t threadId, Stream * const st
     }
     return RT_ERROR_NONE;
 }
-bool CbSubscribe::TryToGetCallbackSqCqId(const uint64_t threadId, const Stream * const stm, uint32_t *sqId, uint32_t *cqId)
+bool CbSubscribe::TryToGetCallbackSqCqId(
+    const uint64_t threadId, const Stream* const stm, uint32_t* sqId, uint32_t* cqId)
 {
     ThreadIdMapIt threadIdIter = subscribeMapByThreadId_.find(threadId);
     if (threadIdIter == subscribeMapByThreadId_.end()) {
@@ -108,9 +109,9 @@ bool CbSubscribe::TryToGetCallbackSqCqId(const uint64_t threadId, const Stream *
     }
     *sqId = devIdTsIdIter->second.begin()->second.sqId;
     *cqId = devIdTsIdIter->second.begin()->second.cqId;
-    return true;  
+    return true;
 }
-rtError_t CbSubscribe::Insert(const uint64_t threadId, Stream * const stm, void *evtNotify)
+rtError_t CbSubscribe::Insert(const uint64_t threadId, Stream* const stm, void* evtNotify)
 {
     const uint32_t devId = stm->Device_()->Id_();
     const uint32_t tsId = stm->Device_()->DevGetTsId();
@@ -119,9 +120,7 @@ rtError_t CbSubscribe::Insert(const uint64_t threadId, Stream * const stm, void 
     DevIdTsIdMapIt it2;
     StreamMapIt it3;
     subscribeLock_.lock();
-    const std::function<void()> unlockSpinFunc = [&]() {
-        subscribeLock_.unlock();
-    };
+    const std::function<void()> unlockSpinFunc = [&]() { subscribeLock_.unlock(); };
     const ScopeGuard groupIdSpinlockGuarder(unlockSpinFunc);
     rtError_t ret = CheckForInsert(threadId, stm, it, it2, it3);
     if (ret != RT_ERROR_NONE) {
@@ -155,9 +154,9 @@ rtError_t CbSubscribe::Insert(const uint64_t threadId, Stream * const stm, void 
     info.cqId = cqId;
     info.groupId = groupId;
     if (stm->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_NOTIFY_ONLY)) {
-        info.u.notify = static_cast<Notify *>(evtNotify);
+        info.u.notify = static_cast<Notify*>(evtNotify);
     } else {
-        info.u.event = static_cast<Event *>(evtNotify);
+        info.u.event = static_cast<Event*>(evtNotify);
     }
     if (it == subscribeMapByThreadId_.end()) {
         const uint32_t key = RT_CB_SUBSCRIBE_MK_INFO_KEY(tsId, devId);
@@ -169,12 +168,15 @@ rtError_t CbSubscribe::Insert(const uint64_t threadId, Stream * const stm, void 
     }
     const uint64_t streamDevKey = RT_CB_SUBSCRIBE_MK_STREAM_DEV_KEY(devId, streamId);
     subscribeMapByStreamId_[streamDevKey] = info;
-    RT_LOG(RT_LOG_INFO, "callback subscribe: groupId=%d, threadId=%" PRIu64 ", devId=%u, tsId=%u, "
-        "streamId=%d, sqId=%u, cqId=%u", groupId, threadId, devId, tsId, streamId, sqId, cqId);
+    RT_LOG(
+        RT_LOG_INFO,
+        "callback subscribe: groupId=%d, threadId=%" PRIu64 ", devId=%u, tsId=%u, "
+        "streamId=%d, sqId=%u, cqId=%u",
+        groupId, threadId, devId, tsId, streamId, sqId, cqId);
     return RT_ERROR_NONE;
 }
 
-rtError_t CbSubscribe::Delete(const uint64_t threadId, Stream * const stm)
+rtError_t CbSubscribe::Delete(const uint64_t threadId, Stream* const stm)
 {
     const uint32_t devId = stm->Device_()->Id_();
     const uint32_t tsId = stm->Device_()->DevGetTsId();
@@ -187,31 +189,31 @@ rtError_t CbSubscribe::Delete(const uint64_t threadId, Stream * const stm)
     if (!CheckExistInStreamMap(stm)) {
         subscribeLock_.unlock();
         const auto streamId = stm->Id_();
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Stream does not exist in stream map, streamId=%d, threadId=%" PRIu64,
-            streamId, threadId);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Stream does not exist in stream map, streamId=%d, threadId=%" PRIu64, streamId, threadId);
         return RT_ERROR_SUBSCRIBE_STREAM;
     }
 
     if (!CheckExistInThreadMap(threadId, stm, it, it2, it3)) {
         subscribeLock_.unlock();
         const auto streamId = stm->Id_();
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Stream does not exist in thread map, streamId=%d, threadId=%" PRIu64,
-            streamId, threadId);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Stream does not exist in thread map, streamId=%d, threadId=%" PRIu64, streamId, threadId);
         return RT_ERROR_SUBSCRIBE_THREAD;
     }
     const uint32_t sqId = it3->second.sqId;
     const uint32_t cqId = it3->second.cqId;
     if (stm->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_NOTIFY_ONLY)) {
-        Notify * const notify = it3->second.u.notify;
+        Notify* const notify = it3->second.u.notify;
         if (notify != nullptr) {
             delete notify;
         }
     } else {
-        Event * const event = it3->second.u.event;
+        Event* const event = it3->second.u.event;
         if (event != nullptr) {
             const rtError_t error = event->WaitForBusy();
-            COND_PROC_RETURN_ERROR((error != RT_ERROR_NONE), error, subscribeLock_.unlock(),
-                "stream_id=%d is abort", stm->Id_());
+            COND_PROC_RETURN_ERROR(
+                (error != RT_ERROR_NONE), error, subscribeLock_.unlock(), "stream_id=%d is abort", stm->Id_());
             delete event;
         }
     }
@@ -237,13 +239,15 @@ rtError_t CbSubscribe::Delete(const uint64_t threadId, Stream * const stm)
             "stream_id=%d, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, retCode=%#x.",
             threadId, stm->Id_(), devId, tsId, sqId, cqId, static_cast<uint32_t>(ret));
     }
-    RT_LOG(RT_LOG_INFO, "delete callback subscribe: groupId=%u, threadId=%" PRIu64 ", devId=%u, tsId=%u, "
-        "streamId=%d, sqId=%u, cqId=%u, needsFreeSqCq=%d", groupId, threadId, devId, tsId, stm->Id_(),
-        sqId, cqId, needsFreeSqCq);
+    RT_LOG(
+        RT_LOG_INFO,
+        "delete callback subscribe: groupId=%u, threadId=%" PRIu64 ", devId=%u, tsId=%u, "
+        "streamId=%d, sqId=%u, cqId=%u, needsFreeSqCq=%d",
+        groupId, threadId, devId, tsId, stm->Id_(), sqId, cqId, needsFreeSqCq);
     return RT_ERROR_NONE;
 }
 
-rtError_t CbSubscribe::Delete(Stream * const stm)
+rtError_t CbSubscribe::Delete(Stream* const stm)
 {
     const uint32_t devId = stm->Device_()->Id_();
     const uint32_t tsId = stm->Device_()->DevGetTsId();
@@ -264,24 +268,24 @@ rtError_t CbSubscribe::Delete(Stream * const stm)
     if (!CheckExistInThreadMap(threadId, stm, it, it2, it3)) {
         subscribeLock_.unlock();
         const auto streamId = stm->Id_();
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Stream does not exist in thread map, streamId=%d, threadId=%" PRIu64,
-            streamId, threadId);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Stream does not exist in thread map, streamId=%d, threadId=%" PRIu64, streamId, threadId);
         return RT_ERROR_SUBSCRIBE_THREAD;
     }
 
     const uint32_t sqId = it3->second.sqId;
     const uint32_t cqId = it3->second.cqId;
     if (stm->Device_()->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_NOTIFY_ONLY)) {
-        Notify * const notify = it3->second.u.notify;
+        Notify* const notify = it3->second.u.notify;
         if (notify != nullptr) {
             delete notify;
         }
     } else {
-        Event * const event = it3->second.u.event;
+        Event* const event = it3->second.u.event;
         if (event != nullptr) {
             const rtError_t error = event->WaitForBusy();
-            COND_PROC_RETURN_ERROR((error != RT_ERROR_NONE), error, subscribeLock_.unlock(),
-                "stream_id=%d is abort", stm->Id_());
+            COND_PROC_RETURN_ERROR(
+                (error != RT_ERROR_NONE), error, subscribeLock_.unlock(), "stream_id=%d is abort", stm->Id_());
             delete event;
         }
     }
@@ -297,7 +301,7 @@ rtError_t CbSubscribe::Delete(Stream * const stm)
     (void)subscribeMapByStreamId_.erase(itStream->first);
 
     subscribeLock_.unlock();
-    Driver * const devDrv = stm->Device_()->Driver_();
+    Driver* const devDrv = stm->Device_()->Driver_();
     if (needsFreeSqCq) {
         const rtError_t ret = devDrv->SqCqFree(sqId, cqId, devId, tsId);
         ERROR_RETURN(
@@ -306,13 +310,15 @@ rtError_t CbSubscribe::Delete(Stream * const stm)
             "stream_id=%d, device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, retCode=%#x.",
             threadId, stm->Id_(), devId, tsId, sqId, cqId, static_cast<uint32_t>(ret));
     }
-    RT_LOG(RT_LOG_INFO, "delete callback subscribe: groupId=%u, threadId=%" PRIu64 ", devId=%u, tsId=%u, "
-        "streamId=%d, sqId=%u, cqId=%u, needsFreeSqCq=%d", groupId, threadId, devId, tsId, stm->Id_(),
-        sqId, cqId, needsFreeSqCq);
+    RT_LOG(
+        RT_LOG_INFO,
+        "delete callback subscribe: groupId=%u, threadId=%" PRIu64 ", devId=%u, tsId=%u, "
+        "streamId=%d, sqId=%u, cqId=%u, needsFreeSqCq=%d",
+        groupId, threadId, devId, tsId, stm->Id_(), sqId, cqId, needsFreeSqCq);
     return RT_ERROR_NONE;
 }
 
-void CbSubscribe::DeleteStreamHostOnly(const Stream * const stm)
+void CbSubscribe::DeleteStreamHostOnly(const Stream* const stm)
 {
     if (stm == nullptr) {
         return;
@@ -344,8 +350,9 @@ void CbSubscribe::DeleteStreamHostOnly(const Stream * const stm)
     }
 }
 
-bool CbSubscribe::CheckExistInThreadMap(const uint64_t threadId, const Stream * const stm, ThreadIdMapIt &threadIdIter,
-                                        DevIdTsIdMapIt &devIdTsIdIter, StreamMapIt &streamIter)
+bool CbSubscribe::CheckExistInThreadMap(
+    const uint64_t threadId, const Stream* const stm, ThreadIdMapIt& threadIdIter, DevIdTsIdMapIt& devIdTsIdIter,
+    StreamMapIt& streamIter)
 {
     threadIdIter = subscribeMapByThreadId_.find(threadId);
     if (threadIdIter == subscribeMapByThreadId_.end()) {
@@ -363,7 +370,7 @@ bool CbSubscribe::CheckExistInThreadMap(const uint64_t threadId, const Stream * 
     return (streamIter != devIdTsIdIter->second.end());
 }
 
-bool CbSubscribe::IsExistInStreamMap(const Stream * const stm)
+bool CbSubscribe::IsExistInStreamMap(const Stream* const stm)
 {
     const uint64_t key = RT_CB_SUBSCRIBE_MK_STREAM_DEV_KEY(stm->Device_()->Id_(), stm->Id_());
     subscribeLock_.lock();
@@ -376,7 +383,7 @@ bool CbSubscribe::IsExistInStreamMap(const Stream * const stm)
     return false;
 }
 
-bool CbSubscribe::CheckExistInStreamMap(const Stream * const stm) const
+bool CbSubscribe::CheckExistInStreamMap(const Stream* const stm) const
 {
     const uint64_t key = RT_CB_SUBSCRIBE_MK_STREAM_DEV_KEY(stm->Device_()->Id_(), stm->Id_());
     const auto it = subscribeMapByStreamId_.find(key);
@@ -386,8 +393,7 @@ bool CbSubscribe::CheckExistInStreamMap(const Stream * const stm) const
     return false;
 }
 
-
-bool CbSubscribe::CheckExistInStreamMap(const Stream * const stm, StreamDevMap::const_iterator &streamIt) const
+bool CbSubscribe::CheckExistInStreamMap(const Stream* const stm, StreamDevMap::const_iterator& streamIt) const
 {
     const uint64_t key = RT_CB_SUBSCRIBE_MK_STREAM_DEV_KEY(stm->Device_()->Id_(), stm->Id_());
     streamIt = subscribeMapByStreamId_.find(key);
@@ -397,8 +403,8 @@ bool CbSubscribe::CheckExistInStreamMap(const Stream * const stm, StreamDevMap::
     return false;
 }
 
-rtError_t CbSubscribe::GetGroupIdByThreadId(const uint64_t threadId, uint32_t * const deviceId,
-                                            uint32_t * const tsId, uint32_t * const groupId, const bool noLog)
+rtError_t CbSubscribe::GetGroupIdByThreadId(
+    const uint64_t threadId, uint32_t* const deviceId, uint32_t* const tsId, uint32_t* const groupId, const bool noLog)
 {
     subscribeLock_.lock();
     const auto it = subscribeMapByThreadId_.find(threadId);
@@ -417,7 +423,7 @@ rtError_t CbSubscribe::GetGroupIdByThreadId(const uint64_t threadId, uint32_t * 
     return RT_ERROR_NONE;
 }
 
-rtError_t CbSubscribe::GetGroupIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t * const groupId)
+rtError_t CbSubscribe::GetGroupIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t* const groupId)
 {
     const uint64_t key = RT_CB_SUBSCRIBE_MK_STREAM_DEV_KEY(devId, streamId);
     subscribeLock_.lock();
@@ -432,7 +438,7 @@ rtError_t CbSubscribe::GetGroupIdByStreamId(const uint32_t devId, const int32_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t CbSubscribe::GetEventByStreamId(const uint32_t devId, const int32_t streamId, Event ** const evt)
+rtError_t CbSubscribe::GetEventByStreamId(const uint32_t devId, const int32_t streamId, Event** const evt)
 {
     const uint64_t key = RT_CB_SUBSCRIBE_MK_STREAM_DEV_KEY(devId, streamId);
     subscribeLock_.lock();
@@ -447,7 +453,7 @@ rtError_t CbSubscribe::GetEventByStreamId(const uint32_t devId, const int32_t st
     return RT_ERROR_NONE;
 }
 
-rtError_t CbSubscribe::GetNotifyByStreamId(const uint32_t devId, const int32_t streamId, Notify ** const notify)
+rtError_t CbSubscribe::GetNotifyByStreamId(const uint32_t devId, const int32_t streamId, Notify** const notify)
 {
     const uint64_t key = RT_CB_SUBSCRIBE_MK_STREAM_DEV_KEY(devId, streamId);
     subscribeLock_.lock();
@@ -462,7 +468,7 @@ rtError_t CbSubscribe::GetNotifyByStreamId(const uint32_t devId, const int32_t s
     return RT_ERROR_NONE;
 }
 
-rtError_t CbSubscribe::GetCqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t * const cqId)
+rtError_t CbSubscribe::GetCqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t* const cqId)
 {
     const uint64_t key = RT_CB_SUBSCRIBE_MK_STREAM_DEV_KEY(devId, streamId);
     subscribeLock_.lock();
@@ -477,7 +483,7 @@ rtError_t CbSubscribe::GetCqIdByStreamId(const uint32_t devId, const int32_t str
     return RT_ERROR_NONE;
 }
 
-rtError_t CbSubscribe::GetSqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t * const sqId)
+rtError_t CbSubscribe::GetSqIdByStreamId(const uint32_t devId, const int32_t streamId, uint32_t* const sqId)
 {
     const uint64_t key = RT_CB_SUBSCRIBE_MK_STREAM_DEV_KEY(devId, streamId);
     subscribeLock_.lock();
@@ -492,7 +498,7 @@ rtError_t CbSubscribe::GetSqIdByStreamId(const uint32_t devId, const int32_t str
     return RT_ERROR_NONE;
 }
 
-rtError_t CbSubscribe::GetThreadIdByStreamId(const uint32_t devId, const int32_t streamId, uint64_t * const threadId)
+rtError_t CbSubscribe::GetThreadIdByStreamId(const uint32_t devId, const int32_t streamId, uint64_t* const threadId)
 {
     const uint64_t key = RT_CB_SUBSCRIBE_MK_STREAM_DEV_KEY(devId, streamId);
     subscribeLock_.lock();
@@ -511,15 +517,15 @@ void CbSubscribe::DeleteAll()
 {
     rtError_t ret;
     subscribeLock_.lock();
-    for (auto &it : subscribeMapByStreamId_) {
+    for (auto& it : subscribeMapByStreamId_) {
         const rtChipType_t chipType = Runtime::Instance()->GetChipType();
         if (IS_SUPPORT_CHIP_FEATURE(chipType, RtOptionalFeatureType::RT_FEATURE_DEVICE_NOTIFY_ONLY)) {
-            Notify * const notify = it.second.u.notify;
+            Notify* const notify = it.second.u.notify;
             if (notify != nullptr) {
                 delete notify;
             }
         } else {
-            Event * const event = it.second.u.event;
+            Event* const event = it.second.u.event;
             if (event != nullptr) {
                 const rtError_t error = event->WaitForBusy();
                 if (error != RT_ERROR_NONE) {
@@ -531,8 +537,8 @@ void CbSubscribe::DeleteAll()
             }
         }
         const auto devDriver = it.second.stream->Device_()->Driver_();
-        ret = devDriver->SqCqFree(it.second.sqId,
-            it.second.cqId, it.second.stream->Device_()->Id_(),
+        ret = devDriver->SqCqFree(
+            it.second.sqId, it.second.cqId, it.second.stream->Device_()->Id_(),
             it.second.stream->Device_()->DevGetTsId());
         if (ret != RT_ERROR_NONE) {
             RT_LOG(
@@ -570,7 +576,7 @@ bool CbSubscribe::FindThreadIdByKey(const uint32_t deviceId, const int32_t strea
     return true;
 }
 
-bool CbSubscribe::JudgeNeedSubscribe(const uint64_t threadId, Stream * const stm, const uint32_t deviceId)
+bool CbSubscribe::JudgeNeedSubscribe(const uint64_t threadId, Stream* const stm, const uint32_t deviceId)
 {
     if (FindThreadIdByKey(deviceId, stm->Id_())) {
         return false;
@@ -584,7 +590,7 @@ bool CbSubscribe::JudgeNeedSubscribe(const uint64_t threadId, Stream * const stm
     return true;
 }
 
-rtError_t CbSubscribe::SubscribeCallback(const uint64_t threadId, Stream * const stm, void *evtNotify)
+rtError_t CbSubscribe::SubscribeCallback(const uint64_t threadId, Stream* const stm, void* evtNotify)
 {
     const rtError_t error = Insert(threadId, stm, evtNotify);
     ERROR_RETURN(
@@ -593,5 +599,5 @@ rtError_t CbSubscribe::SubscribeCallback(const uint64_t threadId, Stream * const
     return error;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -31,10 +31,10 @@ rtError_t RdmaSendTaskInit(TaskInfo* taskInfo, const uint32_t sqId, const uint32
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForRdmaSendTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForRdmaSendTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
-    RT_LOG(RT_LOG_INFO, "index=0x%x, wqe_index=%u.",
-        taskInfo->u.rdmaSendTask.sqIndex, taskInfo->u.rdmaSendTask.wqeIndex);
+    RT_LOG(
+        RT_LOG_INFO, "index=0x%x, wqe_index=%u.", taskInfo->u.rdmaSendTask.sqIndex, taskInfo->u.rdmaSendTask.wqeIndex);
     command->u.rdmaSendTask.sqIndex = taskInfo->u.rdmaSendTask.sqIndex;
     command->u.rdmaSendTask.wqeIndex = taskInfo->u.rdmaSendTask.wqeIndex;
 }
@@ -61,40 +61,40 @@ rtError_t RdmaDbSendTaskInit(TaskInfo* taskInfo, const uint32_t dbIndex, const u
         }
         const uint32_t vfId = rdmaDbSend->taskDbIndex.dbIndexStars.vfId;
         const uint32_t dieId = rdmaDbSend->taskDbIndex.dbIndexStars.dieId;
-        COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_HCCL, vfId != 0U,
-            RT_ERROR_INVALID_VALUE, "invalid vfId, vfId=%u", vfId);
+        COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_HCCL, vfId != 0U, RT_ERROR_INVALID_VALUE, "invalid vfId, vfId=%u", vfId);
 
         const int64_t phyDieId = taskInfo->stream->Device_()->GetPhyDieId();
-        COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_HCCL, static_cast<uint32_t>(phyDieId) != dieId,
-            RT_ERROR_INVALID_VALUE, "invalid dieId, dieId=%u, phyDieId=%u", dieId, static_cast<uint32_t>(phyDieId));
+        COND_RETURN_ERROR_MSG_CALL(
+            ERR_MODULE_HCCL, static_cast<uint32_t>(phyDieId) != dieId, RT_ERROR_INVALID_VALUE,
+            "invalid dieId, dieId=%u, phyDieId=%u", dieId, static_cast<uint32_t>(phyDieId));
     }
 
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForRdmaDbSendTask(TaskInfo* taskInfo, rtCommand_t * const command)
+void ToCommandBodyForRdmaDbSendTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     RdmaDbSendTaskInfo* rdmaDbSend = &taskInfo->u.rdmaDbSendTask;
 
-    RT_LOG(RT_LOG_INFO, "dbIndex=%#x, dbInfo=%#" PRIx64,
-        rdmaDbSend->taskDbIndex.value, rdmaDbSend->taskDbInfo.value);
+    RT_LOG(RT_LOG_INFO, "dbIndex=%#x, dbInfo=%#" PRIx64, rdmaDbSend->taskDbIndex.value, rdmaDbSend->taskDbInfo.value);
     command->u.rdmaDbSendTask.dbIndex = rdmaDbSend->taskDbIndex.value;
     command->u.rdmaDbSendTask.dbInfo = rdmaDbSend->taskDbInfo.value;
 }
 
-uint32_t GetSendSqeNumForRdmaDbSendTask(TaskInfo * const taskInfo)
+uint32_t GetSendSqeNumForRdmaDbSendTask(TaskInfo* const taskInfo)
 {
     if (taskInfo->stream->GetBindFlag()) {
         taskInfo->bindFlag = true;
     }
 
     constexpr uint32_t num = 1U;
-    RT_LOG(RT_LOG_INFO, "ChipType=%u, BindFlag=%hhu, SqeNum=%u", Runtime::Instance()->GetChipType(),
-        taskInfo->bindFlag, num);
+    RT_LOG(
+        RT_LOG_INFO, "ChipType=%u, BindFlag=%hhu, SqeNum=%u", Runtime::Instance()->GetChipType(), taskInfo->bindFlag,
+        num);
     return num;
 }
 
 #endif
 
-}
-}
+} // namespace runtime
+} // namespace cce

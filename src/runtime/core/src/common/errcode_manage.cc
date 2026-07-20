@@ -34,7 +34,8 @@ void ErrorcodeManage::InitRtErrCodeMap()
     // device error
     rtErrMap_[RT_ERROR_DEVICE_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "device base error"};
     rtErrMap_[RT_ERROR_DEVICE_NULL] = {ACL_ERROR_RT_DEV_SETUP_ERROR, "device pointer null"};
-    rtErrMap_[RT_ERROR_DEVICE_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the device object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_DEVICE_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the device object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_DEVICE_ID] = {ACL_ERROR_RT_INVALID_DEVICEID, "device id error"};
     rtErrMap_[RT_ERROR_DEVICE_CHIPTYPE] = {ACL_ERROR_RT_INTERNAL_ERROR, "device chiptype error"};
     rtErrMap_[RT_ERROR_DEVICE_DEPLOY] = {ACL_ERROR_RT_INTERNAL_ERROR, "device deploy error"};
@@ -56,7 +57,8 @@ void ErrorcodeManage::InitRtErrCodeMap()
 
     rtErrMap_[RT_ERROR_DRV_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "driver base error"};
     rtErrMap_[RT_ERROR_DRV_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "driver pointer null"};
-    rtErrMap_[RT_ERROR_DRV_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the driver object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_DRV_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the driver object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_DRV_MEMORY] = {ACL_ERROR_RT_INTERNAL_ERROR, "driver handle memory error"};
     rtErrMap_[RT_ERROR_DRV_PTRNULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "parameter pointer null"};
     rtErrMap_[RT_ERROR_DRV_OPEN_AICPU] = {ACL_ERROR_RT_INTERNAL_ERROR, "open aicpu error"};
@@ -83,8 +85,8 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_DRV_INVALID_DEVICE] = {ACL_ERROR_RT_INVALID_DEVICEID, "driver error:invalid device"};
     rtErrMap_[RT_ERROR_DRV_INPUT] = {ACL_ERROR_RT_PARAM_INVALID, "driver error:invalid value"};
     rtErrMap_[RT_ERROR_DRV_INVALID_HANDLE] = {ACL_ERROR_RT_INVALID_HANDLE, "driver error:invalid handle"};
-    rtErrMap_[RT_ERROR_DRV_INVALID_MALLOC_TYPE] = {ACL_ERROR_RT_INVALID_MALLOC_TYPE,
-                                                   "driver error:invalid malloc type"};
+    rtErrMap_[RT_ERROR_DRV_INVALID_MALLOC_TYPE] = {
+        ACL_ERROR_RT_INVALID_MALLOC_TYPE, "driver error:invalid malloc type"};
     rtErrMap_[RT_ERROR_DRV_OUT_MEMORY] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "driver error:out of memory"};
     rtErrMap_[RT_ERROR_DRV_MALLOC_FAIL] = {ACL_ERROR_RT_RESOURCE_ALLOC_FAIL, "driver error:resource alloc fail"};
     rtErrMap_[RT_ERROR_DRV_OPER_NOT_PERMITTED] = {ACL_ERROR_RT_NO_PERMISSION, "driver error:operation no permitted"};
@@ -95,7 +97,8 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_DRV_NO_NOTIFY_RESOURCES] = {ACL_ERROR_RT_NO_NOTIFY_RESOURCE, "driver error:no notify resource"};
     rtErrMap_[RT_ERROR_DRV_NO_MODEL_RESOURCES] = {ACL_ERROR_RT_NO_MODEL_RESOURCE, "driver error:no model resource"};
     rtErrMap_[RT_ERROR_DRV_NOT_SUPPORT] = {ACL_ERROR_RT_FEATURE_NOT_SUPPORT, "driver error:feature not support"};
-    rtErrMap_[RT_ERROR_DRV_NOT_SUPPORT_UPDATE_OP] = {ACL_ERROR_RT_FEATURE_NOT_SUPPORT_UPDATE_OP,
+    rtErrMap_[RT_ERROR_DRV_NOT_SUPPORT_UPDATE_OP] = {
+        ACL_ERROR_RT_FEATURE_NOT_SUPPORT_UPDATE_OP,
         "driver error:current driver version does not support to update this op, please upgrade the driver"};
     rtErrMap_[RT_ERROR_DRV_NO_RESOURCES] = {ACL_ERROR_RT_RESOURCE_ALLOC_FAIL, "driver error:resource alloc fail"};
     rtErrMap_[RT_ERROR_DRV_COPY_USER_FAIL] = {ACL_ERROR_RT_COPY_DATA, "driver error:copy data fail"};
@@ -105,8 +108,10 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_SDMA_POISON_ERROR] = {ACL_ERROR_RT_DEVICE_MEM_ERROR, "device mem error"};
     rtErrMap_[RT_ERROR_LOCAL_MEM_ERROR] = {ACL_ERROR_RT_DEVICE_MEM_ERROR, "device local mem error"};
     rtErrMap_[RT_ERROR_REMOTE_MEM_ERROR] = {ACL_ERROR_RT_SUSPECT_REMOTE_ERROR, "device remote mem error"};
-    rtErrMap_[RT_ERROR_CCU_HCCL_MEM_ERROR] = {ACL_ERROR_RT_DEVICE_MEM_ERROR, "hccl ccu task error: device local mem error"};
-    rtErrMap_[RT_ERROR_CCU_HCCL_REMOTE_ERROR] = {ACL_ERROR_RT_SUSPECT_REMOTE_ERROR, "hccl ccu task error: device remote mem error"};
+    rtErrMap_[RT_ERROR_CCU_HCCL_MEM_ERROR] = {
+        ACL_ERROR_RT_DEVICE_MEM_ERROR, "hccl ccu task error: device local mem error"};
+    rtErrMap_[RT_ERROR_CCU_HCCL_REMOTE_ERROR] = {
+        ACL_ERROR_RT_SUSPECT_REMOTE_ERROR, "hccl ccu task error: device remote mem error"};
     rtErrMap_[RT_ERROR_MEM_RAS_ERROR] = {ACL_ERROR_RT_HBM_MULTI_BIT_ECC_ERROR, "hbm Multi-bit ECC error"};
     rtErrMap_[RT_ERROR_SUSPECT_DEVICE_MEM_ERROR] = {ACL_ERROR_RT_SUSPECT_DEVICE_MEM_ERROR, "suspect device mem error"};
     rtErrMap_[RT_ERROR_SUSPECT_REMOTE_ERROR] = {ACL_ERROR_RT_SUSPECT_REMOTE_ERROR, "suspect remote error"};
@@ -115,11 +120,12 @@ void ErrorcodeManage::InitRtErrCodeMap()
     // stream error
     rtErrMap_[RT_ERROR_STREAM_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "stream base error"};
     rtErrMap_[RT_ERROR_STREAM_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "stream pointer null"};
-    rtErrMap_[RT_ERROR_STREAM_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the stream object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_STREAM_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the stream object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_STREAM_CONTEXT] = {ACL_ERROR_RT_STREAM_CONTEXT, "stream not in current context"};
     rtErrMap_[RT_ERROR_STREAM_INVALID] = {ACL_ERROR_RT_INTERNAL_ERROR, "stream invalid"};
-    rtErrMap_[RT_ERROR_STREAM_MODEL] = {ACL_ERROR_RT_STREAM_MODEL,
-                                        "the relationship between the model and stream is incorrect."};
+    rtErrMap_[RT_ERROR_STREAM_MODEL] = {
+        ACL_ERROR_RT_STREAM_MODEL, "the relationship between the model and stream is incorrect."};
     rtErrMap_[RT_ERROR_STREAM_FUSION] = {ACL_ERROR_RT_INTERNAL_ERROR, "stream fusion error"};
     rtErrMap_[RT_ERROR_STREAM_FULL] = {ACL_ERROR_RT_STREAM_TASK_FULL, "stream task buffer full"};
     rtErrMap_[RT_ERROR_STREAM_EMPTY] = {ACL_ERROR_RT_STREAM_TASK_EMPTY, "stream task buffer empty"};
@@ -134,39 +140,42 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_DVPP_GRP_NEW] = {ACL_ERROR_RT_INTERNAL_ERROR, "create dvpp grp fail"};
     rtErrMap_[RT_ERROR_STREAM_BIND_GRP] = {ACL_ERROR_RT_PARAM_INVALID, "stream bind to dvpp grp"};
     rtErrMap_[RT_ERROR_REMOTE_SQID_DUPLICATE] = {ACL_ERROR_RT_INTERNAL_ERROR, "remote sq id repeatedly"};
-    rtErrMap_[RT_ERROR_STREAM_REUSE_LIMIT_MODEL_NUM] = {ACL_ERROR_RT_STREAM_MODEL,
-                                                        "models number exceeds the upper limit 256"};
-    rtErrMap_[RT_ERROR_STREAM_ABORT] = {ACL_ERROR_RT_STREAM_ABORT,"stream abort"};
+    rtErrMap_[RT_ERROR_STREAM_REUSE_LIMIT_MODEL_NUM] = {
+        ACL_ERROR_RT_STREAM_MODEL, "models number exceeds the upper limit 256"};
+    rtErrMap_[RT_ERROR_STREAM_ABORT] = {ACL_ERROR_RT_STREAM_ABORT, "stream abort"};
     rtErrMap_[RT_ERROR_STREAM_ABORT_SEND_TASK_FAIL] = {ACL_ERROR_RT_STREAM_ABORT, "stream abort"};
     rtErrMap_[RT_ERROR_STREAM_ABORT_SYNC_TASK_FAIL] = {ACL_ERROR_RT_STREAM_ABORT, "stream abort"};
     rtErrMap_[RT_ERROR_STREAM_CAPTURED] = {ACL_ERROR_RT_STREAM_CAPTURED, "stream is captured"};
-    rtErrMap_[RT_ERROR_STREAM_CAPTURE_INVALIDATED] = {ACL_ERROR_RT_STREAM_CAPTURE_INVALIDATED,
-                                                      "an error has invalidated the stream capture sequence"};
+    rtErrMap_[RT_ERROR_STREAM_CAPTURE_INVALIDATED] = {
+        ACL_ERROR_RT_STREAM_CAPTURE_INVALIDATED, "an error has invalidated the stream capture sequence"};
     rtErrMap_[RT_ERROR_STREAM_NOT_CAPTURED] = {ACL_ERROR_RT_STREAM_NOT_CAPTURED, "stream is not in capture status"};
-    rtErrMap_[RT_ERROR_STREAM_CAPTURE_MODE_NOT_SUPPORT] = {ACL_ERROR_RT_CAPTURE_MODE_NOT_SUPPORT,
- 	         "operation not permitted when a stream is capturing and the specified capture mode is not relaxed"};
-    rtErrMap_[RT_ERROR_STREAM_CAPTURE_MODE_BLOCK_ASYNC] = {ACL_ERROR_RT_CAPTURE_MODE_BLOCK_ASYNC,
+    rtErrMap_[RT_ERROR_STREAM_CAPTURE_MODE_NOT_SUPPORT] = {
+        ACL_ERROR_RT_CAPTURE_MODE_NOT_SUPPORT,
+        "operation not permitted when a stream is capturing and the specified capture mode is not relaxed"};
+    rtErrMap_[RT_ERROR_STREAM_CAPTURE_MODE_BLOCK_ASYNC] = {
+        ACL_ERROR_RT_CAPTURE_MODE_BLOCK_ASYNC,
         "the operation has been converted to a synchronous operation. "
         "operation not permitted when a stream is capturing and the specified capture mode is not relaxed"};
-    rtErrMap_[RT_ERROR_STREAM_CAPTURE_IMPLICIT] = {ACL_ERROR_RT_STREAM_CAPTURE_IMPLICIT,
-                                                   "a disallowed implicit dependency from default stream"};
-    rtErrMap_[RT_ERROR_STREAM_AICPU_ALLOC_FAIL] = {ACL_ERROR_RT_RESOURCE_ALLOC_FAIL,
-                                                   "aicpu id alloc failed"};
+    rtErrMap_[RT_ERROR_STREAM_CAPTURE_IMPLICIT] = {
+        ACL_ERROR_RT_STREAM_CAPTURE_IMPLICIT, "a disallowed implicit dependency from default stream"};
+    rtErrMap_[RT_ERROR_STREAM_AICPU_ALLOC_FAIL] = {ACL_ERROR_RT_RESOURCE_ALLOC_FAIL, "aicpu id alloc failed"};
     rtErrMap_[RT_ERROR_STREAM_CAPTURE_CONFLICT] = {ACL_ERROR_STREAM_CAPTURE_CONFLICT, "stream begin capture conflict"};
     rtErrMap_[RT_ERROR_STREAM_TASKGRP_STATUS] = {ACL_ERROR_STREAM_TASK_GROUP_STATUS, "task group status error"};
     rtErrMap_[RT_ERROR_STREAM_TASKGRP_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "task group handle null"};
     rtErrMap_[RT_ERROR_STREAM_TASKGRP_INTR] = {ACL_ERROR_STREAM_TASK_GROUP_INTR, "task group interrupted"};
     rtErrMap_[RT_ERROR_STREAM_TASKGRP_UPDATE] = {ACL_ERROR_RT_INTERNAL_ERROR, "task group update error"};
-    rtErrMap_[RT_ERROR_STREAM_CAPTURE_UNMATCHED] = {ACL_ERROR_RT_STREAM_CAPTURE_UNMATCHED,
-                                                    "the capture was not initiated in this stream"};
-    rtErrMap_[RT_ERROR_STREAM_CAPTURE_WRONG_THREAD] = {ACL_ERROR_RT_STREAM_CAPTURE_WRONG_THREAD,
-                                                       "end capture in the wrong thread"};
-    rtErrMap_[RT_ERROR_STREAM_SUB_ACLGRAPH_IS_CAPTURING] = {ACL_ERROR_RT_SUB_ACLGRAPH_IS_CAPTURING, "the sub ACL Graph is capturing"};
+    rtErrMap_[RT_ERROR_STREAM_CAPTURE_UNMATCHED] = {
+        ACL_ERROR_RT_STREAM_CAPTURE_UNMATCHED, "the capture was not initiated in this stream"};
+    rtErrMap_[RT_ERROR_STREAM_CAPTURE_WRONG_THREAD] = {
+        ACL_ERROR_RT_STREAM_CAPTURE_WRONG_THREAD, "end capture in the wrong thread"};
+    rtErrMap_[RT_ERROR_STREAM_SUB_ACLGRAPH_IS_CAPTURING] = {
+        ACL_ERROR_RT_SUB_ACLGRAPH_IS_CAPTURING, "the sub ACL Graph is capturing"};
 
     // model error
     rtErrMap_[RT_ERROR_MODEL_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "model base error"};
     rtErrMap_[RT_ERROR_MODEL_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "model pointer null"};
-    rtErrMap_[RT_ERROR_MODEL_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the model object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_MODEL_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the model object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_MODEL_CONTEXT] = {ACL_ERROR_RT_MODEL_CONTEXT, "model not in current ctx"};
     rtErrMap_[RT_ERROR_MODEL_ENDGRAPH] = {ACL_ERROR_RT_INTERNAL_ERROR, "model endgraph num error"};
     rtErrMap_[RT_ERROR_MODEL_STREAM] = {ACL_ERROR_RT_STREAM_MODEL, "model empty"};
@@ -184,39 +193,43 @@ void ErrorcodeManage::InitRtErrCodeMap()
     // event error
     rtErrMap_[RT_ERROR_EVENT_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "event base error"};
     rtErrMap_[RT_ERROR_EVENT_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "event pointer null"};
-    rtErrMap_[RT_ERROR_EVENT_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the event object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_EVENT_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the event object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_EVENT_RECORDER_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "event recorder null"};
     rtErrMap_[RT_ERROR_EVENT_TIMESTAMP_INVALID] = {ACL_ERROR_RT_EVENT_TIMESTAMP_INVALID, "event timestamp invalid"};
-    rtErrMap_[RT_ERROR_EVENT_TIMESTAMP_REVERSAL] = {ACL_ERROR_RT_EVENT_TIMESTAMP_REVERSAL,
-                                                    "event timestamp reversal"};
+    rtErrMap_[RT_ERROR_EVENT_TIMESTAMP_REVERSAL] = {ACL_ERROR_RT_EVENT_TIMESTAMP_REVERSAL, "event timestamp reversal"};
     rtErrMap_[RT_ERROR_EVENT_NOT_COMPLETE] = {ACL_ERROR_RT_EVENT_NOT_COMPLETE, "event not complete"};
     rtErrMap_[RT_ERROR_EVENT_SYNC_TIMEOUT] = {ACL_ERROR_RT_EVENT_SYNC_TIMEOUT, "event sync timeout"};
     rtErrMap_[RT_ERROR_EVENT_CAPTURED] = {ACL_ERROR_RT_EVENT_CAPTURED, "event is captured"};
-    rtErrMap_[RT_ERROR_CAPTURE_DEPENDENCY] = {ACL_ERROR_RT_CAPTURE_DEPENDENCY,
-                                              "dependency created on uncaptured work in another stream"};
-    rtErrMap_[RT_ERROR_STREAM_CAPTURE_ISOLATION] = {ACL_ERROR_RT_CAPTURE_DEPENDENCY,
-                                                    "in the model capture scenario, the event wait task has no corresponding event record task"};
+    rtErrMap_[RT_ERROR_CAPTURE_DEPENDENCY] = {
+        ACL_ERROR_RT_CAPTURE_DEPENDENCY, "dependency created on uncaptured work in another stream"};
+    rtErrMap_[RT_ERROR_STREAM_CAPTURE_ISOLATION] = {
+        ACL_ERROR_RT_CAPTURE_DEPENDENCY,
+        "in the model capture scenario, the event wait task has no corresponding event record task"};
     // notify error
     rtErrMap_[RT_ERROR_NOTIFY_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "notify base error"};
     rtErrMap_[RT_ERROR_NOTIFY_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "notify pointer null"};
-    rtErrMap_[RT_ERROR_NOTIFY_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the notify object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_NOTIFY_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the notify object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_NOTIFY_TYPE] = {ACL_ERROR_RT_INTERNAL_ERROR, "notify type error"};
     rtErrMap_[RT_ERROR_NOTIFY_NOT_COMPLETE] = {ACL_ERROR_RT_INTERNAL_ERROR, "notify not complete"};
 
     // context error
     rtErrMap_[RT_ERROR_CONTEXT_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "context base error"};
     rtErrMap_[RT_ERROR_CONTEXT_NULL] = {ACL_ERROR_RT_CONTEXT_NULL, "the context is a null pointer"};
-    rtErrMap_[RT_ERROR_CONTEXT_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the context object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_CONTEXT_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the context object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_CONTEXT_DEL] = {ACL_ERROR_RT_CONTEXT_RELEASE_ERROR, "context release error"};
-    rtErrMap_[RT_ERROR_CONTEXT_DEFAULT_STREAM_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR,
-                                                       "default stream in current context is null"};
+    rtErrMap_[RT_ERROR_CONTEXT_DEFAULT_STREAM_NULL] = {
+        ACL_ERROR_RT_INTERNAL_ERROR, "default stream in current context is null"};
     rtErrMap_[RT_ERROR_CONTEXT_ONLINE_STREAM_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "online stream is null"};
     rtErrMap_[RT_ERROR_CONTEXT_MODE] = {ACL_ERROR_RT_INTERNAL_ERROR, "the current context mode is incorrect"};
 
     // kernel error
     rtErrMap_[RT_ERROR_KERNEL_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "kernel base error"};
     rtErrMap_[RT_ERROR_KERNEL_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "kernel pointer null"};
-    rtErrMap_[RT_ERROR_KERNEL_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the kernel object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_KERNEL_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the kernel object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_KERNEL_LOOKUP] = {ACL_ERROR_RT_KERNEL_LOOKUP, "kernel lookup error"};
     rtErrMap_[RT_ERROR_KERNEL_NAME] = {ACL_ERROR_RT_INTERNAL_ERROR, "kernel name error"};
     rtErrMap_[RT_ERROR_KERNEL_TYPE] = {ACL_ERROR_RT_INTERNAL_ERROR, "kernel type error"};
@@ -231,7 +244,8 @@ void ErrorcodeManage::InitRtErrCodeMap()
     // program error
     rtErrMap_[RT_ERROR_PROGRAM_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "program base error"};
     rtErrMap_[RT_ERROR_PROGRAM_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "program pointer null"};
-    rtErrMap_[RT_ERROR_PROGRAM_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the program object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_PROGRAM_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the program object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_PROGRAM_DATA] = {ACL_ERROR_RT_INTERNAL_ERROR, "program data error"};
     rtErrMap_[RT_ERROR_PROGRAM_SIZE] = {ACL_ERROR_RT_INTERNAL_ERROR, "program size error"};
     rtErrMap_[RT_ERROR_PROGRAM_MEM_TYPE] = {ACL_ERROR_RT_INTERNAL_ERROR, "program mem type error"};
@@ -241,30 +255,34 @@ void ErrorcodeManage::InitRtErrCodeMap()
     // module error
     rtErrMap_[RT_ERROR_MODULE_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "module error base"};
     rtErrMap_[RT_ERROR_MODULE_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "module pointer null"};
-    rtErrMap_[RT_ERROR_MODULE_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the module object. The host memory has been exhausted."};
-    rtErrMap_[RT_ERROR_STREAM_UNJOINED] = {ACL_ERROR_RT_STREAM_UNJOINED,
-        "capture model contains a stream that was not joined to the original stream"};
+    rtErrMap_[RT_ERROR_MODULE_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the module object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_STREAM_UNJOINED] = {
+        ACL_ERROR_RT_STREAM_UNJOINED, "capture model contains a stream that was not joined to the original stream"};
     rtErrMap_[RT_ERROR_MODEL_CAPTURED] = {ACL_ERROR_RT_MODEL_CAPTURED, "model is captured"};
     rtErrMap_[RT_ERROR_MODEL_CAPTURE_STATUS] = {ACL_ERROR_RT_INTERNAL_ERROR, "model status error"};
     rtErrMap_[RT_ERROR_MODEL_RUNNING] = {ACL_ERROR_RT_MODEL_RUNNING, "model is running"};
     rtErrMap_[RT_ERROR_MODEL_OP_CACHE_CLOSED] = {ACL_ERROR_RT_INTERNAL_ERROR, "model cache op info switch is closed"};
     rtErrMap_[RT_ERROR_MODEL_UPDATE_FAILED] = {ACL_ERROR_RT_MODEL_UPDATE_FAILED, "model update failed"};
-    
+
     // instance error
     rtErrMap_[RT_ERROR_INSTANCE_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "instance base error"};
     rtErrMap_[RT_ERROR_INSTANCE_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "instance pointer null"};
-    rtErrMap_[RT_ERROR_INSTANCE_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the instance object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_INSTANCE_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the instance object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_INSTANCE_VERSION] = {ACL_ERROR_RT_SOC_VERSION, "soc version error"};
 
     // api error
     rtErrMap_[RT_ERROR_API_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "api error base"};
     rtErrMap_[RT_ERROR_API_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "api pointer null"};
-    rtErrMap_[RT_ERROR_API_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the api object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_API_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the api object. The host memory has been exhausted."};
 
     // datadump error
     rtErrMap_[RT_ERROR_DATADUMP_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "datadump base error"};
     rtErrMap_[RT_ERROR_DATADUMP_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "datadump pointer null"};
-    rtErrMap_[RT_ERROR_DATADUMP_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the datadump object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_DATADUMP_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the datadump object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_DATADUMP_TIME] = {ACL_ERROR_RT_INTERNAL_ERROR, "datadump time error"};
     rtErrMap_[RT_ERROR_DATADUMP_FILE] = {ACL_ERROR_RT_FILE_WRITE, "datadump file error"};
     rtErrMap_[RT_ERROR_DATADUMP_ADDRESS] = {ACL_ERROR_RT_INTERNAL_ERROR, "datadump address error"};
@@ -274,7 +292,8 @@ void ErrorcodeManage::InitRtErrCodeMap()
     // prof error
     rtErrMap_[RT_ERROR_PROF_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "profiler base error"};
     rtErrMap_[RT_ERROR_PROF_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "profiler pointer null"};
-    rtErrMap_[RT_ERROR_PROF_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the profiler object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_PROF_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the profiler object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_PROF_START] = {ACL_ERROR_RT_INTERNAL_ERROR, "profiler start error"};
     rtErrMap_[RT_ERROR_PROF_DEVICE_MEM] = {ACL_ERROR_RT_INTERNAL_ERROR, "profiler device memory error"};
     rtErrMap_[RT_ERROR_PROF_HOST_MEM] = {ACL_ERROR_RT_INTERNAL_ERROR, "profiler host memory error"};
@@ -286,14 +305,16 @@ void ErrorcodeManage::InitRtErrCodeMap()
     // pctrace error
     rtErrMap_[RT_ERROR_PCTRACE_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "pctrace base error"};
     rtErrMap_[RT_ERROR_PCTRACE_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "pctrace pointer null"};
-    rtErrMap_[RT_ERROR_PCTRACE_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the pctrace object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_PCTRACE_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the pctrace object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_PCTRACE_TIME] = {ACL_ERROR_RT_INTERNAL_ERROR, "pctrace time error"};
     rtErrMap_[RT_ERROR_PCTRACE_FILE] = {ACL_ERROR_RT_INTERNAL_ERROR, "pctrace file error"};
 
     // task error
     rtErrMap_[RT_ERROR_TASK_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "task base error"};
     rtErrMap_[RT_ERROR_TASK_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "task pointer null"};
-    rtErrMap_[RT_ERROR_TASK_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the task object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_TASK_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the task object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_TASK_NOT_SUPPORT] = {ACL_ERROR_RT_TASK_TYPE_NOT_SUPPORT, "task not supported"};
     rtErrMap_[RT_ERROR_TASK_ALLOCATOR] = {ACL_ERROR_RT_INTERNAL_ERROR, "task allocator error"};
 
@@ -317,13 +338,15 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_MEMORY_FREE] = {ACL_ERROR_RT_MEMORY_FREE, "free memory error"};
     rtErrMap_[RT_ERROR_INVALID_MEMORY_TYPE] = {ACL_ERROR_RT_INVALID_MEMORY_TYPE, "invalid memory type"};
     rtErrMap_[RT_ERROR_NOT_SET_SYSPARAMOPT] = {ACL_ERROR_RT_SYSPARAMOPT_NOT_SET, "not set sysparamopt"};
-    rtErrMap_[RT_ERROR_INSUFFICIENT_INPUT_ARRAY] = {ACL_ERROR_RT_INSUFFICIENT_INPUT_ARRAY, "The array space is insufficient."};
+    rtErrMap_[RT_ERROR_INSUFFICIENT_INPUT_ARRAY] = {
+        ACL_ERROR_RT_INSUFFICIENT_INPUT_ARRAY, "The array space is insufficient."};
     rtErrMap_[RT_ERROR_INVALID_HANDLE] = {ACL_ERROR_RT_INVALID_HANDLE, "invalid handle"};
 
     // debug error
     rtErrMap_[RT_ERROR_DEBUG_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "debug base error"};
     rtErrMap_[RT_ERROR_DEBUG_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "debug pointer null"};
-    rtErrMap_[RT_ERROR_DEBUG_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the debug object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_DEBUG_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the debug object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_DEBUG_SIGNAL] = {ACL_ERROR_RT_INTERNAL_ERROR, "debug signal error"};
     rtErrMap_[RT_ERROR_DEBUG_OPEN] = {ACL_ERROR_RT_FILE_OPEN, "open file failed"};
     rtErrMap_[RT_ERROR_DEBUG_WRITE] = {ACL_ERROR_RT_FILE_WRITE, "write file failed"};
@@ -333,13 +356,15 @@ void ErrorcodeManage::InitRtErrCodeMap()
     // engine error
     rtErrMap_[RT_ERROR_ENGINE_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "engine base error"};
     rtErrMap_[RT_ERROR_ENGINE_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "engine pointer null"};
-    rtErrMap_[RT_ERROR_ENGINE_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the engine object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_ENGINE_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the engine object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_ENGINE_THREAD] = {ACL_ERROR_RT_INTERNAL_ERROR, "error engine thread"};
 
     // label error
     rtErrMap_[RT_ERROR_LABEL_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "label base error"};
     rtErrMap_[RT_ERROR_LABEL_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "label pointer null"};
-    rtErrMap_[RT_ERROR_LABEL_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the label object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_LABEL_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the label object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_LABEL_CONTEXT] = {ACL_ERROR_RT_LABEL_CONTEXT, "label not in current ctx"};
     rtErrMap_[RT_ERROR_LABEL_STREAM] = {ACL_ERROR_RT_INTERNAL_ERROR, "label stream error"};
     rtErrMap_[RT_ERROR_LABEL_MODEL] = {ACL_ERROR_RT_INTERNAL_ERROR, "label not in current model"};
@@ -361,12 +386,12 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_TSFW_TASK_CMD_QUEUE_EMPTY] = {ACL_ERROR_RT_TS_ERROR, "tsfw task command queue is empty"};
     rtErrMap_[RT_ERROR_TSFW_TASK_REPORT_QUEUE_FULL] = {ACL_ERROR_RT_TS_ERROR, "tsfw task report queue is full"};
     rtErrMap_[RT_ERROR_TSFW_TASK_REPORT_QUEUE_EMPTY] = {ACL_ERROR_RT_TS_ERROR, "tsfw task report queue is empty"};
-    rtErrMap_[RT_ERROR_TSFW_TASK_NODE_BUFF_ALL_OCCUPIED] = {ACL_ERROR_RT_TS_ERROR,
-                                                            "all the nodes of public task buff are occupied"};
-    rtErrMap_[RT_ERROR_TSFW_TASK_NODE_BUFF_ALL_FREED] = {ACL_ERROR_RT_TS_ERROR,
-                                                         "all the node of public task buff are free"};
-    rtErrMap_[RT_ERROR_TSFW_L2_MEM_INSUFFICIENT_SPACE] = {ACL_ERROR_RT_TS_ERROR,
-                                                          "there is not enough space on l2 memory"};
+    rtErrMap_[RT_ERROR_TSFW_TASK_NODE_BUFF_ALL_OCCUPIED] = {
+        ACL_ERROR_RT_TS_ERROR, "all the nodes of public task buff are occupied"};
+    rtErrMap_[RT_ERROR_TSFW_TASK_NODE_BUFF_ALL_FREED] = {
+        ACL_ERROR_RT_TS_ERROR, "all the node of public task buff are free"};
+    rtErrMap_[RT_ERROR_TSFW_L2_MEM_INSUFFICIENT_SPACE] = {
+        ACL_ERROR_RT_TS_ERROR, "there is not enough space on l2 memory"};
     rtErrMap_[RT_ERROR_TSFW_L2_MALLOC_FAILED] = {ACL_ERROR_RT_TS_ERROR, "malloc l2 memory failed"};
     rtErrMap_[RT_ERROR_TSFW_DMA_CHANNEL_ALL_OCCUPIED] = {ACL_ERROR_RT_TS_ERROR, "all the DMA channel are occupied"};
     rtErrMap_[RT_ERROR_TSFW_MEMCPY_OP_FAILED] = {ACL_ERROR_RT_TS_ERROR, "memcpy failed"};
@@ -374,17 +399,16 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_TSFW_TBS_SLOT_REPEAT_FREE] = {ACL_ERROR_RT_TS_ERROR, "bs slot cannot be freed again"};
     rtErrMap_[RT_ERROR_TSFW_PRIORITY_TASK_LIST_FULL] = {ACL_ERROR_RT_TS_ERROR, "the priority list is full"};
     rtErrMap_[RT_ERROR_TSFW_PRIORITY_TASK_LIST_EMPTY] = {ACL_ERROR_RT_TS_ERROR, "the priority list is empty"};
-    rtErrMap_[RT_ERROR_TSFW_NO_STREAM_LIST_NEED_TO_BE_PROCESSED] = {ACL_ERROR_RT_TS_ERROR,
-                                                                    "there is no stream list need service"};
-    rtErrMap_[RT_ERROR_TSFW_REPEAT_MARK_STREAM_NEED_SERVICE] = {ACL_ERROR_RT_TS_ERROR,
-                                                                "repeat mark the stream list need service"};
-    rtErrMap_[RT_ERROR_TSFW_SYS_DMA_CHANNEL_ALL_OCCUPIED] = {ACL_ERROR_RT_TS_ERROR,
-                                                               "system dma channel all occupied"};
+    rtErrMap_[RT_ERROR_TSFW_NO_STREAM_LIST_NEED_TO_BE_PROCESSED] = {
+        ACL_ERROR_RT_TS_ERROR, "there is no stream list need service"};
+    rtErrMap_[RT_ERROR_TSFW_REPEAT_MARK_STREAM_NEED_SERVICE] = {
+        ACL_ERROR_RT_TS_ERROR, "repeat mark the stream list need service"};
+    rtErrMap_[RT_ERROR_TSFW_SYS_DMA_CHANNEL_ALL_OCCUPIED] = {ACL_ERROR_RT_TS_ERROR, "system dma channel all occupied"};
     rtErrMap_[RT_ERROR_TSFW_NO_HBML2TASKNODE_FOUND] = {ACL_ERROR_RT_TS_ERROR, "no hbm l2 task node found"};
-    rtErrMap_[RT_ERROR_TSFW_SQNODE_NODE_SLOT_ALL_OCCUPIED] = {ACL_ERROR_RT_TS_ERROR,
-                                                                "all the node of the current sq are occupied"};
-    rtErrMap_[RT_ERROR_TSFW_CQNODE_NODE_SLOT_ALL_OCCUPIED] = {ACL_ERROR_RT_TS_ERROR,
-                                                                "all the node of the current cq are occupied"};
+    rtErrMap_[RT_ERROR_TSFW_SQNODE_NODE_SLOT_ALL_OCCUPIED] = {
+        ACL_ERROR_RT_TS_ERROR, "all the node of the current sq are occupied"};
+    rtErrMap_[RT_ERROR_TSFW_CQNODE_NODE_SLOT_ALL_OCCUPIED] = {
+        ACL_ERROR_RT_TS_ERROR, "all the node of the current cq are occupied"};
     rtErrMap_[RT_ERROR_TSFW_SQNODE_NOT_ENOUGH] = {ACL_ERROR_RT_TS_ERROR, "the sq node is not enough for data transfer"};
     rtErrMap_[RT_ERROR_TSFW_SQNODE_SLOT_REPEAT_FREE] = {ACL_ERROR_RT_TS_ERROR, "sq node slot repeat free"};
     rtErrMap_[RT_ERROR_TSFW_CQNODE_SLOT_REPEAT_FREE] = {ACL_ERROR_RT_TS_ERROR, "cq node slot repeat free"};
@@ -404,17 +428,17 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_TSFW_AICORE_TRAP_EXCEPTION] = {ACL_ERROR_RT_AICORE_TRAP_EXCEPTION, "aicore trap exception"};
     rtErrMap_[RT_ERROR_TSFW_VECTOR_CORE_TIMEOUT] = {ACL_ERROR_RT_VECTOR_CORE_TIMEOUT, "vector core timeout"};
     rtErrMap_[RT_ERROR_TSFW_VECTOR_CORE_EXCEPTION] = {ACL_ERROR_RT_VECTOR_CORE_EXCEPTION, "vector core exception"};
-    rtErrMap_[RT_ERROR_TSFW_VECTOR_CORE_TRAP_EXCEPTION] = {ACL_ERROR_RT_VECTOR_CORE_TRAP_EXCEPTION,
-                                                           "vector core trap exception"};
+    rtErrMap_[RT_ERROR_TSFW_VECTOR_CORE_TRAP_EXCEPTION] = {
+        ACL_ERROR_RT_VECTOR_CORE_TRAP_EXCEPTION, "vector core trap exception"};
     rtErrMap_[RT_ERROR_TSFW_AICPU_TIMEOUT] = {ACL_ERROR_RT_AICPU_TIMEOUT, "aicpu timeout"};
     rtErrMap_[RT_ERROR_TSFW_SDMA_L2_TO_DDR_MALLOC_FAIL] = {ACL_ERROR_RT_TS_ERROR, "sdma move l2 to ddr malloc failed"};
     rtErrMap_[RT_ERROR_TSFW_AICPU_EXCEPTION] = {ACL_ERROR_RT_AICPU_EXCEPTION, "aicpu exception"};
-    rtErrMap_[RT_ERROR_TSFW_AICPU_DATADUMP_RSP_ERR] = {ACL_ERROR_RT_AICPU_DATADUMP_RSP_ERR,
-                                                       "aicpu datadump response error"};
-    rtErrMap_[RT_ERROR_TSFW_AICPU_INFO_LOAD_RSP_ERR] = {ACL_ERROR_RT_AICPU_INFO_LOAD_RSP_ERR,
-                                                       "aicpu info load response error"};
-    rtErrMap_[RT_ERROR_TSFW_AICPU_MODEL_RSP_ERR] = {ACL_ERROR_RT_AICPU_MODEL_RSP_ERR,
-                                                    "aicpu model operate response error"};
+    rtErrMap_[RT_ERROR_TSFW_AICPU_DATADUMP_RSP_ERR] = {
+        ACL_ERROR_RT_AICPU_DATADUMP_RSP_ERR, "aicpu datadump response error"};
+    rtErrMap_[RT_ERROR_TSFW_AICPU_INFO_LOAD_RSP_ERR] = {
+        ACL_ERROR_RT_AICPU_INFO_LOAD_RSP_ERR, "aicpu info load response error"};
+    rtErrMap_[RT_ERROR_TSFW_AICPU_MODEL_RSP_ERR] = {
+        ACL_ERROR_RT_AICPU_MODEL_RSP_ERR, "aicpu model operate response error"};
     rtErrMap_[RT_ERROR_TSFW_REPEAT_ACTIVE_MODEL_STREAM] = {ACL_ERROR_RT_TS_ERROR, "active stream already in running"};
     rtErrMap_[RT_ERROR_TSFW_REPEAT_NOTIFY_WAIT] = {ACL_ERROR_RT_TS_ERROR, "repeat stream notify wait"};
     rtErrMap_[RT_ERROR_TSFW_DEBUG_INVALID_SQCQ] = {ACL_ERROR_RT_TS_ERROR, "debug invalid sqcq"};
@@ -433,8 +457,8 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_TSFW_DEBUG_BREAKPOINT_FULL] = {ACL_ERROR_RT_TS_ERROR, "debug breakpoint full"};
     rtErrMap_[RT_ERROR_TSFW_DEBUG_READ_ERROR] = {ACL_ERROR_RT_TS_ERROR, "debug read error"};
     rtErrMap_[RT_ERROR_TSFW_DEBUG_WRITE_FAIL] = {ACL_ERROR_RT_TS_ERROR, "debug write fail"};
-    rtErrMap_[RT_ERROR_TSFW_DEBUG_REGISTER_CONFLICT] = {ACL_ERROR_RT_TS_ERROR,
-        "debug register conflict, only one pid can be registered at the same time"};
+    rtErrMap_[RT_ERROR_TSFW_DEBUG_REGISTER_CONFLICT] = {
+        ACL_ERROR_RT_TS_ERROR, "debug register conflict, only one pid can be registered at the same time"};
     rtErrMap_[RT_ERROR_TSFW_QUEUE_FULL] = {ACL_ERROR_RT_TS_ERROR, "ts queue full"};
     rtErrMap_[RT_ERROR_TSFW_QUEUE_EMPTY] = {ACL_ERROR_RT_TS_ERROR, "ts queue empty"};
     rtErrMap_[RT_ERROR_TSFW_QUEUE_ALLOC_MEM_FAIL] = {ACL_ERROR_RT_TS_ERROR, "ts queue alloc mem fail"};
@@ -473,24 +497,25 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_TSFW_RESERVED] = {ACL_ERROR_RT_TS_ERROR, "tsfw unknown error"};
     rtErrMap_[RT_ERROR_TSFW_SDMA_COPY_ERROR] = {ACL_ERROR_RT_SYS_DMA, "sdma copy error"};
     rtErrMap_[RT_ERROR_TSFW_SDMA_REDUCE_ERROR] = {ACL_ERROR_RT_SYS_DMA, "sdma reduce error"};
-    rtErrMap_[RT_ERROR_TSFW_AIC_TRAP_RD_OVERFLOW] = {ACL_ERROR_RT_AICORE_TRAP_READ_OVERFLOW,
-        "aicore trap read overflow"};
-    rtErrMap_[RT_ERROR_TSFW_AIC_TRAP_WR_OVERFLOW] = {ACL_ERROR_RT_AICORE_TRAP_WRITE_OVERFLOW,
-        "aicore trap write overflow"};
-    rtErrMap_[RT_ERROR_TSFW_AIV_TRAP_RD_OVERFLOW] = {ACL_ERROR_RT_VECTOR_CORE_TRAP_READ_OVERFLOW,
-        "vector core trap read overflow"};
-    rtErrMap_[RT_ERROR_TSFW_AIV_TRAP_WR_OVERFLOW] = {ACL_ERROR_RT_VECTOR_CORE_TRAP_WRITE_OVERFLOW,
-        "vector core trap write overflow"};
+    rtErrMap_[RT_ERROR_TSFW_AIC_TRAP_RD_OVERFLOW] = {
+        ACL_ERROR_RT_AICORE_TRAP_READ_OVERFLOW, "aicore trap read overflow"};
+    rtErrMap_[RT_ERROR_TSFW_AIC_TRAP_WR_OVERFLOW] = {
+        ACL_ERROR_RT_AICORE_TRAP_WRITE_OVERFLOW, "aicore trap write overflow"};
+    rtErrMap_[RT_ERROR_TSFW_AIV_TRAP_RD_OVERFLOW] = {
+        ACL_ERROR_RT_VECTOR_CORE_TRAP_READ_OVERFLOW, "vector core trap read overflow"};
+    rtErrMap_[RT_ERROR_TSFW_AIV_TRAP_WR_OVERFLOW] = {
+        ACL_ERROR_RT_VECTOR_CORE_TRAP_WRITE_OVERFLOW, "vector core trap write overflow"};
     rtErrMap_[RT_ERROR_TSFW_FFTS_PLUS_TIMEOUT] = {ACL_ERROR_RT_FFTS_PLUS_TIMEOUT, "fftsplus timeout"};
     rtErrMap_[RT_ERROR_TSFW_FFTS_PLUS_EXCEPTION] = {ACL_ERROR_RT_FFTS_PLUS_EXCEPTION, "fftsplus exception"};
-    rtErrMap_[RT_ERROR_TSFW_FFTS_PLUS_TRAP_EXCEPTION] = {ACL_ERROR_RT_FFTS_PLUS_TRAP_EXCEPTION,
-        "fftsplus trap exception"};
+    rtErrMap_[RT_ERROR_TSFW_FFTS_PLUS_TRAP_EXCEPTION] = {
+        ACL_ERROR_RT_FFTS_PLUS_TRAP_EXCEPTION, "fftsplus trap exception"};
     rtErrMap_[RT_ERROR_TSFW_TS_CLOSED] = {ACL_ERROR_RT_TS_ERROR, "In sentinel mode, tsfw is closed"};
     rtErrMap_[RT_ERROR_TSFW_TASK_ABORT_STOP] = {ACL_ERROR_RT_TASK_ABORT_STOP, "stream abort stop before post process"};
     // subscribe error
     rtErrMap_[RT_ERROR_SUBSCRIBE_BASE] = {ACL_ERROR_RT_INTERNAL_ERROR, "subscribe base error"};
     rtErrMap_[RT_ERROR_SUBSCRIBE_NULL] = {ACL_ERROR_RT_INTERNAL_ERROR, "subscribe pointer null"};
-    rtErrMap_[RT_ERROR_SUBSCRIBE_NEW] = {ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the subscribe object. The host memory has been exhausted."};
+    rtErrMap_[RT_ERROR_SUBSCRIBE_NEW] = {
+        ACL_ERROR_RT_MEMORY_ALLOCATION, "Failed to create the subscribe object. The host memory has been exhausted."};
     rtErrMap_[RT_ERROR_SUBSCRIBE_STREAM] = {ACL_ERROR_RT_STREAM_SUBSCRIBE, "subscribe stream error"};
     rtErrMap_[RT_ERROR_SUBSCRIBE_THREAD] = {ACL_ERROR_RT_THREAD_SUBSCRIBE, "subscribe thread error"};
     rtErrMap_[RT_ERROR_SUBSCRIBE_GROUP] = {ACL_ERROR_RT_INTERNAL_ERROR, "subscribe group error"};
@@ -529,14 +554,15 @@ void ErrorcodeManage::InitRtErrCodeMap()
     rtErrMap_[RT_ERROR_SNAPSHOT_UNLOCK_FAILED] = {ACL_ERROR_SNAPSHOT_UNLOCK_FAILED, "snapshot unlock failed"};
     rtErrMap_[RT_ERROR_SNAPSHOT_BACKUP_FAILED] = {ACL_ERROR_SNAPSHOT_BACKUP_FAILED, "snapshot backup failed"};
     rtErrMap_[RT_ERROR_SNAPSHOT_RESTORE_FAILED] = {ACL_ERROR_SNAPSHOT_RESTORE_FAILED, "snapshot restore failed"};
-    rtErrMap_[RT_ERROR_SNAPSHOT_CALLBACK_FAILED] = {ACL_ERROR_SNAPSHOT_CALLBACK_FAILED, "snapshot callback function execution failed"};
+    rtErrMap_[RT_ERROR_SNAPSHOT_CALLBACK_FAILED] = {
+        ACL_ERROR_SNAPSHOT_CALLBACK_FAILED, "snapshot callback function execution failed"};
     rtErrMap_[RT_ERROR_SNAPSHOT_REGISTER_CALLBACK_FAILED] = {
         ACL_ERROR_SNAPSHOT_REGISTER_CALLBACK_FAILED, "register snapshot callback function failed"};
     // register memory
-    rtErrMap_[RT_ERROR_HOST_MEMORY_ALREADY_REGISTERED] = {ACL_ERROR_HOST_MEMORY_ALREADY_REGISTERED,
-        "host memory range already registered"};
-    rtErrMap_[RT_ERROR_HOST_MEMORY_NOT_REGISTERED] = {ACL_ERROR_HOST_MEMORY_NOT_REGISTERED,
-        "host memory has not been registered"};
+    rtErrMap_[RT_ERROR_HOST_MEMORY_ALREADY_REGISTERED] = {
+        ACL_ERROR_HOST_MEMORY_ALREADY_REGISTERED, "host memory range already registered"};
+    rtErrMap_[RT_ERROR_HOST_MEMORY_NOT_REGISTERED] = {
+        ACL_ERROR_HOST_MEMORY_NOT_REGISTERED, "host memory has not been registered"};
     rtErrMap_[RT_ERROR_DRV_LINK_TYPE_NOT_SUPPORTED] = {ACL_ERROR_RT_LINK_TYPE_NOT_SUPPORTED, "invalid link type"};
 }
 
@@ -599,7 +625,7 @@ RtExtErrcodeType ErrorcodeManage::GetRtExtErrCode(const RtInnerErrcodeType errco
             return ret;
         } else {
             ret = errcode;
-            return ret;  // protect for externel errorcode,in callback situation
+            return ret; // protect for externel errorcode,in callback situation
         }
     }
     ret = it->second.first;
@@ -616,7 +642,7 @@ RtExtErrcodeType ErrorcodeManage::TransExtErrCode(const RtInnerErrcodeType errco
         if (errcode >= RT_ERRORCODE_BASE) {
             return ACL_ERROR_RT_INTERNAL_ERROR;
         } else {
-            return errcode;  // protect for externel errorcode,in callback situation
+            return errcode; // protect for externel errorcode,in callback situation
         }
     }
     return it->second.first;
@@ -638,7 +664,7 @@ std::string ErrorcodeManage::GetErrorDesc(const RtInnerErrcodeType errcode)
             ss << "ErrCode=";
             ss << errcode;
             ss << ", desc=[callback error]";
-            return ss.str();  // protect for externel errorcode,in callback situation
+            return ss.str(); // protect for externel errorcode,in callback situation
         }
     }
 
@@ -661,7 +687,7 @@ std::string ErrorcodeManage::GetErrorReason(const RtInnerErrcodeType errcode)
             return ss.str();
         } else {
             ss << "[callback error]";
-            return ss.str();  // protect for externel errorcode,in callback situation
+            return ss.str(); // protect for externel errorcode,in callback situation
         }
     }
     ss << it->second.second;
@@ -712,13 +738,13 @@ static const std::unordered_map<uint16_t, std::string> moduleNameMap = {
     {MBUFF_MODULE_ID, "MBUFF"},
     {AICPU_SCHE_MODULE_ID, "AICPU_SCHEDULE"},
     {CUSTOM_SCHE_MODULE_ID, "CUSTOM_SCHEDULE"},
-    {HCCP_SCHE_MODULE_ID, "HCCP_SCHEDULE"}
-};
+    {HCCP_SCHE_MODULE_ID, "HCCP_SCHEDULE"}};
 
-const std::string& ErrorcodeManage::GetModuleName(const uint16_t moduleId) const {
+const std::string& ErrorcodeManage::GetModuleName(const uint16_t moduleId) const
+{
     static const std::string unknown = "UNKNOWN";
     auto it = moduleNameMap.find(moduleId);
     return it != moduleNameMap.end() ? it->second : unknown;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

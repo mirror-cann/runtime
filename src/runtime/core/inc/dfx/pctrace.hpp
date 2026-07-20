@@ -31,7 +31,7 @@ class PCTrace : public NoCopy {
 public:
     PCTrace() = default;
     ~PCTrace() override;
-    rtError_t Init(Device * const dev, Module * const mdl);
+    rtError_t Init(Device* const dev, Module* const mdl);
     /**
      * @ingroup rt_context
      * @brief config write dump file form dump memory
@@ -40,20 +40,18 @@ public:
      */
     rtError_t WritePCTraceFile();
 
-    rtError_t AllocPCTraceMemory(void **addr, uint64_t addrSize);
+    rtError_t AllocPCTraceMemory(void** addr, uint64_t addrSize);
 
-    uint64_t GetPcTraceAddr() const
-    {
-        return tspctrace_.pctraceAddr;
-    }
+    uint64_t GetPcTraceAddr() const { return tspctrace_.pctraceAddr; }
+
 private:
     rtError_t FreePCTraceMemory();
 
 private:
     tsPCTrace_t tspctrace_{};
-    Device *device_ = nullptr;
-    Module *module_ = nullptr;
+    Device* device_ = nullptr;
+    Module* module_ = nullptr;
 };
-}
-}
-#endif  // __CCE_RUNTIME_PCTRACE_HPP__
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_PCTRACE_HPP__

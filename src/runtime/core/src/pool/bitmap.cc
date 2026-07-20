@@ -15,7 +15,8 @@ namespace runtime {
 constexpr uint32_t maxAllocIdCountTh = 10U * 1024U;
 constexpr uint32_t minAvailableIdCountTh = 1024U;
 
-Bitmap::Bitmap(const uint32_t maxIdCnt) : NoCopy(), freeBitmap_(nullptr), maxIdCount_(maxIdCnt), allocedCnt_(0U), lastAllocIdx_(0U)
+Bitmap::Bitmap(const uint32_t maxIdCnt)
+    : NoCopy(), freeBitmap_(nullptr), maxIdCount_(maxIdCnt), allocedCnt_(0U), lastAllocIdx_(0U)
 {
     COND_LOG((maxIdCnt == 0U), "Bitmap maxId Count should be larger than 0, current maxIdCount is 0");
 }
@@ -32,18 +33,20 @@ rtError_t Bitmap::AllocBitmap()
         mutex_.unlock();
         return RT_ERROR_NONE;
     }
-    uint64_t *tmpBitmap = nullptr;
-    COND_PROC_RETURN_ERROR_MSG_INNER((maxIdCount_ == 0U), RT_ERROR_POOL_RESOURCE, mutex_.unlock(),
+    uint64_t* tmpBitmap = nullptr;
+    COND_PROC_RETURN_ERROR_MSG_INNER(
+        (maxIdCount_ == 0U), RT_ERROR_POOL_RESOURCE, mutex_.unlock(),
         "Failed to allocate bitmap because max ID count is 0.");
     const uint32_t maxBitmapIdx = (maxIdCount_ - 1U) / 64U; // 64:bit of uint64_t
     tmpBitmap = new (std::nothrow) uint64_t[maxBitmapIdx + 1U];
-    COND_PROC_RETURN_AND_MSG_OUTER((tmpBitmap == nullptr), RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, mutex_.unlock(), std::to_string(static_cast<size_t>(maxBitmapIdx + 1U) * sizeof(uint64_t)).c_str(), "new");
+    COND_PROC_RETURN_AND_MSG_OUTER(
+        (tmpBitmap == nullptr), RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, mutex_.unlock(),
+        std::to_string(static_cast<size_t>(maxBitmapIdx + 1U) * sizeof(uint64_t)).c_str(), "new");
 
     for (uint32_t i = 0U; i <= maxBitmapIdx; i++) {
         tmpBitmap[i] = static_cast<uint64_t>(-1); // 1-Free; 0-Occupied
     }
-    if ((maxIdCount_ % 64U) != 0U) { // 64 bit
+    if ((maxIdCount_ % 64U) != 0U) {              // 64 bit
         tmpBitmap[maxBitmapIdx] = (1ULL << (static_cast<uint64_t>(maxIdCount_) % 64ULL)) - 1ULL;
     }
     freeBitmap_ = tmpBitmap;
@@ -55,8 +58,8 @@ rtError_t Bitmap::AllocBitmap()
 int32_t Bitmap::AllocId(uint32_t maxAllocCount)
 {
     const rtError_t error = AllocBitmap();
-    COND_RETURN_ERROR_MSG_INNER((error != RT_ERROR_NONE), -1,
-                                "Failed to allocate bitmap, retCode=%#x", static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        (error != RT_ERROR_NONE), -1, "Failed to allocate bitmap, retCode=%#x", static_cast<uint32_t>(error));
 
     int32_t maxAllocBitmapIdx;
     // calculate the correct max count and max bitmap index for allocation
@@ -64,15 +67,16 @@ int32_t Bitmap::AllocId(uint32_t maxAllocCount)
         maxAllocCount = maxIdCount_;
     }
     maxAllocBitmapIdx = (static_cast<int32_t>(maxAllocCount) - 1) / 64; // 64:bit of uint64_t
-    const uint32_t allocRemainder = maxAllocCount % 64U; // 64:bit of uint64_t
+    const uint32_t allocRemainder = maxAllocCount % 64U;                // 64:bit of uint64_t
     if (allocRemainder != 0U) {
-        maxAllocBitmapIdx = maxAllocBitmapIdx - 1; // exclude the incomplete bitmap
+        maxAllocBitmapIdx = maxAllocBitmapIdx - 1;                      // exclude the incomplete bitmap
     }
 
     if ((maxAllocCount > maxAllocIdCountTh) && (freeBitmap_[maxAllocBitmapIdx] == 0)) {
         RT_LOG(RT_LOG_WARNING, "alloced=%u max=%u", allocedCnt_, maxAllocCount);
         if (((std::max(maxAllocCount, allocedCnt_) - std::min(maxAllocCount, allocedCnt_) < minAvailableIdCountTh) &&
-            (maxAllocCount != maxIdCount_)) || (allocedCnt_ == maxIdCount_)) {
+             (maxAllocCount != maxIdCount_)) ||
+            (allocedCnt_ == maxIdCount_)) {
             /* utilization is larger than 90% */
             return -1;
         }
@@ -156,5 +160,5 @@ void Bitmap::OccupyId(const int32_t id) const
     }
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

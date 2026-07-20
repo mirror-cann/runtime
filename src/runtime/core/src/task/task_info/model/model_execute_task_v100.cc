@@ -22,11 +22,11 @@ namespace runtime {
 
 #if F_DESC("ModelExecuteTask")
 
-static void SetResultForModelExecuteTask(TaskInfo * const taskInfo, const void * const data, const uint32_t dataSize)
+static void SetResultForModelExecuteTask(TaskInfo* const taskInfo, const void* const data, const uint32_t dataSize)
 {
     UNUSED(dataSize);
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
-    const uint32_t *const tsData = static_cast<const uint32_t *>(data);
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    const uint32_t* const tsData = static_cast<const uint32_t*>(data);
     const uint32_t payLoad = *tsData;
     const uint32_t highTaskId = *(tsData + 1U);
     const uint32_t streamIdEx = *(tsData + 2U);
@@ -35,17 +35,17 @@ static void SetResultForModelExecuteTask(TaskInfo * const taskInfo, const void *
     modelExecuteTaskInfo->errorStreamId =
         ((payLoad >> 12U) & 0x3FFU) | (streamIdEx << (static_cast<uint32_t>(RT_STREAM_ID_OFFSET)));
 
-    RT_LOG(RT_LOG_DEBUG, "Payload=%u, highTaskId=%u, errorCode=0x%x, errorTaskId=%u, errorStreamId=%u.",
-        payLoad, highTaskId, taskInfo->errorCode, modelExecuteTaskInfo->errorTaskId,
-        modelExecuteTaskInfo->errorStreamId);
+    RT_LOG(
+        RT_LOG_DEBUG, "Payload=%u, highTaskId=%u, errorCode=0x%x, errorTaskId=%u, errorStreamId=%u.", payLoad,
+        highTaskId, taskInfo->errorCode, modelExecuteTaskInfo->errorTaskId, modelExecuteTaskInfo->errorStreamId);
 }
 
-static void ConstructSqeForModelExecuteTask(TaskInfo * const taskInfo, rtStarsSqe_t * const command)
+static void ConstructSqeForModelExecuteTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    ModelExecuteTaskInfo *modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    ModelExecuteTaskInfo* modelExecuteTaskInfo = &(taskInfo->u.modelExecuteTaskInfo);
+    Stream* const stream = taskInfo->stream;
 
-    RtStarsFunctionCallSqe &sqe = command->fuctionCallSqe;
+    RtStarsFunctionCallSqe& sqe = command->fuctionCallSqe;
     sqe.kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
     sqe.csc = 1U;
     sqe.sqeHeader.l1_lock = 0U;
@@ -66,8 +66,9 @@ static void ConstructSqeForModelExecuteTask(TaskInfo * const taskInfo, rtStarsSq
     ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), sqe);
 
     PrintSqe(command, "ModelExecuteTask");
-    RT_LOG(RT_LOG_INFO, "ModelExecuteTask stream_id=%d task_id=%hu, model_id=%hu.",
-        stream->Id_(), taskInfo->id, sqe.reserved1);
+    RT_LOG(
+        RT_LOG_INFO, "ModelExecuteTask stream_id=%d task_id=%hu, model_id=%hu.", stream->Id_(), taskInfo->id,
+        sqe.reserved1);
 }
 
 #endif
@@ -85,7 +86,7 @@ static bool ModelExecuteTaskRegister()
         .setStarsResultFunc = &SetStarsResultForModelExecuteTask,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_EXECUTE, funcs);
     }
@@ -95,5 +96,5 @@ static bool ModelExecuteTaskRegister()
 
 static bool g_modelExecuteTaskRegister = ModelExecuteTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

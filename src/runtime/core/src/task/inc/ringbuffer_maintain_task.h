@@ -15,8 +15,9 @@
 
 namespace cce {
 namespace runtime {
-rtError_t RingBufferMaintainTaskInit(TaskInfo *taskInfo, const void *const addr, const bool delFlag, const uint32_t len);
-void ToCmdBodyForRingBufferMaintainTask(TaskInfo* taskInfo, rtCommand_t *const command);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_RINGBUFFER_MAINTAIN_TASK_H
+rtError_t RingBufferMaintainTaskInit(
+    TaskInfo* taskInfo, const void* const addr, const bool delFlag, const uint32_t len);
+void ToCmdBodyForRingBufferMaintainTask(TaskInfo* taskInfo, rtCommand_t* const command);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_RINGBUFFER_MAINTAIN_TASK_H

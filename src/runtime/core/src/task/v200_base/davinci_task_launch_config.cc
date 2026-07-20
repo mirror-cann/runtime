@@ -50,8 +50,9 @@ rtError_t GetLaunchConfigAttr(rtLaunchAttribute_t* attr, LaunchTaskCfgInfo_t* la
             launchTaskCfg->dumpflag = attr->value.dumpflag;
             break;
         default:
-            RT_LOG_OUTER_MSG_INVALID_PARAM(attr->id,
-                "[" + std::to_string(RT_LAUNCH_ATTRIBUTE_BLOCKDIM) + ", " + std::to_string(RT_LAUNCH_ATTRIBUTE_MAX) + ")");
+            RT_LOG_OUTER_MSG_INVALID_PARAM(
+                attr->id, "[" + std::to_string(RT_LAUNCH_ATTRIBUTE_BLOCKDIM) + ", " +
+                              std::to_string(RT_LAUNCH_ATTRIBUTE_MAX) + ")");
             error = RT_ERROR_INVALID_VALUE;
             break;
     }
@@ -65,46 +66,51 @@ static rtError_t CheckLaunchCfg(const LaunchTaskCfgInfo_t* const launchTaskCfg)
     const uint32_t groupBlockDim = launchTaskCfg->Group.groupBlockDim;
 
     if (blockDim > UINT16_MAX) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Checking the parameter configuration before kernel delivery",
-            blockDim, "[0, 0xffff]");
+        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(
+            "Checking the parameter configuration before kernel delivery", blockDim, "[0, 0xffff]");
         return RT_ERROR_INVALID_VALUE;
     }
     if (groupDim > UINT16_MAX) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Checking the parameter configuration before kernel delivery",
-            groupDim, "[0, 0xffff]");
+        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(
+            "Checking the parameter configuration before kernel delivery", groupDim, "[0, 0xffff]");
         return RT_ERROR_INVALID_VALUE;
     }
     if (groupBlockDim > UINT16_MAX) {
-        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC("Checking the parameter configuration before kernel delivery",
-            groupBlockDim, "[0, 0xffff]");
+        RT_LOG_OUTER_MSG_INVALID_PARAM_WITH_DESC(
+            "Checking the parameter configuration before kernel delivery", groupBlockDim, "[0, 0xffff]");
         return RT_ERROR_INVALID_VALUE;
     }
 
     if (((groupDim != 0U) && (groupBlockDim == 0U)) || ((groupDim == 0U) && (groupBlockDim != 0U))) {
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Checking the parameter configuration before kernel delivery", "groupDim",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1017, "Checking the parameter configuration before kernel delivery", "groupDim",
             "groupDim and groupBlockDim must both be zero or both non-zero");
         return RT_ERROR_INVALID_VALUE;
     }
 
     if ((blockDim == 0) && (groupDim == 0)) {
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1017, "Checking the parameter configuration before kernel delivery", "blockDim",
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1017, "Checking the parameter configuration before kernel delivery", "blockDim",
             "blockDim and groupDim cannot both be zero");
         return RT_ERROR_INVALID_VALUE;
     }
 
     if ((groupDim * groupBlockDim) > UINT16_MAX) {
-        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(ErrorCode::EE1011, "Checking the parameter configuration before kernel delivery",
-            std::to_string(groupDim), "groupDim",
-            "the product of groupDim and groupBlockDim must not exceed 65535 (groupBlockDim=" + std::to_string(groupBlockDim) + ")");
+        RT_LOG_OUTER_MSG_WITH_FUNC_DESC(
+            ErrorCode::EE1011, "Checking the parameter configuration before kernel delivery", std::to_string(groupDim),
+            "groupDim",
+            "the product of groupDim and groupBlockDim must not exceed 65535 (groupBlockDim=" +
+                std::to_string(groupBlockDim) + ")");
         return RT_ERROR_INVALID_VALUE;
     }
 
-    RT_LOG(RT_LOG_DEBUG, "Launch kernel, blockDim=%u, groupDim=%u, groupBlockDim=%u, schemMode=%hhu.",
-        blockDim, groupDim, groupBlockDim, launchTaskCfg->schemMode);
+    RT_LOG(
+        RT_LOG_DEBUG, "Launch kernel, blockDim=%u, groupDim=%u, groupBlockDim=%u, schemMode=%hhu.", blockDim, groupDim,
+        groupBlockDim, launchTaskCfg->schemMode);
     return RT_ERROR_NONE;
 }
 
-rtError_t GetLaunchConfigInfo(const rtLaunchConfig_t * const launchConfig, LaunchTaskCfgInfo_t* launchTaskCfg)
+rtError_t GetLaunchConfigInfo(const rtLaunchConfig_t* const launchConfig, LaunchTaskCfgInfo_t* launchTaskCfg)
 {
     rtError_t error = RT_ERROR_NONE;
     launchTaskCfg->schemMode = static_cast<uint8_t>(RT_SCHEM_MODE_END);
@@ -117,5 +123,5 @@ rtError_t GetLaunchConfigInfo(const rtLaunchConfig_t * const launchConfig, Launc
     return error;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

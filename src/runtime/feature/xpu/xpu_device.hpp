@@ -21,10 +21,7 @@ namespace runtime {
 
 class XpuArgLoader;
 
-enum class XpuThreadType : uint64_t {
-    XPU_THREAD_RECYCLE,
-    XPU_THREAD_MAX
-};
+enum class XpuThreadType : uint64_t { XPU_THREAD_RECYCLE, XPU_THREAD_MAX };
 
 struct XpuConfigInfo {
     double version{1.0};
@@ -41,50 +38,26 @@ public:
     rtError_t Init() override;
     rtError_t Start() override;
     rtError_t Stop() override;
-    void Run(const void *param) override;
-    Driver *Driver_() const override
-    {
-        return driver_;
-    }
+    void Run(const void* param) override;
+    Driver* Driver_() const override { return driver_; }
 
-    XpuArgLoader *XpuArgLoader_() const
-    {
-        return xpuArgLoader_;
-    }
-    bool GetRecycleThreadRunFlag() const
-    {
-        return recycleThreadAlive_.load(std::memory_order_acquire);
-    }
+    XpuArgLoader* XpuArgLoader_() const { return xpuArgLoader_; }
+    bool GetRecycleThreadRunFlag() const { return recycleThreadAlive_.load(std::memory_order_acquire); }
     rtError_t InitStreamIdBitmap();
     void FreeStreamIdBitmap(const int32_t id);
     int32_t AllocStreamId() const;
     rtError_t ParseXpuConfigInfo();
     rtError_t InitXpuDriver();
-    StreamSqCqManage *GetStreamSqCqManage() const override
-    {
-        return streamSqCqManage_;
-    }
-    uint32_t GetXpuStreamDepth() const
-    {
-        return configInfo_.maxStreamDepth;
-    }
-    uint32_t GetXpuMaxStream() const
-    {
-        return configInfo_.maxStreamNum;
-    }
-    bool GetXpuTaskReportEnable() const
-    {
-        return xpuTaskReportEnable_;
-    }
-    void SetXpuTaskReportEnable(bool isEnable)
-    {
-        xpuTaskReportEnable_ = isEnable;
-    }
+    StreamSqCqManage* GetStreamSqCqManage() const override { return streamSqCqManage_; }
+    uint32_t GetXpuStreamDepth() const { return configInfo_.maxStreamDepth; }
+    uint32_t GetXpuMaxStream() const { return configInfo_.maxStreamNum; }
+    bool GetXpuTaskReportEnable() const { return xpuTaskReportEnable_; }
+    void SetXpuTaskReportEnable(bool isEnable) { xpuTaskReportEnable_ = isEnable; }
 
     rtError_t CreateRecycleThread();
     void RecycleThreadRun();
     void RecycleThreadDo() const;
-	void WakeUpRecycleThread(void) override;
+    void WakeUpRecycleThread(void) override;
     rtChipType_t GetChipType() const override;
     uint32_t AllocXpuTaskSn()
     {
@@ -92,21 +65,22 @@ public:
         taskXpuSn = taskXpuSn & 0x7FFFFFFFU;
         return taskXpuSn;
     }
+
 private:
-    XpuArgLoader *xpuArgLoader_;
+    XpuArgLoader* xpuArgLoader_;
     uint32_t deviceId_;
-    XpuDriver *driver_;
-    Bitmap *streamIdBitmap_;
-    StreamSqCqManage *streamSqCqManage_;
+    XpuDriver* driver_;
+    Bitmap* streamIdBitmap_;
+    StreamSqCqManage* streamSqCqManage_;
     XpuConfigInfo configInfo_;
     std::atomic<bool> recycleThreadAlive_{false};
     std::atomic<int32_t> inFlightWakeUps_{0};
     mmSem_t recycleThreadSem_;
     Atomic<uint32_t> taskXpuSn_{0U};
     bool xpuTaskReportEnable_ = false;
-    Thread *recycleThread_{nullptr};
+    Thread* recycleThread_{nullptr};
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_RAW_DEVICE_HPP
+#endif // CCE_RUNTIME_RAW_DEVICE_HPP

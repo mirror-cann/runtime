@@ -18,24 +18,23 @@
 namespace cce {
 namespace runtime {
 
-TaskResManageDavid::TaskResManageDavid():TaskResManage()
-{
-}
+TaskResManageDavid::TaskResManageDavid() : TaskResManage() {}
 
-TaskResManageDavid::~TaskResManageDavid()
-{
-}
+TaskResManageDavid::~TaskResManageDavid() {}
 
 bool TaskResManageDavid::CreateTaskRes(Stream* stm)
 {
     const uint32_t taskPoolSize = taskPoolNum_ * sizeof(TaskRes);
     CreateTaskResBaseAddr(taskPoolSize);
-    COND_RETURN_WARN((GetTaskResBaseAddr() == nullptr), false, "no memory for taskRes,"
-        "taskResSize=%u, taskPoolNum_=%u.", sizeof(TaskRes), taskPoolNum_);
+    COND_RETURN_WARN(
+        (GetTaskResBaseAddr() == nullptr), false,
+        "no memory for taskRes,"
+        "taskResSize=%u, taskPoolNum_=%u.",
+        sizeof(TaskRes), taskPoolNum_);
 
     streamId_ = stm->Id_();
     deviceId_ = stm->Device_()->Id_();
-    taskRes_ = RtPtrToPtr<TaskRes *>(GetTaskResBaseAddr());
+    taskRes_ = RtPtrToPtr<TaskRes*>(GetTaskResBaseAddr());
     RT_LOG(RT_LOG_DEBUG, "TaskInfo Buffer alloc success.");
     return true;
 }
@@ -47,8 +46,9 @@ bool TaskResManageDavid::IsRecyclePosValid(uint16_t recyclePos) const
     const bool flag1 = (head <= tail) && (!((recyclePos >= head) && (recyclePos <= tail)));
     const bool flag2 = (head > tail) && ((recyclePos > tail) && (recyclePos < head));
     if (unlikely(flag1 || flag2)) {
-        RT_LOG(RT_LOG_WARNING, "recyclePos is invalid, sqHead=%hu, taskResHead=%hu, taskResTail=%hu.",
-            recyclePos, head, tail);
+        RT_LOG(
+            RT_LOG_WARNING, "recyclePos is invalid, sqHead=%hu, taskResHead=%hu, taskResTail=%hu.", recyclePos, head,
+            tail);
         return false;
     }
     return true;
@@ -56,8 +56,8 @@ bool TaskResManageDavid::IsRecyclePosValid(uint16_t recyclePos) const
 TaskInfo* TaskResManageDavid::GetTaskInfo(uint32_t taskId) const
 {
     if (unlikely(taskId >= taskPoolNum_)) {
-        RT_LOG(RT_LOG_WARNING, "taskId is invalid, device_id=%u, stream_id=%d, taskId=%u",
-            deviceId_, streamId_, taskId);
+        RT_LOG(
+            RT_LOG_WARNING, "taskId is invalid, device_id=%u, stream_id=%d, taskId=%u", deviceId_, streamId_, taskId);
         return nullptr;
     }
 
@@ -68,17 +68,23 @@ TaskInfo* TaskResManageDavid::GetTaskInfo(uint32_t taskId) const
     const uint32_t realPos = taskRes_[taskId].taskInfo.id;
 
     if (unlikely(head == tail)) {
-        RT_LOG(RT_LOG_WARNING, "head==tail, device_id=%u, stream_id=%d, taskId=%u, head=%hu, tail=%hu, "
+        RT_LOG(
+            RT_LOG_WARNING,
+            "head==tail, device_id=%u, stream_id=%d, taskId=%u, head=%hu, tail=%hu, "
             "taskResAHead=%hu, taskResATail=%hu, taskInfo_id=%hu.",
-            deviceId_, streamId_,  taskId, head, tail, taskResAHead_.Value(), taskResATail_.Value(), realPos);
+            deviceId_, streamId_, taskId, head, tail, taskResAHead_.Value(), taskResATail_.Value(), realPos);
         return nullptr;
     }
 
-    RT_LOG(RT_LOG_DEBUG, "device_id=%u, stream_id=%d, taskId=%u, "
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "device_id=%u, stream_id=%d, taskId=%u, "
         "head=%hu, tail=%hu, taskResAHead=%hu, taskResATail=%hu, taskInfo_id=%hu.",
         deviceId_, streamId_, taskId, head, tail, taskResAHead_.Value(), taskResATail_.Value(), realPos);
     if (unlikely(realPos == 0xFFFFU)) {
-        RT_LOG(RT_LOG_WARNING, "taskId is recycled, device_id=%u, stream_id=%d, taskId=%u, "
+        RT_LOG(
+            RT_LOG_WARNING,
+            "taskId is recycled, device_id=%u, stream_id=%d, taskId=%u, "
             "head=%hu, tail=%hu, taskResAHead=%hu, taskResATail=%hu, taskInfo_id=%hu.",
             deviceId_, streamId_, taskId, head, tail, taskResAHead_.Value(), taskResATail_.Value(), realPos);
         return nullptr;
@@ -87,7 +93,9 @@ TaskInfo* TaskResManageDavid::GetTaskInfo(uint32_t taskId) const
     bool flag1 = (!flip) && (!((taskId >= head) && (taskId < tail)));
     bool flag2 = flip && ((taskId >= tail) && (taskId < head));
     if (flag1 || flag2) {
-        RT_LOG(RT_LOG_WARNING, "taskId is invalid, device_id=%u, stream_id=%d, taskId=%u, "
+        RT_LOG(
+            RT_LOG_WARNING,
+            "taskId is invalid, device_id=%u, stream_id=%d, taskId=%u, "
             "head=%hu, tail=%hu, taskResAHead=%hu, taskResATail=%hu, taskInfo_id=%hu.",
             deviceId_, streamId_, taskId, head, tail, taskResAHead_.Value(), taskResATail_.Value(), realPos);
         return nullptr;
@@ -97,9 +105,12 @@ TaskInfo* TaskResManageDavid::GetTaskInfo(uint32_t taskId) const
         flag1 = (!flip) && (!((realPos >= head) && (realPos < tail)));
         flag2 = flip && ((realPos >= tail) && (realPos < head));
         if (flag1 || flag2) {
-            RT_LOG(RT_LOG_WARNING, "realPos is invalid, device_id=%u, stream_id=%d, taskId=%u, realPos=%u, "
-                "head=%hu, tail=%hu, taskResAHead=%hu, taskResATail=%hu, taskInfo_id=%hu.", deviceId_,
-                streamId_, taskId, realPos, head, tail, taskResAHead_.Value(), taskResATail_.Value(), realPos);
+            RT_LOG(
+                RT_LOG_WARNING,
+                "realPos is invalid, device_id=%u, stream_id=%d, taskId=%u, realPos=%u, "
+                "head=%hu, tail=%hu, taskResAHead=%hu, taskResATail=%hu, taskInfo_id=%hu.",
+                deviceId_, streamId_, taskId, realPos, head, tail, taskResAHead_.Value(), taskResATail_.Value(),
+                realPos);
             return nullptr;
         }
     }
@@ -107,7 +118,7 @@ TaskInfo* TaskResManageDavid::GetTaskInfo(uint32_t taskId) const
     return &taskRes_[realPos].taskInfo;
 }
 
-rtError_t TaskResManageDavid::AllocTaskInfoAndPos(uint32_t sqeNum, uint32_t &pos, TaskInfo **task, bool needLog)
+rtError_t TaskResManageDavid::AllocTaskInfoAndPos(uint32_t sqeNum, uint32_t& pos, TaskInfo** task, bool needLog)
 {
     if (sqeNum > SQE_NUM_PER_DAVID_TASK_MAX) {
         RT_LOG(RT_LOG_ERROR, "sqeNum is invalid, sqeNum=%u, maxSqeNum=%u.", sqeNum, SQE_NUM_PER_DAVID_TASK_MAX);
@@ -133,13 +144,15 @@ rtError_t TaskResManageDavid::AllocTaskInfoAndPos(uint32_t sqeNum, uint32_t &pos
         taskRes_[tail].taskInfo.id = pos;
         tail = (tail + 1U) % taskPoolNum_;
     }
-    
+
     taskResATail_.Set(tail);
     allocNum_++;
 
-    RT_LOG(RT_LOG_INFO, "alloc taskinfo success, device_id=%u, stream_id=%u, pos=%u, sqeNum=%u, head=%u, "
-        "taskResATail=%u, allocNum=%llu.", deviceId_, streamId_, pos, sqeNum, head,
-        taskResATail_.Value(), allocNum_);
+    RT_LOG(
+        RT_LOG_INFO,
+        "alloc taskinfo success, device_id=%u, stream_id=%u, pos=%u, sqeNum=%u, head=%u, "
+        "taskResATail=%u, allocNum=%llu.",
+        deviceId_, streamId_, pos, sqeNum, head, taskResATail_.Value(), allocNum_);
     return RT_ERROR_NONE;
 }
 
@@ -148,21 +161,27 @@ bool TaskResManageDavid::RecycleTaskInfo(uint32_t pos, uint32_t sqeNum)
     const uint16_t tail = taskResATail_.Value();
     const uint16_t headBeforeRecycle = taskResAHead_.Value();
     if (unlikely((pos >= taskPoolNum_) || (tail == headBeforeRecycle))) {
-        RT_LOG(RT_LOG_WARNING, "input is invalid, device_id=%u, stream_id=%u, pos=%u, sqeNum=%u, "
-            "taskResAHead=%u, taskResATail=%u.", deviceId_, streamId_, pos, sqeNum, headBeforeRecycle, tail);
+        RT_LOG(
+            RT_LOG_WARNING,
+            "input is invalid, device_id=%u, stream_id=%u, pos=%u, sqeNum=%u, "
+            "taskResAHead=%u, taskResATail=%u.",
+            deviceId_, streamId_, pos, sqeNum, headBeforeRecycle, tail);
         return false;
     }
 
     const uint32_t taskDesHeadIdx = (pos + sqeNum) % taskPoolNum_;
-    const bool flag1 = (headBeforeRecycle < tail) && (!((taskDesHeadIdx >= headBeforeRecycle) && (taskDesHeadIdx <= tail)));
+    const bool flag1 =
+        (headBeforeRecycle < tail) && (!((taskDesHeadIdx >= headBeforeRecycle) && (taskDesHeadIdx <= tail)));
     const bool flag2 = (headBeforeRecycle > tail) && ((taskDesHeadIdx > tail) && (taskDesHeadIdx < headBeforeRecycle));
     if (unlikely(flag1 || flag2)) {
-        RT_LOG(RT_LOG_WARNING, "taskDesHeadIdx is invalid, device_id=%u, stream_id=%u, pos=%u, sqeNum=%u,"
+        RT_LOG(
+            RT_LOG_WARNING,
+            "taskDesHeadIdx is invalid, device_id=%u, stream_id=%u, pos=%u, sqeNum=%u,"
             "taskDesHeadIdx=%u, headBeforeRecycle=%u, taskResATail=%u.",
             deviceId_, streamId_, pos, sqeNum, taskDesHeadIdx, headBeforeRecycle, tail);
         return false;
     }
-    
+
     uint16_t head = headBeforeRecycle;
     // Temporarily used for dfx，using taskResHead_ = taskDesHeadIdx later
     while (head != taskDesHeadIdx) {
@@ -172,12 +191,15 @@ bool TaskResManageDavid::RecycleTaskInfo(uint32_t pos, uint32_t sqeNum)
     }
     taskResAHead_.Set(head);
 
-    RT_LOG(RT_LOG_INFO, "recycle taskinfo success, pos=%u, sqeNum=%u, headBeforeRecycle=%hu, taskResAHead=%hu, "
-        "tail=%hu, stream_id=%u.", pos, sqeNum, headBeforeRecycle, taskResAHead_.Value(), tail, streamId_);
+    RT_LOG(
+        RT_LOG_INFO,
+        "recycle taskinfo success, pos=%u, sqeNum=%u, headBeforeRecycle=%hu, taskResAHead=%hu, "
+        "tail=%hu, stream_id=%u.",
+        pos, sqeNum, headBeforeRecycle, taskResAHead_.Value(), tail, streamId_);
     return true;
 }
 
-void TaskResManageDavid::GetHeadTail(uint16_t &head, uint16_t &tail) const
+void TaskResManageDavid::GetHeadTail(uint16_t& head, uint16_t& tail) const
 {
     head = taskResAHead_.Value();
     tail = taskResATail_.Value();
@@ -201,8 +223,9 @@ void TaskResManageDavid::ShowDfxInfo(void) const
         return;
     }
 
-    RT_LOG(RT_LOG_EVENT, "stream_id=%d, task res info, taskResHead=%hu, taskResTail=%hu",
-           streamId_, taskResAHead_.Value(), taskResATail_.Value());
+    RT_LOG(
+        RT_LOG_EVENT, "stream_id=%d, task res info, taskResHead=%hu, taskResTail=%hu", streamId_, taskResAHead_.Value(),
+        taskResATail_.Value());
     const uint32_t headStart = (taskResAHead_.Value() + taskPoolNum_ - 5U) % taskPoolNum_;
     const uint32_t tailStart = (taskResATail_.Value() + taskPoolNum_ - 5U) % taskPoolNum_;
     uint32_t headIndex[SHOW_DFX_INFO_TASK_NUM] = {0};
@@ -211,24 +234,18 @@ void TaskResManageDavid::ShowDfxInfo(void) const
     for (uint32_t index = 0; index < SHOW_DFX_INFO_TASK_NUM; index++) {
         headIndex[index] = (headStart + index) % taskPoolNum_;
     }
-    RT_LOG(RT_LOG_EVENT, "task head info, headStart=%u, taskId:%hu, %hu, %hu, %hu, %hu, %hu.",
-        headStart, taskRes_[headIndex[0U]].taskInfo.id,
-        taskRes_[headIndex[1U]].taskInfo.id,
-        taskRes_[headIndex[2U]].taskInfo.id,
-        taskRes_[headIndex[3U]].taskInfo.id,
-        taskRes_[headIndex[4U]].taskInfo.id,
-        taskRes_[headIndex[5U]].taskInfo.id);
+    RT_LOG(
+        RT_LOG_EVENT, "task head info, headStart=%u, taskId:%hu, %hu, %hu, %hu, %hu, %hu.", headStart,
+        taskRes_[headIndex[0U]].taskInfo.id, taskRes_[headIndex[1U]].taskInfo.id, taskRes_[headIndex[2U]].taskInfo.id,
+        taskRes_[headIndex[3U]].taskInfo.id, taskRes_[headIndex[4U]].taskInfo.id, taskRes_[headIndex[5U]].taskInfo.id);
 
     for (uint32_t index = 0; index < SHOW_DFX_INFO_TASK_NUM; index++) {
         tailIndex[index] = (tailStart + index) % taskPoolNum_;
     }
-    RT_LOG(RT_LOG_EVENT, "task tail info, tailStart=%u, taskId:%hu, %hu, %hu, %hu, %hu, %hu.",
-        tailStart, taskRes_[tailIndex[0U]].taskInfo.id,
-        taskRes_[tailIndex[1U]].taskInfo.id,
-        taskRes_[tailIndex[2U]].taskInfo.id,
-        taskRes_[tailIndex[3U]].taskInfo.id,
-        taskRes_[tailIndex[4U]].taskInfo.id,
-        taskRes_[tailIndex[5U]].taskInfo.id);
+    RT_LOG(
+        RT_LOG_EVENT, "task tail info, tailStart=%u, taskId:%hu, %hu, %hu, %hu, %hu, %hu.", tailStart,
+        taskRes_[tailIndex[0U]].taskInfo.id, taskRes_[tailIndex[1U]].taskInfo.id, taskRes_[tailIndex[2U]].taskInfo.id,
+        taskRes_[tailIndex[3U]].taskInfo.id, taskRes_[tailIndex[4U]].taskInfo.id, taskRes_[tailIndex[5U]].taskInfo.id);
 }
 
 void TaskResManageDavid::ResetTaskRes()
@@ -237,5 +254,5 @@ void TaskResManageDavid::ResetTaskRes()
     taskResATail_.Set(0);
     allocNum_ = 0U;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

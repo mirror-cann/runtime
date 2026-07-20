@@ -16,7 +16,7 @@
 namespace cce {
 namespace runtime {
 #pragma pack(push)
-#pragma pack (1)
+#pragma pack(1)
 
 struct RtDavidStarsMemcpySqe {
     /* word0-1 */
@@ -50,7 +50,7 @@ struct RtDavidStarsMemcpySqe {
     uint8_t mpamns : 1;
     uint8_t pmg : 2;
     uint8_t qos : 4;
-    uint8_t d2dOffsetFlag : 1;       // use reserved filed
+    uint8_t d2dOffsetFlag : 1; // use reserved filed
 
     /* word6 */
     uint16_t srcStreamId;
@@ -96,7 +96,7 @@ struct RtDavidStarsCmoSqe {
     uint8_t mpamns : 1;
     uint8_t pmg : 2;
     uint8_t qos : 4;
-    uint8_t d2dOffsetFlag : 1;       // use reserved filed 该字段需要check下
+    uint8_t d2dOffsetFlag : 1; // use reserved filed 该字段需要check下
 
     /* word6 */
     uint16_t srcStreamId;
@@ -110,6 +110,6 @@ struct RtDavidStarsCmoSqe {
     } u;
 };
 #pragma pack(pop)
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

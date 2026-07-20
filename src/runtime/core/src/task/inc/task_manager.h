@@ -29,31 +29,31 @@ struct TaskSqeInfo {
 };
 
 // record task error info for other thread sync
-#define STREAM_REPORT_ERR_MSG(STREAM, ERR_MODULE, format, ...) \
-    do { \
-        char_t errRecordMsg[MSG_LENGTH] = {};                                          \
-        char_t * const errStrDes = errRecordMsg;                        \
+#define STREAM_REPORT_ERR_MSG(STREAM, ERR_MODULE, format, ...)                                           \
+    do {                                                                                                 \
+        char_t errRecordMsg[MSG_LENGTH] = {};                                                            \
+        char_t* const errStrDes = errRecordMsg;                                                          \
         (void)snprintf_truncated_s(errStrDes, static_cast<size_t>(MSG_LENGTH), (format), ##__VA_ARGS__); \
-        (STREAM)->ReportErrorMessage((ERR_MODULE), std::string(errStrDes)); \
-        RT_LOG(RT_LOG_ERROR, "%s", errStrDes); \
+        (STREAM)->ReportErrorMessage((ERR_MODULE), std::string(errStrDes));                              \
+        RT_LOG(RT_LOG_ERROR, "%s", errStrDes);                                                           \
     } while (false)
 
-Stream* GetReportStream(Stream *stream);
-void PrintErrorSqe(const rtStarsSqe_t * const sqe, const char_t *desc);
+Stream* GetReportStream(Stream* stream);
+void PrintErrorSqe(const rtStarsSqe_t* const sqe, const char_t* desc);
 uint64_t CombineTo64Bit(uint32_t high, uint32_t low);
-void SetStarsResultCommon(TaskInfo *taskInfo, const rtLogicCqReport_t &logicCq);
-void SetResultCommon(TaskInfo *taskInfo, const void *const data, const uint32_t dataSize);
-void DoCompleteSuccess(TaskInfo *taskInfo, const uint32_t devId);
-void PrintErrorInfoCommon(TaskInfo *taskInfo, const uint32_t devId);
+void SetStarsResultCommon(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq);
+void SetResultCommon(TaskInfo* taskInfo, const void* const data, const uint32_t dataSize);
+void DoCompleteSuccess(TaskInfo* taskInfo, const uint32_t devId);
+void PrintErrorInfoCommon(TaskInfo* taskInfo, const uint32_t devId);
 
-using PfnTaskToCmd = void (*)(TaskInfo *const taskInfo, rtCommand_t *const command);
-using PfnTaskToSqe = void (*)(TaskInfo* taskInfo, rtStarsSqe_t *const command);
+using PfnTaskToCmd = void (*)(TaskInfo* const taskInfo, rtCommand_t* const command);
+using PfnTaskToSqe = void (*)(TaskInfo* taskInfo, rtStarsSqe_t* const command);
 using PfnWaitAsyncCpCompleteFunc = rtError_t (*)(TaskInfo* taskInfo);
-using PfnTaskSetResult = void (*)(TaskInfo *taskInfo, const void *const data, const uint32_t dataSize);
-using PfnDoCompleteSucc = void (*)(TaskInfo *taskInfo, const uint32_t devId);
-using PfnTaskUnInit = void (*)(TaskInfo *taskInfo);
-using PfnPrintErrorInfo = void (*)(TaskInfo *taskInfo, const uint32_t devId);
-using PfnTaskSetStarsResult = void (*)(TaskInfo *taskInfo, const rtLogicCqReport_t &logicCq);
+using PfnTaskSetResult = void (*)(TaskInfo* taskInfo, const void* const data, const uint32_t dataSize);
+using PfnDoCompleteSucc = void (*)(TaskInfo* taskInfo, const uint32_t devId);
+using PfnTaskUnInit = void (*)(TaskInfo* taskInfo);
+using PfnPrintErrorInfo = void (*)(TaskInfo* taskInfo, const uint32_t devId);
+using PfnTaskSetStarsResult = void (*)(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq);
 
 struct TaskFuncArrays {
     PfnTaskToCmd toCommandFunc[TS_TASK_TYPE_RESERVED];
@@ -78,7 +78,7 @@ struct TaskFuncSingle {
 };
 
 extern TaskFuncArrays g_taskFuncArrays[CHIP_END];
-extern PfnTaskUnInit *g_taskUnInitFunc;
+extern PfnTaskUnInit* g_taskUnInitFunc;
 
 void RefreshTaskFuncPointer(rtChipType_t chipType);
 void RegTaskFunc(rtChipType_t chipType, tsTaskType_t taskType, const TaskFuncSingle& funcs);
@@ -88,6 +88,6 @@ const std::vector<rtChipType_t>& GetDavidChips();
 const std::vector<rtChipType_t>& GetV200Chips();
 const std::vector<rtChipType_t>& GetV201Chips();
 
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_TASK_MANAGER_H
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_TASK_MANAGER_H

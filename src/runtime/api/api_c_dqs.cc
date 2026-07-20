@@ -21,9 +21,9 @@ using namespace cce::runtime;
 extern "C" {
 #endif // __cplusplus
 
-static rtError_t DqsTaskLaunch(const rtStream_t stm, const rtDqsTaskCfg_t * const taskCfg)
+static rtError_t DqsTaskLaunch(const rtStream_t stm, const rtDqsTaskCfg_t* const taskCfg)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t ret = apiInstance->LaunchDqsTask(exeStream, taskCfg);
@@ -33,7 +33,7 @@ static rtError_t DqsTaskLaunch(const rtStream_t stm, const rtDqsTaskCfg_t * cons
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtLaunchDqsTask(const rtStream_t stm, const rtDqsTaskCfg_t * const taskCfg)
+rtError_t rtLaunchDqsTask(const rtStream_t stm, const rtDqsTaskCfg_t* const taskCfg)
 {
     return DqsTaskLaunch(stm, taskCfg);
 }

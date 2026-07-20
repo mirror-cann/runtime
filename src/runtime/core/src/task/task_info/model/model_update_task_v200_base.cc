@@ -19,14 +19,14 @@ namespace runtime {
 
 #if F_DESC("ModelTaskUpdate")
 
-static void ConstructDavidSqeForModelUpdateTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+static void ConstructDavidSqeForModelUpdateTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
-    MdlUpdateTaskInfo *mdlUpdateTaskInfo = &(taskInfo->u.mdlUpdateTask);
+    MdlUpdateTaskInfo* mdlUpdateTaskInfo = &(taskInfo->u.mdlUpdateTask);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
-    Stream * const stm = taskInfo->stream;
+    RtDavidPlaceHolderSqe* const phSqe = &(davidSqe->phSqe);
+    Stream* const stm = taskInfo->stream;
     phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
     phSqe->header.preP = 1U;
     phSqe->taskType = TS_TASK_TYPE_MODEL_TASK_UPDATE;
@@ -39,13 +39,15 @@ static void ConstructDavidSqeForModelUpdateTask(TaskInfo * const taskInfo, void 
     phSqe->u.mdlTaskUpdateInfo.destaskId = mdlUpdateTaskInfo->destaskId;
     phSqe->u.mdlTaskUpdateInfo.exeStreamId = mdlUpdateTaskInfo->exeStreamId;
 
-    RT_LOG(RT_LOG_INFO, "[tilingKey=%llu,blockDim=%llu,tilingTab=%llu,tilingTabLen=%u.",
-        mdlUpdateTaskInfo->tilingKeyOffset,
-        mdlUpdateTaskInfo->blockDimOffset,
-        mdlUpdateTaskInfo->tilingTabOffset, mdlUpdateTaskInfo->tilingTabLen);
+    RT_LOG(
+        RT_LOG_INFO, "[tilingKey=%llu,blockDim=%llu,tilingTab=%llu,tilingTabLen=%u.",
+        mdlUpdateTaskInfo->tilingKeyOffset, mdlUpdateTaskInfo->blockDimOffset, mdlUpdateTaskInfo->tilingTabOffset,
+        mdlUpdateTaskInfo->tilingTabLen);
 
     PrintDavidSqe(davidSqe, "ModelUpdateTask");
-    RT_LOG(RT_LOG_INFO, "Send TS_TASK_TYPE_MODEL_TASK_UPDATE succ,"
+    RT_LOG(
+        RT_LOG_INFO,
+        "Send TS_TASK_TYPE_MODEL_TASK_UPDATE succ,"
         "sqe_type=%u, pre_p=%u, stream_id=%u, task_id=%u, task_sn=%u, task_type=%u",
         phSqe->header.type, phSqe->header.preP, stm->Id_(), taskInfo->id, taskInfo->taskSn, phSqe->taskType);
 }
@@ -65,7 +67,7 @@ static bool ModelUpdateTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
 
-    const auto &chips = GetDavidChips();
+    const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_TASK_UPDATE, funcs);
     }
@@ -76,5 +78,5 @@ static bool ModelUpdateTaskRegister()
 
 static bool g_modelUpdateTaskRegister = ModelUpdateTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

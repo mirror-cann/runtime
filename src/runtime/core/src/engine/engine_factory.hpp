@@ -19,9 +19,9 @@ public:
     explicit EngineFactory() {}
     ~EngineFactory() = default;
 
-    static Engine *CreateEngine(const rtChipType_t chipType, Device *dev);
+    static Engine* CreateEngine(const rtChipType_t chipType, Device* dev);
 }; // class EngineFactory
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_ENGINE_FACTORY_HPP
+#endif // CCE_RUNTIME_ENGINE_FACTORY_HPP

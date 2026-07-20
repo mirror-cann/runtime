@@ -19,10 +19,10 @@ namespace runtime {
 
 #if F_DESC("ModelToAicpuTask")
 
-static void ConstructSqeForModelToAicpuTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForModelToAicpuTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    RtStarsAicpuControlSqe *const sqe = &(command->aicpuControlSqe);
-    Stream *stm = taskInfo->stream;
+    RtStarsAicpuControlSqe* const sqe = &(command->aicpuControlSqe);
+    Stream* stm = taskInfo->stream;
 
     sqe->header.type = RT_STARS_SQE_TYPE_AICPU;
     sqe->header.l1_lock = 0U;
@@ -66,8 +66,9 @@ static void ConstructSqeForModelToAicpuTask(TaskInfo* taskInfo, rtStarsSqe_t *co
 
     sqe->dest_pid = 0U;
     PrintSqe(command, "ModelToAicpuTask");
-    RT_LOG(RT_LOG_INFO, "ModelToAicpuTask::ConstructSqe finish,topic_type=%u sqe addr=%p cmdType_=%u",
-           static_cast<uint32_t>(sqe->topic_type), command, taskInfo->u.modelToAicpuTask.cmdType);
+    RT_LOG(
+        RT_LOG_INFO, "ModelToAicpuTask::ConstructSqe finish,topic_type=%u sqe addr=%p cmdType_=%u",
+        static_cast<uint32_t>(sqe->topic_type), command, taskInfo->u.modelToAicpuTask.cmdType);
 }
 
 #endif
@@ -85,7 +86,7 @@ static bool ModelToAicpuTaskRegister()
         .setStarsResultFunc = &SetStarsResultForModelToAicpuTask,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_TO_AICPU, funcs);
     }
@@ -95,5 +96,5 @@ static bool ModelToAicpuTaskRegister()
 
 static bool g_modelToAicpuTaskRegister = ModelToAicpuTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

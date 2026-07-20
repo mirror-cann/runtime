@@ -32,13 +32,14 @@ struct rtPackageBuf_t {
 class PackageRebuilder : public NoCopy {
 public:
     ~PackageRebuilder() override;
-    bool PackageReportReceive(const rtTaskReport_t * const report, uint8_t * const package,
-                              const size_t pkgLen, const TaskInfo * const reportTask);
+    bool PackageReportReceive(
+        const rtTaskReport_t* const report, uint8_t* const package, const size_t pkgLen,
+        const TaskInfo* const reportTask);
 
 private:
-    std::map<uint64_t, rtPackageBuf_t *> rptPkgTbl_;
+    std::map<uint64_t, rtPackageBuf_t*> rptPkgTbl_;
 }; // class PackageRebuilder
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_PACKAGE_REBUILDER_HPP__
+#endif // __CCE_RUNTIME_PACKAGE_REBUILDER_HPP__

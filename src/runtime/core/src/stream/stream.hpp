@@ -32,7 +32,7 @@
 
 namespace cce {
 namespace runtime {
-constexpr uint64_t ABORT_STREAM_TIMEOUT = (60UL * 1000 * 1000);  // us
+constexpr uint64_t ABORT_STREAM_TIMEOUT = (60UL * 1000 * 1000); // us
 constexpr uint32_t DEBUG_JSON_PRINT_VERBOSE = 0x1U;
 constexpr uint32_t NOP_TASK_E2E_DURATION = 1U;
 constexpr uint32_t RECORD_TASK_E2E_DURATION = 5U;
@@ -53,12 +53,12 @@ constexpr uint32_t RECYCLE_INTERVAL = 10U;
 constexpr uint64_t STREAM_FAILURE_MODE_MASK = 0x00000001U;
 constexpr uint32_t STREAM_TO_FULL_CNT = 64U;
 constexpr uint32_t CAPTURE_TASK_RESERVED_NUM = 32U;
-constexpr uint32_t STREAM_SQE_BUFFER_MAX_SIZE = 2U * 1024U * 1024U;  // 2M, max sq depth 32768
+constexpr uint32_t STREAM_SQE_BUFFER_MAX_SIZE = 2U * 1024U * 1024U; // 2M, max sq depth 32768
 constexpr uint32_t STREAM_SQ_MAX_DEPTH = 32768U;
 
 // 自动切分SQ相关常量
-constexpr uint32_t STREAM_SQE_BUFFER_INIT_SIZE = 2U * 1024U * 64U;  // host sq buffer初始化大小 128K (128 * 1024)
-constexpr uint32_t HOST_SQ_MAX_COUNT = 32767U;          // 32K-1后创建slave stream
+constexpr uint32_t STREAM_SQE_BUFFER_INIT_SIZE = 2U * 1024U * 64U; // host sq buffer初始化大小 128K (128 * 1024)
+constexpr uint32_t HOST_SQ_MAX_COUNT = 32767U;                     // 32K-1后创建slave stream
 
 constexpr float NOP_TASK_DURATION = 0.5F;
 constexpr float RECORD_TASK_DURATION = 4.5F;
@@ -80,7 +80,7 @@ class EngineStreamObserver;
 class TaskAllocator;
 class CaptureModel;
 
-using RtSqAllocType  = enum TagtsSqAllocType { SQ_ALLOC_TYPE_RT_DEFAULT = 0 };
+using RtSqAllocType = enum TagtsSqAllocType { SQ_ALLOC_TYPE_RT_DEFAULT = 0 };
 
 typedef enum TagStreamFailureMode {
     CONTINUE_ON_FAILURE = 0,
@@ -95,12 +95,12 @@ enum class StreamStateCallback : uint8_t {
 };
 
 struct RtTaskCqeStatus {
-    TaskInfo *taskPtr;
+    TaskInfo* taskPtr;
     bool isCqeArrived;
 };
 
 struct RtStarsRecordQueue {
-    uint32_t *queue = nullptr;
+    uint32_t* queue = nullptr;
     uint32_t size = 0U;
     uint32_t front = 0U;
     uint32_t rear = 0U;
@@ -141,9 +141,9 @@ struct TaskGroup {
 
 // 自动切分SQ上下文结构体
 struct AutoSplitSqContext {
-    std::vector<Stream *> slaveStreams;       // master stream的slave列表
-    int32_t exposedStreamId{-1};              // 对外暴露的streamId (master的)
-    uint32_t curStreamSqeCount{0U};           // 当前stream已分配的SQE数量
+    std::vector<Stream*> slaveStreams; // master stream的slave列表
+    int32_t exposedStreamId{-1};       // 对外暴露的streamId (master的)
+    uint32_t curStreamSqeCount{0U};    // 当前stream已分配的SQE数量
 };
 
 enum class StreamInfoExHeaderType : uint8_t {
@@ -164,27 +164,18 @@ enum class UpdateTaskFlag : int32_t {
     NOT_SUPPORT_AND_SKIP,
 };
 
-enum class StreamStatus : uint8_t {
-    NORMAL = 0U,
-    ABNORMAL = 1U
-};
+enum class StreamStatus : uint8_t { NORMAL = 0U, ABNORMAL = 1U };
 
 // A stream is a sequence of task that execute in order.
 class Stream : public NoCopy {
 public:
-    Stream(Device * const dev, const uint32_t prio);
-    Stream(Device * const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp * const dvppGrp = nullptr);
-    Stream(const Context * const stmCtx, const uint32_t prio);
-    Stream(const Context * const stmCtx, const uint32_t prio, const uint32_t stmFlags);
+    Stream(Device* const dev, const uint32_t prio);
+    Stream(Device* const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp* const dvppGrp = nullptr);
+    Stream(const Context* const stmCtx, const uint32_t prio);
+    Stream(const Context* const stmCtx, const uint32_t prio, const uint32_t stmFlags);
     ~Stream() override;
-    rtInnerObject *GetInnerHandle()
-    {
-        return &handle_;
-    }
-    const rtInnerObject *GetInnerHandle() const
-    {
-        return &handle_;
-    }
+    rtInnerObject* GetInnerHandle() { return &handle_; }
+    const rtInnerObject* GetInnerHandle() const { return &handle_; }
 
     // init stream
     virtual rtError_t Setup();
@@ -229,7 +220,7 @@ public:
     virtual rtError_t TaskKill(const uint32_t operationType);
 
     // only pid abort use default
-    virtual rtError_t TaskAbortByType(uint32_t &result, const uint32_t opType, const uint32_t targetId = 0U);
+    virtual rtError_t TaskAbortByType(uint32_t& result, const uint32_t opType, const uint32_t targetId = 0U);
 
     virtual rtError_t SqCqUpdate();
 
@@ -239,17 +230,17 @@ public:
     virtual rtError_t Restore();
 
     // only pid abort use default
-    virtual rtError_t QueryAbortStatusByType(uint32_t &status, const uint32_t opType, const uint32_t targetId = 0U);
+    virtual rtError_t QueryAbortStatusByType(uint32_t& status, const uint32_t opType, const uint32_t targetId = 0U);
 
-    virtual rtError_t RecoverAbortByType(const uint32_t opType, const uint32_t targetId, uint32_t &result);
+    virtual rtError_t RecoverAbortByType(const uint32_t opType, const uint32_t targetId, uint32_t& result);
 
-    virtual rtError_t QueryRecoverStatusByType(uint32_t &status, const uint32_t opType, const uint32_t targetId);
+    virtual rtError_t QueryRecoverStatusByType(uint32_t& status, const uint32_t opType, const uint32_t targetId);
 
-    virtual rtError_t QuerySq(const uint32_t queryType, uint32_t &status);
+    virtual rtError_t QuerySq(const uint32_t queryType, uint32_t& status);
 
     virtual bool IsNeedSendFlipTask(uint16_t preTaskId);
     // create CreateL2AddrTask
-    rtError_t ProcL2AddrTask(TaskInfo *&tsk);
+    rtError_t ProcL2AddrTask(TaskInfo*& tsk);
 
     // destroy this stream
     virtual rtError_t TearDown(const bool terminal = false, bool flag = true);
@@ -257,10 +248,10 @@ public:
     virtual void EnterFailureAbort();
     bool IsSeparateSendAndRecycle() const;
     // use ctrlsq to recycle task in stream
-    rtError_t RecycleTaskWithCtrlsq(Device * const dev, const uint32_t logicCqId, const uint32_t recycleCnt);
+    rtError_t RecycleTaskWithCtrlsq(Device* const dev, const uint32_t logicCqId, const uint32_t recycleCnt);
 
     // Block following task to issue after this until the event complete.
-    rtError_t WaitEvent(Event * const evt, const uint32_t timeout);
+    rtError_t WaitEvent(Event* const evt, const uint32_t timeout);
 
     void StreamLock();
     void StreamUnLock();
@@ -273,7 +264,7 @@ public:
     void StreamRecycleLock();
     void StreamRecycleUnlock();
 
-    rtError_t AcquireTimeline(uint64_t &base, uint32_t &offset);
+    rtError_t AcquireTimeline(uint64_t& base, uint32_t& offset);
     rtError_t ReleaseTimeline(const uint64_t base, const uint32_t offset);
     uint64_t GetTimelineValue(const uint64_t base, const uint32_t offset);
 
@@ -290,7 +281,7 @@ public:
     // end fuison kernels
     rtError_t KernelFusionEnd();
 
-    rtError_t FreePersistentTaskID(TaskAllocator * const tskAllocator);
+    rtError_t FreePersistentTaskID(TaskAllocator* const tskAllocator);
 
     rtError_t GetError(void);
     rtError_t ProcessDrvErr(void);
@@ -300,10 +291,7 @@ public:
     void EraseEventTask(TaskInfo* const tsk);
     void InsertEventTask(TaskInfo* const tsk);
 
-    int32_t Id_() const
-    {
-        return streamId_;
-    }
+    int32_t Id_() const { return streamId_; }
 
     // profiling needs to record the actual stream that executes the task.
     int32_t AllocTaskStreamId() const
@@ -315,15 +303,9 @@ public:
         }
     }
 
-    uint32_t GetSqId() const
-    {
-        return sqId_;
-    }
+    uint32_t GetSqId() const { return sqId_; }
 
-    uint64_t GetSqIdMemAddr() const
-    {
-        return sqIdMemAddr_;
-    }
+    uint64_t GetSqIdMemAddr() const { return sqIdMemAddr_; }
 
     void SetSqIdMemAddr(const uint64_t sqIdMemAddr)
     {
@@ -331,49 +313,28 @@ public:
         return;
     }
 
-    uint32_t GetCqId() const
-    {
-        return cqId_;
-    }
+    uint32_t GetCqId() const { return cqId_; }
 
-    uint32_t GetPoolId() const
-    {
-        return poolId_;
-    }
+    uint32_t GetPoolId() const { return poolId_; }
 
-    Device *Device_() const
-    {
-        return device_;
-    }
+    Device* Device_() const { return device_; }
 
-    uint32_t Priority() const
-    {
-        return priority_;
-    }
+    uint32_t Priority() const { return priority_; }
 
-    void SetContext(Context *ctx)
-    {
-        context_ = ctx;
-    }
+    void SetContext(Context* ctx) { context_ = ctx; }
 
-    void SetPoolId(uint32_t poolId)
-    {
-        poolId_ = poolId;
-    }
+    void SetPoolId(uint32_t poolId) { poolId_ = poolId; }
 
-    Context *Context_() const
-    {
-        return context_;
-    }
+    Context* Context_() const { return context_; }
 
-    void SetName(const char_t *name)
+    void SetName(const char_t* name)
     {
         if (name != nullptr) {
             (void)name_.assign(name);
         }
     }
 
-    void SetModel(Model *mdl)
+    void SetModel(Model* mdl)
     {
         if (mdl == nullptr) {
             RT_LOG(RT_LOG_ERROR, "mdl == nullptr");
@@ -382,12 +343,9 @@ public:
         models_.insert(mdl);
     }
 
-    void DelModel(Model *mdl)
-    {
-        models_.erase(mdl);
-    }
+    void DelModel(Model* mdl) { models_.erase(mdl); }
 
-    Model *Model_() const
+    Model* Model_() const
     {
         for (auto it = models_.begin(); it != models_.end(); it++) {
             if (*it != nullptr) {
@@ -397,20 +355,11 @@ public:
         return nullptr;
     }
 
-    uint16_t GetModelNum() const
-    {
-        return models_.size();
-    }
+    uint16_t GetModelNum() const { return models_.size(); }
 
-    void SetLatestModlId(int32_t id)
-    {
-        latestModelId_ = id;
-    }
+    void SetLatestModlId(int32_t id) { latestModelId_ = id; }
 
-    uint32_t Flags() const
-    {
-        return flags_;
-    }
+    uint32_t Flags() const { return flags_; }
 
     void SetErrCode(const uint32_t errCode)
     {
@@ -420,22 +369,13 @@ public:
         }
     }
 
-    uint32_t GetErrCode() const
-    {
-        return errCode_;
-    }
+    uint32_t GetErrCode() const { return errCode_; }
 
-    void SetDrvErr(const uint32_t drvErr)
-    {
-        drvErr_ = drvErr;
-    }
+    void SetDrvErr(const uint32_t drvErr) { drvErr_ = drvErr; }
 
-    uint32_t GetDrvErr() const
-    {
-        return drvErr_;
-    }
+    uint32_t GetDrvErr() const { return drvErr_; }
 
-    bool NeedSaveTask(const TaskInfo * const tsk) const;
+    bool NeedSaveTask(const TaskInfo* const tsk) const;
 
     bool NeedDelSelfStream(void) const;
 
@@ -445,10 +385,7 @@ public:
 
     bool IsHostFuncCbReg();
 
-    uint32_t GetPriority() const
-    {
-        return priority_;
-    }
+    uint32_t GetPriority() const { return priority_; }
     void PushPersistentTaskID(uint32_t taskID)
     {
         const std::lock_guard<std::mutex> stmLock(persistentTaskMutex_);
@@ -456,403 +393,220 @@ public:
     }
 
     bool IsPersistentTaskFull();
-    void FreePersistentTaskID(const Stream * const exeStream);
+    void FreePersistentTaskID(const Stream* const exeStream);
     // some works are not supported in model compile step,
     //      e.q. HCCL task need device memory but not supported now;
     //             so HCCL kernel task can't support arg memory 0 cpy in model loading step,
     //             which need runtime alloc and mamage arg memory.
     bool NonSupportModelCompile() const
     {
-        return ((Flags() & (RT_STREAM_FORCE_COPY | RT_STREAM_PERSISTENT)) ==
-                (RT_STREAM_FORCE_COPY | RT_STREAM_PERSISTENT));
+        return (
+            (Flags() & (RT_STREAM_FORCE_COPY | RT_STREAM_PERSISTENT)) == (RT_STREAM_FORCE_COPY | RT_STREAM_PERSISTENT));
     }
 
-    void *L2BaseVaddr() const
-    {
-        return l2BaseVaddr_;
-    }
+    void* L2BaseVaddr() const { return l2BaseVaddr_; }
 
-    void InsertLabelList(Label *label)
+    void InsertLabelList(Label* label)
     {
         labelLock_.Lock();
         labels_.push_back(label);
         labelLock_.Unlock();
     }
 
-    bool IsTaskSink() const
-    {
-        return GetBindFlag() && ((Flags() & RT_STREAM_AICPU) == 0);
-    }
+    bool IsTaskSink() const { return GetBindFlag() && ((Flags() & RT_STREAM_AICPU) == 0); }
 
-    bool IsSteamNeedFastCq() const
-    {
-        return needFastcqFlag_;
-    }
+    bool IsSteamNeedFastCq() const { return needFastcqFlag_; }
 
-    void SetLastTaskId(uint32_t lastTaskId)
-    {
-        lastTaskId_ = lastTaskId;
-    }
+    void SetLastTaskId(uint32_t lastTaskId) { lastTaskId_ = lastTaskId; }
 
-    uint32_t GetLastTaskId() const
-    {
-        return lastTaskId_;
-    }
+    uint32_t GetLastTaskId() const { return lastTaskId_; }
 
-    bool NeedSubmitTask(void) const
-    {
-        return needSubmitTask_;
-    }
+    bool NeedSubmitTask(void) const { return needSubmitTask_; }
 
-    void SetNeedSubmitTask(bool needSubmitTask)
-    {
-        needSubmitTask_ = needSubmitTask;
-    }
+    void SetNeedSubmitTask(bool needSubmitTask) { needSubmitTask_ = needSubmitTask; }
 
-    void PushbackSwitchNArgs(void *args)
-    {
-        switchNArg_.push_back(args);
-    }
+    void PushbackSwitchNArgs(void* args) { switchNArg_.push_back(args); }
 
-    void *GetOnProfDeviceAddr(void) const
-    {
-        return onProfDeviceAddr_;
-    }
+    void* GetOnProfDeviceAddr(void) const { return onProfDeviceAddr_; }
 
-    void SetOnProfDeviceAddr(void *streamOnProfAddr)
-    {
-        onProfDeviceAddr_ = streamOnProfAddr;
-    }
+    void SetOnProfDeviceAddr(void* streamOnProfAddr) { onProfDeviceAddr_ = streamOnProfAddr; }
 
-    void *GetOnProfHostRtAddr(void) const
-    {
-        return onProfHostRtAddr_;
-    }
+    void* GetOnProfHostRtAddr(void) const { return onProfHostRtAddr_; }
 
-    void SetOnProfHostRtAddr(void *streamOnProfAddr)
-    {
-        onProfHostRtAddr_ = streamOnProfAddr;
-    }
+    void SetOnProfHostRtAddr(void* streamOnProfAddr) { onProfHostRtAddr_ = streamOnProfAddr; }
 
-    void *GetOnProfHostTsAddr(void) const
-    {
-        return onProfHostTsAddr_;
-    }
+    void* GetOnProfHostTsAddr(void) const { return onProfHostTsAddr_; }
 
-    void SetOnProfHostTsAddr(void *streamOnProfAddr)
-    {
-        onProfHostTsAddr_ = streamOnProfAddr;
-    }
+    void SetOnProfHostTsAddr(void* streamOnProfAddr) { onProfHostTsAddr_ = streamOnProfAddr; }
 
-    void SetBindFlag(bool flag)
-    {
-        bindFlag_.Set(flag);
-    }
+    void SetBindFlag(bool flag) { bindFlag_.Set(flag); }
 
-    bool GetBindFlag() const
-    {
-        return bindFlag_.Value();
-    }
+    bool GetBindFlag() const { return bindFlag_.Value(); }
 
     bool GetStarsWrCqeFlag() const
     {
-        return (dvppGrp_ != nullptr);   // all dvpp task need cqe in stars
+        return (dvppGrp_ != nullptr); // all dvpp task need cqe in stars
     }
 
-    void SetRecycleFlag(bool flag)
-    {
-        recycleFlag_.Set(flag);
-    }
+    void SetRecycleFlag(bool flag) { recycleFlag_.Set(flag); }
 
-    bool GetRecycleFlag() const
-    {
-        return recycleFlag_.Value();
-    }
+    bool GetRecycleFlag() const { return recycleFlag_.Value(); }
 
-    void SetSubscribeFlag(StreamSubscribeFlag flag)
-    {
-        subscribeFlag_.Set(flag);
-    }
+    void SetSubscribeFlag(StreamSubscribeFlag flag) { subscribeFlag_.Set(flag); }
 
-    StreamSubscribeFlag GetSubscribeFlag() const
-    {
-        return subscribeFlag_.Value();
-    }
+    StreamSubscribeFlag GetSubscribeFlag() const { return subscribeFlag_.Value(); }
 
-    void SetStreamStopSyncFlag(bool flag)
-    {
-        streamStopSyncFlag_ = flag;
-    }
+    void SetStreamStopSyncFlag(bool flag) { streamStopSyncFlag_ = flag; }
 
-    void SetStreamFastSync(bool flag)
-    {
-        streamFastSync_ = flag;
-    }
+    void SetStreamFastSync(bool flag) { streamFastSync_ = flag; }
 
-    bool IsDavinciTask(const TaskInfo * const tsk) const;
+    bool IsDavinciTask(const TaskInfo* const tsk) const;
 
-    bool IsFusionKernelTask(const TaskInfo * const tsk) const;
+    bool IsFusionKernelTask(const TaskInfo* const tsk) const;
 
     bool CheckASyncRecycle();
 
-    rtError_t AddTaskToStream(const TaskInfo * const tsk);
+    rtError_t AddTaskToStream(const TaskInfo* const tsk);
 
     rtError_t UpdateAllPersistentTask();
 
-    void CacheBindTrackTaskId(const uint16_t taskId)
-    {
-        cacheTrackTaskid_.push_back(taskId);
-    }
+    void CacheBindTrackTaskId(const uint16_t taskId) { cacheTrackTaskid_.push_back(taskId); }
 
-    const std::list<uint16_t> &GetCacheTrackTaskList() const;
+    const std::list<uint16_t>& GetCacheTrackTaskList() const;
 
-    void ClearCacheTrackTaskList()
-    {
-        cacheTrackTaskid_.clear();
-    }
+    void ClearCacheTrackTaskList() { cacheTrackTaskid_.clear(); }
 
-    void CacheCaptureTaskId(const uint16_t taskId)
-    {
-        cacheCaptureTaskid_.push_back(taskId);
-    }
+    void CacheCaptureTaskId(const uint16_t taskId) { cacheCaptureTaskid_.push_back(taskId); }
 
-    const std::list<uint16_t> &GetCacheCaptureTaskId() const
-    {
-        return cacheCaptureTaskid_;
-    }
+    const std::list<uint16_t>& GetCacheCaptureTaskId() const { return cacheCaptureTaskid_; }
 
     void InsertCacheStream();
     virtual void EraseCacheStream();
 
     bool IsStreamFull(const uint32_t head, const uint32_t tail, const uint32_t depth, const uint32_t addCnt);
 
-    #define FLAG_OFFSET (31U)
+#define FLAG_OFFSET (31U)
     bool StarsCheckSqeFull(const uint32_t sendSqeNum);
     void StarsSqTailAdd();
     void StarsSqHeadSet(const uint32_t data);
     void StarsWrRecordEnQueue(const bool needSend);
     void StarsWrRecordDeQueue();
 
-    RtStarsRecordQueue StarsGetWrRecordQueue()
-    {
-        return wrRecordQueue_;
-    }
+    RtStarsRecordQueue StarsGetWrRecordQueue() { return wrRecordQueue_; }
 
-    virtual rtError_t StarsAddTaskToStream(TaskInfo * const tsk, const uint32_t sendSqeNum);
+    virtual rtError_t StarsAddTaskToStream(TaskInfo* const tsk, const uint32_t sendSqeNum);
 
     rtError_t StarsAddTaskToStreamForModelUpdate(TaskInfo* const tsk, const uint32_t sendSqeNum);
     rtError_t TryDelRecordedTask(const bool isTaskBind, const uint16_t tailTaskId);
 
-    rtError_t StarsTryDelRecordedTask(const TaskInfo * const workTask, const bool isTaskBind, const uint16_t tailTaskId);
+    rtError_t StarsTryDelRecordedTask(const TaskInfo* const workTask, const bool isTaskBind, const uint16_t tailTaskId);
 
-    rtError_t TryDelDavinciRecordedTask(const uint16_t tailTaskId, uint16_t * const delTaskId);
+    rtError_t TryDelDavinciRecordedTask(const uint16_t tailTaskId, uint16_t* const delTaskId);
 
-    virtual rtError_t StarsGetPublicTaskHead(TaskInfo *workTask, const bool isTaskBind, const uint16_t tailTaskId,
-        uint16_t * const delTaskId);
-    rtError_t GetPublicTaskHead(const bool isTaskBind, const uint16_t tailTaskId, uint16_t * const delTaskId);
+    virtual rtError_t StarsGetPublicTaskHead(
+        TaskInfo* workTask, const bool isTaskBind, const uint16_t tailTaskId, uint16_t* const delTaskId);
+    rtError_t GetPublicTaskHead(const bool isTaskBind, const uint16_t tailTaskId, uint16_t* const delTaskId);
     void BatchDelDavinciRecordedTask(const uint16_t tailTaskId, const uint32_t davinciTaskNum);
 
     void ClearTaskCount(const bool isTaskBind);
 
-    int32_t GetRecycleTaskHeadId(const uint16_t tailTaskId, uint16_t &recycleTaskId);
+    int32_t GetRecycleTaskHeadId(const uint16_t tailTaskId, uint16_t& recycleTaskId);
 
     uint8_t GetTaskRevFlag(const bool isTaskBind);
 
-    void SetStreamMark(const TaskInfo * const tsk);
-    bool IsTaskLimited(const TaskInfo * const tsk);
+    void SetStreamMark(const TaskInfo* const tsk);
+    bool IsTaskLimited(const TaskInfo* const tsk);
 
-    virtual uint32_t GetPendingNum() const
-    {
-        return pendingNum_.Value();
-    }
-    void UpdateCascadeCaptureStreamInfo(Stream *newCaptureStream, Stream *curCaptureStream);
-    rtError_t AllocCascadeCaptureStream(Stream *&newCaptureStream, const Stream * const curCaptureStream);
-    rtError_t ProcRecordTask(TaskInfo *&tsk);
+    virtual uint32_t GetPendingNum() const { return pendingNum_.Value(); }
+    void UpdateCascadeCaptureStreamInfo(Stream* newCaptureStream, Stream* curCaptureStream);
+    rtError_t AllocCascadeCaptureStream(Stream*& newCaptureStream, const Stream* const curCaptureStream);
+    rtError_t ProcRecordTask(TaskInfo*& tsk);
     virtual rtError_t SubmitRecordTask(int32_t timeout);
 
     rtError_t WaitForTask(const uint32_t taskId, const bool isNeedWaitSyncCq = false, int32_t timeout = -1);
     rtError_t WaitTask(const bool isReclaim, const uint32_t taskId, const int32_t timeout = -1);
-    virtual rtError_t QueryWaitTask(bool &isWaitFlag, const uint32_t taskId);
-    rtError_t GetLastTaskIdFromCqShm(uint32_t &lastTaskId);
-    virtual rtError_t GetLastTaskIdFromRtsq(uint32_t &lastTaskId);
-    virtual rtError_t JudgeTaskFinish(uint16_t taskPos, bool &isFinished);
-    virtual rtError_t JudgeHeadTailPos(rtEventStatus_t * const status, uint16_t eventPos);
-    rtError_t GetLastFinishTaskId(const uint32_t taskId, uint32_t &currId, int32_t timeout);
+    virtual rtError_t QueryWaitTask(bool& isWaitFlag, const uint32_t taskId);
+    rtError_t GetLastTaskIdFromCqShm(uint32_t& lastTaskId);
+    virtual rtError_t GetLastTaskIdFromRtsq(uint32_t& lastTaskId);
+    virtual rtError_t JudgeTaskFinish(uint16_t taskPos, bool& isFinished);
+    virtual rtError_t JudgeHeadTailPos(rtEventStatus_t* const status, uint16_t eventPos);
+    rtError_t GetLastFinishTaskId(const uint32_t taskId, uint32_t& currId, int32_t timeout);
     virtual bool IsWaitFinish(const uint32_t finishedTaskId, const uint32_t submittedTaskId);
-    void ReportErrorMessage(const uint32_t errCode, const std::string &errMsg);
-    void SetTraceKernelArgs(const AicTaskInfo *const aicTaskInfo, const uint16_t taskId, TraceArgs &args) const;
+    void ReportErrorMessage(const uint32_t errCode, const std::string& errMsg);
+    void SetTraceKernelArgs(const AicTaskInfo* const aicTaskInfo, const uint16_t taskId, TraceArgs& args) const;
 
-    bool IsDebugRegister(void) const
-    {
-        return isDebugRegister_;
-    }
+    bool IsDebugRegister(void) const { return isDebugRegister_; }
 
-    void SetDebugRegister(bool isDebugRegister)
-    {
-        isDebugRegister_ = isDebugRegister;
-    }
+    void SetDebugRegister(bool isDebugRegister) { isDebugRegister_ = isDebugRegister; }
 
-    bool GetOverflowSwtich(void) const
-    {
-        return isOverflowSwitchOn_;
-    }
+    bool GetOverflowSwtich(void) const { return isOverflowSwitchOn_; }
 
-    void SetOverflowSwitch(bool flag)
-    {
-        isOverflowSwitchOn_ = flag;
-    }
+    void SetOverflowSwitch(bool flag) { isOverflowSwitchOn_ = flag; }
 
-    uint32_t GetStreamTag(void) const
-    {
-        return streamGeOpTag_;
-    }
+    uint32_t GetStreamTag(void) const { return streamGeOpTag_; }
 
-    void SetStreamTag(const uint32_t geOpTag)
-    {
-        streamGeOpTag_ = geOpTag;
-    }
+    void SetStreamTag(const uint32_t geOpTag) { streamGeOpTag_ = geOpTag; }
 
-    bool IsOverflowEnable(void) const
-    {
-        return (isDebugRegister_ || isOverflowSwitchOn_);
-    }
+    bool IsOverflowEnable(void) const { return (isDebugRegister_ || isOverflowSwitchOn_); }
 
     rtError_t AllocExecutedTimesSvm();
     rtError_t FreeExecutedTimesSvm();
-    uint16_t *GetExecutedTimesSvm(void) const
-    {
-        return executedTimesSvm_;
-    }
-    uint64_t GetSqRegVirtualAddr(void) const
-    {
-        return sqRegVirtualAddr_;
-    }
+    uint16_t* GetExecutedTimesSvm(void) const { return executedTimesSvm_; }
+    uint64_t GetSqRegVirtualAddr(void) const { return sqRegVirtualAddr_; }
     rtError_t SetSqRegVirtualAddrToDevice(uint64_t sqRegVirtualAddr) const;
 
-    void InsertPendingList(uint32_t hostTaskType, HostTaskBase *base);
+    void InsertPendingList(uint32_t hostTaskType, HostTaskBase* base);
     bool IsPendingListEmpty(uint32_t hostTaskType);
     rtError_t ExecPendingList(uint32_t hostTaskType);
 
-    uint16_t GetTaskIdFlipNum() const
-    {
-        return taskIdFlipNum_.Value();
-    }
+    uint16_t GetTaskIdFlipNum() const { return taskIdFlipNum_.Value(); }
 
-    void SetTaskIdFlipNum(uint16_t flipNum)
-    {
-        taskIdFlipNum_.Set(flipNum);
-    }
+    void SetTaskIdFlipNum(uint16_t flipNum) { taskIdFlipNum_.Set(flipNum); }
 
-    void SetNeedFastcqFlag()
-    {
-        needFastcqFlag_ = true;
-    }
+    void SetNeedFastcqFlag() { needFastcqFlag_ = true; }
 
-    void SetSatMode(const rtFloatOverflowMode_t mode)
-    {
-        satMode_ = mode;
-    }
+    void SetSatMode(const rtFloatOverflowMode_t mode) { satMode_ = mode; }
 
-    rtFloatOverflowMode_t GetSatMode() const
-    {
-        return satMode_;
-    }
+    rtFloatOverflowMode_t GetSatMode() const { return satMode_; }
 
-    bool IsBindDvppGrp(void) const
-    {
-        return (dvppGrp_ != nullptr);
-    }
+    bool IsBindDvppGrp(void) const { return (dvppGrp_ != nullptr); }
 
-    uint32_t GetCurrentTid() const
-    {
-        return tid_;
-    }
+    uint32_t GetCurrentTid() const { return tid_; }
 
-    void SetLimitFlag(bool flag)
-    {
-        limitFlag_.Set(flag);
-    }
+    void SetLimitFlag(bool flag) { limitFlag_.Set(flag); }
 
-    bool GetLimitFlag() const
-    {
-        return limitFlag_.Value();
-    }
+    bool GetLimitFlag() const { return limitFlag_.Value(); }
 
-    virtual uint32_t GetTaskPosHead() const
-    {
-        return taskPosHead_.Value();
-    }
+    virtual uint32_t GetTaskPosHead() const { return taskPosHead_.Value(); }
 
-    virtual uint32_t GetTaskPosTail() const
-    {
-        return taskPosTail_.Value();
-    }
+    virtual uint32_t GetTaskPosTail() const { return taskPosTail_.Value(); }
 
-    void SetLogicalCqId(uint32_t logicCqId)
-    {
-        logicalCqId_ = logicCqId;
-    }
+    void SetLogicalCqId(uint32_t logicCqId) { logicalCqId_ = logicCqId; }
 
-    uint32_t GetLogicalCqId() const
-    {
-        return logicalCqId_;
-    }
+    uint32_t GetLogicalCqId() const { return logicalCqId_; }
 
     void DelPosToTaskIdMap(uint16_t pos) const;
 
-    void SetIsSupportASyncRecycle(bool flag)
-    {
-        isSupportASyncRecycle_ = flag;
-    }
+    void SetIsSupportASyncRecycle(bool flag) { isSupportASyncRecycle_ = flag; }
 
-    bool GetIsSupportASyncRecycle() const
-    {
-        return isSupportASyncRecycle_;
-    }
+    bool GetIsSupportASyncRecycle() const { return isSupportASyncRecycle_; }
 
-    void SetRecycleEndTaskId(uint16_t taskId)
-    {
-        recycleEndTaskId_.Set(taskId);
-    }
+    void SetRecycleEndTaskId(uint16_t taskId) { recycleEndTaskId_.Set(taskId); }
 
-    uint16_t GetRecycleEndTaskId() const
-    {
-        return recycleEndTaskId_.Value();
-    }
+    uint16_t GetRecycleEndTaskId() const { return recycleEndTaskId_.Value(); }
 
-    void SetExecuteEndTaskId(uint16_t taskId)
-    {
-        executeEndTaskid_.Set(taskId);
-    }
+    void SetExecuteEndTaskId(uint16_t taskId) { executeEndTaskid_.Set(taskId); }
 
-    uint16_t GetExecuteEndTaskId() const
-    {
-        return executeEndTaskid_.Value();
-    }
+    uint16_t GetExecuteEndTaskId() const { return executeEndTaskid_.Value(); }
 
-    void SetStreamAsyncRecycleFlag(bool flag) const
-    {
-        isNeedStreamAsyncRecycle_ = flag;
-    }
+    void SetStreamAsyncRecycleFlag(bool flag) const { isNeedStreamAsyncRecycle_ = flag; }
 
-    bool GetStreamAsyncRecycleFlag() const
-    {
-        return isNeedStreamAsyncRecycle_;
-    }
-    bool IsCtrlStream() const
-    {
-        return isCtrlStream_;
-    }
+    bool GetStreamAsyncRecycleFlag() const { return isNeedStreamAsyncRecycle_; }
+    bool IsCtrlStream() const { return isCtrlStream_; }
 
-    void  SetSqTailPos(uint32_t pos)
-    {
-        sqTailPos_ = pos;
-    }
+    void SetSqTailPos(uint32_t pos) { sqTailPos_ = pos; }
 
-    uint32_t  GetSqTailPos() const
-    {
-        return sqTailPos_;
-    }
+    uint32_t GetSqTailPos() const { return sqTailPos_; }
 
     void SetFlowCtrlFlag(void)
     {
@@ -866,10 +620,7 @@ public:
         return;
     }
 
-    bool GetFlowCtrlFlag(void) const
-    {
-        return isFlowCtrl;
-    }
+    bool GetFlowCtrlFlag(void) const { return isFlowCtrl; }
 
     void SetFailureMode(uint64_t mode)
     {
@@ -880,122 +631,69 @@ public:
         modeMutex.unlock();
     }
 
-    uint64_t GetFailureMode() const
-    {
-        return failureMode_;
-    }
+    uint64_t GetFailureMode() const { return failureMode_; }
 
     bool AbortedStreamToFull() const;
 
-    void SetMode(uint64_t mode)
-    {
-        modeConfig_.Set(mode);
-    }
+    void SetMode(uint64_t mode) { modeConfig_.Set(mode); }
 
-    uint64_t GetMode() const
-    {
-        return modeConfig_.Value();
-    }
+    uint64_t GetMode() const { return modeConfig_.Value(); }
 
-    void SetIsHasPcieBarFlag(bool pcieBarFlag)
-    {
-        isHasPcieBar_ = pcieBarFlag;
-    }
+    void SetIsHasPcieBarFlag(bool pcieBarFlag) { isHasPcieBar_ = pcieBarFlag; }
 
-    void SetIsSubmitTaskFailFlag(bool submitTaskFailFlag)
-    {
-        isSubmitTaskFail_ = submitTaskFailFlag;
-    }
+    void SetIsSubmitTaskFailFlag(bool submitTaskFailFlag) { isSubmitTaskFail_ = submitTaskFailFlag; }
 
-    void SetNeedRecvCqeFlag(bool flag)
-    {
-        isNeedRecvCqe_ = flag;
-    }
+    void SetNeedRecvCqeFlag(bool flag) { isNeedRecvCqe_ = flag; }
 
-    bool GetNeedRecvCqeFlag() const
-    {
-        return isNeedRecvCqe_;
-    }
+    bool GetNeedRecvCqeFlag() const { return isNeedRecvCqe_; }
 
-    void SetIsForceRecycle(bool flag)
-    {
-        isForceRecycle_ = flag;
-    }
+    void SetIsForceRecycle(bool flag) { isForceRecycle_ = flag; }
 
-    bool GetIsForceRecycle() const
-    {
-        return isForceRecycle_;
-    }
+    bool GetIsForceRecycle() const { return isForceRecycle_; }
 
-    uint16_t GetLastRecyclePos() const
-    {
-        return lastRecyclePos_;
-    }
+    uint16_t GetLastRecyclePos() const { return lastRecyclePos_; }
 
-    void SetLastRecyclePos(uint16_t curPos)
-    {
-        lastRecyclePos_ = curPos;
-    }
+    void SetLastRecyclePos(uint16_t curPos) { lastRecyclePos_ = curPos; }
 
-    void SetNeedSyncFlag(bool flag)
-    {
-        needSync_ = flag;
-    }
+    void SetNeedSyncFlag(bool flag) { needSync_ = flag; }
 
-    bool GetNeedSyncFlag() const
-    {
-        return needSync_;
-    }
-    void SetThreadProcFlag(bool flag)
-    {
-        isRecycleThreadProc_ = flag;
-    }
+    bool GetNeedSyncFlag() const { return needSync_; }
+    void SetThreadProcFlag(bool flag) { isRecycleThreadProc_ = flag; }
 
-    uint16_t GetTaskPublicBuffSize() const
-    {
-        return taskPublicBuffSize_;
-    }
-    Event *GetLastHalfRecord() const
-    {
-        return lastHalfRecord_;
-    }
+    uint16_t GetTaskPublicBuffSize() const { return taskPublicBuffSize_; }
+    Event* GetLastHalfRecord() const { return lastHalfRecord_; }
 
-    void SetLastHalfRecord(Event *evt)
-    {
-        lastHalfRecord_ = evt;
-    }
+    void SetLastHalfRecord(Event* evt) { lastHalfRecord_ = evt; }
     void Destructor();
 
-    std::shared_ptr<Stream> GetSharedPtr() {
+    std::shared_ptr<Stream> GetSharedPtr()
+    {
         if (myself == nullptr) {
             myself.reset(this);
         }
         return myself;
     }
 
-    rtError_t AllocLogicCq(const bool isDisableThread, const bool starsFlag, StreamSqCqManage * const stmSqCqManage,
+    rtError_t AllocLogicCq(
+        const bool isDisableThread, const bool starsFlag, StreamSqCqManage* const stmSqCqManage,
         const uint32_t drvFlag = 0U);
-    virtual rtError_t GetTaskIdByPos(const uint16_t recycleHead, uint32_t &taskId);
+    virtual rtError_t GetTaskIdByPos(const uint16_t recycleHead, uint32_t& taskId);
     rtError_t ModelWaitForTask(const uint32_t taskId, const bool isNeedWaitSyncCq);
-    rtError_t StarsWaitForTask(const uint32_t taskId, const bool isNeedWaitSyncCq,
-        int32_t timeout);
+    rtError_t StarsWaitForTask(const uint32_t taskId, const bool isNeedWaitSyncCq, int32_t timeout);
     virtual bool IsTaskExcuted(const uint32_t executeEndTaskid, const uint32_t taskId);
     virtual bool SynchronizeDelayTime(const uint16_t finishedId, const uint16_t taskId, const uint16_t sqHead);
-    rtError_t SynchronizeImpl(const uint32_t syncTaskId, const uint16_t concernedTaskId, int32_t timeout=-1);
-    virtual rtError_t SynchronizeExecutedTask(const uint32_t taskId, const mmTimespec &beginTime, int32_t timeout);
-    rtError_t WaitConcernedTaskRecycled(const uint16_t taskId, const mmTimespec &beginTime, int32_t timeout);
-    virtual rtError_t GetFinishedTaskIdBySqHead(const uint16_t sqHead, uint32_t &finishedId);
-    void *GetDvppRRTaskAddr(void);
+    rtError_t SynchronizeImpl(const uint32_t syncTaskId, const uint16_t concernedTaskId, int32_t timeout = -1);
+    virtual rtError_t SynchronizeExecutedTask(const uint32_t taskId, const mmTimespec& beginTime, int32_t timeout);
+    rtError_t WaitConcernedTaskRecycled(const uint16_t taskId, const mmTimespec& beginTime, int32_t timeout);
+    virtual rtError_t GetFinishedTaskIdBySqHead(const uint16_t sqHead, uint32_t& finishedId);
+    void* GetDvppRRTaskAddr(void);
     uint32_t GetMaxTryCount() const;
     bool IsSyncFinished();
-    void GetCurrentRunningTaskInfo(uint16_t &taskId, tsTaskType_t &taskType, const char_t *&taskTypeName) const;
+    void GetCurrentRunningTaskInfo(uint16_t& taskId, tsTaskType_t& taskType, const char_t*& taskTypeName) const;
 
-    virtual RtSqAllocType GetTsSqAllocType() const
-    {
-        return SQ_ALLOC_TYPE_RT_DEFAULT;
-    }
+    virtual RtSqAllocType GetTsSqAllocType() const { return SQ_ALLOC_TYPE_RT_DEFAULT; }
 
-    virtual rtError_t AddTaskToList(const TaskInfo * const tsk);
+    virtual rtError_t AddTaskToList(const TaskInfo* const tsk);
     rtError_t TryDelPublicRecordedTask(const uint16_t tailTaskId);
     void UpdateTaskPosHead(const uint32_t sqPos, const uint32_t sqeNum);
     virtual uint32_t StarsGetMaxTryCount() const;
@@ -1005,12 +703,12 @@ public:
     virtual bool IsExistCqe(void) const;
     rtError_t CreateArgRecycleList(uint32_t size);
     void DestroyArgRecycleList(uint32_t size);
-    virtual bool AddArgToRecycleList(TaskInfo * const tsk);
+    virtual bool AddArgToRecycleList(TaskInfo* const tsk);
     virtual void ProcArgRecycleList(void);
     RecycleArgs* GetNextRecycleArg(void);
-    bool IsNeedPostProc(const TaskInfo * const tsk) const;
-    bool IsReclaimAsync(const TaskInfo * const tsk) const;
-    void AddTaskTag(const uint16_t taskId, const std::string &taskTag);
+    bool IsNeedPostProc(const TaskInfo* const tsk) const;
+    bool IsReclaimAsync(const TaskInfo* const tsk) const;
+    void AddTaskTag(const uint16_t taskId, const std::string& taskTag);
     void DelTaskTag(const uint16_t taskId);
     const std::string GetTaskTag(const uint16_t taskId);
 
@@ -1018,205 +716,103 @@ public:
     void ReleaseStreamTaskRes(void);
     void SetMaxTaskId(const bool isDisableThread);
 
-    uint16_t GetMaxTaskId() const
-    {
-        return maxTaskId_;
-    }
+    uint16_t GetMaxTaskId() const { return maxTaskId_; }
 
-    rtError_t ProcFlipTask(TaskInfo *&tsk, uint16_t flipNum);
+    rtError_t ProcFlipTask(TaskInfo*& tsk, uint16_t flipNum);
     void ReportDestroyFlipTask();
     rtError_t GetStarsVersion();
-    void SetCheckTaskId(const uint32_t taskId)
-    {
-        checkTaskId_ = taskId;
-    }
+    void SetCheckTaskId(const uint32_t taskId) { checkTaskId_ = taskId; }
 
-    uint32_t GetCheckTaskId() const
-    {
-        return checkTaskId_;
-    }
+    uint32_t GetCheckTaskId() const { return checkTaskId_; }
 
     rtError_t GetErrorForAbortOnFailure(rtError_t defaultError);
-    virtual rtError_t CheckContextStatus(const bool isBlockDefaultStream=true) const;
-    rtError_t CheckContextTaskSend(const TaskInfo * const workTask) const;
+    virtual rtError_t CheckContextStatus(const bool isBlockDefaultStream = true) const;
+    rtError_t CheckContextTaskSend(const TaskInfo* const workTask) const;
 
-    void SetSyncRemainTime(const int32_t timeout)
-    {
-        syncTimeout_ = timeout;
-    }
+    void SetSyncRemainTime(const int32_t timeout) { syncTimeout_ = timeout; }
 
-    int32_t GetSyncRemainTime() const
-    {
-        return syncTimeout_;
-    }
+    int32_t GetSyncRemainTime() const { return syncTimeout_; }
 
-    virtual uint32_t GetCurSqPos() const
-    {
-        return taskPersistentTail_.Value();
-    }
+    virtual uint32_t GetCurSqPos() const { return taskPersistentTail_.Value(); }
 
-    void *GetMemContainOverflowAddr() const {
-        return memContainOverflowAddr_;
-    }
-    void SetMemContainOverflowAddr(void *addr) {
-        memContainOverflowAddr_ = addr;
-    }
-    std::string SyncMdlName() const
-    {
-        return syncMdlName_;
-    }
+    void* GetMemContainOverflowAddr() const { return memContainOverflowAddr_; }
+    void SetMemContainOverflowAddr(void* addr) { memContainOverflowAddr_ = addr; }
+    std::string SyncMdlName() const { return syncMdlName_; }
 
-    int32_t SyncMdlId() const
-    {
-        return syncMdlId_;
-    }
+    int32_t SyncMdlId() const { return syncMdlId_; }
 
-    void SetSyncMdlId(const int32_t syncModelId)
-    {
-        syncMdlId_ = syncModelId;
-    }
+    void SetSyncMdlId(const int32_t syncModelId) { syncMdlId_ = syncModelId; }
 
     bool IsCapturing(void) const
     {
-        return ((captureStatus_ == RT_STREAM_CAPTURE_STATUS_ACTIVE) ||
-                (captureStatus_ == RT_STREAM_CAPTURE_STATUS_INVALIDATED));
+        return (
+            (captureStatus_ == RT_STREAM_CAPTURE_STATUS_ACTIVE) ||
+            (captureStatus_ == RT_STREAM_CAPTURE_STATUS_INVALIDATED));
     }
 
-    rtStreamCaptureStatus GetCaptureStatus(void) const
+    rtStreamCaptureStatus GetCaptureStatus(void) const { return captureStatus_; }
+
+    void SetCaptureStatus(rtStreamCaptureStatus status) { captureStatus_ = status; }
+
+    uint32_t GetStreamCacheOpInfoSwitch() const { return cacheOpInfoSwitch_; }
+
+    void SetStreamCacheOpInfoSwitch(const uint32_t status) const { cacheOpInfoSwitch_ = status; }
+
+    uint32_t GetStreamCacheOpInfoOriginSwitch() const { return cacheOpInfoOriginSwitch_; }
+
+    void SetStreamCacheOpInfoOriginSwitch(const uint32_t status) const { cacheOpInfoOriginSwitch_ = status; }
+
+    void UpdateCaptureStream(const Stream* const captureStream)
     {
-        return captureStatus_;
+        captureStream_ = RtPtrToUnConstPtr<Stream*>(captureStream);
     }
 
-    void SetCaptureStatus(rtStreamCaptureStatus status)
-    {
-        captureStatus_ = status;
-    }
+    Stream* GetCaptureStream(void) const { return captureStream_; }
 
-    uint32_t GetStreamCacheOpInfoSwitch() const
-    {
-        return cacheOpInfoSwitch_;
-    }
- 
-    void SetStreamCacheOpInfoSwitch(const uint32_t status) const
-    {
-        cacheOpInfoSwitch_ = status;
-    }
- 
-    uint32_t GetStreamCacheOpInfoOriginSwitch() const
-    {
-        return cacheOpInfoOriginSwitch_;
-    }
- 
-    void SetStreamCacheOpInfoOriginSwitch(const uint32_t status) const
-    {
-        cacheOpInfoOriginSwitch_ = status;
-    }
+    virtual uint32_t GetDelayRecycleTaskSqeNum(void) const { return taskPersistentTail_.Value(); }
 
-    void UpdateCaptureStream(const Stream * const captureStream)
-    {
-        captureStream_ = RtPtrToUnConstPtr<Stream *>(captureStream);
-    }
+    uint32_t GetTaskPersistentHeadValue(void) const { return taskPersistentHead_.Value(); }
 
-    Stream* GetCaptureStream(void) const
-    {
-        return captureStream_;
-    }
+    uint32_t GetCaptureSqeNum(void) const { return captureSqeNum_; }
 
-    virtual uint32_t GetDelayRecycleTaskSqeNum(void) const
-    {
-        return taskPersistentTail_.Value();
-    }
-
-    uint32_t GetTaskPersistentHeadValue(void) const
-    {
-        return taskPersistentHead_.Value();
-    }
-
-    uint32_t GetCaptureSqeNum(void) const
-    {
-        return captureSqeNum_;
-    }
-
-    void AddCaptureSqeNum(uint32_t sqeNum)
-    {
-        captureSqeNum_ += sqeNum;
-    }
+    void AddCaptureSqeNum(uint32_t sqeNum) { captureSqeNum_ += sqeNum; }
 
     void ResetCaptureInfo();
-    void EnterCapture(const Stream * const captureStream);
+    void EnterCapture(const Stream* const captureStream);
     void ExitCapture();
     void SingleStreamTerminateCapture();
     virtual void DebugDotPrintForModelStm();
-    std::string TraceEventToJson(const TraceEvent &record) const;
-    std::string GetTaskTypeForMixKernel(const uint8_t mixType, const std::string &originTaskType) const;
+    std::string TraceEventToJson(const TraceEvent& record) const;
+    std::string GetTaskTypeForMixKernel(const uint8_t mixType, const std::string& originTaskType) const;
     void FillTaskExtendInfo(const TaskInfo* task, TraceEvent& record) const;
-    virtual void DebugJsonPrintForModelStm(std::ofstream& outputFile, const uint32_t modelId, const bool isLastStm,
-        const uint32_t flags);
+    virtual void DebugJsonPrintForModelStm(
+        std::ofstream& outputFile, const uint32_t modelId, const bool isLastStm, const uint32_t flags);
 
-    void MarkOrigCaptureStream(const bool flag)
-    {
-        isOrigCaptureStream_ = flag;
-    }
+    void MarkOrigCaptureStream(const bool flag) { isOrigCaptureStream_ = flag; }
 
-    bool IsOrigCaptureStream(void) const
-    {
-        return isOrigCaptureStream_;
-    }
+    bool IsOrigCaptureStream(void) const { return isOrigCaptureStream_; }
 
-    void CancelLastLevelCaptureStream(void)
-    {
-        isLastLevelCaptureStream_ = false;
-    }
+    void CancelLastLevelCaptureStream(void) { isLastLevelCaptureStream_ = false; }
 
-    bool IsLastLevelCaptureStream(void) const
-    {
-        return isLastLevelCaptureStream_;
-    }
+    bool IsLastLevelCaptureStream(void) const { return isLastLevelCaptureStream_; }
 
-    void SetParentCaptureStream(Stream* stm) 
-    {
-        parentCaptureStream_ = stm;
-    }
+    void SetParentCaptureStream(Stream* stm) { parentCaptureStream_ = stm; }
 
-    uint32_t GetDavinciTaskHead(void) const
-    {
-        return davinciTaskHead_;
-    }
+    uint32_t GetDavinciTaskHead(void) const { return davinciTaskHead_; }
 
-    uint32_t GetDavinciTaskTail(void) const
-    {
-        return davinciTaskTail_;
-    }
+    uint32_t GetDavinciTaskTail(void) const { return davinciTaskTail_; }
 
-    uint32_t GetTaskHead(void) const
-    {
-        return taskHead_;
-    }
+    uint32_t GetTaskHead(void) const { return taskHead_; }
 
-    uint32_t GetTaskTail(void) const
-    {
-        return taskTail_;
-    }
+    uint32_t GetTaskTail(void) const { return taskTail_; }
 
-    size_t GetDelayRecycleTaskSize(void) const
-    {
-        return delayRecycleTaskid_.size();
-    }
+    size_t GetDelayRecycleTaskSize(void) const { return delayRecycleTaskid_.size(); }
 
-    const std::vector<uint16_t>& GetDelayRecycleTaskId(void) const 
-    {
-        return delayRecycleTaskid_;
-    }
+    const std::vector<uint16_t>& GetDelayRecycleTaskId(void) const { return delayRecycleTaskid_; }
 
-    rtStreamCaptureMode GetStreamCaptureMode(void) const
-    {
-        return streamCaptureMode_;
-    }
+    rtStreamCaptureMode GetStreamCaptureMode(void) const { return streamCaptureMode_; }
 
-    void SetStreamCaptureMode(rtStreamCaptureMode mode)
-    {
-        streamCaptureMode_ = mode;
-    }
+    void SetStreamCaptureMode(rtStreamCaptureMode mode) { streamCaptureMode_ = mode; }
 
     bool IsTaskGroupBreak() const;
 
@@ -1228,43 +824,32 @@ public:
     virtual void StarsShowStmDfxInfo(void);
     void DcShowStmDfxInfo(void);
     void ShowStmDfxInfo(void);
-    void StarsStmDfxCheck(uint64_t &beginCnt, uint64_t &endCnt, uint16_t &checkCount);
-    void StmDfxCheck(uint64_t &beginCnt, uint64_t &endCnt, uint16_t &checkCount);
+    void StarsStmDfxCheck(uint64_t& beginCnt, uint64_t& endCnt, uint16_t& checkCount);
+    void StmDfxCheck(uint64_t& beginCnt, uint64_t& endCnt, uint16_t& checkCount);
     virtual rtError_t DavidUpdatePublicQueue(void) { return RT_ERROR_NONE; }
-    virtual bool IsCntNotifyReachThreshold(void)   { return false; }
-    virtual rtError_t ApplyCntNotifyId(int32_t &newEventId)
+    virtual bool IsCntNotifyReachThreshold(void) { return false; }
+    virtual rtError_t ApplyCntNotifyId(int32_t& newEventId)
     {
         (void)newEventId;
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
-    virtual void GetCntNotifyId(int32_t &newEventId)
-    {
-        (void)newEventId;
-    }
-    virtual rtError_t ApplyCntValue(uint32_t &cntValue)
+    virtual void GetCntNotifyId(int32_t& newEventId) { (void)newEventId; }
+    virtual rtError_t ApplyCntValue(uint32_t& cntValue)
     {
         (void)cntValue;
         return RT_ERROR_FEATURE_NOT_SUPPORT;
     }
 
-    virtual bool GetSqLocType(void) const
-    {
-        return false;
-    }
+    virtual bool GetSqLocType(void) const { return false; }
 
-    virtual void SetSqMemAttr(bool hostFlag)
-    {
-        (void)hostFlag;
-    }
-    virtual rtError_t PrintStmDfxAndCheckDevice(uint64_t& beginCnt, uint64_t& endCnt, uint16_t& checkCount, uint32_t tryCount);
+    virtual void SetSqMemAttr(bool hostFlag) { (void)hostFlag; }
+    virtual rtError_t PrintStmDfxAndCheckDevice(
+        uint64_t& beginCnt, uint64_t& endCnt, uint16_t& checkCount, uint32_t tryCount);
     virtual rtError_t StreamTaskClean(void);
     rtError_t ReBuildStreamId();
-    void PushbackTilingTblAddr(void *addr)
-    {
-        devTilingTblAddr.push_back(addr);
-    }
-    rtError_t ModelTaskUpdate(const Stream *desStm, uint32_t desTaskId, void *devCopyMem, uint32_t tilingTabLen,
-                              rtMdlTaskUpdateInfo_t *para);
+    void PushbackTilingTblAddr(void* addr) { devTilingTblAddr.push_back(addr); }
+    rtError_t ModelTaskUpdate(
+        const Stream* desStm, uint32_t desTaskId, void* devCopyMem, uint32_t tilingTabLen, rtMdlTaskUpdateInfo_t* para);
     void FreeStreamId() const;
     bool GetForceRecycleFlag(bool flag) const;
     rtError_t CheckGroup();
@@ -1275,154 +860,91 @@ public:
     rtError_t StreamStop();
     virtual rtError_t StreamRecoverAbort(void) { return RT_ERROR_NONE; }
     rtError_t UpdateTask(TaskInfo** updateTask);
-    TaskInfo* AllocTask(TaskInfo* pTask, tsTaskType_t taskType, rtError_t& errorReason,
-        uint32_t sqeNum = 1U, UpdateTaskFlag flag = UpdateTaskFlag::NOT_SUPPORT);
+    TaskInfo* AllocTask(
+        TaskInfo* pTask, tsTaskType_t taskType, rtError_t& errorReason, uint32_t sqeNum = 1U,
+        UpdateTaskFlag flag = UpdateTaskFlag::NOT_SUPPORT);
     rtError_t TaskReclaim(void);
-    rtError_t AllocCaptureTaskWithLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo **task);
-    rtError_t AllocCaptureTaskWithoutLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo **task);
-    rtError_t AllocCaptureTask(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo **task, bool isNeedLock = true);
-    void GetTaskEventIdOrNotifyId(TaskInfo *taskInfo, int32_t &eventId, uint32_t &notifyId, uint64_t &devAddr) const;
+    rtError_t AllocCaptureTaskWithLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo** task);
+    rtError_t AllocCaptureTaskWithoutLock(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo** task);
+    rtError_t AllocCaptureTask(tsTaskType_t taskType, uint32_t sqeNum, TaskInfo** task, bool isNeedLock = true);
+    void GetTaskEventIdOrNotifyId(TaskInfo* taskInfo, int32_t& eventId, uint32_t& notifyId, uint64_t& devAddr) const;
     rtError_t AllocSoftwareSqAddr(uint32_t additionalSqeNum);
     rtError_t AllocAutoSplitSqAddr();
 
-    uint64_t GetSqBaseAddr(void) const
-    {
-        return sqAddr_;
-    }
+    uint64_t GetSqBaseAddr(void) const { return sqAddr_; }
 
-    void SetSqBaseAddr(uint64_t sqAddr)
-    {
-        sqAddr_ = sqAddr;
-    }
+    void SetSqBaseAddr(uint64_t sqAddr) { sqAddr_ = sqAddr; }
 
-    uint32_t GetSqMemOrderType(void) const
-    {
-        return sqMemOrderType_;
-    }
+    uint32_t GetSqMemOrderType(void) const { return sqMemOrderType_; }
 
-    void SetSqMemOrderType(const uint32_t type)
-    {
-        sqMemOrderType_ = type;
-    }
+    void SetSqMemOrderType(const uint32_t type) { sqMemOrderType_ = type; }
 
-    void ResetTaskGroup(void)
-    {
-        taskGroup_ = nullptr;
-    }
+    void ResetTaskGroup(void) { taskGroup_ = nullptr; }
 
-    void SetSoftWareSqEnable()
-    {
-        isSoftwareSqEnable_ = true;
-    }
+    void SetSoftWareSqEnable() { isSoftwareSqEnable_ = true; }
 
-    bool IsSoftwareSqEnable(void) const
-    {
-        return isSoftwareSqEnable_;
-    }
+    bool IsSoftwareSqEnable(void) const { return isSoftwareSqEnable_; }
 
-    bool IsSubCaptureModel(void) const
-    {
-        return isSubCaptureModel_;
-    }
+    bool IsSubCaptureModel(void) const { return isSubCaptureModel_; }
 
-    void SetSubCaptureModel(void)
-    {
-        isSubCaptureModel_ = true;
-    }
+    void SetSubCaptureModel(void) { isSubCaptureModel_ = true; }
 
     bool IsAutoSplitSq() const { return isAutoSplitSq_; }
     void SetAutoSplitSq(bool enable) { isAutoSplitSq_ = enable; }
     AutoSplitSqContext* GetAutoSplitCtx() const { return autoSplitCtx_; }
-    void SetAutoSplitCtx(AutoSplitSqContext * ctx) { autoSplitCtx_ = ctx; }
+    void SetAutoSplitCtx(AutoSplitSqContext* ctx) { autoSplitCtx_ = ctx; }
     bool IsSlaveStream() const { return isSlaveStream_; }
     void SetIsSlaveStream(bool isSlave) { isSlaveStream_ = isSlave; }
-    int32_t GetExposedStreamId() const {
+    int32_t GetExposedStreamId() const
+    {
         return (autoSplitCtx_ != nullptr) ? autoSplitCtx_->exposedStreamId : streamId_;
     }
-    uint32_t GetHostSqeCount() const {
-        return (autoSplitCtx_ != nullptr) ? autoSplitCtx_->curStreamSqeCount : 0U;
-    }
-    std::vector<Stream*>& GetSlaveStreams() {
-        return autoSplitCtx_->slaveStreams;
-    }
+    uint32_t GetHostSqeCount() const { return (autoSplitCtx_ != nullptr) ? autoSplitCtx_->curStreamSqeCount : 0U; }
+    std::vector<Stream*>& GetSlaveStreams() { return autoSplitCtx_->slaveStreams; }
     bool IsTsBind() const { return isTsBind_; }
     void SetIsTsBind(bool isTsBind) { isTsBind_ = isTsBind; }
-    void IncHostSqeCount(uint32_t num) {
+    void IncHostSqeCount(uint32_t num)
+    {
         if (autoSplitCtx_ != nullptr) {
             autoSplitCtx_->curStreamSqeCount += num;
         }
     }
 
-    uint32_t GetSqDepth(void) const
-    {
-        return sqDepth_;
-    }
+    uint32_t GetSqDepth(void) const { return sqDepth_; }
 
-    void SetSqDepth(const uint32_t sqDepth)
-    {
-        sqDepth_ = sqDepth;
-    }
+    void SetSqDepth(const uint32_t sqDepth) { sqDepth_ = sqDepth; }
 
-    uint8_t* GetSqeBuffer(void) const
-    {
-        return sqeBuffer_;
-    }
+    uint8_t* GetSqeBuffer(void) const { return sqeBuffer_; }
 
-    uint32_t GetSqeBufferSize(void) const
-    {
-        return sqeBufferSize_;
-    }
+    uint32_t GetSqeBufferSize(void) const { return sqeBufferSize_; }
 
-    void SetSqeBufferSize(uint32_t size)
-    {
-        sqeBufferSize_ = size;
-    }
+    void SetSqeBufferSize(uint32_t size) { sqeBufferSize_ = size; }
 
-    void SetSqeBuffer(uint8_t *buffer)
-    {
-        sqeBuffer_ = buffer;
-    }
+    void SetSqeBuffer(uint8_t* buffer) { sqeBuffer_ = buffer; }
 
-    void UpdateSqCq(const rtDeviceSqCqInfo_t * const sqCqInfo);
+    void UpdateSqCq(const rtDeviceSqCqInfo_t* const sqCqInfo);
     void ResetSqCq(void);
 
-    void UpdateCurrentTaskGroup(std::unique_ptr<TaskGroup> &taskGroup)
-    {
-        taskGroup_ = std::move(taskGroup);
-    }
+    void UpdateCurrentTaskGroup(std::unique_ptr<TaskGroup>& taskGroup) { taskGroup_ = std::move(taskGroup); }
 
-    std::unique_ptr<TaskGroup> &GetCurrentTaskGroup(void)
-    {
-        return taskGroup_;
-    }
+    std::unique_ptr<TaskGroup>& GetCurrentTaskGroup(void) { return taskGroup_; }
 
     rtError_t UpdateTaskGroupStatus(const StreamTaskGroupStatus status);
 
-    StreamTaskGroupStatus GetTaskGroupStatus(void) const
-    {
-        return taskGroupStatus_;
-    }
+    StreamTaskGroupStatus GetTaskGroupStatus(void) const { return taskGroupStatus_; }
 
-    bool IsTaskGroupUpdate() const {
-        return (taskGroupStatus_ == StreamTaskGroupStatus::UPDATE);
-    }
-    
-    TaskGroup * GetUpdateTaskGroup()
-    {
-        return updateTaskGroup_;
-    }
+    bool IsTaskGroupUpdate() const { return (taskGroupStatus_ == StreamTaskGroupStatus::UPDATE); }
 
-    void SetUpdateTaskGroup(TaskGroup * taskGroupHandle)
+    TaskGroup* GetUpdateTaskGroup() { return updateTaskGroup_; }
+
+    void SetUpdateTaskGroup(TaskGroup* taskGroupHandle)
     {
         updateTaskGroup_ = taskGroupHandle;
         updateTaskGroup_->isUpdate = true;
         updateTaskGroup_->updateTaskIndex = 0;
     }
 
-    void UpdateTaskIndex(uint32_t index) const
-    {
-        updateTaskGroup_->updateTaskIndex = index;
-    }
+    void UpdateTaskIndex(uint32_t index) const { updateTaskGroup_->updateTaskIndex = index; }
 
     void ResetUpdateTaskGroup()
     {
@@ -1433,14 +955,8 @@ public:
 
     bool IsTaskGrouping(void) const;
 
-    std::mutex & GetTaskGrpMutex(void)
-    {
-        return taskGroupMutex_;
-    }
-    std::mutex &GetCaptureLock()
-    {
-        return captureLock_;
-    }
+    std::mutex& GetTaskGrpMutex(void) { return taskGroupMutex_; }
+    std::mutex& GetCaptureLock() { return captureLock_; }
 
     void SetTaskGroupErrCode(const rtError_t errorCode) const;
 
@@ -1448,59 +964,33 @@ public:
     void ResetResLimit(void);
     uint32_t GetResValue(const rtDevResLimitType_t type) const;
     bool GetResLimitFlag(const rtDevResLimitType_t type) const;
-    rtError_t PackingTaskGroup(const TaskInfo * const task, const uint16_t streamId);
+    rtError_t PackingTaskGroup(const TaskInfo* const task, const uint16_t streamId);
     virtual rtError_t UpdateSnapShotSqe();
-    bool IsNeedUpdateTask(const TaskInfo * const updateTask) const;
-    rtError_t SubmitMemCpyAsyncTask(TaskInfo * const updateTask);
+    bool IsNeedUpdateTask(const TaskInfo* const updateTask) const;
+    rtError_t SubmitMemCpyAsyncTask(TaskInfo* const updateTask);
 
-    void RecordDevMemAddr(void *devAddr)
-    {
-        recordDevMemAddr_.push_back(devAddr);
-    }
+    void RecordDevMemAddr(void* devAddr) { recordDevMemAddr_.push_back(devAddr); }
 
-    void SetBeginCaptureThreadId(uint32_t beginCaptureThreadId)
-    {
-        beginCaptureThreadId_ = beginCaptureThreadId;
-    }
+    void SetBeginCaptureThreadId(uint32_t beginCaptureThreadId) { beginCaptureThreadId_ = beginCaptureThreadId; }
 
-    uint32_t GetBeginCaptureThreadId(void) const
-    {
-        return beginCaptureThreadId_;
-    }
+    uint32_t GetBeginCaptureThreadId(void) const { return beginCaptureThreadId_; }
 
-    void SetArgHandle(void *argHandle)
-    {
-        argsHandle_ = argHandle;
-    }
+    void SetArgHandle(void* argHandle) { argsHandle_ = argHandle; }
 
-    void *GetArgHandle() const
-    {
-        return argsHandle_;
-    }
+    void* GetArgHandle() const { return argsHandle_; }
 
-    void SetStreamStatus(StreamStatus status)
-    {
-        streamStatus_ = status;
-    }
+    void SetStreamStatus(StreamStatus status) { streamStatus_ = status; }
 
-    StreamStatus GetStreamStatus() const
-    {
-        return streamStatus_;
-    }
-    rtError_t StreamGetTasks(void **tasks, uint32_t* numTasks);
+    StreamStatus GetStreamStatus() const { return streamStatus_; }
+    rtError_t StreamGetTasks(void** tasks, uint32_t* numTasks);
     rtError_t RestoreForSoftwareSq();
-    void SetCtrlSQStream()
-    {
-        isCtrlSQStream_ = true;
-    }
+    void SetCtrlSQStream() { isCtrlSQStream_ = true; }
 
-    bool IsCtrlSQStream(void) const
-    {
-        return isCtrlSQStream_;
-    }
+    bool IsCtrlSQStream(void) const { return isCtrlSQStream_; }
+
 private:
     friend class Context;
-    void SetDestroyTaskRecycledOnTearDownOutput(bool * const output)
+    void SetDestroyTaskRecycledOnTearDownOutput(bool* const output)
     {
         destroyTaskRecycledOnTearDownOutput_ = output;
         if (destroyTaskRecycledOnTearDownOutput_ != nullptr) {
@@ -1508,23 +998,22 @@ private:
         }
     }
 
-    void ClearDestroyTaskRecycledOnTearDownOutput()
-    {
-        destroyTaskRecycledOnTearDownOutput_ = nullptr;
-    }
+    void ClearDestroyTaskRecycledOnTearDownOutput() { destroyTaskRecycledOnTearDownOutput_ = nullptr; }
 
-    void ConstructTraceEventFromTask(TaskInfo *const task, const uint32_t flags, TraceEvent &record) const;
+    void ConstructTraceEventFromTask(TaskInfo* const task, const uint32_t flags, TraceEvent& record) const;
 
-    rtInnerObject handle_ {};
+    rtInnerObject handle_{};
     // submit create stream task
     rtError_t SubmitCreateStreamTask();
     virtual rtError_t GetSynchronizeError(rtError_t error);
-    rtError_t SubmitStreamRecycle(Stream* exeStream, bool isForceRecycle, uint16_t logicCqId, TaskInfo *&task) const;
+    rtError_t SubmitStreamRecycle(Stream* exeStream, bool isForceRecycle, uint16_t logicCqId, TaskInfo*& task) const;
     void ResetHostResourceForPersistentStream();
     void RecycleModelDelayRecycleTask();
-    virtual rtError_t HandleTaskUpdate(TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum);
+    virtual rtError_t HandleTaskUpdate(
+        TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum);
     virtual rtError_t HandleTaskDisable(TaskInfo* workTask, CaptureModel* model);
-    virtual rtError_t HandleTaskDefault(TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum);
+    virtual rtError_t HandleTaskDefault(
+        TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum);
     rtError_t AllocStreamIdFromDriver();
 
     // Auto Split 辅助方法
@@ -1536,22 +1025,24 @@ private:
     rtError_t AllocSqCqForAutoSplitWithRetry();
     void WaitAsyncRecycleThreadOnTearDown(const bool starsFlag);
     void RecycleDelayedTasksAfterTearDown(const bool eraseProfiler);
-    rtError_t UnsubscribeStreamReportOnTearDown(Runtime * const rt);
+    rtError_t UnsubscribeStreamReportOnTearDown(Runtime* const rt);
     bool ShouldSkipDestroyTaskSubmissionOnTearDown(const bool starsFlag) const;
     rtError_t FinalizeTearDownWithoutDestroyTask(const bool starsFlag);
     void FinalizeHostStateOnExit();
-    void DetachOwnerOnExit(Runtime * const rt);
+    void DetachOwnerOnExit(Runtime* const rt);
     void ResetHostPointersOnExit();
+
 public:
     bool isDeviceSyncFlag = false;
     uint32_t streamResId;
     bool isModelExcel = false;
     bool isModelComplete = false;
     bool isForceRecycle_ = false;
-    std::mutex streamMutex_;    // Guard for stream exclusive.
+    std::mutex streamMutex_; // Guard for stream exclusive.
     std::mutex recycleMutex_;
+
 protected:
-    Device *device_;
+    Device* device_;
     int32_t streamId_;
     uint32_t sqId_;
     uint32_t cqId_;
@@ -1559,30 +1050,31 @@ protected:
     uint32_t flags_;
     uint32_t errCode_;
     uint32_t drvErr_;
-    DvppGrp *dvppGrp_;
-    void *dvppRRTaskAddr_{nullptr};
-    uint32_t *taskPublicBuff_{nullptr};
+    DvppGrp* dvppGrp_;
+    void* dvppRRTaskAddr_{nullptr};
+    uint32_t* taskPublicBuff_{nullptr};
     uint16_t taskPublicBuffSize_{0};
     uint64_t sqRegVirtualAddr_{0ULL}; // virtual address of stars_simple_sq0_4k head, get from DRV by sq_id
     uint32_t finishTaskId_{MAX_UINT32_NUM};
     bool isNeedRecvCqe_{false};
-    Event *lastHalfRecord_{nullptr};
+    Event* lastHalfRecord_{nullptr};
     std::mutex publicTaskMutex_;
-    std::set<Model *> models_;
+    std::set<Model*> models_;
     std::vector<std::pair<uint32_t, std::string>> errorMsg_;
     Atomic<uint32_t> taskPersistentHead_;
     Atomic<uint32_t> taskPersistentTail_;
     uint16_t taskPersistentBuff_[STREAM_TASK_BUFF_SIZE] = {0};
-    std::vector<uint16_t> delayRecycleTaskid_;  // save delay recycle task id, thread unsafe
+    std::vector<uint16_t> delayRecycleTaskid_; // save delay recycle task id, thread unsafe
     std::mutex posToTaskIdMapLock_;
-    uint16_t *posToTaskIdMap_{nullptr};
+    uint16_t* posToTaskIdMap_{nullptr};
     uint32_t posToTaskIdMapSize_{0U};
+
 private:
     uint32_t poolId_;
-    void *l2BaseVaddr_;
+    void* l2BaseVaddr_;
     std::array<uint64_t, PTE_LENGTH> pte_ = {};
 
-    void *pteVA_;
+    void* pteVA_;
     bool needSubmitTask_;
 
     bool fusioning_;
@@ -1593,16 +1085,16 @@ private:
     std::mutex persistentTaskMutex_;
     std::vector<uint16_t> persistentTaskid_;
     class EngineStreamObserver;
-    std::vector<void *> switchNArg_;
-    void *onProfDeviceAddr_;
-    void *onProfHostRtAddr_;
-    void *onProfHostTsAddr_;
+    std::vector<void*> switchNArg_;
+    void* onProfDeviceAddr_;
+    void* onProfHostRtAddr_;
+    void* onProfHostTsAddr_;
     uint32_t taskHead_;
     uint32_t taskTail_;
     Atomic<uint32_t> countingNum_;
     uint32_t davinciTaskHead_;
     uint32_t davinciTaskTail_;
-    uint32_t *davinciTaskList_{nullptr};
+    uint32_t* davinciTaskList_{nullptr};
     uint16_t davinciTaskListSize_{0};
     std::mutex davinciTaskMutex_;
 
@@ -1620,14 +1112,14 @@ private:
     std::timed_mutex streamSyncMutex_;
     std::mutex hostTaskMutex_;
     std::set<uint32_t> timelineOffset_;
-    uint64_t *timelineAddr_{nullptr};
+    uint64_t* timelineAddr_{nullptr};
     uint64_t timelineBase_{0};
     bool isDebugRegister_;
     bool isOverflowSwitchOn_;
     std::mutex errorMsgLock_;
     uint32_t earlyRecycleTaskHead_;
-    uint16_t *executedTimesSvm_; // Initialized to 0xFFFF, increased before every ActiveStream and ModelExecute
-    std::map<uint32_t, std::list<HostTaskBase *>> hostTaskPendingList_;
+    uint16_t* executedTimesSvm_; // Initialized to 0xFFFF, increased before every ActiveStream and ModelExecute
+    std::map<uint32_t, std::list<HostTaskBase*>> hostTaskPendingList_;
     Atomic<uint16_t> taskIdFlipNum_;
     bool needFastcqFlag_;
     Atomic<bool> recycleFlag_;
@@ -1643,10 +1135,10 @@ private:
     uint32_t streamGeOpTag_;
     bool isSupportASyncRecycle_{false};
     static __THREAD_LOCAL__ bool isNeedStreamAsyncRecycle_;
-    bool isFlowCtrl;  // Indicating has flow ctrl in this stream
-    Atomic<uint32_t> taskPosHead_;  // only for stars
-    Atomic<uint32_t> taskPosTail_;  // only for stars
-    Atomic<uint64_t> modeConfig_{0ULL}; //遇错即停开关
+    bool isFlowCtrl;                    // Indicating has flow ctrl in this stream
+    Atomic<uint32_t> taskPosHead_;      // only for stars
+    Atomic<uint32_t> taskPosTail_;      // only for stars
+    Atomic<uint64_t> modeConfig_{0ULL}; // 遇错即停开关
     std::mutex taskIdToTaskTagMapMutex_;
     std::unordered_map<uint16_t, std::string> taskIdToTaskTagMap_;
     bool needSync_{false};
@@ -1655,56 +1147,58 @@ private:
     std::string syncMdlName_;
     int32_t syncMdlId_{-1};
     bool isBeingAborted_{false};
-    Stream *captureStream_{nullptr};
+    Stream* captureStream_{nullptr};
     uint32_t captureSqeNum_{0U};
-    rtStreamCaptureStatus captureStatus_{RT_STREAM_CAPTURE_STATUS_NONE}; // only for single-operator stream, not capture stream
-    mutable uint32_t cacheOpInfoOriginSwitch_{0U};  // only record this stream switch status for rec: 0: false, 1:true
-    mutable uint32_t cacheOpInfoSwitch_{0U}; // aclgraph stream status: 0: false, 1:true,
-    std::mutex captureLock_;       // used to mutually exclusive alloc task between begin/end capture
+    rtStreamCaptureStatus captureStatus_{
+        RT_STREAM_CAPTURE_STATUS_NONE};            // only for single-operator stream, not capture stream
+    mutable uint32_t cacheOpInfoOriginSwitch_{0U}; // only record this stream switch status for rec: 0: false, 1:true
+    mutable uint32_t cacheOpInfoSwitch_{0U};       // aclgraph stream status: 0: false, 1:true,
+    std::mutex captureLock_;                       // used to mutually exclusive alloc task between begin/end capture
     bool isOrigCaptureStream_{false};
     bool isLastLevelCaptureStream_{true};
-    Stream* parentCaptureStream_{nullptr}; // 级联场景下的上级流
+    Stream* parentCaptureStream_{nullptr};                               // 级联场景下的上级流
     rtStreamCaptureMode streamCaptureMode_{RT_STREAM_CAPTURE_MODE_MAX};
     StreamTaskGroupStatus taskGroupStatus_{StreamTaskGroupStatus::NONE}; // only for single-operator stream
-    std::unique_ptr<TaskGroup> taskGroup_ = nullptr; // only for capture stream
+    std::unique_ptr<TaskGroup> taskGroup_ = nullptr;                     // only for capture stream
     std::mutex taskGroupMutex_;
-    TaskGroup *updateTaskGroup_{nullptr};
+    TaskGroup* updateTaskGroup_{nullptr};
     Atomic<uint16_t> recycleEndTaskId_{MAX_UINT16_NUM};
     Atomic<uint16_t> executeEndTaskid_{MAX_UINT16_NUM};
-    Context *context_{nullptr};
+    Context* context_{nullptr};
     rtFloatOverflowMode_t satMode_{RT_OVERFLOW_MODE_SATURATION};
-    std::array<uint32_t, RT_DEV_RES_TYPE_MAX> resLimitArray_{};  // resource limit for stream
+    std::array<uint32_t, RT_DEV_RES_TYPE_MAX> resLimitArray_{}; // resource limit for stream
     std::array<bool, RT_DEV_RES_TYPE_MAX> resLimitFlag_{};
-    uint64_t sqAddr_{0ULL};   /* max size is 2M */
+    uint64_t sqAddr_{0ULL};                                     /* max size is 2M */
     uint32_t sqMemOrderType_{SQ_ADDR_MEM_ORDER_TYPE_MAX};
     bool isSoftwareSqEnable_{false};
     bool isSubCaptureModel_{false};
     uint32_t sqDepth_;
-    uint8_t *sqeBuffer_{nullptr};
+    uint8_t* sqeBuffer_{nullptr};
     uint32_t sqeBufferSize_{0U};
     uint32_t beginCaptureThreadId_{UINT32_MAX};
     uint64_t sqIdMemAddr_{0UL};
-    void *argsHandle_{nullptr};
+    void* argsHandle_{nullptr};
     StreamStatus streamStatus_{StreamStatus::NORMAL};
     bool isCtrlSQStream_{false};
-    bool isAutoSplitSq_{false};                // 是否为自动切分SQ模式
-    bool *destroyTaskRecycledOnTearDownOutput_{nullptr};
+    bool isAutoSplitSq_{false}; // 是否为自动切分SQ模式
+    bool* destroyTaskRecycledOnTearDownOutput_{nullptr};
     int32_t latestModelId_{MAX_INT32_NUM};
-    bool isSlaveStream_{false};                // 是否为slave stream
+    bool isSlaveStream_{false}; // 是否为slave stream
 public:
-    TaskResManage *taskResMang_{nullptr};
+    TaskResManage* taskResMang_{nullptr};
     bool isHasPcieBar_{false};
     Atomic<uint32_t> pendingNum_;
     bool isSubmitTaskFail_{false};
-    RecycleArgs **argRecycleList_;
+    RecycleArgs** argRecycleList_;
     uint16_t argRecycleListSize_{0U};
     uint16_t argRecycleListHead_;
     uint16_t argRecycleListTail_;
     std::mutex argRecycleListMutex_;
-    std::vector<void *> devTilingTblAddr;
-    void *memContainOverflowAddr_{nullptr};
+    std::vector<void*> devTilingTblAddr;
+    void* memContainOverflowAddr_{nullptr};
     bool isRecycleThreadProc_{false};
-    struct sq_switch_stream_info *streamSwitchInfo_{nullptr};
+    struct sq_switch_stream_info* streamSwitchInfo_{nullptr};
+
 protected:
     void ReleaseStreamArgRes();
     StarsArgManager* argManage_{nullptr};
@@ -1713,29 +1207,30 @@ protected:
     uint32_t sqTailPos_;
     uint32_t sqHeadPos_;
     std::mutex modeMutex;
-    uint64_t failureMode_; //遇错即停状态
+    uint64_t failureMode_; // 遇错即停状态
     std::shared_ptr<Stream> myself = nullptr;
     bool isTsBind_{false};
-    AutoSplitSqContext *autoSplitCtx_{nullptr};  // 自动切分上下文
+    AutoSplitSqContext* autoSplitCtx_{nullptr}; // 自动切分上下文
 public:
     uint32_t fftsMemAllocCnt;
     uint32_t fftsMemFreeCnt;
     uint16_t hcclIndex_;
     int32_t syncTimeout_ = -1; // -1 no timeout default
     rtError_t abortStatus_;
-    std::list<Label *> labels_;
-    std::vector<void *> recordDevMemAddr_;
+    std::list<Label*> labels_;
+    std::vector<void*> recordDevMemAddr_;
     Atomic<uint16_t> latestConcernedTaskId{MAX_UINT16_NUM};
 };
 
-inline void DeleteStream(Stream * &stm) {
+inline void DeleteStream(Stream*& stm)
+{
     if (stm != nullptr) {
         stm->Destructor();
         stm = nullptr;
     }
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_STREAM_HPP__
+#endif // __CCE_RUNTIME_STREAM_HPP__

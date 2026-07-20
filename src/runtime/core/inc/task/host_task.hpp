@@ -26,23 +26,29 @@ class HostTaskBase : public NoCopy {
 public:
     explicit HostTaskBase(HostTaskTypeT type) : type_(type) {}
     ~HostTaskBase() override = default;
-    HostTaskTypeT Type_() const {
-        return type_;
-    }
+    HostTaskTypeT Type_() const { return type_; }
     virtual rtError_t AsyncCall() = 0;
     virtual rtError_t WaitFinish() = 0;
+
 private:
     HostTaskTypeT type_;
 };
 
 class HostTaskMemCpy : public HostTaskBase {
 public:
-    explicit HostTaskMemCpy(Device * const dev, void * const dst, const uint64_t destMax, const void * const src,
-        const uint64_t cnt, const rtMemcpyKind_t kind) : HostTaskBase(RT_HOST_TASK_TYPE_MEMCPY),
-        drv_(dev->Driver_()), device_(dev),
-        dst_(dst), destMax_(destMax), src_(src), cnt_(cnt), kind_(kind), copyFd_(0ULL)
-    {
-    }
+    explicit HostTaskMemCpy(
+        Device* const dev, void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt,
+        const rtMemcpyKind_t kind)
+        : HostTaskBase(RT_HOST_TASK_TYPE_MEMCPY),
+          drv_(dev->Driver_()),
+          device_(dev),
+          dst_(dst),
+          destMax_(destMax),
+          src_(src),
+          cnt_(cnt),
+          kind_(kind),
+          copyFd_(0ULL)
+    {}
     ~HostTaskMemCpy() override
     {
         drv_ = nullptr;
@@ -51,17 +57,18 @@ public:
 
     rtError_t AsyncCall() override;
     rtError_t WaitFinish() override;
+
 private:
-    Driver *drv_;
-    Device *device_;
-    void * const dst_;
+    Driver* drv_;
+    Device* device_;
+    void* const dst_;
     const uint64_t destMax_;
-    const void * const src_;
+    const void* const src_;
     const uint64_t cnt_;
     rtMemcpyKind_t kind_;
     volatile uint64_t copyFd_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_HOST_TASK_HPP

@@ -21,17 +21,17 @@ namespace cce {
 namespace runtime {
 // for dvpp task, submit write value task
 // don't update last taskId
-rtError_t StarsLaunchDvppRRProcess(Stream * const stm)
+rtError_t StarsLaunchDvppRRProcess(Stream* const stm)
 {
     rtError_t error = RT_ERROR_NONE;
     const int32_t streamId = stm->Id_();
     static uint8_t value[WRITE_VALUE_SIZE_MAX_LEN] = {};
-    TaskInfo *writeValueTask;
+    TaskInfo* writeValueTask;
     Device* const dev = stm->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
-    const uint64_t addr = RtPtrToValue<void *>(stm->GetDvppRRTaskAddr());
-    COND_RETURN_ERROR_MSG_INNER((addr == 0ULL), RT_ERROR_MEMORY_ALLOCATION,
-        "Dvpp task alloc mem failed, stream_id=%d.", streamId);
+    const uint64_t addr = RtPtrToValue<void*>(stm->GetDvppRRTaskAddr());
+    COND_RETURN_ERROR_MSG_INNER(
+        (addr == 0ULL), RT_ERROR_MEMORY_ALLOCATION, "Dvpp task alloc mem failed, stream_id=%d.", streamId);
     for (uint32_t i = 0U; i < DVPP_RR_TASK_NUM; i++) {
         TaskInfo submitTask = {};
         rtError_t errorReason;
@@ -51,32 +51,32 @@ ERROR_RECYCLE:
     return error;
 }
 
-rtError_t StarsLaunch(const void * const sqe, const uint32_t sqeLen, Stream * const stm, const uint32_t flag)
+rtError_t StarsLaunch(const void* const sqe, const uint32_t sqeLen, Stream* const stm, const uint32_t flag)
 {
     const int32_t streamId = stm->Id_();
     uint32_t taskId;
 
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(sqeLen != sizeof(rtStarsCommonSqe_t), RT_ERROR_INVALID_VALUE, 
-        sqeLen, sizeof(rtStarsCommonSqe_t));
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM(
+        sqeLen != sizeof(rtStarsCommonSqe_t), RT_ERROR_INVALID_VALUE, sqeLen, sizeof(rtStarsCommonSqe_t));
     Device* const dev = stm->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
     TaskInfo taskSubmit = {};
     rtError_t errorReason;
-    TaskInfo *rtStarsCommonTask = stm->AllocTask(&taskSubmit, TS_TASK_TYPE_STARS_COMMON, errorReason);
+    TaskInfo* rtStarsCommonTask = stm->AllocTask(&taskSubmit, TS_TASK_TYPE_STARS_COMMON, errorReason);
     NULL_PTR_RETURN_MSG(rtStarsCommonTask, errorReason);
 
-    auto commonSqe = RtPtrToPtr<rtStarsCommonSqe_t *>(RtPtrToUnConstPtr<void *>(sqe));
+    auto commonSqe = RtPtrToPtr<rtStarsCommonSqe_t*>(RtPtrToUnConstPtr<void*>(sqe));
     const uint16_t sqeType = commonSqe->sqeHeader.type;
 
     rtError_t error = StarsCommonTaskInit(rtStarsCommonTask, *commonSqe, flag);
-    ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE,
-        "Stars common task init failed, stream_id=%d, task_id=%hu, retCode=%#x.",
-        streamId, rtStarsCommonTask->id, error);
+    ERROR_GOTO_MSG_INNER(
+        error, ERROR_RECYCLE, "Stars common task init failed, stream_id=%d, task_id=%hu, retCode=%#x.", streamId,
+        rtStarsCommonTask->id, error);
 
     error = dev->SubmitTask(rtStarsCommonTask, nullptr, &taskId);
-    ERROR_GOTO_MSG_INNER(error, ERROR_RECYCLE,
-        "Task submit failed, streamId=%d, taskId=%hu, sqeType=%hu, retCode=%#x.",
-        streamId, rtStarsCommonTask->id, sqeType, error);
+    ERROR_GOTO_MSG_INNER(
+        error, ERROR_RECYCLE, "Task submit failed, streamId=%d, taskId=%hu, sqeType=%hu, retCode=%#x.", streamId,
+        rtStarsCommonTask->id, sqeType, error);
 
     SET_THREAD_TASKID_AND_STREAMID(streamId, taskId);
 
@@ -98,24 +98,23 @@ ERROR_RECYCLE:
     return error;
 }
 
-rtError_t LaunchMultipleTaskInfo(const rtMultipleTaskInfo_t * const multipleTaskInfo, Stream * const stm,
-    const uint32_t flag)
+rtError_t LaunchMultipleTaskInfo(
+    const rtMultipleTaskInfo_t* const multipleTaskInfo, Stream* const stm, const uint32_t flag)
 {
     uint32_t taskId = 0;
     rtError_t error = RT_ERROR_NONE;
     TaskInfo submitTask = {};
     rtError_t errorReason;
-    TaskInfo *multipleTask = nullptr;
+    TaskInfo* multipleTask = nullptr;
     const int32_t streamId = stm->Id_();
     Device* const dev = stm->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
-    multipleTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_MULTIPLE_TASK,
-                                  errorReason, multipleTaskInfo->taskNum);
+    multipleTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_MULTIPLE_TASK, errorReason, multipleTaskInfo->taskNum);
     NULL_PTR_RETURN_MSG(multipleTask, errorReason);
 
     error = DavinciMultipleTaskInit(multipleTask, multipleTaskInfo, flag);
-    ERROR_PROC_RETURN_MSG_INNER(error, (void)dev->GetTaskFactory()->Recycle(multipleTask);,
-        "Multiple task init failed, stream_id=%d, retCode=0x%x.", streamId, error);
+    ERROR_PROC_RETURN_MSG_INNER(error, (void)dev->GetTaskFactory()->Recycle(multipleTask);
+                                , "Multiple task init failed, stream_id=%d, retCode=0x%x.", streamId, error);
 
     error = dev->SubmitTask(multipleTask, nullptr, &taskId);
     if (error != RT_ERROR_NONE) {
@@ -134,7 +133,8 @@ rtError_t LaunchMultipleTaskInfo(const rtMultipleTaskInfo_t * const multipleTask
             (multipleTaskInfo->taskDesc[idx].u.dvppTaskDesc.sqe.sqeHeader.reserved == 1U)) {
             error = StarsLaunchDvppRRProcess(stm);
             if (error != RT_ERROR_NONE) {
-                RT_LOG(RT_LOG_ERROR, "submit dvpp task failed, stream_id=%d, sqeType=%hu", streamId,
+                RT_LOG(
+                    RT_LOG_ERROR, "submit dvpp task failed, stream_id=%d, sqeType=%hu", streamId,
                     multipleTaskInfo->taskDesc[idx].u.dvppTaskDesc.sqe.sqeHeader.type);
                 (void)dev->GetTaskFactory()->Recycle(multipleTask);
             }

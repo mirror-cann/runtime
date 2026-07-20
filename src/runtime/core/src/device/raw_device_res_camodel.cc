@@ -61,24 +61,26 @@ static const std::string GetSocVersion()
         }
     }
 
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     return rtInstance->GetSocVersion();
 }
 
-static rtError_t GetDeviceResByFe(const uint32_t devId, int32_t moduleType, int64_t &value)
+static rtError_t GetDeviceResByFe(const uint32_t devId, int32_t moduleType, int64_t& value)
 {
     const std::string socVersion = GetSocVersion();
     uint32_t platformRet = fe::PlatformInfoManager::GeInstance().InitRuntimePlatformInfos(socVersion);
     if (platformRet != 0U) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR,
-            "InitRuntimePlatformInfos failed, drv devId=%u, socVersion=%s, platformRet=%u.", devId, socVersion.c_str(), platformRet);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "InitRuntimePlatformInfos failed, drv devId=%u, socVersion=%s, platformRet=%u.", devId,
+            socVersion.c_str(), platformRet);
         return RT_ERROR_INVALID_VALUE;
     }
 
     fe::PlatFormInfos platformInfos;
     platformRet = fe::PlatformInfoManager::GeInstance().GetRuntimePlatformInfosByDevice(devId, platformInfos);
     if (platformRet != 0U) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "GetRuntimePlatformInfosByDevice failed, drv devId=%u, platformRet=%u.", devId, platformRet);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "GetRuntimePlatformInfosByDevice failed, drv devId=%u, platformRet=%u.", devId, platformRet);
         return RT_ERROR_INVALID_VALUE;
     }
 
@@ -104,7 +106,9 @@ static rtError_t GetDeviceResByFe(const uint32_t devId, int32_t moduleType, int6
     try {
         value = std::stoll(strVal);
     } catch (...) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to convert string to digital value, strVal=%s, moduleType=%d.", strVal.c_str(), moduleType);
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Failed to convert string to digital value, strVal=%s, moduleType=%d.", strVal.c_str(),
+            moduleType);
         return RT_ERROR_INVALID_VALUE;
     }
 
@@ -164,5 +168,5 @@ void RawDevice::ResetResLimit(void)
         resLimitArray_[i] = resInitArray_[i];
     }
 }
-}  // namespace runtime
-}
+} // namespace runtime
+} // namespace cce

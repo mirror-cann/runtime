@@ -17,7 +17,7 @@
 
 namespace cce {
 namespace runtime {
-rtError_t QueryDcacheLockStatus(uint32_t deviceId, uint32_t tsId, const void *dcacheAddr, bool &dCacheLockFlag)
+rtError_t QueryDcacheLockStatus(uint32_t deviceId, uint32_t tsId, const void* dcacheAddr, bool& dCacheLockFlag)
 {
     COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halTsdrvCtl does not exist.");
     ts_ctrl_msg_body_t queryDcacheLockStatusIn = {};
@@ -34,29 +34,20 @@ rtError_t QueryDcacheLockStatus(uint32_t deviceId, uint32_t tsId, const void *dc
     struct tsdrv_ctrl_msg para;
     para.tsid = tsId;
     para.msg_len = sizeof(ts_ctrl_msg_body_t);
-    para.msg = static_cast<void *>(&queryDcacheLockStatusIn);
+    para.msg = static_cast<void*>(&queryDcacheLockStatusIn);
 
-    const drvError_t drvRet = halTsdrvCtl(deviceId,
-        TSDRV_CTL_CMD_CTRL_MSG,
-        static_cast<void *>(&para),
-        sizeof(tsdrv_ctrl_msg),
-        static_cast<void *>(&queryDcacheLockStatusAck),
-        &ackCount);
+    const drvError_t drvRet = halTsdrvCtl(
+        deviceId, TSDRV_CTL_CMD_CTRL_MSG, static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg),
+        static_cast<void*>(&queryDcacheLockStatusAck), &ackCount);
 
-    COND_RETURN_WARN(drvRet != DRV_ERROR_NONE,
-        RT_GET_DRV_ERRCODE(drvRet),
-        "device_id=%u, ts_id=%u, drvRetCode=%u.",
-        deviceId,
-        tsId,
+    COND_RETURN_WARN(
+        drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet), "device_id=%u, ts_id=%u, drvRetCode=%u.", deviceId, tsId,
         drvRet);
 
     ts_query_dcache_lock_ack_info_t ackInfo = queryDcacheLockStatusAck.u.query_dcache_lock_ack_info;
-    RT_LOG(RT_LOG_INFO,
-        "get ack info from ts, status=%u, stack_phy_base_h=0x%llx, stack_phy_base_l=0x%llx, drvRet=%u.",
-        ackInfo.status,
-        ackInfo.stack_phy_base_h,
-        ackInfo.stack_phy_base_l,
-        drvRet);
+    RT_LOG(
+        RT_LOG_INFO, "get ack info from ts, status=%u, stack_phy_base_h=0x%llx, stack_phy_base_l=0x%llx, drvRet=%u.",
+        ackInfo.status, ackInfo.stack_phy_base_h, ackInfo.stack_phy_base_l, drvRet);
     // 当有进程设置过之后，第二次就不需要再次lock了
     if (ackInfo.status != 0U) {
         dCacheLockFlag = true;
@@ -66,17 +57,17 @@ rtError_t QueryDcacheLockStatus(uint32_t deviceId, uint32_t tsId, const void *dc
 
     // 驱动会保证每次申请的VA相同，所以一旦dCacheLockFlag_为true与stackPhyBase32k_
     // 每次一致基本等价，这里增加一下日志维测
-    const uint64_t ackStackPhyBase = (static_cast<uint64_t>(ackInfo.stack_phy_base_h) << UINT32_BIT_NUM |
-                                      static_cast<uint64_t>(ackInfo.stack_phy_base_l));
+    const uint64_t ackStackPhyBase =
+        (static_cast<uint64_t>(ackInfo.stack_phy_base_h) << UINT32_BIT_NUM |
+         static_cast<uint64_t>(ackInfo.stack_phy_base_l));
     if (ackStackPhyBase != stackPhyBase) {
-        RT_LOG(RT_LOG_EVENT,
-            "Stack addr=0x%llx for ts buffer mode is not same with current stack addr=0x%llx.",
-            ackStackPhyBase,
-            stackPhyBase);
+        RT_LOG(
+            RT_LOG_EVENT, "Stack addr=0x%llx for ts buffer mode is not same with current stack addr=0x%llx.",
+            ackStackPhyBase, stackPhyBase);
     }
 
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

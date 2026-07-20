@@ -26,18 +26,16 @@
 
 namespace cce {
 namespace runtime {
-CountNotify::CountNotify(const uint32_t devId, const uint32_t taskSchId)
-    : NoCopy(), tsId_(taskSchId), deviceId_(devId)
-{
-}
+CountNotify::CountNotify(const uint32_t devId, const uint32_t taskSchId) : NoCopy(), tsId_(taskSchId), deviceId_(devId)
+{}
 
 CountNotify::~CountNotify() noexcept
 {
     Runtime* runtime = Runtime::Instance();
     if (runtime != nullptr) {
-        Context * const curCtx = runtime->CurrentContext();
+        Context* const curCtx = runtime->CurrentContext();
         if (curCtx != nullptr) {
-            Device * const dev = curCtx->Device_();
+            Device* const dev = curCtx->Device_();
             COND_PROC(dev != nullptr, dev->RemoveCntNotify(this));
         }
     }
@@ -59,24 +57,26 @@ rtError_t CountNotify::Setup()
 {
     Runtime* runtime = Runtime::Instance();
     NULL_PTR_RETURN_MSG(runtime, RT_ERROR_INSTANCE_NULL);
-    Context * const curCtx = runtime->CurrentContext();
+    Context* const curCtx = runtime->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     driver_ = dev->Driver_();
 
     rtError_t error = driver_->GetDevicePhyIdByIndex(deviceId_, &phyId_);
-    ERROR_RETURN_MSG_INNER(error, "GetPhyIdByLogicIndex failed, device_id=%u, phydevice_id=%u, retCode=%#x!",
-            deviceId_, phyId_, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "GetPhyIdByLogicIndex failed, device_id=%u, phydevice_id=%u, retCode=%#x!", deviceId_, phyId_,
+        static_cast<uint32_t>(error));
 
     uint32_t curNotifyId = 0U;
     RT_LOG(RT_LOG_INFO, "notify_flag=%u", notifyFlag_);
     error = driver_->NotifyIdAlloc(static_cast<int32_t>(deviceId_), &curNotifyId, dev->DevGetTsId(), notifyFlag_, true);
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "count NotifyIdAlloc failed, device_id=%u, retCode=%#x!",
-            deviceId_, static_cast<uint32_t>(error));
+        RT_LOG(
+            RT_LOG_ERROR, "count NotifyIdAlloc failed, device_id=%u, retCode=%#x!", deviceId_,
+            static_cast<uint32_t>(error));
         if ((error == RT_ERROR_DRV_NO_NOTIFY_RESOURCES) || (error == RT_ERROR_DRV_NO_RESOURCES)) {
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc CntNotify resource",
-                "Too many CntNotify objects are created");
+            RT_LOG_OUTER_MSG_IMPL(
+                ErrorCode::EE1023, "Alloc CntNotify resource", "Too many CntNotify objects are created");
         }
         return error;
     }
@@ -87,19 +87,20 @@ rtError_t CountNotify::Setup()
     return RT_ERROR_NONE;
 }
 
-rtError_t CountNotify::Record(Stream * const streamIn, const rtCntNtyRecordInfo_t * const info)
+rtError_t CountNotify::Record(Stream* const streamIn, const rtCntNtyRecordInfo_t* const info)
 {
     NULL_PTR_RETURN_MSG(streamIn, RT_ERROR_STREAM_NULL);
-    TaskInfo *recordTask = nullptr;
+    TaskInfo* recordTask = nullptr;
     rtError_t error = CheckTaskCanSend(streamIn);
-    ERROR_RETURN_MSG_INNER(error, "stream_id=%d check failed, retCode=%#x.", streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "stream_id=%d check failed, retCode=%#x.", streamIn->Id_(), static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
     rtCntNtyRecordInfo_t cntInfo = {info->mode, info->value};
-    Stream *dstStm = streamIn;
+    Stream* dstStm = streamIn;
     streamIn->StreamLock();
     error = AllocTaskInfoForCapture(&recordTask, streamIn, pos, dstStm);
     ERROR_PROC_RETURN_MSG_INNER(error, streamIn->StreamUnLock();, "Failed to alloc task, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+                                                                streamIn->Id_(), static_cast<uint32_t>(error));
     std::function<void()> const errRecycle = [&recordTask, &streamIn, &pos, &dstStm]() {
         TaskUnInitProc(recordTask);
         TaskRollBack(dstStm, pos);
@@ -107,24 +108,27 @@ rtError_t CountNotify::Record(Stream * const streamIn, const rtCntNtyRecordInfo_
     };
     SaveTaskCommonInfo(recordTask, dstStm, pos);
     ScopeGuard tskErrRecycle(errRecycle);
-    error = NotifyRecordTaskInit(recordTask, notifyid_, static_cast<int32_t>(deviceId_),
-        phyId_, nullptr, &cntInfo, static_cast<void *>(this), true);
-    ERROR_RETURN_MSG_INNER(error, "CntNotifyRecordTask init failed, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
-    recordTask->stmArgPos = (static_cast<DavidStream *>(dstStm))->GetArgPos();
+    error = NotifyRecordTaskInit(
+        recordTask, notifyid_, static_cast<int32_t>(deviceId_), phyId_, nullptr, &cntInfo, static_cast<void*>(this),
+        true);
+    ERROR_RETURN_MSG_INNER(
+        error, "CntNotifyRecordTask init failed, stream_id=%d, retCode=%#x.", streamIn->Id_(),
+        static_cast<uint32_t>(error));
+    recordTask->stmArgPos = (static_cast<DavidStream*>(dstStm))->GetArgPos();
     error = DavidSendTask(recordTask, dstStm);
-    ERROR_RETURN_MSG_INNER(error, "CntNotifyRecordTask submit failed, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "CntNotifyRecordTask submit failed, stream_id=%d, retCode=%#x.", streamIn->Id_(),
+        static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
     streamIn->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), recordTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "recycle fail, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "recycle fail, stream_id=%d, retCode=%#x.", streamIn->Id_(), static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
-rtError_t CountNotify::GetCntNotifyAddress(uint64_t &addr, rtNotifyType_t regType)
+rtError_t CountNotify::GetCntNotifyAddress(uint64_t& addr, rtNotifyType_t regType)
 {
     rtDevResType_t devResType = RT_RES_TYPE_STARS_CNT_NOTIFY_RECORD;
     switch (regType) {
@@ -144,9 +148,7 @@ rtError_t CountNotify::GetCntNotifyAddress(uint64_t &addr, rtNotifyType_t regTyp
             RT_LOG(RT_LOG_ERROR, "invalid notify type, type=%u", regType);
             return RT_ERROR_INVALID_VALUE;
     }
-    rtDevResInfo resInfo = {
-        tsId_, RT_PROCESS_CP1, devResType, notifyid_, 0U
-    };
+    rtDevResInfo resInfo = {tsId_, RT_PROCESS_CP1, devResType, notifyid_, 0U};
     uint64_t resAddr = 0U;
     uint32_t len = 0U;
     const rtError_t error = NpuDriver::GetDevResAddress(deviceId_, &resInfo, &resAddr, &len);
@@ -154,15 +156,15 @@ rtError_t CountNotify::GetCntNotifyAddress(uint64_t &addr, rtNotifyType_t regTyp
     return error;
 }
 
-rtError_t CountNotify::Wait(Stream * const streamIn, const rtCntNtyWaitInfo_t * const info)
+rtError_t CountNotify::Wait(Stream* const streamIn, const rtCntNtyWaitInfo_t* const info)
 {
-    TaskInfo *waitTask = nullptr;
+    TaskInfo* waitTask = nullptr;
     CountNotifyWaitInfo cntNtfyInfo = {info->mode, info->value, info->isClear};
     rtError_t error = CheckTaskCanSend(streamIn);
-    ERROR_RETURN_MSG_INNER(error, "stream_id=%d check failed, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "stream_id=%d check failed, retCode=%#x.", streamIn->Id_(), static_cast<uint32_t>(error));
     uint32_t pos = 0xFFFFU;
-    Stream *dstStm = streamIn;
+    Stream* dstStm = streamIn;
     std::function<void()> const errRecycle = [&waitTask, &streamIn, &pos, &dstStm]() {
         TaskUnInitProc(waitTask);
         TaskRollBack(dstStm, pos);
@@ -171,36 +173,38 @@ rtError_t CountNotify::Wait(Stream * const streamIn, const rtCntNtyWaitInfo_t * 
     streamIn->StreamLock();
     error = AllocTaskInfoForCapture(&waitTask, streamIn, pos, dstStm);
     ERROR_PROC_RETURN_MSG_INNER(error, streamIn->StreamUnLock();, "Failed to alloc task, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+                                                                streamIn->Id_(), static_cast<uint32_t>(error));
     SaveTaskCommonInfo(waitTask, dstStm, pos);
     ScopeGuard tskErrRecycle(errRecycle);
-    error = NotifyWaitTaskInit(waitTask, notifyid_, info->timeout,
-                                         &cntNtfyInfo, static_cast<void *>(this), true);
-    ERROR_RETURN_MSG_INNER(error, "CntNotifyWaitTask init failed, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
-    waitTask->stmArgPos = static_cast<DavidStream *>(dstStm)->GetArgPos();
+    error = NotifyWaitTaskInit(waitTask, notifyid_, info->timeout, &cntNtfyInfo, static_cast<void*>(this), true);
+    ERROR_RETURN_MSG_INNER(
+        error, "CntNotifyWaitTask init failed, stream_id=%d, retCode=%#x.", streamIn->Id_(),
+        static_cast<uint32_t>(error));
+    waitTask->stmArgPos = static_cast<DavidStream*>(dstStm)->GetArgPos();
     error = DavidSendTask(waitTask, dstStm);
-    ERROR_RETURN_MSG_INNER(error, "CntNotifyWaitTask submit failed, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "CntNotifyWaitTask submit failed, stream_id=%d, retCode=%#x.", streamIn->Id_(),
+        static_cast<uint32_t>(error));
     tskErrRecycle.ReleaseGuard();
     streamIn->StreamUnLock();
     SET_THREAD_TASKID_AND_STREAMID(dstStm->GetExposedStreamId(), waitTask->taskSn);
     error = SubmitTaskPostProc(dstStm, pos);
-    ERROR_RETURN_MSG_INNER(error, "recycle fail, stream_id=%d, retCode=%#x.",
-        streamIn->Id_(), static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "recycle fail, stream_id=%d, retCode=%#x.", streamIn->Id_(), static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
 rtError_t CountNotify::ReAllocId() const
 {
-    Context * const curCtx = Runtime::Instance()->CurrentContext();
+    Context* const curCtx = Runtime::Instance()->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     const rtError_t ret = driver_->ReAllocResourceId(deviceId_, dev->DevGetTsId(), 0U, notifyid_, DRV_CNT_NOTIFY_ID);
-    ERROR_RETURN(ret, "CountNotifyId reAlloc failed, notify_id=%u, device_id=%u, retCode=%#x!",
-        notifyid_, deviceId_, static_cast<uint32_t>(ret));
+    ERROR_RETURN(
+        ret, "CountNotifyId reAlloc failed, notify_id=%u, device_id=%u, retCode=%#x!", notifyid_, deviceId_,
+        static_cast<uint32_t>(ret));
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

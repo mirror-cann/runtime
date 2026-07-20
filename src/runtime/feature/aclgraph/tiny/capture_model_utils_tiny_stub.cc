@@ -13,46 +13,159 @@
 namespace cce {
 namespace runtime {
 
-bool IsEventCapturing(const Event * const evt, const Stream * const stm) { UNUSED(evt); UNUSED(stm); return false; }
+bool IsEventCapturing(const Event* const evt, const Stream* const stm)
+{
+    UNUSED(evt);
+    UNUSED(stm);
+    return false;
+}
 
-void TerminateCapture(const Event * const evt, const Stream * const stm) { UNUSED(evt); UNUSED(stm); }
+void TerminateCapture(const Event* const evt, const Stream* const stm)
+{
+    UNUSED(evt);
+    UNUSED(stm);
+}
 
-bool IsCrossCaptureModel(const Event * const evt, const Stream * const stm) { UNUSED(evt); UNUSED(stm); return false; }
+bool IsCrossCaptureModel(const Event* const evt, const Stream* const stm)
+{
+    UNUSED(evt);
+    UNUSED(stm);
+    return false;
+}
 
-bool IsCapturedTask(const Stream * const launchStm, const TaskInfo *submitTask) { UNUSED(launchStm); UNUSED(submitTask); return false; }
+bool IsCapturedTask(const Stream* const launchStm, const TaskInfo* submitTask)
+{
+    UNUSED(launchStm);
+    UNUSED(submitTask);
+    return false;
+}
 
-rtError_t GetCaptureStream(Context * const ctx, Stream * const stm, const Event * const evt, Stream ** const captureStm) {
-    UNUSED(ctx); UNUSED(stm); UNUSED(evt); UNUSED(captureStm);
+rtError_t GetCaptureStream(Context* const ctx, Stream* const stm, const Event* const evt, Stream** const captureStm)
+{
+    UNUSED(ctx);
+    UNUSED(stm);
+    UNUSED(evt);
+    UNUSED(captureStm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t CheckCaptureStreamThreadIsMatch(const Stream * const stm) { UNUSED(stm); return RT_ERROR_FEATURE_NOT_SUPPORT; }
-
-rtError_t CheckCaptureModelSupportExternalEvent(const Device * const dev, const bool isRecord) { UNUSED(dev); UNUSED(isRecord); return RT_ERROR_FEATURE_NOT_SUPPORT; }
-
-rtError_t CheckCaptureModelSupportSoftwareSq(const Device* const dev) { UNUSED(dev); return RT_ERROR_FEATURE_NOT_SUPPORT; }
-
-rtError_t CheckCaptureModelForUpdate(const Stream* stm) { UNUSED(stm); return RT_ERROR_FEATURE_NOT_SUPPORT; }
-
-bool IsSoftwareSqCaptureModel(const Model * const mdl) { UNUSED(mdl); return false; }
-
-bool CheckCaptureModeSupport(const Context* ctx, const char* funcName) { UNUSED(ctx); UNUSED(funcName); return true; }
-
-bool NeedReBuildSqe(const TaskInfo *const task) { UNUSED(task); return false; }
-
-bool IsUseHardwareEvent(Device * const dev) { UNUSED(dev); return false; }
-rtError_t AllocNotifyIdForSubModel(Model * const mdl, Notify *notify) { UNUSED(mdl); UNUSED(notify); return RT_ERROR_FEATURE_NOT_SUPPORT; }
-rtError_t ReleaseNotify(Model * const mdl, Notify *notify) { UNUSED(mdl); UNUSED(notify); return RT_ERROR_FEATURE_NOT_SUPPORT; }
-uint32_t FindStreamIdInSubModels(CaptureModel * const parentModel, const uint16_t sqId) { UNUSED(parentModel); UNUSED(sqId); return UINT32_MAX; }
-bool IsStreamBindWithSubModel(const Stream * const stream) { UNUSED(stream); return false; }
-bool IsTaskBelongToSubCaptureMdl(const TaskInfo * const task) { UNUSED(task); return false; }
-void Construct2ndSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t *sqe) { UNUSED(taskInfo); UNUSED(sqe); }
-void ConstructSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t *const command) { UNUSED(taskInfo); UNUSED(command); }
-void CaptureConditionTaskUnInit(TaskInfo * const taskInfo) { UNUSED(taskInfo); }
-bool IsUbDma(Stream *const stm, const uint32_t kind, const void *const srcAddr, const void *const desAddr) { UNUSED(stm); UNUSED(kind); UNUSED(srcAddr); UNUSED(desAddr); return false; }
-bool IsUbDmaWithSubModel(const Stream *const stm, const uint32_t kind, const void *const srcAddr, const void *const desAddr) { UNUSED(stm); UNUSED(kind); UNUSED(srcAddr); UNUSED(desAddr); return false; }
-rtError_t PostProcCaptureConditionTask(CondHandle *condHandle, Stream * const stm, const uint16_t taskId) { UNUSED(condHandle); UNUSED(stm); UNUSED(taskId); return RT_ERROR_FEATURE_NOT_SUPPORT; }
-rtError_t CheckCondTaskParamsSize(rtCondTaskParams params) { UNUSED(params); return RT_ERROR_FEATURE_NOT_SUPPORT; }
-
+rtError_t CheckCaptureStreamThreadIsMatch(const Stream* const stm)
+{
+    UNUSED(stm);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
+
+rtError_t CheckCaptureModelSupportExternalEvent(const Device* const dev, const bool isRecord)
+{
+    UNUSED(dev);
+    UNUSED(isRecord);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
+
+rtError_t CheckCaptureModelSupportSoftwareSq(const Device* const dev)
+{
+    UNUSED(dev);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t CheckCaptureModelForUpdate(const Stream* stm)
+{
+    UNUSED(stm);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+bool IsSoftwareSqCaptureModel(const Model* const mdl)
+{
+    UNUSED(mdl);
+    return false;
+}
+
+bool CheckCaptureModeSupport(const Context* ctx, const char* funcName)
+{
+    UNUSED(ctx);
+    UNUSED(funcName);
+    return true;
+}
+
+bool NeedReBuildSqe(const TaskInfo* const task)
+{
+    UNUSED(task);
+    return false;
+}
+
+bool IsUseHardwareEvent(Device* const dev)
+{
+    UNUSED(dev);
+    return false;
+}
+rtError_t AllocNotifyIdForSubModel(Model* const mdl, Notify* notify)
+{
+    UNUSED(mdl);
+    UNUSED(notify);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+rtError_t ReleaseNotify(Model* const mdl, Notify* notify)
+{
+    UNUSED(mdl);
+    UNUSED(notify);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+uint32_t FindStreamIdInSubModels(CaptureModel* const parentModel, const uint16_t sqId)
+{
+    UNUSED(parentModel);
+    UNUSED(sqId);
+    return UINT32_MAX;
+}
+bool IsStreamBindWithSubModel(const Stream* const stream)
+{
+    UNUSED(stream);
+    return false;
+}
+bool IsTaskBelongToSubCaptureMdl(const TaskInfo* const task)
+{
+    UNUSED(task);
+    return false;
+}
+void Construct2ndSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t* sqe)
+{
+    UNUSED(taskInfo);
+    UNUSED(sqe);
+}
+void ConstructSqeForCaptureConditionTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
+{
+    UNUSED(taskInfo);
+    UNUSED(command);
+}
+void CaptureConditionTaskUnInit(TaskInfo* const taskInfo) { UNUSED(taskInfo); }
+bool IsUbDma(Stream* const stm, const uint32_t kind, const void* const srcAddr, const void* const desAddr)
+{
+    UNUSED(stm);
+    UNUSED(kind);
+    UNUSED(srcAddr);
+    UNUSED(desAddr);
+    return false;
+}
+bool IsUbDmaWithSubModel(
+    const Stream* const stm, const uint32_t kind, const void* const srcAddr, const void* const desAddr)
+{
+    UNUSED(stm);
+    UNUSED(kind);
+    UNUSED(srcAddr);
+    UNUSED(desAddr);
+    return false;
+}
+rtError_t PostProcCaptureConditionTask(CondHandle* condHandle, Stream* const stm, const uint16_t taskId)
+{
+    UNUSED(condHandle);
+    UNUSED(stm);
+    UNUSED(taskId);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+rtError_t CheckCondTaskParamsSize(rtCondTaskParams params)
+{
+    UNUSED(params);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+} // namespace runtime
+} // namespace cce

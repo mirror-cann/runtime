@@ -19,13 +19,14 @@ class ArgsBufferGuard {
 public:
     ~ArgsBufferGuard();
     void* EnsureCapacity(uint64_t requiredSize);
+
 private:
     static constexpr uint64_t ARGS_BUFFER_DEFAULT_SIZE = 4096ULL;
     void* buffer_ = nullptr;
     uint64_t size_ = 0ULL;
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // RUNTIME_ARGS_BUFFER_GUARD_HPP
+#endif // RUNTIME_ARGS_BUFFER_GUARD_HPP

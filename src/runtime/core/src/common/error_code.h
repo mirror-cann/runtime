@@ -19,14 +19,14 @@ struct TsErrCode {
     uint32_t errCode;
     rtError_t rtErrCode;
     uint32_t moduleType;
-    const char_t *codeString;
+    const char_t* codeString;
 };
 
-const char_t *GetTsErrCodeMap(const uint32_t type, rtError_t * const rtErrCode);
+const char_t* GetTsErrCodeMap(const uint32_t type, rtError_t* const rtErrCode);
 uint32_t GetTsErrModuleType(const uint32_t type);
-const char_t *GetTsErrCodeDesc(const uint32_t type);
-const char_t *GetTsErrDescByRtErr(const rtError_t rtErrCode);
+const char_t* GetTsErrCodeDesc(const uint32_t type);
+const char_t* GetTsErrDescByRtErr(const rtError_t rtErrCode);
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 #endif

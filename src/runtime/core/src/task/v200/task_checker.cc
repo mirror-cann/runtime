@@ -15,20 +15,15 @@ namespace runtime {
 
 bool IsDvppTask(const uint16_t sqeType)
 {
-    return ((sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_VPC)) ||
-            (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_JPEGE)) ||
-            (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_JPEGD)));
+    return (
+        (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_VPC)) ||
+        (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_JPEGE)) ||
+        (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_JPEGD)));
 }
 
-bool IsNeedRetryTask(const uint16_t sqeType)
-{
-    return sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_VPC);
-}
+bool IsNeedRetryTask(const uint16_t sqeType) { return sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_VPC); }
 
-bool IsSupportType(const uint16_t sqeType)
-{
-    return IsDvppTask(sqeType);
-}
+bool IsSupportType(const uint16_t sqeType) { return IsDvppTask(sqeType); }
 
 bool IsLogicCqInvalid(const uint8_t errorType)
 {
@@ -36,5 +31,5 @@ bool IsLogicCqInvalid(const uint8_t errorType)
     return false;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

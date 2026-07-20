@@ -44,5 +44,5 @@ void* ArgsBufferGuard::EnsureCapacity(uint64_t requiredSize)
     return buffer_;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

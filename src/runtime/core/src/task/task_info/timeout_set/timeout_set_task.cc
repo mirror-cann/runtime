@@ -19,7 +19,7 @@ namespace runtime {
 #if F_DESC("TaskTimeoutSetTask")
 void TimeoutSetTaskInitV1(TaskInfo* taskInfo)
 {
-    TimeoutSetTaskInfo *timeoutSetTask = &(taskInfo->u.timeoutSetTask);
+    TimeoutSetTaskInfo* timeoutSetTask = &(taskInfo->u.timeoutSetTask);
     TaskCommonInfoInit(taskInfo);
     taskInfo->type = TS_TASK_TYPE_TASK_TIMEOUT_SET;
     taskInfo->typeName = "TASK_TIMEOUT_SET";
@@ -38,7 +38,7 @@ rtError_t TimeoutSetTaskInit(TaskInfo* taskInfo, const rtTaskTimeoutType_t type,
 
 void TimeoutSetTaskUpdate(TaskInfo* taskInfo, const rtTaskTimeoutType_t type, const uint32_t timeout)
 {
-    TimeoutSetTaskInfo *timeoutSetTask = &(taskInfo->u.timeoutSetTask);
+    TimeoutSetTaskInfo* timeoutSetTask = &(taskInfo->u.timeoutSetTask);
     switch (type) {
         case RT_TIMEOUT_TYPE_OP_WAIT:
             timeoutSetTask->opWaitTimeoutEn = true;
@@ -52,14 +52,15 @@ void TimeoutSetTaskUpdate(TaskInfo* taskInfo, const rtTaskTimeoutType_t type, co
             RT_LOG(RT_LOG_ERROR, "Invalid task timeout type=%d", type);
             break;
     }
-    RT_LOG(RT_LOG_DEBUG, "Create TaskTimeout task, task_id=%u, task_type=%d(%s), stream_id=%d, timeout=%us, type=%d",
-           static_cast<uint32_t>(taskInfo->id), static_cast<int32_t>(taskInfo->type), taskInfo->typeName,
-           taskInfo->stream->Id_(), timeout, type);
+    RT_LOG(
+        RT_LOG_DEBUG, "Create TaskTimeout task, task_id=%u, task_type=%d(%s), stream_id=%d, timeout=%us, type=%d",
+        static_cast<uint32_t>(taskInfo->id), static_cast<int32_t>(taskInfo->type), taskInfo->typeName,
+        taskInfo->stream->Id_(), timeout, type);
 }
 
-void ToCommandBodyForTimeoutSetTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForTimeoutSetTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
-    TimeoutSetTaskInfo * const timeoutSetTask = &(taskInfo->u.timeoutSetTask);
+    TimeoutSetTaskInfo* const timeoutSetTask = &(taskInfo->u.timeoutSetTask);
     command->u.timeoutSetTask.opWaitTimeoutEn = timeoutSetTask->opWaitTimeoutEn;
     command->u.timeoutSetTask.opExecuteTimeoutEn = timeoutSetTask->opExecuteTimeoutEn;
 
@@ -67,5 +68,5 @@ void ToCommandBodyForTimeoutSetTask(TaskInfo* taskInfo, rtCommand_t *const comma
     command->u.timeoutSetTask.opExecuteTimeout = timeoutSetTask->opExecuteTimeout;
 }
 #endif
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

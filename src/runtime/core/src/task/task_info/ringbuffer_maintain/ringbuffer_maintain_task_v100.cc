@@ -19,11 +19,11 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("RingBufferMaintainTask")
-static void ConstructSqeForRingBufferMaintainTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForRingBufferMaintainTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     uint64_t offset = 0UL;
-    RtStarsPhSqe *const sqe = &(command->phSqe);
-    RingBufferMaintainTaskInfo *ringBufMtTsk = &taskInfo->u.ringBufMtTask;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
+    RingBufferMaintainTaskInfo* ringBufMtTsk = &taskInfo->u.ringBufMtTask;
 
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
@@ -48,7 +48,7 @@ static void ConstructSqeForRingBufferMaintainTask(TaskInfo* taskInfo, rtStarsSqe
 
     const rtError_t error = taskInfo->stream->Device_()->Driver_()->MemAddressTranslate(
         static_cast<int32_t>(taskInfo->stream->Device_()->Id_()),
-        RtPtrToValue<void *>(ringBufMtTsk->deviceRingBufferAddr), &offset);
+        RtPtrToValue<void*>(ringBufMtTsk->deviceRingBufferAddr), &offset);
     COND_RETURN_VOID(error != RT_ERROR_NONE, "MdcProfTask address error=%d", error);
 
     sqe->u.ring_buffer_control_info.ringbuffer_offset = offset;
@@ -56,8 +56,9 @@ static void ConstructSqeForRingBufferMaintainTask(TaskInfo* taskInfo, rtStarsSqe
     sqe->u.ring_buffer_control_info.ringbuffer_del_flag = 0U;
 
     PrintSqe(command, "RingBufferMaintain");
-    RT_LOG(RT_LOG_INFO, "RingBufferMaintainTask stream_id=%d, task_id=%u, offset=%#" PRIx64,
-        taskInfo->stream->Id_(), static_cast<uint32_t>(taskInfo->id), offset);
+    RT_LOG(
+        RT_LOG_INFO, "RingBufferMaintainTask stream_id=%d, task_id=%u, offset=%#" PRIx64, taskInfo->stream->Id_(),
+        static_cast<uint32_t>(taskInfo->id), offset);
 }
 
 #endif
@@ -75,7 +76,7 @@ static bool RingBufferMaintainTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommon,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_DEVICE_RINGBUFFER_CONTROL, funcs);
     }
@@ -85,5 +86,5 @@ static bool RingBufferMaintainTaskRegister()
 
 static bool g_ringBufferMaintainTaskRegister = RingBufferMaintainTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

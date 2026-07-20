@@ -25,8 +25,8 @@
 #include "task_info.hpp"
 
 #define CTRL_TASK_POOL_SIZE (1022U)
-#define CTRL_TASK_INVALID  (0U)
-#define CTRL_TASK_VALID  (1U)
+#define CTRL_TASK_INVALID (0U)
+#define CTRL_TASK_VALID (1U)
 #define CTRL_INVALID_TASK_ID (0xFFFFFFFFU)
 #define CTRL_BUFF_ASSING_NUM (64U) // 64字节对其
 
@@ -37,23 +37,23 @@ class TaskFactory;
 
 class CtrlTaskPoolEntry {
 public:
-    uint8_t *taskBuff_{nullptr};
+    uint8_t* taskBuff_{nullptr};
 
     CtrlTaskPoolEntry();
 
     ~CtrlTaskPoolEntry();
 
-    void Init(uint8_t * const ctrlTaskBuff, const uint32_t len);
-    TaskInfo* Alloc(Stream * const stm, const uint32_t taskId, const tsTaskType_t taskType) const;
+    void Init(uint8_t* const ctrlTaskBuff, const uint32_t len);
+    TaskInfo* Alloc(Stream* const stm, const uint32_t taskId, const tsTaskType_t taskType) const;
 };
 
 class CtrlResEntry {
 private:
     uint32_t taskBuffCellSize_ = 0;
-    uint8_t *taskBaseAddr_{nullptr};
-    Device  *dev_{nullptr};
-    CtrlTaskPoolEntry *taskPool_{nullptr};
-    uint8_t *taskList_{nullptr};
+    uint8_t* taskBaseAddr_{nullptr};
+    Device* dev_{nullptr};
+    CtrlTaskPoolEntry* taskPool_{nullptr};
+    uint8_t* taskList_{nullptr};
 
     uint32_t resHeadIndex_ = 0; // Head is the alloc index
     uint32_t resTailIndex_ = 0; // Tail is the recycle index
@@ -67,13 +67,13 @@ public:
     ~CtrlResEntry(void) noexcept;
 
     void TearDown(void) noexcept;
-    void AllocTaskId(uint32_t &taskId);
+    void AllocTaskId(uint32_t& taskId);
     void RecycleTask(const uint32_t taskId);
-    rtError_t Init(Device * const dev);
+    rtError_t Init(Device* const dev);
     TaskInfo* GetTask(const uint32_t taskId) const;
-    void TryTaskReclaim(Stream *const stm) const;
+    void TryTaskReclaim(Stream* const stm) const;
 
-    TaskInfo *CreateTask(Stream *stream, tsTaskType_t taskType)
+    TaskInfo* CreateTask(Stream* stream, tsTaskType_t taskType)
     {
         uint32_t countNum = 0U;
         uint32_t taskId = CTRL_INVALID_TASK_ID;
@@ -90,9 +90,10 @@ public:
             countNum++;
         }
 
-        TaskInfo *task = taskPool_[taskId].Alloc(stream, taskId, taskType);
-        RT_LOG(RT_LOG_INFO, "[ctrlsq]create ctrl resHeadIndex_=%u, resTailIndex_=%u, task task_id=%u. ",
-            resHeadIndex_, resTailIndex_, taskId);
+        TaskInfo* task = taskPool_[taskId].Alloc(stream, taskId, taskType);
+        RT_LOG(
+            RT_LOG_INFO, "[ctrlsq]create ctrl resHeadIndex_=%u, resTailIndex_=%u, task task_id=%u. ", resHeadIndex_,
+            resTailIndex_, taskId);
 
         if (task == nullptr) {
             RT_LOG(RT_LOG_ERROR, "Failed to init ctrl task.");
@@ -102,6 +103,6 @@ public:
         return task;
     }
 };
-}
-}
-#endif  // __CCE_RUNTIME_CTRL_RES_POOL_HPP__
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_CTRL_RES_POOL_HPP__

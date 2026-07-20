@@ -44,13 +44,13 @@
 
 namespace cce {
 namespace runtime {
-rtError_t Context::RDMASend(const uint32_t sqIndex, const uint32_t wqeIndex, Stream * const stm)
+rtError_t Context::RDMASend(const uint32_t sqIndex, const uint32_t wqeIndex, Stream* const stm)
 {
     rtError_t error;
     const int32_t streamId = stm->Id_();
     TaskInfo submitTask = {};
     rtError_t errorReason;
-    TaskInfo *rtRdmaSendTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_RDMA_SEND, errorReason);
+    TaskInfo* rtRdmaSendTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_RDMA_SEND, errorReason);
     NULL_PTR_RETURN_MSG(rtRdmaSendTask, errorReason);
 
     error = RdmaSendTaskInit(rtRdmaSendTask, sqIndex, wqeIndex);
@@ -71,14 +71,14 @@ ERROR_RECYCLE:
     return error;
 }
 
-rtError_t Context::RdmaDbSendToDev(const uint32_t dbIndex, const uint64_t dbInfo, Stream * const stm,
-    const uint32_t taskSqe) const
+rtError_t Context::RdmaDbSendToDev(
+    const uint32_t dbIndex, const uint64_t dbInfo, Stream* const stm, const uint32_t taskSqe) const
 {
     rtError_t error;
     const int32_t streamId = stm->Id_();
     TaskInfo submitTask = {};
     rtError_t errorReason;
-    TaskInfo *rtRdmaDbSendTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_RDMA_DB_SEND, errorReason);
+    TaskInfo* rtRdmaDbSendTask = stm->AllocTask(&submitTask, TS_TASK_TYPE_RDMA_DB_SEND, errorReason);
     NULL_PTR_RETURN_MSG(rtRdmaDbSendTask, errorReason);
 
     error = RdmaDbSendTaskInit(rtRdmaDbSendTask, dbIndex, dbInfo, taskSqe);
@@ -99,7 +99,7 @@ ERROR_RECYCLE:
     return error;
 }
 
-rtError_t Context::RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Stream * const stm)
+rtError_t Context::RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Stream* const stm)
 {
     rtError_t error;
     if ((Runtime::Instance()->ChipIsHaveStars()) && (stm->IsCapturing())) {
@@ -129,5 +129,5 @@ rtError_t Context::RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Str
 
     return error;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

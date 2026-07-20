@@ -18,98 +18,47 @@ namespace runtime {
 constexpr uint8_t UNINIT_GROUP_ID = 255U;
 class GroupDevice : public Device {
 public:
-    uint8_t GetGroupId() const override
-    {
-        return groupId_;
-    }
+    uint8_t GetGroupId() const override { return groupId_; }
 
-    uint32_t GetPoolId() const override
-    {
-        return poolId_;
-    }
- 
-    uint32_t GetPoolIdMax() const override
-    {
-        return poolIdMax_;
-    }
+    uint32_t GetPoolId() const override { return poolId_; }
 
-    uint32_t GetVfId() const override
-    {
-        return vfId_;
-    }
+    uint32_t GetPoolIdMax() const override { return poolIdMax_; }
+
+    uint32_t GetVfId() const override { return vfId_; }
 
     rtError_t SetGroup(const int32_t grpId) override;
     rtError_t ResetGroup() override;
 
     rtError_t GroupInfoSetup() override;
 
-    rtError_t GetGroupInfo(const int32_t grpId, rtGroupInfo_t * const info, const uint32_t cnt) override;
+    rtError_t GetGroupInfo(const int32_t grpId, rtGroupInfo_t* const info, const uint32_t cnt) override;
 
-    rtError_t GetGroupCount(uint32_t * const cnt) override;
+    rtError_t GetGroupCount(uint32_t* const cnt) override;
 
-    int32_t DefaultGroup() const override
-    {
-        return defaultGroup_;
-    }
+    int32_t DefaultGroup() const override { return defaultGroup_; }
 
-    rtFloatOverflowMode_t GetSatMode() const override
-    {
-        return satMode_;
-    }
+    rtFloatOverflowMode_t GetSatMode() const override { return satMode_; }
 
-    void SetSatMode(rtFloatOverflowMode_t floatOverflowMode) override
-    {
-        satMode_ = floatOverflowMode;
-    }
+    void SetSatMode(rtFloatOverflowMode_t floatOverflowMode) override { satMode_ = floatOverflowMode; }
 
-    void SetMonitorExitFlag(const bool value) override
-    {
-        monitorExitFlag_ = value;
-    }
+    void SetMonitorExitFlag(const bool value) override { monitorExitFlag_ = value; }
 
-    bool GetMonitorExitFlag(void) override
-    {
-        return monitorExitFlag_;
-    }
+    bool GetMonitorExitFlag(void) override { return monitorExitFlag_; }
 
-    void SetHasTaskError(const bool value) override
-    {
-        isHasTaskError_ = value;
-    }
+    void SetHasTaskError(const bool value) override { isHasTaskError_ = value; }
 
-    bool GetHasTaskError(void) override
-    {
-        return isHasTaskError_;
-    }
+    bool GetHasTaskError(void) override { return isHasTaskError_; }
 
-    void SetAtraceHandle(TraHandle handle) override
-    {
-        runtimeAtrace_ = handle;
-    }
-    TraHandle GetAtraceHandle(void) const override
-    {
-        return runtimeAtrace_;
-    }
+    void SetAtraceHandle(TraHandle handle) override { runtimeAtrace_ = handle; }
+    TraHandle GetAtraceHandle(void) const override { return runtimeAtrace_; }
 
-    void SetAtraceEventHandle(TraEventHandle handle) override
-    {
-        runtimeAtraceEventHandle_ = handle;
-    }
+    void SetAtraceEventHandle(TraEventHandle handle) override { runtimeAtraceEventHandle_ = handle; }
 
-    TraEventHandle GetAtraceEventHandle(void) const override
-    {
-        return runtimeAtraceEventHandle_;
-    }
+    TraEventHandle GetAtraceEventHandle(void) const override { return runtimeAtraceEventHandle_; }
 
-    void SetDeviceRas(const bool value) override
-    {
-        isHasHbmRas_ = value;
-    }
+    void SetDeviceRas(const bool value) override { isHasHbmRas_ = value; }
 
-    bool GetDeviceRas(void) const override
-    {
-        return isHasHbmRas_;
-    }
+    bool GetDeviceRas(void) const override { return isHasHbmRas_; }
 
 private:
     rtError_t FillCache(struct capability_group_info capGroupInfos[], const uint32_t groupCount);
@@ -133,6 +82,6 @@ private:
     uint32_t poolId_ = 0U;
     uint32_t poolIdMax_ = 0U;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // CCE_RUNTIME_GROUP_DEVICE_HPP

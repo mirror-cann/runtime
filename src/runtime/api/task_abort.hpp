@@ -14,7 +14,7 @@
 #include "base.hpp"
 
 #ifdef __cplusplus
-extern "C" {  
+extern "C" {
 #endif // __cplusplus
 
 rtError_t rtStreamTaskAbort(rtStream_t stm);

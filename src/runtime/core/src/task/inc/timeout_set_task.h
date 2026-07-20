@@ -18,7 +18,7 @@ namespace runtime {
 void TimeoutSetTaskInitV1(TaskInfo* taskInfo);
 rtError_t TimeoutSetTaskInit(TaskInfo* taskInfo, const rtTaskTimeoutType_t type, const uint32_t timeout);
 void TimeoutSetTaskUpdate(TaskInfo* taskInfo, const rtTaskTimeoutType_t type, const uint32_t timeout);
-void ToCommandBodyForTimeoutSetTask(TaskInfo* taskInfo, rtCommand_t *const command);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_TIMEOUT_SET_TASK_H
+void ToCommandBodyForTimeoutSetTask(TaskInfo* taskInfo, rtCommand_t* const command);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_TIMEOUT_SET_TASK_H

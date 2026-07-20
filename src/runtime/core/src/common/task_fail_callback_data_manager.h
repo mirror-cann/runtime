@@ -17,34 +17,33 @@
 namespace cce {
 namespace runtime {
 
-struct TaskFailCallbackInfo{
-    TaskFailCallbackType    type;
-    rtTaskFailCallback      callback;
-    rtsTaskFailCallback     callbackV2;
-    void                    *args;
+struct TaskFailCallbackInfo {
+    TaskFailCallbackType type;
+    rtTaskFailCallback callback;
+    rtsTaskFailCallback callbackV2;
+    void* args;
 };
 
 class TaskFailCallBackManager {
 public:
-    static TaskFailCallBackManager &Instance();
-    rtError_t RegTaskFailCallback(const char_t *regName, void *callback, void *args,
-        TaskFailCallbackType type);
-    void Notify(rtExceptionInfo_t * const exceptionInfo);
+    static TaskFailCallBackManager& Instance();
+    rtError_t RegTaskFailCallback(const char_t* regName, void* callback, void* args, TaskFailCallbackType type);
+    void Notify(rtExceptionInfo_t* const exceptionInfo);
     TaskFailCallBackManager();
     ~TaskFailCallBackManager();
 
 private:
-    TaskFailCallBackManager(const TaskFailCallBackManager &other) = delete;
-    TaskFailCallBackManager &operator=(const TaskFailCallBackManager &other) = delete;
-    TaskFailCallBackManager(TaskFailCallBackManager &&other) = delete;
-    TaskFailCallBackManager &operator=(TaskFailCallBackManager &&other) = delete;
+    TaskFailCallBackManager(const TaskFailCallBackManager& other) = delete;
+    TaskFailCallBackManager& operator=(const TaskFailCallBackManager& other) = delete;
+    TaskFailCallBackManager(TaskFailCallBackManager&& other) = delete;
+    TaskFailCallBackManager& operator=(TaskFailCallBackManager&& other) = delete;
 
 private:
     std::unordered_map<std::string, TaskFailCallbackInfo> callbackMap_;
     std::mutex mapMutex_;
 };
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_TASK_FAIL_CALLBACK_DATA_MANAGER_HPP

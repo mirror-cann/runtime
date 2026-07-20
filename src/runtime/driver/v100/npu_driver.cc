@@ -11,7 +11,7 @@
 
 namespace cce {
 namespace runtime {
-rtError_t GetConnectUbFlagFromDrv(const uint32_t deviceId, bool &connectUbFlag)
+rtError_t GetConnectUbFlagFromDrv(const uint32_t deviceId, bool& connectUbFlag)
 {
     UNUSED(deviceId);
     connectUbFlag = false;
@@ -24,15 +24,13 @@ rtError_t InitDrvEventThread(const uint32_t deviceId)
     return RT_ERROR_NONE;
 }
 
-rtError_t GetDrvSentinelMode(void)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t GetDrvSentinelMode(void) { return RT_ERROR_NONE; }
 
-bool IsOfflineNotSupportMemType(const rtMemType_t &type)
+bool IsOfflineNotSupportMemType(const rtMemType_t& type)
 {
     constexpr uint32_t RT_MEMORY_POLICY_P2P_MASK = RT_MEMORY_POLICY_HUGE_PAGE_FIRST_P2P |
-        RT_MEMORY_POLICY_HUGE_PAGE_ONLY_P2P | RT_MEMORY_POLICY_DEFAULT_PAGE_ONLY_P2P;
+                                                   RT_MEMORY_POLICY_HUGE_PAGE_ONLY_P2P |
+                                                   RT_MEMORY_POLICY_DEFAULT_PAGE_ONLY_P2P;
 
     if ((type == RT_MEMORY_P2P_HBM) || (type == RT_MEMORY_P2P_DDR)) {
         return true;
@@ -41,8 +39,8 @@ bool IsOfflineNotSupportMemType(const rtMemType_t &type)
     }
 }
 
-rtError_t GetIpcNotifyVa(const uint32_t notifyId, Driver * const curDrv, const uint32_t deviceId, const uint32_t phyId,
-    uint64_t &Va)
+rtError_t GetIpcNotifyVa(
+    const uint32_t notifyId, Driver* const curDrv, const uint32_t deviceId, const uint32_t phyId, uint64_t& Va)
 {
     UNUSED(notifyId);
     UNUSED(curDrv);
@@ -51,5 +49,5 @@ rtError_t GetIpcNotifyVa(const uint32_t notifyId, Driver * const curDrv, const u
     UNUSED(deviceId);
     return RT_ERROR_NONE;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

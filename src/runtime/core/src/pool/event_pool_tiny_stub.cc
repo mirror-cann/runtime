@@ -13,16 +13,13 @@
 
 namespace cce {
 namespace runtime {
-EventPool::EventPool(Device *device, uint32_t tsId)
+EventPool::EventPool(Device* device, uint32_t tsId)
     : NoCopy(), device_(device), poolSize_(0U), tsId_(tsId), isAging_(false)
-{
-}
+{}
 
-EventPool::~EventPool() noexcept
-{
-}
+EventPool::~EventPool() noexcept {}
 
-rtError_t EventPool::AllocEventIdFromDrv(int32_t * const eventId)
+rtError_t EventPool::AllocEventIdFromDrv(int32_t* const eventId)
 {
     UNUSED(eventId);
     return RT_ERROR_NONE;
@@ -34,27 +31,21 @@ rtError_t EventPool::FreeEventId(const int32_t eventId)
     return RT_ERROR_NONE;
 }
 
-rtError_t EventPool::FreeAllEvent() noexcept
-{
-    return RT_ERROR_NONE;
-}
+rtError_t EventPool::FreeAllEvent() noexcept { return RT_ERROR_NONE; }
 
-bool EventPool::AllocEventIdFromPool(int32_t *eventId)
+bool EventPool::AllocEventIdFromPool(int32_t* eventId)
 {
     UNUSED(eventId);
     return false;
 }
 
-rtError_t EventPool::EventIdReAlloc()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t EventPool::EventIdReAlloc() { return RT_ERROR_NONE; }
 
-rtError_t EventPool::AllocEventId(int32_t *eventId)
+rtError_t EventPool::AllocEventId(int32_t* eventId)
 {
     UNUSED(eventId);
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

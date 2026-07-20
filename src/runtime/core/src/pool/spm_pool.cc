@@ -17,7 +17,7 @@ constexpr uint32_t SPM_ITEM_DEFAULT_SIZE = 512U;
 
 namespace cce {
 namespace runtime {
-SpmPool::SpmPool(Device * const devPtr)
+SpmPool::SpmPool(Device* const devPtr)
     : NoCopy(),
       spmItemSize_(SPM_ITEM_DEFAULT_SIZE),
       spmPageNum_(16U),
@@ -27,8 +27,7 @@ SpmPool::SpmPool(Device * const devPtr)
       spmBases_(nullptr),
       dev_(devPtr),
       spmAllocator_(nullptr)
-{
-}
+{}
 
 SpmPool::~SpmPool()
 {
@@ -39,11 +38,12 @@ SpmPool::~SpmPool()
 
 rtError_t SpmPool::Init()
 {
-    COND_RETURN_ERROR_MSG_INNER((spmPageNum_ == 0U), RT_ERROR_POOL_RESOURCE,
-        "Failed to initialize SPM pool because page number is 0.");
+    COND_RETURN_ERROR_MSG_INNER(
+        (spmPageNum_ == 0U), RT_ERROR_POOL_RESOURCE, "Failed to initialize SPM pool because page number is 0.");
     spmBases_ = new (std::nothrow) uint64_t[spmPageNum_];
-    COND_RETURN_AND_MSG_OUTER(spmBases_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(sizeof(uint64_t) * spmPageNum_).c_str(), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        spmBases_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+        std::to_string(sizeof(uint64_t) * spmPageNum_).c_str(), "new");
     RT_LOG(RT_LOG_INFO, "new buffer ok, Runtime_alloc_size %zu", sizeof(uint64_t) * spmPageNum_);
 
     uint32_t i = 0U;
@@ -51,19 +51,22 @@ rtError_t SpmPool::Init()
         spmBases_[i] = 0UL;
     }
     constexpr uint32_t zoomSize = 16U;
-    const uint32_t spmpoolSize = (dev_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MEM_SPMPOOL_SIZE_DIV)) ? 
-        ((spmInitCount_ + 1) / zoomSize - 1) : spmInitCount_;
-    spmAllocator_ = new (std::nothrow) BufferAllocator(spmItemSize_, spmpoolSize, spmPageNum_ * spmInitCount_,
-        BufferAllocator::LINEAR, &DrvAllocSPM, &DrvFreeSPM, this);
+    const uint32_t spmpoolSize = (dev_->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_MEM_SPMPOOL_SIZE_DIV)) ?
+                                     ((spmInitCount_ + 1) / zoomSize - 1) :
+                                     spmInitCount_;
+    spmAllocator_ = new (std::nothrow) BufferAllocator(
+        spmItemSize_, spmpoolSize, spmPageNum_ * spmInitCount_, BufferAllocator::LINEAR, &DrvAllocSPM, &DrvFreeSPM,
+        this);
 
-    COND_RETURN_AND_MSG_OUTER(spmAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(sizeof(BufferAllocator)).c_str(), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        spmAllocator_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+        std::to_string(sizeof(BufferAllocator)).c_str(), "new");
     RT_LOG(RT_LOG_INFO, "new BufferAllocator ok, Runtime_alloc_size %zu", sizeof(BufferAllocator));
 
     return RT_ERROR_NONE;
 }
 
-rtError_t SpmPool::AllocSPM(void **dptr, const uint64_t size)
+rtError_t SpmPool::AllocSPM(void** dptr, const uint64_t size)
 {
     NULL_PTR_RETURN(spmAllocator_, RT_ERROR_POOL_RESOURCE);
     UNUSED(size);
@@ -72,24 +75,27 @@ rtError_t SpmPool::AllocSPM(void **dptr, const uint64_t size)
     return RT_ERROR_NONE;
 }
 
-rtError_t SpmPool::FreeSPM(const void * const dptr)
+rtError_t SpmPool::FreeSPM(const void* const dptr)
 {
     NULL_PTR_RETURN(spmAllocator_, RT_ERROR_POOL_RESOURCE);
     const int32_t id = spmAllocator_->GetIdByItem(dptr);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_GE, id < 0, RT_ERROR_POOL_RESOURCE, "Free SPM failed, invalid SPM address,"
-        "id should be larger than 0, current id is %d", id);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_GE, id < 0, RT_ERROR_POOL_RESOURCE,
+        "Free SPM failed, invalid SPM address,"
+        "id should be larger than 0, current id is %d",
+        id);
     spmAllocator_->FreeById(id);
     RT_LOG(RT_LOG_DEBUG, "FreeSPM success, id=%d", id);
     return RT_ERROR_NONE;
 }
 
-bool SpmPool::IsSPM(const void * const dptr) const
+bool SpmPool::IsSPM(const void* const dptr) const
 {
     if (likely((dptr != nullptr) && (spmBases_ != nullptr))) {
         for (uint32_t i = 0U; i < spmPageNum_; i++) {
             const uint64_t base = spmBases_[i];
             if ((base != 0ULL) && (base <= RtPtrToValue(dptr)) &&
-                    ((RtPtrToValue(dptr)) < (base + spmPageSize_ - spmPagePad_))) {
+                ((RtPtrToValue(dptr)) < (base + spmPageSize_ - spmPagePad_))) {
                 return true;
             }
         }
@@ -97,18 +103,20 @@ bool SpmPool::IsSPM(const void * const dptr) const
     return false;
 }
 
-void *SpmPool::DrvAllocSPM(const size_t size, void * const para)
+void* SpmPool::DrvAllocSPM(const size_t size, void* const para)
 {
-    void *addr = nullptr;
+    void* addr = nullptr;
     uint32_t i;
     rtError_t error;
 
-    SpmPool * const spm = static_cast<SpmPool *>(para);
+    SpmPool* const spm = static_cast<SpmPool*>(para);
 
-    error = spm->dev_->Driver_()->DevMemAlloc(&addr, static_cast<uint64_t>(size),
-        RT_MEMORY_HBM, spm->dev_->Id_());
-    COND_LOG(error != RT_ERROR_NONE, "device mem alloc spm failed, "
-             "size=%u(bytes), kind=%d, id=%d, retCode=%#x", size, RT_MEMORY_HBM, spm->dev_->Id_(), error);
+    error = spm->dev_->Driver_()->DevMemAlloc(&addr, static_cast<uint64_t>(size), RT_MEMORY_HBM, spm->dev_->Id_());
+    COND_LOG(
+        error != RT_ERROR_NONE,
+        "device mem alloc spm failed, "
+        "size=%u(bytes), kind=%d, id=%d, retCode=%#x",
+        size, RT_MEMORY_HBM, spm->dev_->Id_(), error);
 
     for (i = 0U; i < spm->spmPageNum_; i++) {
         if (spm->spmBases_[i] == 0ULL) {
@@ -119,11 +127,11 @@ void *SpmPool::DrvAllocSPM(const size_t size, void * const para)
     return addr;
 }
 
-void SpmPool::DrvFreeSPM(void * const addr, void * const para)
+void SpmPool::DrvFreeSPM(void* const addr, void* const para)
 {
     uint32_t i;
     rtError_t error;
-    SpmPool * const spm = static_cast<SpmPool *>(para);
+    SpmPool* const spm = static_cast<SpmPool*>(para);
 
     error = spm->dev_->Driver_()->DevMemFree(addr, spm->dev_->Id_());
     COND_LOG(error != RT_ERROR_NONE, "device mem free spm failed, retCode=%#x", error);
@@ -136,5 +144,5 @@ void SpmPool::DrvFreeSPM(void * const addr, void * const para)
     }
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

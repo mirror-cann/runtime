@@ -29,37 +29,37 @@ extern "C" {
 #endif // __cplusplus
 
 VISIBILITY_DEFAULT
-rtError_t rtCntNotifyCreate(const int32_t deviceId, rtCntNotify_t * const cntNotify)
+rtError_t rtCntNotifyCreate(const int32_t deviceId, rtCntNotify_t* const cntNotify)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const rtError_t error = apiInstance->CntNotifyCreate(deviceId, RtPtrToPtr<CountNotify **>(cntNotify));
+    const rtError_t error = apiInstance->CntNotifyCreate(deviceId, RtPtrToPtr<CountNotify**>(cntNotify));
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
-    CountNotify *realCountNotify = RtPtrToPtr<CountNotify *>(*cntNotify);
+    CountNotify* realCountNotify = RtPtrToPtr<CountNotify*>(*cntNotify);
     *cntNotify = ExportEmbeddedHandle<rtCntNotify_t>(realCountNotify);
     return error;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCntNotifyCreateWithFlag(const int32_t deviceId, rtCntNotify_t * const cntNotify, const uint32_t flags)
+rtError_t rtCntNotifyCreateWithFlag(const int32_t deviceId, rtCntNotify_t* const cntNotify, const uint32_t flags)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const rtError_t error = apiInstance->CntNotifyCreate(deviceId, RtPtrToPtr<CountNotify **>(cntNotify), flags);
+    const rtError_t error = apiInstance->CntNotifyCreate(deviceId, RtPtrToPtr<CountNotify**>(cntNotify), flags);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
-    CountNotify *realCountNotify = RtPtrToPtr<CountNotify *>(*cntNotify);
+    CountNotify* realCountNotify = RtPtrToPtr<CountNotify*>(*cntNotify);
     *cntNotify = ExportEmbeddedHandle<rtCntNotify_t>(realCountNotify);
     return error;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCntNotifyRecord(rtCntNotify_t const inCntNotify, rtStream_t const stm,
-                            const rtCntNtyRecordInfo_t * const info)
+rtError_t rtCntNotifyRecord(
+    rtCntNotify_t const inCntNotify, rtStream_t const stm, const rtCntNtyRecordInfo_t* const info)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(inCntNotify, CountNotify, notifyPtr);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
@@ -70,11 +70,11 @@ rtError_t rtCntNotifyRecord(rtCntNotify_t const inCntNotify, rtStream_t const st
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCntNotifyWaitWithTimeout(rtCntNotify_t const inCntNotify, rtStream_t const stm,
-                                     const rtCntNtyWaitInfo_t * const info)
+rtError_t rtCntNotifyWaitWithTimeout(
+    rtCntNotify_t const inCntNotify, rtStream_t const stm, const rtCntNtyWaitInfo_t* const info)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(inCntNotify, CountNotify, notifyPtr);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
@@ -88,7 +88,7 @@ VISIBILITY_DEFAULT
 rtError_t rtCntNotifyReset(rtCntNotify_t const inCntNotify, rtStream_t const stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(inCntNotify, CountNotify, notifyPtr);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
@@ -102,7 +102,7 @@ VISIBILITY_DEFAULT
 rtError_t rtCntNotifyDestroy(rtCntNotify_t const inCntNotify)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(inCntNotify, CountNotify, notifyPtr);
     const rtError_t error = apiInstance->CntNotifyDestroy(notifyPtr);
@@ -112,10 +112,10 @@ rtError_t rtCntNotifyDestroy(rtCntNotify_t const inCntNotify)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetCntNotifyAddress(rtCntNotify_t const inCntNotify, uint64_t * const cntNotifyAddress,
-                                rtNotifyType_t const regType)
+rtError_t rtGetCntNotifyAddress(
+    rtCntNotify_t const inCntNotify, uint64_t* const cntNotifyAddress, rtNotifyType_t const regType)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(inCntNotify, CountNotify, notifyPtr);
     const rtError_t error = apiInstance->GetCntNotifyAddress(notifyPtr, cntNotifyAddress, regType);
@@ -125,9 +125,9 @@ rtError_t rtGetCntNotifyAddress(rtCntNotify_t const inCntNotify, uint64_t * cons
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetCntNotifyId(rtCntNotify_t inCntNotify, uint32_t * const notifyId)
+rtError_t rtGetCntNotifyId(rtCntNotify_t inCntNotify, uint32_t* const notifyId)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(inCntNotify, CountNotify, notifyPtr);
     const rtError_t error = apiInstance->GetCntNotifyId(notifyPtr, notifyId);
@@ -137,7 +137,7 @@ rtError_t rtGetCntNotifyId(rtCntNotify_t inCntNotify, uint32_t * const notifyId)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCntNotifyCreateServer(rtCntNotify_t * const cntNotify, uint64_t flags)
+rtError_t rtCntNotifyCreateServer(rtCntNotify_t* const cntNotify, uint64_t flags)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
     COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(flags != 0ULL, RT_ERROR_INVALID_VALUE, flags, "0");
@@ -146,35 +146,33 @@ rtError_t rtCntNotifyCreateServer(rtCntNotify_t * const cntNotify, uint64_t flag
     if (unlikely((rtRet) != ACL_RT_SUCCESS)) {
         return rtRet;
     }
- 
+
     return rtCntNotifyCreateWithFlag(deviceId, cntNotify, static_cast<uint32_t>(flags));
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsCntNotifyRecord(rtCntNotify_t cntNotify, rtStream_t stm, rtCntNotifyRecordInfo_t *info)
+rtError_t rtsCntNotifyRecord(rtCntNotify_t cntNotify, rtStream_t stm, rtCntNotifyRecordInfo_t* info)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(cntNotify, CountNotify, notifyPtr);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    const rtError_t error = apiInstance->CntNotifyRecord(notifyPtr,
-        exeStream, RtPtrToPtr<rtCntNtyRecordInfo_t *>(info));
+    const rtError_t error = apiInstance->CntNotifyRecord(notifyPtr, exeStream, RtPtrToPtr<rtCntNtyRecordInfo_t*>(info));
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return error;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsCntNotifyWaitWithTimeout(rtCntNotify_t cntNotify, rtStream_t stm,
-                                      rtCntNotifyWaitInfo_t *info)
+rtError_t rtsCntNotifyWaitWithTimeout(rtCntNotify_t cntNotify, rtStream_t stm, rtCntNotifyWaitInfo_t* info)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(cntNotify, CountNotify, notifyPtr);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    const rtError_t error = apiInstance->CntNotifyWaitWithTimeout(notifyPtr,
-        exeStream, RtPtrToPtr<rtCntNtyWaitInfo_t *>(info));
+    const rtError_t error =
+        apiInstance->CntNotifyWaitWithTimeout(notifyPtr, exeStream, RtPtrToPtr<rtCntNtyWaitInfo_t*>(info));
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return error;
 }
@@ -183,7 +181,7 @@ VISIBILITY_DEFAULT
 rtError_t rtsCntNotifyReset(rtCntNotify_t cntNotify, rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(cntNotify, CountNotify, notifyPtr);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
@@ -193,9 +191,9 @@ rtError_t rtsCntNotifyReset(rtCntNotify_t cntNotify, rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsCntNotifyGetId(rtCntNotify_t cntNotify, uint32_t *notifyId)
+rtError_t rtsCntNotifyGetId(rtCntNotify_t cntNotify, uint32_t* notifyId)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(cntNotify, CountNotify, notifyPtr);
     const rtError_t error = apiInstance->GetCntNotifyId(notifyPtr, notifyId);
@@ -204,11 +202,11 @@ rtError_t rtsCntNotifyGetId(rtCntNotify_t cntNotify, uint32_t *notifyId)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtUbDbSend(rtUbDbInfo_t *dbInfo,  rtStream_t stm)
+rtError_t rtUbDbSend(rtUbDbInfo_t* dbInfo, rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->UbDbSend(dbInfo, exeStream);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -216,11 +214,11 @@ rtError_t rtUbDbSend(rtUbDbInfo_t *dbInfo,  rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtUbDirectSend(rtUbWqeInfo_t *wqeInfo, rtStream_t stm)
+rtError_t rtUbDirectSend(rtUbWqeInfo_t* wqeInfo, rtStream_t stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->UbDirectSend(wqeInfo, exeStream);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -229,10 +227,10 @@ rtError_t rtUbDirectSend(rtUbWqeInfo_t *wqeInfo, rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtFusionLaunch(void * const fusionInfo, rtStream_t const stm, rtFusionArgsEx_t *argsInfo)
+rtError_t rtFusionLaunch(void* const fusionInfo, rtStream_t const stm, rtFusionArgsEx_t* argsInfo)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->FusionLaunch(fusionInfo, exeStream, argsInfo);
@@ -241,10 +239,10 @@ rtError_t rtFusionLaunch(void * const fusionInfo, rtStream_t const stm, rtFusion
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCCULaunch(rtCcuTaskInfo_t *taskInfo,  rtStream_t const stm)
+rtError_t rtCCULaunch(rtCcuTaskInfo_t* taskInfo, rtStream_t const stm)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stm, Stream, exeStream);
     const rtError_t error = apiInstance->CCULaunch(taskInfo, exeStream);
@@ -254,9 +252,9 @@ rtError_t rtCCULaunch(rtCcuTaskInfo_t *taskInfo,  rtStream_t const stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtUbDevQueryInfo(rtUbDevQueryCmd cmd, void * devInfo)
+rtError_t rtUbDevQueryInfo(rtUbDevQueryCmd cmd, void* devInfo)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->UbDevQueryInfo(cmd, devInfo);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -266,9 +264,9 @@ rtError_t rtUbDevQueryInfo(rtUbDevQueryCmd cmd, void * devInfo)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetDevResAddress(rtDevResInfo * const resInfo, rtDevResAddrInfo * const addrInfo)
+rtError_t rtGetDevResAddress(rtDevResInfo* const resInfo, rtDevResAddrInfo* const addrInfo)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->GetDevResAddress(resInfo, addrInfo);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -278,10 +276,10 @@ rtError_t rtGetDevResAddress(rtDevResInfo * const resInfo, rtDevResAddrInfo * co
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtReleaseDevResAddress(rtDevResInfo * const resInfo)
+rtError_t rtReleaseDevResAddress(rtDevResInfo* const resInfo)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->ReleaseDevResAddress(resInfo);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);

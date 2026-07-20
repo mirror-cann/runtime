@@ -14,18 +14,16 @@
 namespace cce {
 namespace runtime {
 
-TaskFailCallBackManager &TaskFailCallBackManager::Instance()
+TaskFailCallBackManager& TaskFailCallBackManager::Instance()
 {
     static TaskFailCallBackManager taskFailCallBackManager;
     return taskFailCallBackManager;
 }
 
-void TaskFailCallBackManager::Notify(rtExceptionInfo_t *const exceptionInfo)
+void TaskFailCallBackManager::Notify(rtExceptionInfo_t* const exceptionInfo)
 {
-    RT_LOG(RT_LOG_INFO,
-        "notify stream_id=%u, task_id=%u, retcode:%u.",
-        exceptionInfo->streamid,
-        exceptionInfo->taskid,
+    RT_LOG(
+        RT_LOG_INFO, "notify stream_id=%u, task_id=%u, retcode:%u.", exceptionInfo->streamid, exceptionInfo->taskid,
         exceptionInfo->retcode);
     // Avoid callback function use long time lock,so copy to tmp map to call callback function.
     std::unordered_map<std::string, TaskFailCallbackInfo> notifyMap;
@@ -33,21 +31,18 @@ void TaskFailCallBackManager::Notify(rtExceptionInfo_t *const exceptionInfo)
         const std::unique_lock<std::mutex> cbMapLock(mapMutex_);
         notifyMap.insert(callbackMap_.begin(), callbackMap_.end());
     }
-    for (const auto &info : notifyMap) {
-        RT_LOG(RT_LOG_INFO,
-            "notify [%s] task start, notify task_id=%u, stream_id=%u, retcode=%u.",
-            info.first.c_str(),
-            exceptionInfo->taskid,
-            exceptionInfo->streamid,
-            exceptionInfo->retcode);
+    for (const auto& info : notifyMap) {
+        RT_LOG(
+            RT_LOG_INFO, "notify [%s] task start, notify task_id=%u, stream_id=%u, retcode=%u.", info.first.c_str(),
+            exceptionInfo->taskid, exceptionInfo->streamid, exceptionInfo->retcode);
         const TaskFailCallbackType type = info.second.type;
         if ((type == TaskFailCallbackType::RT_SET_TASK_FAIL_CALLBACK) ||
-            (type ==TaskFailCallbackType::RT_REG_TASK_FAIL_CALLBACK_BY_MODULE)) {
+            (type == TaskFailCallbackType::RT_REG_TASK_FAIL_CALLBACK_BY_MODULE)) {
             auto callback = info.second.callback;
             callback(exceptionInfo);
         } else if (type == TaskFailCallbackType::RTS_SET_TASK_FAIL_CALLBACK) {
             auto callback = info.second.callbackV2;
-            void *args = info.second.args;
+            void* args = info.second.args;
             callback(exceptionInfo, args);
         } else {
             RT_LOG(RT_LOG_ERROR, "notify task fail type:%u is invalid.", type);
@@ -57,8 +52,8 @@ void TaskFailCallBackManager::Notify(rtExceptionInfo_t *const exceptionInfo)
     }
 }
 
-rtError_t TaskFailCallBackManager::RegTaskFailCallback(const char_t *regName, void *callback, void *args,
-    TaskFailCallbackType type)
+rtError_t TaskFailCallBackManager::RegTaskFailCallback(
+    const char_t* regName, void* callback, void* args, TaskFailCallbackType type)
 {
     const std::unique_lock<std::mutex> cbMapLock(mapMutex_);
     std::string tmpName(regName);
@@ -68,13 +63,16 @@ rtError_t TaskFailCallBackManager::RegTaskFailCallback(const char_t *regName, vo
         return RT_ERROR_NONE;
     }
 
-    if (type == TaskFailCallbackType::RT_SET_TASK_FAIL_CALLBACK || type == TaskFailCallbackType::RT_REG_TASK_FAIL_CALLBACK_BY_MODULE) {
+    if (type == TaskFailCallbackType::RT_SET_TASK_FAIL_CALLBACK ||
+        type == TaskFailCallbackType::RT_REG_TASK_FAIL_CALLBACK_BY_MODULE) {
         callbackMap_[regName].callback = RtPtrToPtr<rtTaskFailCallback>(callback);
         callbackMap_[regName].callbackV2 = nullptr;
         callbackMap_[regName].args = nullptr;
-    } else if(type == TaskFailCallbackType::RTS_SET_TASK_FAIL_CALLBACK) {
-        COND_RETURN_AND_MSG_OUTER(callbackMap_.count(regName) > 0, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
-            "Registering the callback function for task exceptions", regName, "regName", "The callback name has already been registered.");
+    } else if (type == TaskFailCallbackType::RTS_SET_TASK_FAIL_CALLBACK) {
+        COND_RETURN_AND_MSG_OUTER(
+            callbackMap_.count(regName) > 0, RT_ERROR_INVALID_VALUE, ErrorCode::EE1011,
+            "Registering the callback function for task exceptions", regName, "regName",
+            "The callback name has already been registered.");
         callbackMap_[regName].callback = nullptr;
         callbackMap_[regName].callbackV2 = RtPtrToPtr<rtsTaskFailCallback>(callback);
         callbackMap_[regName].args = args;
@@ -88,15 +86,9 @@ rtError_t TaskFailCallBackManager::RegTaskFailCallback(const char_t *regName, vo
     return RT_ERROR_NONE;
 }
 
-TaskFailCallBackManager::TaskFailCallBackManager()
-{
-    RT_LOG(RT_LOG_EVENT, "Constructor.");
-}
+TaskFailCallBackManager::TaskFailCallBackManager() { RT_LOG(RT_LOG_EVENT, "Constructor."); }
 
-TaskFailCallBackManager::~TaskFailCallBackManager()
-{
-    RT_LOG(RT_LOG_EVENT, "Destructor.");
-}
+TaskFailCallBackManager::~TaskFailCallBackManager() { RT_LOG(RT_LOG_EVENT, "Destructor."); }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

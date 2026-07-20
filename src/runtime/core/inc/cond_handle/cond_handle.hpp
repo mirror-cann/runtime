@@ -23,84 +23,57 @@ class Context;
 
 class CondHandle : public NoCopy {
 public:
-    explicit CondHandle(Model *mdl, uint32_t defaultValue, rtCondHandleFlag_t flag);
+    explicit CondHandle(Model* mdl, uint32_t defaultValue, rtCondHandleFlag_t flag);
     ~CondHandle() noexcept override;
 
-    rtError_t Setup(Context *ctx);
+    rtError_t Setup(Context* ctx);
     rtError_t Destroy();
     rtError_t InitCondTaskByDefValue();
     void SubModelDestroy();
 
     uint32_t GetDefaultValue() const { return defaultValue_; }
     rtCondHandleFlag_t GetFlag() const { return flag_; }
-    Model *GetParentModel() const { return model_; }
-    uint64_t *GetDevAddr() const { return devAddr_; }
-    void SetSubModelExeStream(Stream *exeStream);
+    Model* GetParentModel() const { return model_; }
+    uint64_t* GetDevAddr() const { return devAddr_; }
+    void SetSubModelExeStream(Stream* exeStream);
 
-    rtInnerObject *GetInnerHandle()
+    rtInnerObject* GetInnerHandle() { return &handle_; }
+
+    std::vector<Model*>& GetSubCaptureModels() { return subCaptureModels_; }
+
+    void EraseSubModel(Model* subModel)
     {
-        return &handle_;
+        auto it = std::find(subCaptureModels_.begin(), subCaptureModels_.end(), subModel);
+        if (it != subCaptureModels_.end()) {
+            subCaptureModels_.erase(it);
+        }
     }
 
-    std::vector<Model *> &GetSubCaptureModels()
-    {
-        return subCaptureModels_;
-    }
+    void PushBackSubModel(Model* const subModel) { subCaptureModels_.push_back(subModel); }
 
-    void EraseSubModel(Model * subModel)
-    {
- 	    auto it = std::find(subCaptureModels_.begin(), subCaptureModels_.end(), subModel);
- 	    if (it != subCaptureModels_.end()) {
- 	        subCaptureModels_.erase(it);
- 	    }
- 	}
+    void SetSubModelNotify(Notify* notify) { subModelNotify_ = notify; }
 
-    void PushBackSubModel(Model * const subModel)
-    {
-        subCaptureModels_.push_back(subModel);
-    }
+    Notify* GetSubModelNotify() const { return subModelNotify_; }
 
-    void SetSubModelNotify(Notify *notify)
-    {
-        subModelNotify_ = notify;
-    }
+    void SetCondType(rtCondTaskType_t type) { condType_ = type; }
 
-    Notify *GetSubModelNotify() const
-    {
-        return subModelNotify_;
-    }
+    rtCondTaskType_t GetCondType() const { return condType_; }
 
-    void SetCondType(rtCondTaskType_t type)
-    {
-        condType_ = type;
-    }
+    void SetCondSize(uint32_t condSize) { condSize_ = condSize; }
 
-    rtCondTaskType_t GetCondType() const
-    {
-        return condType_;
-    }
-
-    void SetCondSize(uint32_t condSize)
-    {
-        condSize_ = condSize;
-    }
-
-    uint32_t GetCondSize() const
-    {
-        return condSize_;
-    }
+    uint32_t GetCondSize() const { return condSize_; }
 
 private:
-    Model *model_{nullptr}; // 归属的父模型
+    Model* model_{nullptr};     // 归属的父模型
     uint32_t defaultValue_{0U}; // 父模型执行时的默认条件值
     rtCondHandleFlag_t flag_; // RT_COND_HANDLE_ASSIGN_DEFAULT表示模型执行时，条件值初始化为defaultValue_
     rtCondTaskType_t condType_{RT_COND_TASK_TYPE_MAX}; // condition type
-    uint32_t condSize_{0U}; // 子模型个数
-    uint64_t *devAddr_{nullptr}; // device ptr，用于存储条件值
-    Context *context_{nullptr};
+    uint32_t condSize_{0U};                            // 子模型个数
+    uint64_t* devAddr_{nullptr};                       // device ptr，用于存储条件值
+    Context* context_{nullptr};
     rtInnerObject handle_{};
-    std::vector<Model *> subCaptureModels_; // 当前condHandle的model列表
-    Notify *subModelNotify_{nullptr}; // 所有submodel共用同一个notify，避免重复申请
+    std::vector<Model*> subCaptureModels_; // 当前condHandle的model列表
+    Notify* subModelNotify_{nullptr};      // 所有submodel共用同一个notify，避免重复申请
 };
 
 } // namespace runtime

@@ -14,27 +14,26 @@
 namespace cce {
 namespace runtime {
 namespace {
-ProfApiContext *PushProfApiContextWithCheck(Profiler * const profiler)
+ProfApiContext* PushProfApiContextWithCheck(Profiler* const profiler)
 {
-    ProfApiContext *profApiContext = profiler->PushProfApiContext();
+    ProfApiContext* profApiContext = profiler->PushProfApiContext();
     if (profApiContext == nullptr) {
         RT_LOG(RT_LOG_ERROR, "push api profiling context failed.");
     }
     return profApiContext;
 }
-}
+} // namespace
 
-ApiProfileDecorator::ApiProfileDecorator(Api * const impl,
-    Profiler * const prof) : ApiDecorator(impl), profiler_(prof)
+ApiProfileDecorator::ApiProfileDecorator(Api* const impl, Profiler* const prof) : ApiDecorator(impl), profiler_(prof)
 {
     UNUSED(impl);
     UNUSED(prof);
 }
 
-void ApiProfileDecorator::CallApiBegin(const uint16_t profileType,
-    const uint64_t dataSize, const uint16_t cpyDirection) const
+void ApiProfileDecorator::CallApiBegin(
+    const uint16_t profileType, const uint64_t dataSize, const uint16_t cpyDirection) const
 {
-    ProfApiContext *profApiContext = nullptr;
+    ProfApiContext* profApiContext = nullptr;
     if (!profiler_->GetApiProfEnable()) {
         // profiling 关闭时，栈空场景可直接返回；
         if (profiler_->GetTopProfApiContext() == nullptr) {
@@ -56,7 +55,7 @@ void ApiProfileDecorator::CallApiBegin(const uint16_t profileType,
     }
     profApiContext->needReport = true;
 
-    RuntimeProfApiData &profApiData = profApiContext->apiData;
+    RuntimeProfApiData& profApiData = profApiContext->apiData;
     profApiData.magicNumber = static_cast<uint16_t>(MSPROF_DATA_HEAD_MAGIC_NUM);
     profApiData.dataTag = static_cast<uint16_t>(MSPROF_RUNTIME_DATA_TAG_API);
     profApiData.threadId = PidTidFetcher::GetCurrentTid();
@@ -88,11 +87,11 @@ void ApiProfileDecorator::CallApiEnd(const rtError_t retCode, const uint32_t dev
 
     const uint64_t endTime = MsprofSysCycleTime();
     uint32_t deviceId = devId;
-    TaskTrackInfo &trackMngInfo = profApiContext.taskTrackInfo;
+    TaskTrackInfo& trackMngInfo = profApiContext.taskTrackInfo;
     const uint32_t taskNum = trackMngInfo.taskNum;
 
     if (deviceId == static_cast<uint32_t>(UINT16_MAX)) {
-        Context *curCtx = nullptr;
+        Context* curCtx = nullptr;
         const rtError_t error = impl_->ContextGetCurrent(&curCtx);
         if ((error == RT_ERROR_NONE) && (ContextManage::CheckContextIsValid(curCtx))) {
             deviceId = curCtx->Device_()->Id_();
@@ -101,16 +100,18 @@ void ApiProfileDecorator::CallApiEnd(const rtError_t retCode, const uint32_t dev
 
     // report task track info
     for (uint32_t i = 0U; i < taskNum; i++) {
-        RuntimeProfTrackData *data = &trackMngInfo.trackBuff[i];
-        RT_LOG(RT_LOG_DEBUG, "isModel=%u, threadId=%u, timeStamp=%llu, devId=%u, stream_id=%u, task_id=%u, "
+        RuntimeProfTrackData* data = &trackMngInfo.trackBuff[i];
+        RT_LOG(
+            RT_LOG_DEBUG,
+            "isModel=%u, threadId=%u, timeStamp=%llu, devId=%u, stream_id=%u, task_id=%u, "
             "task_type=%u, kernel_name=%llu",
             data->isModel, data->compactInfo.threadId, data->compactInfo.timeStamp,
             data->compactInfo.data.runtimeTrack.deviceId, data->compactInfo.data.runtimeTrack.streamId,
             data->compactInfo.data.runtimeTrack.taskId, data->compactInfo.data.runtimeTrack.taskType,
             data->compactInfo.data.runtimeTrack.kernelName);
         const bool agingFlag = (data->isModel != 0) ? false : true;
-        const int32_t ret = MsprofReportCompactInfo(static_cast<uint32_t>(agingFlag), &(data->compactInfo),
-            static_cast<uint32_t>(sizeof(MsprofCompactInfo)));
+        const int32_t ret = MsprofReportCompactInfo(
+            static_cast<uint32_t>(agingFlag), &(data->compactInfo), static_cast<uint32_t>(sizeof(MsprofCompactInfo)));
         if (ret != MSPROF_ERROR_NONE) {
             RT_LOG_CALL_MSG(ERR_MODULE_PROFILE, "Failed to report profiling task track data, retCode=%d.", ret);
             return;
@@ -119,14 +120,14 @@ void ApiProfileDecorator::CallApiEnd(const rtError_t retCode, const uint32_t dev
     trackMngInfo.taskNum = 0U;
 
     // report runtime api info
-    RuntimeProfApiData &profApiData = profApiContext.apiData;
+    RuntimeProfApiData& profApiData = profApiContext.apiData;
     profApiData.retCode = static_cast<uint32_t>(RT_TRANS_EXT_ERRCODE(retCode));
     profApiData.exitTime = endTime;
     profiler_->ReportProfApi(deviceId, profApiData);
     RT_LOG(RT_LOG_DEBUG, "profileType=%hu, devId=%u, retCode=%u", profApiData.profileType, deviceId, retCode);
 }
 
-rtError_t ApiProfileDecorator::DevBinaryRegister(const rtDevBinary_t * const bin, Program ** const prog)
+rtError_t ApiProfileDecorator::DevBinaryRegister(const rtDevBinary_t* const bin, Program** const prog)
 {
     CallApiBegin(RT_PROF_API_DEVBINARY_REGISTER);
     const rtError_t error = impl_->DevBinaryRegister(bin, prog);
@@ -134,7 +135,7 @@ rtError_t ApiProfileDecorator::DevBinaryRegister(const rtDevBinary_t * const bin
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetNotifyAddress(Notify * const notify, uint64_t * const notifyAddress)
+rtError_t ApiProfileDecorator::GetNotifyAddress(Notify* const notify, uint64_t* const notifyAddress)
 {
     CallApiBegin(RT_PROF_API_GET_NOTIFY_ADDR);
     const rtError_t error = impl_->GetNotifyAddress(notify, notifyAddress);
@@ -142,7 +143,7 @@ rtError_t ApiProfileDecorator::GetNotifyAddress(Notify * const notify, uint64_t 
     return error;
 }
 
-rtError_t ApiProfileDecorator::RegisterAllKernel(const rtDevBinary_t * const bin, Program ** const prog)
+rtError_t ApiProfileDecorator::RegisterAllKernel(const rtDevBinary_t* const bin, Program** const prog)
 {
     CallApiBegin(RT_PROF_API_ALLKERNEL_REGISTER);
     const rtError_t error = impl_->RegisterAllKernel(bin, prog);
@@ -150,7 +151,7 @@ rtError_t ApiProfileDecorator::RegisterAllKernel(const rtDevBinary_t * const bin
     return error;
 }
 
-rtError_t ApiProfileDecorator::DevBinaryUnRegister(Program * const prog)
+rtError_t ApiProfileDecorator::DevBinaryUnRegister(Program* const prog)
 {
     CallApiBegin(RT_PROF_API_DEVBINARY_UNREGISTER);
     const rtError_t error = impl_->DevBinaryUnRegister(prog);
@@ -158,18 +159,19 @@ rtError_t ApiProfileDecorator::DevBinaryUnRegister(Program * const prog)
     return error;
 }
 
-rtError_t ApiProfileDecorator::MetadataRegister(Program * const prog, const char_t * const metadata)
+rtError_t ApiProfileDecorator::MetadataRegister(Program* const prog, const char_t* const metadata)
 {
     return impl_->MetadataRegister(prog, metadata);
 }
 
-rtError_t ApiProfileDecorator::DependencyRegister(Program * const mProgram, Program * const sProgram)
+rtError_t ApiProfileDecorator::DependencyRegister(Program* const mProgram, Program* const sProgram)
 {
     return impl_->DependencyRegister(mProgram, sProgram);
 }
 
-rtError_t ApiProfileDecorator::FunctionRegister(Program * const prog, const void * const stubFunc,
-    const char_t * const stubName, const void * const kernelInfoExt, const uint32_t funcMode)
+rtError_t ApiProfileDecorator::FunctionRegister(
+    Program* const prog, const void* const stubFunc, const char_t* const stubName, const void* const kernelInfoExt,
+    const uint32_t funcMode)
 {
     CallApiBegin(RT_PROF_API_FUNCTION_REGISTER);
     const rtError_t error = impl_->FunctionRegister(prog, stubFunc, stubName, kernelInfoExt, funcMode);
@@ -177,7 +179,7 @@ rtError_t ApiProfileDecorator::FunctionRegister(Program * const prog, const void
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetFunctionByName(const char_t * const stubName, void ** const stubFunc)
+rtError_t ApiProfileDecorator::GetFunctionByName(const char_t* const stubName, void** const stubFunc)
 {
     CallApiBegin(RT_PROF_API_GET_FUNCTION_BY_NAME);
     const rtError_t error = impl_->GetFunctionByName(stubName, stubFunc);
@@ -185,7 +187,7 @@ rtError_t ApiProfileDecorator::GetFunctionByName(const char_t * const stubName, 
     return error;
 }
 
-rtError_t ApiProfileDecorator::QueryFunctionRegistered(const char_t * const stubName)
+rtError_t ApiProfileDecorator::QueryFunctionRegistered(const char_t* const stubName)
 {
     CallApiBegin(RT_PROF_API_QUERY_FUNCTION_REGISTERED);
     const rtError_t error = impl_->QueryFunctionRegistered(stubName);
@@ -193,7 +195,7 @@ rtError_t ApiProfileDecorator::QueryFunctionRegistered(const char_t * const stub
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelFusionStart(Stream * const stm)
+rtError_t ApiProfileDecorator::KernelFusionStart(Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_KERNEL_FUSION_START);
     const rtError_t error = impl_->KernelFusionStart(stm);
@@ -201,7 +203,7 @@ rtError_t ApiProfileDecorator::KernelFusionStart(Stream * const stm)
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelFusionEnd(Stream * const stm)
+rtError_t ApiProfileDecorator::KernelFusionEnd(Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_KERNEL_FUSION_END);
     const rtError_t error = impl_->KernelFusionEnd(stm);
@@ -209,8 +211,9 @@ rtError_t ApiProfileDecorator::KernelFusionEnd(Stream * const stm)
     return error;
 }
 
-rtError_t ApiProfileDecorator::BuffGetInfo(const rtBuffGetCmdType type, const void * const inBuff, const uint32_t inLen,
-    void * const outBuff, uint32_t * const outLen)
+rtError_t ApiProfileDecorator::BuffGetInfo(
+    const rtBuffGetCmdType type, const void* const inBuff, const uint32_t inLen, void* const outBuff,
+    uint32_t* const outLen)
 {
     CallApiBegin(RT_PROF_API_BUFF_GET_INFO);
     const rtError_t error = impl_->BuffGetInfo(type, inBuff, inLen, outBuff, outLen);
@@ -218,14 +221,14 @@ rtError_t ApiProfileDecorator::BuffGetInfo(const rtBuffGetCmdType type, const vo
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelLaunch(const void * const stubFunc, const uint32_t coreDim,
-    const rtArgsEx_t * const argsInfo, Stream * const stm,
-    const rtTaskCfgInfo_t * const cfgInfo, const bool isLaunchVec)
+rtError_t ApiProfileDecorator::KernelLaunch(
+    const void* const stubFunc, const uint32_t coreDim, const rtArgsEx_t* const argsInfo, Stream* const stm,
+    const rtTaskCfgInfo_t* const cfgInfo, const bool isLaunchVec)
 {
     const uint32_t argSize = argsInfo->argsSize;
     const bool isNotFlowCtrl = ((stm == nullptr) || (!(stm->GetFlowCtrlFlag())));
     if (isNotFlowCtrl) {
-        if (argSize > 32768U) { // 32768 is large
+        if (argSize > 32768U) {       // 32768 is large
             CallApiBegin(RT_PROF_API_KERNEL_LAUNCH_LARGE);
         } else if (argSize > 4096U) { // 4096 is huge
             CallApiBegin(RT_PROF_API_KERNEL_LAUNCH_HUGE);
@@ -244,14 +247,14 @@ rtError_t ApiProfileDecorator::KernelLaunch(const void * const stubFunc, const u
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelLaunchWithHandle(void * const hdl, const uint64_t tilingKey,
-    const uint32_t coreDim, const rtArgsEx_t * const argsInfo, Stream * const stm,
-    const rtTaskCfgInfo_t * const cfgInfo, const bool isLaunchVec)
+rtError_t ApiProfileDecorator::KernelLaunchWithHandle(
+    void* const hdl, const uint64_t tilingKey, const uint32_t coreDim, const rtArgsEx_t* const argsInfo,
+    Stream* const stm, const rtTaskCfgInfo_t* const cfgInfo, const bool isLaunchVec)
 {
     const uint32_t argSize = argsInfo->argsSize;
     const bool isNotFlowCtrl = ((stm == nullptr) || (!(stm->GetFlowCtrlFlag())));
     if (isNotFlowCtrl) {
-        if (argSize > 32768U) { // 32768 is large
+        if (argSize > 32768U) {       // 32768 is large
             CallApiBegin(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE_LARGE);
         } else if (argSize > 4096U) { // 4096 is huge
             CallApiBegin(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE_HUGE);
@@ -265,14 +268,14 @@ rtError_t ApiProfileDecorator::KernelLaunchWithHandle(void * const hdl, const ui
         CallApiBegin(RT_PROF_API_KERNEL_LAUNCH_WITH_HANDLE_FLOW_CTRL);
     }
 
-    const rtError_t error =
-        impl_->KernelLaunchWithHandle(hdl, tilingKey, coreDim, argsInfo, stm, cfgInfo, isLaunchVec);
+    const rtError_t error = impl_->KernelLaunchWithHandle(hdl, tilingKey, coreDim, argsInfo, stm, cfgInfo, isLaunchVec);
     CallApiEnd(error);
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelLaunchEx(const char_t * const opName, const void * const args,
-    const uint32_t argsSize, const uint32_t flags, Stream * const stm)
+rtError_t ApiProfileDecorator::KernelLaunchEx(
+    const char_t* const opName, const void* const args, const uint32_t argsSize, const uint32_t flags,
+    Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_KERNEL_LAUNCH_EX);
     const rtError_t error = impl_->KernelLaunchEx(opName, args, argsSize, flags, stm);
@@ -280,7 +283,7 @@ rtError_t ApiProfileDecorator::KernelLaunchEx(const char_t * const opName, const
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetServerIDBySDID(uint32_t sdid, uint32_t *srvId)
+rtError_t ApiProfileDecorator::GetServerIDBySDID(uint32_t sdid, uint32_t* srvId)
 {
     CallApiBegin(RT_PROF_API_GetServerIDBySDID);
     const rtError_t error = impl_->GetServerIDBySDID(sdid, srvId);
@@ -288,8 +291,9 @@ rtError_t ApiProfileDecorator::GetServerIDBySDID(uint32_t sdid, uint32_t *srvId)
     return error;
 }
 
-rtError_t ApiProfileDecorator::CpuKernelLaunch(const rtKernelLaunchNames_t * const launchNames, const uint32_t coreDim,
-    const rtArgsEx_t * const argsInfo, Stream * const stm, const uint32_t flag)
+rtError_t ApiProfileDecorator::CpuKernelLaunch(
+    const rtKernelLaunchNames_t* const launchNames, const uint32_t coreDim, const rtArgsEx_t* const argsInfo,
+    Stream* const stm, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_CpuKernelLaunch);
     const rtError_t error = impl_->CpuKernelLaunch(launchNames, coreDim, argsInfo, stm, flag);
@@ -297,12 +301,12 @@ rtError_t ApiProfileDecorator::CpuKernelLaunch(const rtKernelLaunchNames_t * con
     return error;
 }
 
-rtError_t ApiProfileDecorator::CpuKernelLaunchExWithArgs(const char_t * const opName,
-    const uint32_t coreDim, const rtAicpuArgsEx_t * const argsInfo, Stream * const stm,
+rtError_t ApiProfileDecorator::CpuKernelLaunchExWithArgs(
+    const char_t* const opName, const uint32_t coreDim, const rtAicpuArgsEx_t* const argsInfo, Stream* const stm,
     const uint32_t flag, const uint32_t kernelType)
 {
     const uint32_t argSize = argsInfo->argsSize;
-    if (argSize > 32768U) { // 32768 is large
+    if (argSize > 32768U) {       // 32768 is large
         CallApiBegin(RT_PROF_API_CpuKernelLaunch_EX_WITH_ARG_LARGE);
     } else if (argSize > 4096U) { // 4096 is huge
         CallApiBegin(RT_PROF_API_CpuKernelLaunch_EX_WITH_ARG_HUGE);
@@ -317,13 +321,13 @@ rtError_t ApiProfileDecorator::CpuKernelLaunchExWithArgs(const char_t * const op
     return error;
 }
 
-rtError_t ApiProfileDecorator::MultipleTaskInfoLaunch(const rtMultipleTaskInfo_t * const taskInfo, Stream * const stm,
-    const uint32_t flag)
+rtError_t ApiProfileDecorator::MultipleTaskInfoLaunch(
+    const rtMultipleTaskInfo_t* const taskInfo, Stream* const stm, const uint32_t flag)
 {
     return impl_->MultipleTaskInfoLaunch(taskInfo, stm, flag);
 }
 
-rtError_t ApiProfileDecorator::BinaryLoad(const rtDevBinary_t * const bin, Program ** const prog)
+rtError_t ApiProfileDecorator::BinaryLoad(const rtDevBinary_t* const bin, Program** const prog)
 {
     CallApiBegin(RT_PROF_API_BINARY_LOAD);
     const rtError_t error = impl_->BinaryLoad(bin, prog);
@@ -331,8 +335,8 @@ rtError_t ApiProfileDecorator::BinaryLoad(const rtDevBinary_t * const bin, Progr
     return error;
 }
 
-rtError_t ApiProfileDecorator::BinaryGetFunction(const Program * const prog, const uint64_t tilingKey,
-                                                 Kernel ** const funcHandle)
+rtError_t ApiProfileDecorator::BinaryGetFunction(
+    const Program* const prog, const uint64_t tilingKey, Kernel** const funcHandle)
 {
     CallApiBegin(RT_PROF_API_BINARY_GET_FUNCTION);
     const rtError_t error = impl_->BinaryGetFunction(prog, tilingKey, funcHandle);
@@ -340,8 +344,7 @@ rtError_t ApiProfileDecorator::BinaryGetFunction(const Program * const prog, con
     return error;
 }
 
-rtError_t ApiProfileDecorator::BinaryLoadWithoutTilingKey(const void *data, const uint64_t length,
-                                                          Program ** const prog)
+rtError_t ApiProfileDecorator::BinaryLoadWithoutTilingKey(const void* data, const uint64_t length, Program** const prog)
 {
     CallApiBegin(RT_PROF_API_BINARY_LOAD_WITHOUT_TILING_KEY);
     const rtError_t error = impl_->BinaryLoadWithoutTilingKey(data, length, prog);
@@ -349,8 +352,8 @@ rtError_t ApiProfileDecorator::BinaryLoadWithoutTilingKey(const void *data, cons
     return error;
 }
 
-rtError_t ApiProfileDecorator::BinaryGetFunctionByName(const Program * const binHandle, const char_t *kernelName,
-                                                       Kernel ** const funcHandle)
+rtError_t ApiProfileDecorator::BinaryGetFunctionByName(
+    const Program* const binHandle, const char_t* kernelName, Kernel** const funcHandle)
 {
     CallApiBegin(RT_PROF_API_BINARY_GET_FUNCTION_BY_NAME);
     const rtError_t error = impl_->BinaryGetFunctionByName(binHandle, kernelName, funcHandle);
@@ -358,8 +361,8 @@ rtError_t ApiProfileDecorator::BinaryGetFunctionByName(const Program * const bin
     return error;
 }
 
-rtError_t ApiProfileDecorator::BinaryGetFunctionByEntry(const Program * const binHandle, const uint64_t funcEntry,
-                                                        Kernel ** const funcHandle)
+rtError_t ApiProfileDecorator::BinaryGetFunctionByEntry(
+    const Program* const binHandle, const uint64_t funcEntry, Kernel** const funcHandle)
 {
     CallApiBegin(RT_PROF_API_BINARY_GET_FUNCTION_BY_ENTRY);
     const rtError_t error = impl_->BinaryGetFunctionByEntry(binHandle, funcEntry, funcHandle);
@@ -367,7 +370,7 @@ rtError_t ApiProfileDecorator::BinaryGetFunctionByEntry(const Program * const bi
     return error;
 }
 
-rtError_t ApiProfileDecorator::BinaryUnLoad(Program * const binHandle)
+rtError_t ApiProfileDecorator::BinaryUnLoad(Program* const binHandle)
 {
     CallApiBegin(RT_PROF_API_BINARY_UNLOAD);
     const rtError_t error = impl_->BinaryUnLoad(binHandle);
@@ -375,9 +378,8 @@ rtError_t ApiProfileDecorator::BinaryUnLoad(Program * const binHandle)
     return error;
 }
 
-rtError_t ApiProfileDecorator::BinaryLoadFromFile(const char_t * const binPath,
-                                                  const rtLoadBinaryConfig_t * const optionalCfg,
-                                                  Program **handle)
+rtError_t ApiProfileDecorator::BinaryLoadFromFile(
+    const char_t* const binPath, const rtLoadBinaryConfig_t* const optionalCfg, Program** handle)
 {
     CallApiBegin(RT_PROF_API_BINARY_LOAD_FROM_FILE);
     const rtError_t error = impl_->BinaryLoadFromFile(binPath, optionalCfg, handle);
@@ -385,8 +387,8 @@ rtError_t ApiProfileDecorator::BinaryLoadFromFile(const char_t * const binPath,
     return error;
 }
 
-rtError_t ApiProfileDecorator::BinaryLoadFromData(const void * const data, const uint64_t length,
-                                                  const rtLoadBinaryConfig_t * const optionalCfg, Program **handle)
+rtError_t ApiProfileDecorator::BinaryLoadFromData(
+    const void* const data, const uint64_t length, const rtLoadBinaryConfig_t* const optionalCfg, Program** handle)
 {
     CallApiBegin(RT_PROF_API_BINARY_LOAD_FROM_DATA);
     const rtError_t error = impl_->BinaryLoadFromData(data, length, optionalCfg, handle);
@@ -394,7 +396,7 @@ rtError_t ApiProfileDecorator::BinaryLoadFromData(const void * const data, const
     return error;
 }
 
-rtError_t ApiProfileDecorator::FuncGetAddr(const Kernel * const funcHandle, void ** const aicAddr, void ** const aivAddr)
+rtError_t ApiProfileDecorator::FuncGetAddr(const Kernel* const funcHandle, void** const aicAddr, void** const aivAddr)
 {
     CallApiBegin(RT_PROF_API_FUNC_GET_ADDR);
     const rtError_t error = impl_->FuncGetAddr(funcHandle, aicAddr, aivAddr);
@@ -402,11 +404,12 @@ rtError_t ApiProfileDecorator::FuncGetAddr(const Kernel * const funcHandle, void
     return error;
 }
 
-rtError_t ApiProfileDecorator::LaunchKernel(Kernel * const kernel, uint32_t blockDim, const rtArgsEx_t * const argsInfo,
-                                            Stream * const stm, const rtTaskCfgInfo_t * const cfgInfo)
+rtError_t ApiProfileDecorator::LaunchKernel(
+    Kernel* const kernel, uint32_t blockDim, const rtArgsEx_t* const argsInfo, Stream* const stm,
+    const rtTaskCfgInfo_t* const cfgInfo)
 {
     const uint32_t argSize = argsInfo->argsSize;
-    if (argSize > 32768U) { // 32768 is large
+    if (argSize > 32768U) {       // 32768 is large
         CallApiBegin(RT_PROF_API_LAUNCH_KERNEL_LARGE);
     } else if (argSize > 4096U) { // 4096 the huge
         CallApiBegin(RT_PROF_API_LAUNCH_KERNEL_HUGE);
@@ -421,8 +424,9 @@ rtError_t ApiProfileDecorator::LaunchKernel(Kernel * const kernel, uint32_t bloc
     return error;
 }
 
-rtError_t ApiProfileDecorator::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim, const RtArgsWithType * const argsWithType,
-    Stream * const stm, const rtKernelLaunchCfg_t * const cfg)
+rtError_t ApiProfileDecorator::LaunchKernelV2(
+    Kernel* const kernel, uint32_t blockDim, const RtArgsWithType* const argsWithType, Stream* const stm,
+    const rtKernelLaunchCfg_t* const cfg)
 {
     CallApiBegin(RT_PROF_API_LAUNCH_KERNEL_V2);
     const rtError_t error = impl_->LaunchKernelV2(kernel, blockDim, argsWithType, stm, cfg);
@@ -430,7 +434,7 @@ rtError_t ApiProfileDecorator::LaunchKernelV2(Kernel * const kernel, uint32_t bl
     return error;
 }
 
-rtError_t ApiProfileDecorator::DatadumpInfoLoad(const void * const dumpInfo, const uint32_t length, const uint32_t flag)
+rtError_t ApiProfileDecorator::DatadumpInfoLoad(const void* const dumpInfo, const uint32_t length, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_DATA_DUMP_INFO_LOAD);
     const rtError_t error = impl_->DatadumpInfoLoad(dumpInfo, length, flag);
@@ -438,7 +442,7 @@ rtError_t ApiProfileDecorator::DatadumpInfoLoad(const void * const dumpInfo, con
     return error;
 }
 
-rtError_t ApiProfileDecorator::AicpuInfoLoad(const void * const aicpuInfo, const uint32_t length)
+rtError_t ApiProfileDecorator::AicpuInfoLoad(const void* const aicpuInfo, const uint32_t length)
 {
     CallApiBegin(RT_PROF_API_AI_CPU_INFO_LOAD);
     const rtError_t error = impl_->AicpuInfoLoad(aicpuInfo, length);
@@ -447,8 +451,8 @@ rtError_t ApiProfileDecorator::AicpuInfoLoad(const void * const aicpuInfo, const
     return error;
 }
 
-rtError_t ApiProfileDecorator::StreamCreate(Stream ** const stm, const int32_t priority, const uint32_t flags,
-    DvppGrp *grp)
+rtError_t ApiProfileDecorator::StreamCreate(
+    Stream** const stm, const int32_t priority, const uint32_t flags, DvppGrp* grp)
 {
     CallApiBegin(RT_PROF_API_STREAM_CREATE);
     const rtError_t error = impl_->StreamCreate(stm, priority, flags, grp);
@@ -456,7 +460,7 @@ rtError_t ApiProfileDecorator::StreamCreate(Stream ** const stm, const int32_t p
     return error;
 }
 
-rtError_t ApiProfileDecorator::StreamDestroy(Stream * const stm, const bool flag)
+rtError_t ApiProfileDecorator::StreamDestroy(Stream* const stm, const bool flag)
 {
     CallApiBegin(RT_PROF_API_STREAM_DESTROY);
     const rtError_t error = impl_->StreamDestroy(stm, flag);
@@ -464,8 +468,8 @@ rtError_t ApiProfileDecorator::StreamDestroy(Stream * const stm, const bool flag
     return error;
 }
 
-rtError_t ApiProfileDecorator::StreamWaitEvent(Stream * const stm, Event * const evt, const uint32_t timeout,
-    const uint32_t flag)
+rtError_t ApiProfileDecorator::StreamWaitEvent(
+    Stream* const stm, Event* const evt, const uint32_t timeout, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_STREAM_WAITEVENT);
     const rtError_t error = impl_->StreamWaitEvent(stm, evt, timeout, flag);
@@ -473,7 +477,7 @@ rtError_t ApiProfileDecorator::StreamWaitEvent(Stream * const stm, Event * const
     return error;
 }
 
-rtError_t ApiProfileDecorator::StreamSynchronize(Stream * const stm, const int32_t timeout)
+rtError_t ApiProfileDecorator::StreamSynchronize(Stream* const stm, const int32_t timeout)
 {
     CallApiBegin(RT_PROF_API_STREAM_SYNCHRONIZE);
     const rtError_t error = impl_->StreamSynchronize(stm, timeout);
@@ -481,7 +485,7 @@ rtError_t ApiProfileDecorator::StreamSynchronize(Stream * const stm, const int32
     return error;
 }
 
-rtError_t ApiProfileDecorator::StreamSetMode(Stream * const stm, const uint64_t stmMode)
+rtError_t ApiProfileDecorator::StreamSetMode(Stream* const stm, const uint64_t stmMode)
 {
     CallApiBegin(RT_PROF_API_STREAM_SET_MODE);
     const rtError_t error = impl_->StreamSetMode(stm, stmMode);
@@ -489,7 +493,7 @@ rtError_t ApiProfileDecorator::StreamSetMode(Stream * const stm, const uint64_t 
     return error;
 }
 
-rtError_t ApiProfileDecorator::StreamGetMode(const Stream * const stm, uint64_t * const stmMode)
+rtError_t ApiProfileDecorator::StreamGetMode(const Stream* const stm, uint64_t* const stmMode)
 {
     CallApiBegin(RT_PROF_API_STREAM_GET_MODE);
     const rtError_t error = impl_->StreamGetMode(stm, stmMode);
@@ -497,7 +501,7 @@ rtError_t ApiProfileDecorator::StreamGetMode(const Stream * const stm, uint64_t 
     return error;
 }
 
-rtError_t ApiProfileDecorator::EventCreate(Event ** const evt, const uint64_t flag)
+rtError_t ApiProfileDecorator::EventCreate(Event** const evt, const uint64_t flag)
 {
     CallApiBegin(RT_PROF_API_EVENT_CREATE);
     const rtError_t error = impl_->EventCreate(evt, flag);
@@ -505,7 +509,7 @@ rtError_t ApiProfileDecorator::EventCreate(Event ** const evt, const uint64_t fl
     return error;
 }
 
-rtError_t ApiProfileDecorator::EventCreateEx(Event ** const evt, const uint64_t flag)
+rtError_t ApiProfileDecorator::EventCreateEx(Event** const evt, const uint64_t flag)
 {
     CallApiBegin(RT_PROF_API_EVENT_CREATE_EX);
     const rtError_t error = impl_->EventCreateEx(evt, flag);
@@ -513,7 +517,7 @@ rtError_t ApiProfileDecorator::EventCreateEx(Event ** const evt, const uint64_t 
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetEventID(Event * const evt, uint32_t * const evtId)
+rtError_t ApiProfileDecorator::GetEventID(Event* const evt, uint32_t* const evtId)
 {
     CallApiBegin(RT_PROF_API_GetEventID);
     const rtError_t error = impl_->GetEventID(evt, evtId);
@@ -521,7 +525,7 @@ rtError_t ApiProfileDecorator::GetEventID(Event * const evt, uint32_t * const ev
     return error;
 }
 
-rtError_t ApiProfileDecorator::EventDestroy(Event *evt)
+rtError_t ApiProfileDecorator::EventDestroy(Event* evt)
 {
     CallApiBegin(RT_PROF_API_EVENT_DESTROY);
     const rtError_t error = impl_->EventDestroy(evt);
@@ -529,7 +533,7 @@ rtError_t ApiProfileDecorator::EventDestroy(Event *evt)
     return error;
 }
 
-rtError_t ApiProfileDecorator::EventRecord(Event * const evt, Stream * const stm, const uint32_t flag)
+rtError_t ApiProfileDecorator::EventRecord(Event* const evt, Stream* const stm, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_EVENT_RECORD);
     const rtError_t error = impl_->EventRecord(evt, stm, flag);
@@ -537,7 +541,7 @@ rtError_t ApiProfileDecorator::EventRecord(Event * const evt, Stream * const stm
     return error;
 }
 
-rtError_t ApiProfileDecorator::EventSynchronize(Event * const evt, const int32_t timeout)
+rtError_t ApiProfileDecorator::EventSynchronize(Event* const evt, const int32_t timeout)
 {
     CallApiBegin(RT_PROF_API_EVENT_SYNCHRONIZE);
     const rtError_t error = impl_->EventSynchronize(evt, timeout);
@@ -545,8 +549,8 @@ rtError_t ApiProfileDecorator::EventSynchronize(Event * const evt, const int32_t
     return error;
 }
 
-rtError_t ApiProfileDecorator::DevMalloc(void ** const devPtr, const uint64_t size, const rtMemType_t type,
-    const uint16_t moduleId)
+rtError_t ApiProfileDecorator::DevMalloc(
+    void** const devPtr, const uint64_t size, const rtMemType_t type, const uint16_t moduleId)
 {
     CallApiBegin(RT_PROF_API_DEV_MALLOC);
     const rtError_t error = impl_->DevMalloc(devPtr, size, type, moduleId);
@@ -554,7 +558,7 @@ rtError_t ApiProfileDecorator::DevMalloc(void ** const devPtr, const uint64_t si
     return error;
 }
 
-rtError_t ApiProfileDecorator::DevFree(void * const devPtr)
+rtError_t ApiProfileDecorator::DevFree(void* const devPtr)
 {
     CallApiBegin(RT_PROF_API_DEV_FREE);
     const rtError_t error = impl_->DevFree(devPtr);
@@ -562,8 +566,8 @@ rtError_t ApiProfileDecorator::DevFree(void * const devPtr)
     return error;
 }
 
-rtError_t ApiProfileDecorator::DevMallocCached(void ** const devPtr, const uint64_t size, const rtMemType_t type,
-    const uint16_t moduleId)
+rtError_t ApiProfileDecorator::DevMallocCached(
+    void** const devPtr, const uint64_t size, const rtMemType_t type, const uint16_t moduleId)
 {
     CallApiBegin(RT_PROF_API_CAHCEDMEM_ALLOC);
     const rtError_t error = impl_->DevMallocCached(devPtr, size, type, moduleId);
@@ -571,8 +575,8 @@ rtError_t ApiProfileDecorator::DevMallocCached(void ** const devPtr, const uint6
     return error;
 }
 
-rtError_t ApiProfileDecorator::DevDvppMalloc(void ** const devPtr, const uint64_t size, const uint32_t flag,
-    const uint16_t moduleId)
+rtError_t ApiProfileDecorator::DevDvppMalloc(
+    void** const devPtr, const uint64_t size, const uint32_t flag, const uint16_t moduleId)
 {
     CallApiBegin(RT_PROF_API_DEV_DVPP_MALLOC);
     const rtError_t error = impl_->DevDvppMalloc(devPtr, size, flag, moduleId);
@@ -580,7 +584,7 @@ rtError_t ApiProfileDecorator::DevDvppMalloc(void ** const devPtr, const uint64_
     return error;
 }
 
-rtError_t ApiProfileDecorator::DevDvppFree(void * const devPtr)
+rtError_t ApiProfileDecorator::DevDvppFree(void* const devPtr)
 {
     CallApiBegin(RT_PROF_API_DEV_DVPP_FREE);
     const rtError_t error = impl_->DevDvppFree(devPtr);
@@ -588,7 +592,7 @@ rtError_t ApiProfileDecorator::DevDvppFree(void * const devPtr)
     return error;
 }
 
-rtError_t ApiProfileDecorator::MemAdvise(void *devPtr, const uint64_t count, const uint32_t advise)
+rtError_t ApiProfileDecorator::MemAdvise(void* devPtr, const uint64_t count, const uint32_t advise)
 {
     CallApiBegin(RT_PROF_API_MEM_ADVISE);
     const rtError_t error = impl_->MemAdvise(devPtr, count, advise);
@@ -596,7 +600,7 @@ rtError_t ApiProfileDecorator::MemAdvise(void *devPtr, const uint64_t count, con
     return error;
 }
 
-rtError_t ApiProfileDecorator::HostMalloc(void ** const hostPtr, const uint64_t size, const uint16_t moduleId)
+rtError_t ApiProfileDecorator::HostMalloc(void** const hostPtr, const uint64_t size, const uint16_t moduleId)
 {
     CallApiBegin(RT_PROF_API_HOST_MALLOC);
     const rtError_t error = impl_->HostMalloc(hostPtr, size, moduleId);
@@ -604,7 +608,7 @@ rtError_t ApiProfileDecorator::HostMalloc(void ** const hostPtr, const uint64_t 
     return error;
 }
 
-rtError_t ApiProfileDecorator::HostFree(void * const hostPtr)
+rtError_t ApiProfileDecorator::HostFree(void* const hostPtr)
 {
     CallApiBegin(RT_PROF_API_HOST_FREE);
     const rtError_t error = impl_->HostFree(hostPtr);
@@ -612,8 +616,8 @@ rtError_t ApiProfileDecorator::HostFree(void * const hostPtr)
     return error;
 }
 
-rtError_t ApiProfileDecorator::ManagedMemAlloc(void ** const ptr, const uint64_t size, const uint32_t flag,
-    const uint16_t moduleId)
+rtError_t ApiProfileDecorator::ManagedMemAlloc(
+    void** const ptr, const uint64_t size, const uint32_t flag, const uint16_t moduleId)
 {
     CallApiBegin(RT_PROF_API_MANAGEDMEM_ALLOC);
     const rtError_t error = impl_->ManagedMemAlloc(ptr, size, flag, moduleId);
@@ -621,7 +625,7 @@ rtError_t ApiProfileDecorator::ManagedMemAlloc(void ** const ptr, const uint64_t
     return error;
 }
 
-rtError_t ApiProfileDecorator::ManagedMemFree(const void * const ptr)
+rtError_t ApiProfileDecorator::ManagedMemFree(const void* const ptr)
 {
     CallApiBegin(RT_PROF_API_MANAGEDMEM_FREE);
     const rtError_t error = impl_->ManagedMemFree(ptr);
@@ -629,8 +633,9 @@ rtError_t ApiProfileDecorator::ManagedMemFree(const void * const ptr)
     return error;
 }
 
-rtError_t ApiProfileDecorator::MemCopySync(void * const dst, const uint64_t destMax, const void * const src,
-    const uint64_t cnt, const rtMemcpyKind_t kind, const uint32_t checkKind)
+rtError_t ApiProfileDecorator::MemCopySync(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind_t kind,
+    const uint32_t checkKind)
 {
     CallApiBegin(RT_PROF_API_MEM_CPY, cnt, kind);
     const rtError_t error = impl_->MemCopySync(dst, destMax, src, cnt, kind, checkKind);
@@ -638,9 +643,10 @@ rtError_t ApiProfileDecorator::MemCopySync(void * const dst, const uint64_t dest
     return error;
 }
 
-rtError_t ApiProfileDecorator::MemcpyAsync(void * const dst, const uint64_t destMax, const void * const src,
-    const uint64_t cnt, const rtMemcpyKind_t kind, Stream * const stm, const rtTaskCfgInfo_t * const cfgInfo,
-    const rtD2DAddrCfgInfo_t * const addrCfg, bool checkKind, const rtMemcpyConfig_t * const memcpyConfig)
+rtError_t ApiProfileDecorator::MemcpyAsync(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind_t kind,
+    Stream* const stm, const rtTaskCfgInfo_t* const cfgInfo, const rtD2DAddrCfgInfo_t* const addrCfg, bool checkKind,
+    const rtMemcpyConfig_t* const memcpyConfig)
 {
     UNUSED(checkKind);
     UNUSED(memcpyConfig);
@@ -659,8 +665,8 @@ rtError_t ApiProfileDecorator::MemcpyAsync(void * const dst, const uint64_t dest
     CallApiEnd(error);
     return error;
 }
-rtError_t ApiProfileDecorator::GetDevArgsAddr(Stream * const stm, rtArgsEx_t * const argsInfo,
-    void ** const devArgsAddr, void ** const argsHandle)
+rtError_t ApiProfileDecorator::GetDevArgsAddr(
+    Stream* const stm, rtArgsEx_t* const argsInfo, void** const devArgsAddr, void** const argsHandle)
 {
     CallApiBegin(RT_PROF_API_GET_DEV_ARG_ADDR);
     const rtError_t error = impl_->GetDevArgsAddr(stm, argsInfo, devArgsAddr, argsHandle);
@@ -668,9 +674,9 @@ rtError_t ApiProfileDecorator::GetDevArgsAddr(Stream * const stm, rtArgsEx_t * c
     return error;
 }
 
-rtError_t ApiProfileDecorator::ReduceAsync(void * const dst, const void * const src, const uint64_t cnt,
-    const rtRecudeKind_t kind, const rtDataType_t type, Stream * const stm,
-    const rtTaskCfgInfo_t * const cfgInfo)
+rtError_t ApiProfileDecorator::ReduceAsync(
+    void* const dst, const void* const src, const uint64_t cnt, const rtRecudeKind_t kind, const rtDataType_t type,
+    Stream* const stm, const rtTaskCfgInfo_t* const cfgInfo)
 {
     CallApiBegin(RT_PROF_API_ReduceAsync, cnt, kind);
     const rtError_t error = impl_->ReduceAsync(dst, src, cnt, kind, type, stm, cfgInfo);
@@ -678,21 +684,23 @@ rtError_t ApiProfileDecorator::ReduceAsync(void * const dst, const void * const 
     return error;
 }
 
-rtError_t ApiProfileDecorator::ReduceAsyncV2(void * const dst, const void * const src, const uint64_t cnt,
-    const rtRecudeKind_t kind, const rtDataType_t type, Stream * const stm, void * const overflowAddr)
+rtError_t ApiProfileDecorator::ReduceAsyncV2(
+    void* const dst, const void* const src, const uint64_t cnt, const rtRecudeKind_t kind, const rtDataType_t type,
+    Stream* const stm, void* const overflowAddr)
 {
-    const Runtime *const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_PTR_RETURN_MSG(rtInstance, RT_ERROR_INSTANCE_NULL);
-    Context *const curCtx = rtInstance->CurrentContext();
+    Context* const curCtx = rtInstance->CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device *const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
-    const uint32_t tsVersion = dev->GetTschVersion() & 0xFFFFU;  // low 16bit means tschverion
+    const uint32_t tsVersion = dev->GetTschVersion() & 0xFFFFU; // low 16bit means tschverion
     const auto reduceOverflowProp = dev->GetDevProperties().reduceOverflow;
-    if ((reduceOverflowProp == ReduceOverflowType::REDUCE_OVERFLOW_TS_VERSION_REDUCE_V2_ID) && 
+    if ((reduceOverflowProp == ReduceOverflowType::REDUCE_OVERFLOW_TS_VERSION_REDUCE_V2_ID) &&
         (tsVersion >= static_cast<uint32_t>(TS_VERSION_REDUCE_V2_ID))) {
         CallApiBegin(RT_PROF_API_REDUCE_ASYNC_V2);
-    } else if ((reduceOverflowProp == ReduceOverflowType::REDUCE_OVERFLOW_TS_VERSION_REDUCV2_SUPPORT_DC) && 
+    } else if (
+        (reduceOverflowProp == ReduceOverflowType::REDUCE_OVERFLOW_TS_VERSION_REDUCV2_SUPPORT_DC) &&
         (tsVersion >= static_cast<uint32_t>(TS_VERSION_REDUCV2_SUPPORT_DC))) {
         CallApiBegin(RT_PROF_API_REDUCE_ASYNC_V2);
     } else {
@@ -703,9 +711,9 @@ rtError_t ApiProfileDecorator::ReduceAsyncV2(void * const dst, const void * cons
     return error;
 }
 
-rtError_t ApiProfileDecorator::MemCopy2DSync(void * const dst, const uint64_t dstPitch, const void * const src,
-    const uint64_t srcPitch, const uint64_t width, const uint64_t height,
-    const rtMemcpyKind_t kind, const rtMemcpyKind newKind)
+rtError_t ApiProfileDecorator::MemCopy2DSync(
+    void* const dst, const uint64_t dstPitch, const void* const src, const uint64_t srcPitch, const uint64_t width,
+    const uint64_t height, const rtMemcpyKind_t kind, const rtMemcpyKind newKind)
 {
     CallApiBegin(RT_PROF_API_MEM_CPY2D);
     const rtError_t error = impl_->MemCopy2DSync(dst, dstPitch, src, srcPitch, width, height, kind, newKind);
@@ -713,9 +721,9 @@ rtError_t ApiProfileDecorator::MemCopy2DSync(void * const dst, const uint64_t ds
     return error;
 }
 
-rtError_t ApiProfileDecorator::MemCopy2DAsync(void * const dst, const uint64_t dstPitch, const void * const src,
-    const uint64_t srcPitch, const uint64_t width, const uint64_t height, Stream * const stm,
-    const rtMemcpyKind_t kind, const rtMemcpyKind newKind)
+rtError_t ApiProfileDecorator::MemCopy2DAsync(
+    void* const dst, const uint64_t dstPitch, const void* const src, const uint64_t srcPitch, const uint64_t width,
+    const uint64_t height, Stream* const stm, const rtMemcpyKind_t kind, const rtMemcpyKind newKind)
 {
     CallApiBegin(RT_PROF_API_MEM_CPY2D_ASYNC, width * height, kind);
     const rtError_t error = impl_->MemCopy2DAsync(dst, dstPitch, src, srcPitch, width, height, stm, kind, newKind);
@@ -723,8 +731,9 @@ rtError_t ApiProfileDecorator::MemCopy2DAsync(void * const dst, const uint64_t d
     return error;
 }
 
-rtError_t ApiProfileDecorator::MemcpyAsyncPtr(void * const memcpyAddrInfo, const uint64_t destMax,
-    const uint64_t count, Stream * const stm, const rtTaskCfgInfo_t * const cfgInfo, const bool isMemcpyDesc)
+rtError_t ApiProfileDecorator::MemcpyAsyncPtr(
+    void* const memcpyAddrInfo, const uint64_t destMax, const uint64_t count, Stream* const stm,
+    const rtTaskCfgInfo_t* const cfgInfo, const bool isMemcpyDesc)
 {
     CallApiBegin(RT_PROF_API_MEM_CPY_ASYNC_PTR, count, RT_MEMCPY_ADDR_DEVICE_TO_DEVICE);
     const rtError_t error = impl_->MemcpyAsyncPtr(memcpyAddrInfo, destMax, count, stm, cfgInfo, isMemcpyDesc);
@@ -732,8 +741,9 @@ rtError_t ApiProfileDecorator::MemcpyAsyncPtr(void * const memcpyAddrInfo, const
     return error;
 }
 
-rtError_t ApiProfileDecorator::MemcpyHostTask(void * const dst, const uint64_t destMax, const void * const src,
-    const uint64_t cnt, const rtMemcpyKind_t kind, Stream * const stm)
+rtError_t ApiProfileDecorator::MemcpyHostTask(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t cnt, const rtMemcpyKind_t kind,
+    Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_HOST_TASK_MEMCPY);
     const rtError_t error = impl_->MemcpyHostTask(dst, destMax, src, cnt, kind, stm);
@@ -773,7 +783,7 @@ rtError_t ApiProfileDecorator::DeviceSynchronize(const int32_t timeout)
     return error;
 }
 
-rtError_t ApiProfileDecorator::ContextCreate(Context ** const inCtx, const int32_t devId)
+rtError_t ApiProfileDecorator::ContextCreate(Context** const inCtx, const int32_t devId)
 {
     CallApiBegin(RT_PROF_API_CONTEXT_CREATE);
     const rtError_t error = impl_->ContextCreate(inCtx, devId);
@@ -781,7 +791,7 @@ rtError_t ApiProfileDecorator::ContextCreate(Context ** const inCtx, const int32
     return error;
 }
 
-rtError_t ApiProfileDecorator::ContextDestroy(Context * const inCtx)
+rtError_t ApiProfileDecorator::ContextDestroy(Context* const inCtx)
 {
     CallApiBegin(RT_PROF_API_CONTEXT_DESTROY);
     const uint32_t devId = inCtx->Device_()->Id_();
@@ -790,7 +800,7 @@ rtError_t ApiProfileDecorator::ContextDestroy(Context * const inCtx)
     return error;
 }
 
-rtError_t ApiProfileDecorator::ContextGetCurrent(Context ** const inCtx)
+rtError_t ApiProfileDecorator::ContextGetCurrent(Context** const inCtx)
 {
     CallApiBegin(RT_PROF_API_CONTEXT_GET_CURRENT);
     const rtError_t error = impl_->ContextGetCurrent(inCtx);
@@ -798,14 +808,14 @@ rtError_t ApiProfileDecorator::ContextGetCurrent(Context ** const inCtx)
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetPrimaryCtxState(const int32_t devId, uint32_t *flags, int32_t *active)
+rtError_t ApiProfileDecorator::GetPrimaryCtxState(const int32_t devId, uint32_t* flags, int32_t* active)
 {
     CallApiBegin(RT_PROF_API_GET_DEFAULT_CTX_STATE);
     const rtError_t error = impl_->GetPrimaryCtxState(devId, flags, active);
     CallApiEnd(error);
     return error;
 }
-rtError_t ApiProfileDecorator::ContextSetCurrent(Context * const inCtx)
+rtError_t ApiProfileDecorator::ContextSetCurrent(Context* const inCtx)
 {
     CallApiBegin(RT_PROF_API_CONTEXT_SETCURRENT);
     const rtError_t error = impl_->ContextSetCurrent(inCtx);
@@ -813,19 +823,20 @@ rtError_t ApiProfileDecorator::ContextSetCurrent(Context * const inCtx)
     return error;
 }
 
-rtError_t ApiProfileDecorator::NameStream(Stream * const stm, const char_t * const name)
+rtError_t ApiProfileDecorator::NameStream(Stream* const stm, const char_t* const name)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(stm, RT_ERROR_INVALID_VALUE, "Setting the stream name");
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(name, RT_ERROR_INVALID_VALUE, "Setting the stream name");
 
     const uint32_t nameLen = strnlen(name, static_cast<size_t>(M_PROF_STREAM_NAME_LEN));
-    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(nameLen >= static_cast<uint32_t>(M_PROF_STREAM_NAME_LEN), RT_ERROR_PROF_NAME,
-        "Setting the stream name", nameLen, ("[0, " + std::to_string(M_PROF_STREAM_NAME_LEN) + ")").c_str());
+    COND_RETURN_AND_MSG_OUTER_WITH_PARAM_DESC(
+        nameLen >= static_cast<uint32_t>(M_PROF_STREAM_NAME_LEN), RT_ERROR_PROF_NAME, "Setting the stream name",
+        nameLen, ("[0, " + std::to_string(M_PROF_STREAM_NAME_LEN) + ")").c_str());
     stm->SetName(name);
     return impl_->NameStream(stm, name);
 }
 
-rtError_t ApiProfileDecorator::ModelCreate(Model ** const mdl, const uint32_t flag)
+rtError_t ApiProfileDecorator::ModelCreate(Model** const mdl, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_MODEL_CREATE);
     const rtError_t error = impl_->ModelCreate(mdl, flag);
@@ -833,7 +844,7 @@ rtError_t ApiProfileDecorator::ModelCreate(Model ** const mdl, const uint32_t fl
     return error;
 }
 
-rtError_t ApiProfileDecorator::ModelSetExtId(Model * const mdl, const uint32_t extId)
+rtError_t ApiProfileDecorator::ModelSetExtId(Model* const mdl, const uint32_t extId)
 {
     CallApiBegin(RT_PROF_API_MODEL_SET_EXT_ID);
     const rtError_t error = impl_->ModelSetExtId(mdl, extId);
@@ -841,7 +852,7 @@ rtError_t ApiProfileDecorator::ModelSetExtId(Model * const mdl, const uint32_t e
     return error;
 }
 
-rtError_t ApiProfileDecorator::ModelDestroy(Model * const mdl)
+rtError_t ApiProfileDecorator::ModelDestroy(Model* const mdl)
 {
     CallApiBegin(RT_PROF_API_MODEL_DESTROY);
     const rtError_t error = impl_->ModelDestroy(mdl);
@@ -849,7 +860,7 @@ rtError_t ApiProfileDecorator::ModelDestroy(Model * const mdl)
     return error;
 }
 
-rtError_t ApiProfileDecorator::ModelBindStream(Model * const mdl, Stream * const stm, const uint32_t flag)
+rtError_t ApiProfileDecorator::ModelBindStream(Model* const mdl, Stream* const stm, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_MODEL_BIND_STREAM);
     const rtError_t error = impl_->ModelBindStream(mdl, stm, flag);
@@ -857,7 +868,7 @@ rtError_t ApiProfileDecorator::ModelBindStream(Model * const mdl, Stream * const
     return error;
 }
 
-rtError_t ApiProfileDecorator::ModelUnbindStream(Model * const mdl, Stream * const stm)
+rtError_t ApiProfileDecorator::ModelUnbindStream(Model* const mdl, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_MODEL_UNBIND_STREAM);
     const rtError_t error = impl_->ModelUnbindStream(mdl, stm);
@@ -865,8 +876,7 @@ rtError_t ApiProfileDecorator::ModelUnbindStream(Model * const mdl, Stream * con
     return error;
 }
 
-rtError_t ApiProfileDecorator::ModelExecute(Model *const mdl, Stream * const stm,
-    const uint32_t flag, int32_t timeout)
+rtError_t ApiProfileDecorator::ModelExecute(Model* const mdl, Stream* const stm, const uint32_t flag, int32_t timeout)
 {
     CallApiBegin(RT_PROF_API_MODEL_EXECUTE);
     const rtError_t error = impl_->ModelExecute(mdl, stm, flag, timeout);
@@ -874,7 +884,7 @@ rtError_t ApiProfileDecorator::ModelExecute(Model *const mdl, Stream * const stm
     return error;
 }
 
-rtError_t ApiProfileDecorator::ModelExecuteSync(Model *const mdl, int32_t timeout)
+rtError_t ApiProfileDecorator::ModelExecuteSync(Model* const mdl, int32_t timeout)
 {
     CallApiBegin(RT_PROF_API_MODEL_EXECUTE_SYNC);
     const rtError_t error = impl_->ModelExecuteSync(mdl, timeout);
@@ -882,7 +892,7 @@ rtError_t ApiProfileDecorator::ModelExecuteSync(Model *const mdl, int32_t timeou
     return error;
 }
 
-rtError_t ApiProfileDecorator::ModelExecuteAsync(Model *const mdl, Stream * const stm)
+rtError_t ApiProfileDecorator::ModelExecuteAsync(Model* const mdl, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_MODEL_EXECUTE_ASYNC);
     const rtError_t error = impl_->ModelExecuteAsync(mdl, stm);
@@ -890,7 +900,7 @@ rtError_t ApiProfileDecorator::ModelExecuteAsync(Model *const mdl, Stream * cons
     return error;
 }
 
-rtError_t ApiProfileDecorator::NotifyCreate(const int32_t deviceId, Notify ** const retNotify, uint64_t flag)
+rtError_t ApiProfileDecorator::NotifyCreate(const int32_t deviceId, Notify** const retNotify, uint64_t flag)
 {
     CallApiBegin(RT_PROF_API_NotifyCreate);
     const rtError_t error = impl_->NotifyCreate(deviceId, retNotify, flag);
@@ -898,7 +908,7 @@ rtError_t ApiProfileDecorator::NotifyCreate(const int32_t deviceId, Notify ** co
     return error;
 }
 
-rtError_t ApiProfileDecorator::NotifyDestroy(Notify * const inNotify)
+rtError_t ApiProfileDecorator::NotifyDestroy(Notify* const inNotify)
 {
     CallApiBegin(RT_PROF_API_NotifyDestroy);
     const rtError_t error = impl_->NotifyDestroy(inNotify);
@@ -906,7 +916,7 @@ rtError_t ApiProfileDecorator::NotifyDestroy(Notify * const inNotify)
     return error;
 }
 
-rtError_t ApiProfileDecorator::NotifyRecord(Notify * const inNotify, Stream * const stm)
+rtError_t ApiProfileDecorator::NotifyRecord(Notify* const inNotify, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_NotifyRecord);
     const rtError_t error = impl_->NotifyRecord(inNotify, stm);
@@ -914,7 +924,7 @@ rtError_t ApiProfileDecorator::NotifyRecord(Notify * const inNotify, Stream * co
     return error;
 }
 
-rtError_t ApiProfileDecorator::NotifyReset(Notify * const inNotify)
+rtError_t ApiProfileDecorator::NotifyReset(Notify* const inNotify)
 {
     CallApiBegin(RT_PROF_API_NOTIFY_RESET);
     const rtError_t error = impl_->NotifyReset(inNotify);
@@ -922,7 +932,7 @@ rtError_t ApiProfileDecorator::NotifyReset(Notify * const inNotify)
     return error;
 }
 
-rtError_t ApiProfileDecorator::NotifyWait(Notify * const inNotify, Stream * const stm, const uint32_t timeOut)
+rtError_t ApiProfileDecorator::NotifyWait(Notify* const inNotify, Stream* const stm, const uint32_t timeOut)
 {
     CallApiBegin(RT_PROF_API_NotifyWait);
     const rtError_t error = impl_->NotifyWait(inNotify, stm, timeOut);
@@ -930,7 +940,7 @@ rtError_t ApiProfileDecorator::NotifyWait(Notify * const inNotify, Stream * cons
     return error;
 }
 
-rtError_t ApiProfileDecorator::IpcOpenNotify(Notify ** const retNotify, const char_t * const name, uint32_t flag)
+rtError_t ApiProfileDecorator::IpcOpenNotify(Notify** const retNotify, const char_t* const name, uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_IpcOpenNotify);
     const rtError_t error = impl_->IpcOpenNotify(retNotify, name, flag);
@@ -938,7 +948,7 @@ rtError_t ApiProfileDecorator::IpcOpenNotify(Notify ** const retNotify, const ch
     return error;
 }
 
-rtError_t ApiProfileDecorator::ModelSetSchGroupId(Model * const mdl, const int16_t schGrpId)
+rtError_t ApiProfileDecorator::ModelSetSchGroupId(Model* const mdl, const int16_t schGrpId)
 {
     CallApiBegin(RT_PROF_API_MODEL_SET_SCH_GROUP_ID);
     const rtError_t error = impl_->ModelSetSchGroupId(mdl, schGrpId);
@@ -946,8 +956,8 @@ rtError_t ApiProfileDecorator::ModelSetSchGroupId(Model * const mdl, const int16
     return error;
 }
 
-rtError_t ApiProfileDecorator::ModelTaskUpdate(Stream *desStm, uint32_t desTaskId, Stream *sinkStm,
-                                               rtMdlTaskUpdateInfo_t *para)
+rtError_t ApiProfileDecorator::ModelTaskUpdate(
+    Stream* desStm, uint32_t desTaskId, Stream* sinkStm, rtMdlTaskUpdateInfo_t* para)
 {
     CallApiBegin(RT_PROF_API_MODEL_TASK_UPDATE);
     const rtError_t error = impl_->ModelTaskUpdate(desStm, desTaskId, sinkStm, para);
@@ -955,7 +965,7 @@ rtError_t ApiProfileDecorator::ModelTaskUpdate(Stream *desStm, uint32_t desTaskI
     return error;
 }
 
-rtError_t ApiProfileDecorator::SubscribeReport(const uint64_t threadId, Stream * const stm)
+rtError_t ApiProfileDecorator::SubscribeReport(const uint64_t threadId, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_rtSubscribeReport);
     const rtError_t error = impl_->SubscribeReport(threadId, stm);
@@ -963,8 +973,8 @@ rtError_t ApiProfileDecorator::SubscribeReport(const uint64_t threadId, Stream *
     return error;
 }
 
-rtError_t ApiProfileDecorator::CallbackLaunch(const rtCallback_t callBackFunc, void * const fnData,
-    Stream * const stm, const bool isBlock)
+rtError_t ApiProfileDecorator::CallbackLaunch(
+    const rtCallback_t callBackFunc, void* const fnData, Stream* const stm, const bool isBlock)
 {
     CallApiBegin(RT_PROF_API_rtCallbackLaunch);
     const rtError_t error = impl_->CallbackLaunch(callBackFunc, fnData, stm, isBlock);
@@ -980,7 +990,7 @@ rtError_t ApiProfileDecorator::ProcessReport(const int32_t timeout, const bool n
     return error;
 }
 
-rtError_t ApiProfileDecorator::UnSubscribeReport(const uint64_t threadId, Stream * const stm)
+rtError_t ApiProfileDecorator::UnSubscribeReport(const uint64_t threadId, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_rtUnSubscribeReport);
     const rtError_t error = impl_->UnSubscribeReport(threadId, stm);
@@ -988,7 +998,7 @@ rtError_t ApiProfileDecorator::UnSubscribeReport(const uint64_t threadId, Stream
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetRunMode(rtRunMode * const runMode)
+rtError_t ApiProfileDecorator::GetRunMode(rtRunMode* const runMode)
 {
     CallApiBegin(RT_PROF_API_rtGetRunMode);
     const rtError_t error = impl_->GetRunMode(runMode);
@@ -996,8 +1006,8 @@ rtError_t ApiProfileDecorator::GetRunMode(rtRunMode * const runMode)
     return error;
 }
 
-rtError_t ApiProfileDecorator::LabelSwitchByIndex(void * const ptr, const uint32_t maxVal, void * const labelInfoPtr,
-    Stream * const stm)
+rtError_t ApiProfileDecorator::LabelSwitchByIndex(
+    void* const ptr, const uint32_t maxVal, void* const labelInfoPtr, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_LabelSwitchByIndex);
     const rtError_t error = impl_->LabelSwitchByIndex(ptr, maxVal, labelInfoPtr, stm);
@@ -1005,7 +1015,7 @@ rtError_t ApiProfileDecorator::LabelSwitchByIndex(void * const ptr, const uint32
     return error;
 }
 
-rtError_t ApiProfileDecorator::LabelGotoEx(Label * const lbl, Stream * const stm)
+rtError_t ApiProfileDecorator::LabelGotoEx(Label* const lbl, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_LabelGotoEx);
     const rtError_t error = impl_->LabelGotoEx(lbl, stm);
@@ -1013,8 +1023,8 @@ rtError_t ApiProfileDecorator::LabelGotoEx(Label * const lbl, Stream * const stm
     return error;
 }
 
-rtError_t ApiProfileDecorator::LabelListCpy(Label ** const lbl, const uint32_t labelNumber, void * const dst,
-    const uint32_t dstMax)
+rtError_t ApiProfileDecorator::LabelListCpy(
+    Label** const lbl, const uint32_t labelNumber, void* const dst, const uint32_t dstMax)
 {
     CallApiBegin(RT_PROF_API_Label2Content);
     const rtError_t error = impl_->LabelListCpy(lbl, labelNumber, dst, dstMax);
@@ -1022,8 +1032,8 @@ rtError_t ApiProfileDecorator::LabelListCpy(Label ** const lbl, const uint32_t l
     return error;
 }
 
-rtError_t ApiProfileDecorator::StarsTaskLaunch(const void * const sqe, const uint32_t sqeLen, Stream * const stm,
-    const uint32_t flag)
+rtError_t ApiProfileDecorator::StarsTaskLaunch(
+    const void* const sqe, const uint32_t sqeLen, Stream* const stm, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_STARS_TASK_LAUNCH);
     const rtError_t error = impl_->StarsTaskLaunch(sqe, sqeLen, stm, flag);
@@ -1031,7 +1041,7 @@ rtError_t ApiProfileDecorator::StarsTaskLaunch(const void * const sqe, const uin
     return error;
 }
 
-rtError_t ApiProfileDecorator::LabelDestroy(Label * const lbl)
+rtError_t ApiProfileDecorator::LabelDestroy(Label* const lbl)
 {
     CallApiBegin(RT_PROF_API_LABELDESTROY);
     const rtError_t error = impl_->LabelDestroy(lbl);
@@ -1039,8 +1049,8 @@ rtError_t ApiProfileDecorator::LabelDestroy(Label * const lbl)
     return error;
 }
 
-rtError_t ApiProfileDecorator::CmoTaskLaunch(const rtCmoTaskInfo_t * const taskInfo, Stream * const stm,
-    const uint32_t flag)
+rtError_t ApiProfileDecorator::CmoTaskLaunch(
+    const rtCmoTaskInfo_t* const taskInfo, Stream* const stm, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_CMO_TASK_LAUNCH);
     const rtError_t error = impl_->CmoTaskLaunch(taskInfo, stm, flag);
@@ -1048,8 +1058,8 @@ rtError_t ApiProfileDecorator::CmoTaskLaunch(const rtCmoTaskInfo_t * const taskI
     return error;
 }
 
-rtError_t ApiProfileDecorator::CmoAddrTaskLaunch(void *cmoAddrInfo, const uint64_t destMax,
-    const rtCmoOpCode_t cmoOpCode, Stream * const stm, const uint32_t flag)
+rtError_t ApiProfileDecorator::CmoAddrTaskLaunch(
+    void* cmoAddrInfo, const uint64_t destMax, const rtCmoOpCode_t cmoOpCode, Stream* const stm, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_CMO_ADDR_TASK_LAUNCH);
     const rtError_t error = impl_->CmoAddrTaskLaunch(cmoAddrInfo, destMax, cmoOpCode, stm, flag);
@@ -1057,8 +1067,8 @@ rtError_t ApiProfileDecorator::CmoAddrTaskLaunch(void *cmoAddrInfo, const uint64
     return error;
 }
 
-rtError_t ApiProfileDecorator::BarrierTaskLaunch(const rtBarrierTaskInfo_t * const taskInfo, Stream * const stm,
-    const uint32_t flag)
+rtError_t ApiProfileDecorator::BarrierTaskLaunch(
+    const rtBarrierTaskInfo_t* const taskInfo, Stream* const stm, const uint32_t flag)
 {
     CallApiBegin(RT_PROF_API_BARRIER_TASK_LAUNCH);
     const rtError_t error = impl_->BarrierTaskLaunch(taskInfo, stm, flag);
@@ -1074,7 +1084,7 @@ rtError_t ApiProfileDecorator::CtxSetSysParamOpt(const rtSysParamOpt configOpt, 
     return error;
 }
 
-rtError_t ApiProfileDecorator::CtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t * const configVal)
+rtError_t ApiProfileDecorator::CtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t* const configVal)
 {
     CallApiBegin(RT_PROF_API_CtxGetSysParamOpt);
     const rtError_t error = impl_->CtxGetSysParamOpt(configOpt, configVal);
@@ -1082,7 +1092,7 @@ rtError_t ApiProfileDecorator::CtxGetSysParamOpt(const rtSysParamOpt configOpt, 
     return error;
 }
 
-rtError_t ApiProfileDecorator::CtxGetOverflowAddr(void ** const overflowAddr)
+rtError_t ApiProfileDecorator::CtxGetOverflowAddr(void** const overflowAddr)
 {
     CallApiBegin(RT_PROF_API_CtxGetOverflowAddr);
     const rtError_t error = impl_->CtxGetOverflowAddr(overflowAddr);
@@ -1090,8 +1100,8 @@ rtError_t ApiProfileDecorator::CtxGetOverflowAddr(void ** const overflowAddr)
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetDeviceSatStatus(void * const outputAddrPtr, const uint64_t outputSize,
-    Stream * const stm)
+rtError_t ApiProfileDecorator::GetDeviceSatStatus(
+    void* const outputAddrPtr, const uint64_t outputSize, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_GetDeviceSatStatus);
     const rtError_t error = impl_->GetDeviceSatStatus(outputAddrPtr, outputSize, stm);
@@ -1099,7 +1109,7 @@ rtError_t ApiProfileDecorator::GetDeviceSatStatus(void * const outputAddrPtr, co
     return error;
 }
 
-rtError_t ApiProfileDecorator::CleanDeviceSatStatus(Stream * const stm)
+rtError_t ApiProfileDecorator::CleanDeviceSatStatus(Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_CleanDeviceSatStatus);
     const rtError_t error = impl_->CleanDeviceSatStatus(stm);
@@ -1107,7 +1117,7 @@ rtError_t ApiProfileDecorator::CleanDeviceSatStatus(Stream * const stm)
     return error;
 }
 
-rtError_t ApiProfileDecorator::StreamClear(Stream * const stm, rtClearStep_t step)
+rtError_t ApiProfileDecorator::StreamClear(Stream* const stm, rtClearStep_t step)
 {
     CallApiBegin(RT_PROF_API_STREAM_CLEAR);
     const rtError_t error = impl_->StreamClear(stm, step);
@@ -1115,14 +1125,14 @@ rtError_t ApiProfileDecorator::StreamClear(Stream * const stm, rtClearStep_t ste
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetVisibleDeviceIdByLogicDeviceId(const int32_t logicDeviceId,
-    int32_t * const visibleDeviceId)
+rtError_t ApiProfileDecorator::GetVisibleDeviceIdByLogicDeviceId(
+    const int32_t logicDeviceId, int32_t* const visibleDeviceId)
 {
     return impl_->GetVisibleDeviceIdByLogicDeviceId(logicDeviceId, visibleDeviceId);
 }
 
-rtError_t ApiProfileDecorator::GetHostAtomicCapabilities(uint32_t* capabilities, const rtAtomicOperation* operations,
-    const uint32_t count, int32_t deviceId)
+rtError_t ApiProfileDecorator::GetHostAtomicCapabilities(
+    uint32_t* capabilities, const rtAtomicOperation* operations, const uint32_t count, int32_t deviceId)
 {
     CallApiBegin(RT_PROF_API_GET_HOST_ATOMIC_CAPABILITIES);
     const rtError_t error = impl_->GetHostAtomicCapabilities(capabilities, operations, count, deviceId);
@@ -1130,8 +1140,9 @@ rtError_t ApiProfileDecorator::GetHostAtomicCapabilities(uint32_t* capabilities,
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetP2PAtomicCapabilities(uint32_t* capabilities, const rtAtomicOperation* operations,
-    const uint32_t count, int32_t srcDeviceId, int32_t dstDeviceId)
+rtError_t ApiProfileDecorator::GetP2PAtomicCapabilities(
+    uint32_t* capabilities, const rtAtomicOperation* operations, const uint32_t count, int32_t srcDeviceId,
+    int32_t dstDeviceId)
 {
     CallApiBegin(RT_PROF_API_GET_P2P_ATOMIC_CAPABILITIES);
     const rtError_t error = impl_->GetP2PAtomicCapabilities(capabilities, operations, count, srcDeviceId, dstDeviceId);
@@ -1139,7 +1150,7 @@ rtError_t ApiProfileDecorator::GetP2PAtomicCapabilities(uint32_t* capabilities, 
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetLogicDevIdByUserDevId(const int32_t userDevId, int32_t * const logicDevId)
+rtError_t ApiProfileDecorator::GetLogicDevIdByUserDevId(const int32_t userDevId, int32_t* const logicDevId)
 {
     CallApiBegin(RT_PROF_API_USER_TO_LOGIC_ID);
     const rtError_t error = impl_->GetLogicDevIdByUserDevId(userDevId, logicDevId);
@@ -1147,7 +1158,7 @@ rtError_t ApiProfileDecorator::GetLogicDevIdByUserDevId(const int32_t userDevId,
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t * const userDevId)
+rtError_t ApiProfileDecorator::GetUserDevIdByLogicDevId(const int32_t logicDevId, int32_t* const userDevId)
 {
     CallApiBegin(RT_PROF_API_LOGIC_TO_USER_ID);
     const rtError_t error = impl_->GetUserDevIdByLogicDevId(logicDevId, userDevId);
@@ -1155,8 +1166,8 @@ rtError_t ApiProfileDecorator::GetUserDevIdByLogicDevId(const int32_t logicDevId
     return error;
 }
 
-rtError_t ApiProfileDecorator::DevMalloc(void ** const devPtr, uint64_t size, rtMallocPolicy policy, rtMallocAdvise advise,
-                                        const rtMallocConfig_t * const cfg)
+rtError_t ApiProfileDecorator::DevMalloc(
+    void** const devPtr, uint64_t size, rtMallocPolicy policy, rtMallocAdvise advise, const rtMallocConfig_t* const cfg)
 {
     CallApiBegin(RT_PROF_API_DEV_MALLOC);
     const rtError_t error = impl_->DevMalloc(devPtr, size, policy, advise, cfg);
@@ -1164,7 +1175,8 @@ rtError_t ApiProfileDecorator::DevMalloc(void ** const devPtr, uint64_t size, rt
     return error;
 }
 
-rtError_t ApiProfileDecorator::LaunchDvppTask(const void * const sqe, const uint32_t sqeLen, Stream * const stm, rtDvppCfg_t *cfg)
+rtError_t ApiProfileDecorator::LaunchDvppTask(
+    const void* const sqe, const uint32_t sqeLen, Stream* const stm, rtDvppCfg_t* cfg)
 {
     CallApiBegin(RT_PROF_API_LAUNCH_DVPP_TASK);
     const rtError_t error = impl_->LaunchDvppTask(sqe, sqeLen, stm, cfg);
@@ -1172,7 +1184,8 @@ rtError_t ApiProfileDecorator::LaunchDvppTask(const void * const sqe, const uint
     return error;
 }
 
-rtError_t ApiProfileDecorator::LaunchRandomNumTask(const rtRandomNumTaskInfo_t *taskInfo, Stream * const stm, void *reserve)
+rtError_t ApiProfileDecorator::LaunchRandomNumTask(
+    const rtRandomNumTaskInfo_t* taskInfo, Stream* const stm, void* reserve)
 {
     CallApiBegin(RT_PROF_API_LAUNCH_RANDOM_NUM_TASK);
     const rtError_t error = impl_->LaunchRandomNumTask(taskInfo, stm, reserve);
@@ -1180,7 +1193,7 @@ rtError_t ApiProfileDecorator::LaunchRandomNumTask(const rtRandomNumTaskInfo_t *
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelArgsInit(Kernel * const funcHandle, RtArgsHandle **argsHandle)
+rtError_t ApiProfileDecorator::KernelArgsInit(Kernel* const funcHandle, RtArgsHandle** argsHandle)
 {
     CallApiBegin(RT_PROF_API_KERNEL_ARGS_INIT);
     const rtError_t error = impl_->KernelArgsInit(funcHandle, argsHandle);
@@ -1188,7 +1201,7 @@ rtError_t ApiProfileDecorator::KernelArgsInit(Kernel * const funcHandle, RtArgsH
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelArgsAppendPlaceHolder(RtArgsHandle *argsHandle, ParaDetail **paraHandle)
+rtError_t ApiProfileDecorator::KernelArgsAppendPlaceHolder(RtArgsHandle* argsHandle, ParaDetail** paraHandle)
 {
     CallApiBegin(RT_PROF_API_KERNEL_ARGS_APEND_PLACE_HOLDER);
     const rtError_t error = impl_->KernelArgsAppendPlaceHolder(argsHandle, paraHandle);
@@ -1196,15 +1209,15 @@ rtError_t ApiProfileDecorator::KernelArgsAppendPlaceHolder(RtArgsHandle *argsHan
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelArgsGetPlaceHolderBuffer(RtArgsHandle *argsHandle, ParaDetail *paraHandle,
-    size_t dataSize, void **bufferAddr)
+rtError_t ApiProfileDecorator::KernelArgsGetPlaceHolderBuffer(
+    RtArgsHandle* argsHandle, ParaDetail* paraHandle, size_t dataSize, void** bufferAddr)
 {
     CallApiBegin(RT_PROF_API_KERNEL_ARGS_GET_PLACE_HOLDER_BUFF);
     const rtError_t error = impl_->KernelArgsGetPlaceHolderBuffer(argsHandle, paraHandle, dataSize, bufferAddr);
     CallApiEnd(error);
     return error;
 }
-rtError_t ApiProfileDecorator::KernelArgsGetHandleMemSize(Kernel * const funcHandle, size_t *memSize)
+rtError_t ApiProfileDecorator::KernelArgsGetHandleMemSize(Kernel* const funcHandle, size_t* memSize)
 {
     CallApiBegin(RT_PROF_API_KERNEL_ARGS_GET_HANDLE_MEM_SIZE);
     const rtError_t error = impl_->KernelArgsGetHandleMemSize(funcHandle, memSize);
@@ -1212,7 +1225,7 @@ rtError_t ApiProfileDecorator::KernelArgsGetHandleMemSize(Kernel * const funcHan
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelArgsFinalize(RtArgsHandle *argsHandle)
+rtError_t ApiProfileDecorator::KernelArgsFinalize(RtArgsHandle* argsHandle)
 {
     CallApiBegin(RT_PROF_API_KERNEL_ARGS_FINALIZE);
     const rtError_t error = impl_->KernelArgsFinalize(argsHandle);
@@ -1220,7 +1233,8 @@ rtError_t ApiProfileDecorator::KernelArgsFinalize(RtArgsHandle *argsHandle)
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelArgsGetMemSize(Kernel * const funcHandle, size_t userArgsSize, size_t *actualArgsSize)
+rtError_t ApiProfileDecorator::KernelArgsGetMemSize(
+    Kernel* const funcHandle, size_t userArgsSize, size_t* actualArgsSize)
 {
     CallApiBegin(RT_PROF_API_KERNEL_ARGS_GET_MEM_SIZE);
     const rtError_t error = impl_->KernelArgsGetMemSize(funcHandle, userArgsSize, actualArgsSize);
@@ -1228,8 +1242,8 @@ rtError_t ApiProfileDecorator::KernelArgsGetMemSize(Kernel * const funcHandle, s
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelArgsInitByUserMem(Kernel * const funcHandle, RtArgsHandle *argsHandle, void *userHostMem,
-        size_t actualArgsSize)
+rtError_t ApiProfileDecorator::KernelArgsInitByUserMem(
+    Kernel* const funcHandle, RtArgsHandle* argsHandle, void* userHostMem, size_t actualArgsSize)
 {
     CallApiBegin(RT_PROF_API_KERNEL_ARGS_INIT_BY_USER_MEM);
     const rtError_t error = impl_->KernelArgsInitByUserMem(funcHandle, argsHandle, userHostMem, actualArgsSize);
@@ -1237,7 +1251,8 @@ rtError_t ApiProfileDecorator::KernelArgsInitByUserMem(Kernel * const funcHandle
     return error;
 }
 
-rtError_t ApiProfileDecorator::KernelArgsAppend(RtArgsHandle *argsHandle, void *para, size_t paraSize, ParaDetail **paraHandle)
+rtError_t ApiProfileDecorator::KernelArgsAppend(
+    RtArgsHandle* argsHandle, void* para, size_t paraSize, ParaDetail** paraHandle)
 {
     CallApiBegin(RT_PROF_API_KERNEL_ARGS_APEND);
     const rtError_t error = impl_->KernelArgsAppend(argsHandle, para, paraSize, paraHandle);
@@ -1245,8 +1260,9 @@ rtError_t ApiProfileDecorator::KernelArgsAppend(RtArgsHandle *argsHandle, void *
     return error;
 }
 
-rtError_t ApiProfileDecorator::MemcpyBatch(void **dsts, void **srcs, size_t *sizes, size_t count,
-    rtMemcpyBatchAttr *attrs, size_t *attrsIdxs, size_t numAttrs, size_t *failIdx)
+rtError_t ApiProfileDecorator::MemcpyBatch(
+    void** dsts, void** srcs, size_t* sizes, size_t count, rtMemcpyBatchAttr* attrs, size_t* attrsIdxs, size_t numAttrs,
+    size_t* failIdx)
 {
     CallApiBegin(RT_PROF_API_MEMCPY_BATCH);
     const rtError_t error = impl_->MemcpyBatch(dsts, srcs, sizes, count, attrs, attrsIdxs, numAttrs, failIdx);
@@ -1254,7 +1270,8 @@ rtError_t ApiProfileDecorator::MemcpyBatch(void **dsts, void **srcs, size_t *siz
     return error;
 }
 
-rtError_t ApiProfileDecorator::MemWriteValue(const void * const devAddr, const uint64_t value, const uint32_t flag, Stream * const stm)
+rtError_t ApiProfileDecorator::MemWriteValue(
+    const void* const devAddr, const uint64_t value, const uint32_t flag, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_MEM_WRITE_VALUE);
     const rtError_t error = impl_->MemWriteValue(devAddr, value, flag, stm);
@@ -1262,7 +1279,8 @@ rtError_t ApiProfileDecorator::MemWriteValue(const void * const devAddr, const u
     return error;
 }
 
-rtError_t ApiProfileDecorator::MemWaitValue(const void * const devAddr, const uint64_t value, const uint32_t flag, Stream * const stm)
+rtError_t ApiProfileDecorator::MemWaitValue(
+    const void* const devAddr, const uint64_t value, const uint32_t flag, Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_MEM_WAIT_VALUE);
     const rtError_t error = impl_->MemWaitValue(devAddr, value, flag, stm);
@@ -1270,7 +1288,7 @@ rtError_t ApiProfileDecorator::MemWaitValue(const void * const devAddr, const ui
     return error;
 }
 
-rtError_t ApiProfileDecorator::GetCmoDescSize(size_t *size)
+rtError_t ApiProfileDecorator::GetCmoDescSize(size_t* size)
 {
     CallApiBegin(RT_PROF_API_GET_CMO_DESC_SIZE);
     const rtError_t error = impl_->GetCmoDescSize(size);
@@ -1278,7 +1296,7 @@ rtError_t ApiProfileDecorator::GetCmoDescSize(size_t *size)
     return error;
 }
 
-rtError_t ApiProfileDecorator::SetCmoDesc(rtCmoDesc_t cmoDesc, void *srcAddr, size_t srcLen)
+rtError_t ApiProfileDecorator::SetCmoDesc(rtCmoDesc_t cmoDesc, void* srcAddr, size_t srcLen)
 {
     CallApiBegin(RT_PROF_API_SET_CMO_DESC);
     const rtError_t error = impl_->SetCmoDesc(cmoDesc, srcAddr, srcLen);
@@ -1286,8 +1304,9 @@ rtError_t ApiProfileDecorator::SetCmoDesc(rtCmoDesc_t cmoDesc, void *srcAddr, si
     return error;
 }
 
-rtError_t ApiProfileDecorator::MemcpyBatchAsync(void** const dsts, const size_t* const destMaxs, void** const srcs, const size_t* const sizes,
-    const size_t count, const rtMemcpyBatchAttr* const attrs, const size_t* const attrsIdxs, const size_t numAttrs, size_t* const failIdx,
+rtError_t ApiProfileDecorator::MemcpyBatchAsync(
+    void** const dsts, const size_t* const destMaxs, void** const srcs, const size_t* const sizes, const size_t count,
+    const rtMemcpyBatchAttr* const attrs, const size_t* const attrsIdxs, const size_t numAttrs, size_t* const failIdx,
     Stream* const stm)
 {
     CallApiBegin(RT_PROF_API_MEMCPY_ASYNC_BATCH);
@@ -1297,7 +1316,7 @@ rtError_t ApiProfileDecorator::MemcpyBatchAsync(void** const dsts, const size_t*
     return error;
 }
 
-rtError_t ApiProfileDecorator::LaunchHostFunc(Stream * const stm, const rtCallback_t callBackFunc, void * const fnData)
+rtError_t ApiProfileDecorator::LaunchHostFunc(Stream* const stm, const rtCallback_t callBackFunc, void* const fnData)
 {
     CallApiBegin(RT_PROF_API_LAUNCH_HOST_CALLBACK);
     const rtError_t error = impl_->LaunchHostFunc(stm, callBackFunc, fnData);
@@ -1305,7 +1324,7 @@ rtError_t ApiProfileDecorator::LaunchHostFunc(Stream * const stm, const rtCallba
     return error;
 }
 
-rtError_t ApiProfileDecorator::CacheLastTaskOpInfo(const void * const infoPtr, const size_t infoSize)
+rtError_t ApiProfileDecorator::CacheLastTaskOpInfo(const void* const infoPtr, const size_t infoSize)
 {
     CallApiBegin(RT_PROF_API_CACHE_LAST_TASK_OP_INFO);
     const rtError_t error = impl_->CacheLastTaskOpInfo(infoPtr, infoSize);
@@ -1321,7 +1340,7 @@ rtError_t ApiProfileDecorator::CacheLastTaskExtendInfo(const char* const extendI
     return error;
 }
 
-rtError_t ApiProfileDecorator::IpcGetEventHandle(IpcEvent * const evt, rtIpcEventHandle_t *handle)
+rtError_t ApiProfileDecorator::IpcGetEventHandle(IpcEvent* const evt, rtIpcEventHandle_t* handle)
 {
     CallApiBegin(RT_PROF_API_GET_EVENT_HANDLE);
     const rtError_t error = impl_->IpcGetEventHandle(evt, handle);
@@ -1329,7 +1348,7 @@ rtError_t ApiProfileDecorator::IpcGetEventHandle(IpcEvent * const evt, rtIpcEven
     return error;
 }
 
-rtError_t ApiProfileDecorator::IpcOpenEventHandle(rtIpcEventHandle_t *handle, IpcEvent** const event)
+rtError_t ApiProfileDecorator::IpcOpenEventHandle(rtIpcEventHandle_t* handle, IpcEvent** const event)
 {
     CallApiBegin(RT_PROF_API_OPEN_EVENT_HANDLE);
     const rtError_t error = impl_->IpcOpenEventHandle(handle, event);
@@ -1337,5 +1356,5 @@ rtError_t ApiProfileDecorator::IpcOpenEventHandle(rtIpcEventHandle_t *handle, Ip
     return error;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

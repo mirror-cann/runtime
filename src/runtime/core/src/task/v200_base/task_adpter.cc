@@ -15,10 +15,7 @@
 namespace cce {
 namespace runtime {
 
-uint32_t GetSendSqeNum(TaskInfo * const taskInfo)
-{
-    return GetSendDavidSqeNum(taskInfo);
-}
+uint32_t GetSendSqeNum(TaskInfo* const taskInfo) { return GetSendDavidSqeNum(taskInfo); }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

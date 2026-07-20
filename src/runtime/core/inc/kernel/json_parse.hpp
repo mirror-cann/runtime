@@ -13,10 +13,9 @@
 #include "program.hpp"
 namespace cce {
 namespace runtime {
-    rtError_t GetJsonObj(const std::string &path, std::string &jsonFileRealPath, 
-                            nlohmann::json &kernelJsonObj);
-    void GetCpuKernelFromJson(const nlohmann::json &jsonObj, std::vector<CpuKernelInfo> &kernelInfos);                        
-}
-}
+rtError_t GetJsonObj(const std::string& path, std::string& jsonFileRealPath, nlohmann::json& kernelJsonObj);
+void GetCpuKernelFromJson(const nlohmann::json& jsonObj, std::vector<CpuKernelInfo>& kernelInfos);
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_BINARY_LOADER_C_HPP__
+#endif // __CCE_RUNTIME_BINARY_LOADER_C_HPP__

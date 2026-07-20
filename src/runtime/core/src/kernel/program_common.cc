@@ -11,7 +11,7 @@
 
 namespace cce {
 namespace runtime {
-void SetCpuKernelAttr(Kernel *kernel, const CpuKernelInfo &kernelInfo, const std::string &opType)
+void SetCpuKernelAttr(Kernel* kernel, const CpuKernelInfo& kernelInfo, const std::string& opType)
 {
     rtKernelType_t kernelType = KERNEL_TYPE_RESERVED;
     kernel->SetKernelRegisterType(RT_KERNEL_REG_TYPE_CPU);
@@ -38,7 +38,7 @@ void SetCpuKernelAttr(Kernel *kernel, const CpuKernelInfo &kernelInfo, const std
         kernelType = KERNEL_TYPE_FWK;
     } else if (opKernelLib == "KFCKernel") {
         kernelType = KERNEL_TYPE_AICPU_KFC;
-    } else if (opKernelLib == "CUSTKFCKernel"){
+    } else if (opKernelLib == "CUSTKFCKernel") {
         kernelType = KERNEL_TYPE_CUSTOM_KFC;
     } else {
         // skip, no operation
@@ -49,5 +49,5 @@ void SetCpuKernelAttr(Kernel *kernel, const CpuKernelInfo &kernelInfo, const std
     return;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

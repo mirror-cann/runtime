@@ -20,16 +20,12 @@
 namespace cce {
 namespace runtime {
 
-XpuArgManage::~XpuArgManage()
-{
-    RT_LOG(RT_LOG_INFO, "xpuArgsManager destruction.");
-}
-
+XpuArgManage::~XpuArgManage() { RT_LOG(RT_LOG_INFO, "xpuArgsManager destruction."); }
 
 bool XpuArgManage::CreateArgRes()
 {
-    XpuDevice * const dev = dynamic_cast<XpuDevice *>(stream_->Device_());
-    void *devAddr = nullptr;
+    XpuDevice* const dev = dynamic_cast<XpuDevice*>(stream_->Device_());
+    void* devAddr = nullptr;
     void* hostAddr = nullptr;
     argPoolSize_ = XPU_ARG_POOL_COPY_SIZE * (dev->GetXpuStreamDepth());
 
@@ -41,10 +37,7 @@ bool XpuArgManage::CreateArgRes()
     RT_LOG(RT_LOG_DEBUG, "Malloc args stm pool mem success, size=%u, device_id=%u.", argPoolSize_, dev->Id_());
     return true;
 }
-void XpuArgManage::FreeArgMem()
-{
-    free(devArgResBaseAddr_);
-}
+void XpuArgManage::FreeArgMem() { free(devArgResBaseAddr_); }
 
 void XpuArgManage::ReleaseArgRes()
 {
@@ -55,7 +48,7 @@ void XpuArgManage::ReleaseArgRes()
     }
 }
 
-rtError_t XpuArgManage::MallocArgMem(void *&devAddr, void *&hostAddr)
+rtError_t XpuArgManage::MallocArgMem(void*& devAddr, void*& hostAddr)
 {
     UNUSED(hostAddr);
     devAddr = malloc(argPoolSize_);
@@ -76,7 +69,7 @@ rtError_t XpuArgManage::AllocCopyPtr(
     }
     ArgLoaderResult res = {nullptr, nullptr};
     res.allocatedEntrySize = 0U;
-    error = static_cast<XpuDevice *>(stream_->Device_())->XpuArgLoader_()->AllocCopyPtr(size, &res);
+    error = static_cast<XpuDevice*>(stream_->Device_())->XpuArgLoader_()->AllocCopyPtr(size, &res);
     if (error == RT_ERROR_NONE) {
         result->kerArgs = res.kerArgs;
         result->handle = res.handle;
@@ -91,7 +84,7 @@ bool XpuArgManage::AllocStmPool(const uint32_t size, StarsArgLoaderResult* const
     if (!AllocStmArgPos(size, startPos, endPos)) {
         return false;
     }
-    result->kerArgs = static_cast<void *>(RtPtrToPtr<uint8_t *, void *>(devArgResBaseAddr_) + startPos);
+    result->kerArgs = static_cast<void*>(RtPtrToPtr<uint8_t*, void*>(devArgResBaseAddr_) + startPos);
     result->stmArgPos = endPos;
     return true;
 }
@@ -99,33 +92,34 @@ bool XpuArgManage::AllocStmPool(const uint32_t size, StarsArgLoaderResult* const
 rtError_t XpuArgManage::H2DArgCopy(const StarsArgLoaderResult* const result, void* const args, const uint32_t size)
 {
     rtError_t error = RT_ERROR_NONE;
-    XpuHandle *handle = static_cast<XpuHandle *>(result->handle);
+    XpuHandle* handle = static_cast<XpuHandle*>(result->handle);
     if (handle != nullptr) {
         error = handle->argsAlloc->H2DMemCopy(result->kerArgs, args, size);
-        ERROR_RETURN_MSG_INNER(error, "H2DMemCopy failed, kind=%d, retCode=%#x.",
-            static_cast<int32_t>(RT_MEMCPY_HOST_TO_HOST), static_cast<uint32_t>(error));
+        ERROR_RETURN_MSG_INNER(
+            error, "H2DMemCopy failed, kind=%d, retCode=%#x.", static_cast<int32_t>(RT_MEMCPY_HOST_TO_HOST),
+            static_cast<uint32_t>(error));
     } else {
         const errno_t ret = memcpy_s(result->kerArgs, static_cast<uint64_t>(size), args, static_cast<uint64_t>(size));
         if (ret != EOK) {
             const std::string retStr = std::to_string(ret);
             std::stringstream ss;
-            ss << std::hex << "dest=0x" << RtPtrToValue(result->kerArgs) << ", src=0x" << RtPtrToValue(args)
-               << std::dec << ", destMax=" << size << ", count=" << size << ".";
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1020, __func__, "memcpy_s",
-                retStr.c_str(), strerror(ret), ss.str().c_str());
+            ss << std::hex << "dest=0x" << RtPtrToValue(result->kerArgs) << ", src=0x" << RtPtrToValue(args) << std::dec
+               << ", destMax=" << size << ", count=" << size << ".";
+            RT_LOG_OUTER_MSG_IMPL(
+                ErrorCode::EE1020, __func__, "memcpy_s", retStr.c_str(), strerror(ret), ss.str().c_str());
             return RT_ERROR_DRV_MEMORY;
         }
     }
     return error;
 }
 
-void XpuArgManage::RecycleDevLoader(void * const handle)
+void XpuArgManage::RecycleDevLoader(void* const handle)
 {
-    (void)static_cast<XpuDevice *>(stream_->Device_())->XpuArgLoader_()->Release(handle);
+    (void)static_cast<XpuDevice*>(stream_->Device_())->XpuArgLoader_()->Release(handle);
 }
 
-rtError_t XpuArgManage::LoadArgsFromArray(const bool useArgPool,
-    const Kernel *kernel, void **argsArray, StarsArgLoaderResult *result)
+rtError_t XpuArgManage::LoadArgsFromArray(
+    const bool useArgPool, const Kernel* kernel, void** argsArray, StarsArgLoaderResult* result)
 {
     UNUSED(useArgPool);
     UNUSED(kernel);
@@ -134,8 +128,8 @@ rtError_t XpuArgManage::LoadArgsFromArray(const bool useArgPool,
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t XpuArgManage::LoadSimtArgsFromArray(const bool useArgPool,
-    const Kernel *kernel, SimtArgsArray *simtArgsArray, StarsArgLoaderResult *result)
+rtError_t XpuArgManage::LoadSimtArgsFromArray(
+    const bool useArgPool, const Kernel* kernel, SimtArgsArray* simtArgsArray, StarsArgLoaderResult* result)
 {
     UNUSED(useArgPool);
     UNUSED(kernel);
@@ -144,8 +138,8 @@ rtError_t XpuArgManage::LoadSimtArgsFromArray(const bool useArgPool,
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t XpuArgManage::LoadSimtHostArgs(const bool useArgPool,
-    SimtArgsHost *simtArgsHost, StarsArgLoaderResult *result)
+rtError_t XpuArgManage::LoadSimtHostArgs(
+    const bool useArgPool, SimtArgsHost* simtArgsHost, StarsArgLoaderResult* result)
 {
     UNUSED(useArgPool);
     UNUSED(simtArgsHost);
@@ -153,5 +147,5 @@ rtError_t XpuArgManage::LoadSimtHostArgs(const bool useArgPool,
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

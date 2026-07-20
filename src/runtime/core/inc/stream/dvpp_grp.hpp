@@ -20,33 +20,24 @@ class Device;
 
 class DvppGrp : public NoCopy {
 public:
-    DvppGrp(Device * const dev, const uint32_t flag);
+    DvppGrp(Device* const dev, const uint32_t flag);
     ~DvppGrp() noexcept override;
 
     rtError_t Setup();
 
-    uint32_t getLogicCqId() const
-    {
-        return logicCq_;
-    }
+    uint32_t getLogicCqId() const { return logicCq_; }
 
-    void SetContext(Context *ctx)
-    {
-        context_ = ctx;
-    }
+    void SetContext(Context* ctx) { context_ = ctx; }
 
-    Context *getContext(void) const
-    {
-        return context_;
-    }
+    Context* getContext(void) const { return context_; }
 
 protected:
-    Device *device_;
+    Device* device_;
     uint32_t flag_;
     uint32_t logicCq_;
-    Context *context_;
+    Context* context_;
 };
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_DVPP_GRP_HPP__
+#endif // __CCE_RUNTIME_DVPP_GRP_HPP__

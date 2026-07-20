@@ -25,10 +25,11 @@ class ArgsHandleAllocator {
 public:
     ArgsHandleAllocator();
     ~ArgsHandleAllocator();
-    RtArgsHandle *localArgsHandle_ = nullptr;
+    RtArgsHandle* localArgsHandle_ = nullptr;
+
 private:
     rtError_t CreateInnerArgsHandle();
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // RUNTIME_ARGS_HANDLE_ALLOCATOR_HPP

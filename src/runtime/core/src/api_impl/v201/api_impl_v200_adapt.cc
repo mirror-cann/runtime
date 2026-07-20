@@ -24,7 +24,7 @@ rtError_t ApiImplDavid::SetXpuDevice(const rtXpuDevType devType, const uint32_t 
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImplDavid::GetXpuDevCount(const rtXpuDevType devType, uint32_t *devCount)
+rtError_t ApiImplDavid::GetXpuDevCount(const rtXpuDevType devType, uint32_t* devCount)
 {
     UNUSED(devType);
     UNUSED(devCount);
@@ -38,22 +38,24 @@ rtError_t ApiImplDavid::ResetXpuDevice(const rtXpuDevType devType, const uint32_
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImplDavid::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim, const RtArgsWithType * const argsWithType,
-                                  Stream * const stm, const rtKernelLaunchCfg_t * const cfg)
+rtError_t ApiImplDavid::LaunchKernelV2(
+    Kernel* const kernel, uint32_t blockDim, const RtArgsWithType* const argsWithType, Stream* const stm,
+    const rtKernelLaunchCfg_t* const cfg)
 {
     TaskCfg taskCfg = {};
     rtError_t error = ConvertLaunchCfgToTaskCfg(taskCfg, cfg);
     ERROR_RETURN(error, "convert task cfg failed, retCode=%#x.", error);
 
-    Context * const curCtx = CurrentContext();
+    Context* const curCtx = CurrentContext();
     CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-    Device * const dev = curCtx->Device_();
+    Device* const dev = curCtx->Device_();
     NULL_PTR_RETURN_MSG(dev, RT_ERROR_DEVICE_NULL);
 
-    Stream *curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
+    Stream* curStm = (stm == nullptr) ? curCtx->DefaultStream_() : stm;
     NULL_STREAM_PTR_RETURN_MSG(curStm);
 
-    COND_RETURN_ERROR_MSG_INNER(curStm->Context_() != curCtx, RT_ERROR_STREAM_CONTEXT,
+    COND_RETURN_ERROR_MSG_INNER(
+        curStm->Context_() != curCtx, RT_ERROR_STREAM_CONTEXT,
         "Kernel launch with handle failed, stream is not in current ctx, stream_id=%d.", curStm->Id_());
     if (!kernel->Program_()->IsDeviceSoAndNameValid(dev->Id_())) {
         RT_LOG(RT_LOG_WARNING, "kernel is invalid, device_id=%d", curCtx->Device_()->Id_());
@@ -61,7 +63,8 @@ rtError_t ApiImplDavid::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim,
     }
     // For the new launch logic, the nop task delivery is hidden in the launchKernel. only for aic/aiv kernel
 
-    if ((kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_NON_CPU) && (taskCfg.isExtendValid == 1U) && (taskCfg.extend.blockTaskPrefetch)) {
+    if ((kernel->GetKernelRegisterType() == RT_KERNEL_REG_TYPE_NON_CPU) && (taskCfg.isExtendValid == 1U) &&
+        (taskCfg.extend.blockTaskPrefetch)) {
         constexpr uint8_t prefetchCnt = PREFETCH_CNT_CLOUD_V2;
         for (uint8_t cntIdx = 0U; cntIdx < prefetchCnt; cntIdx++) {
             error = NopTask(curStm);
@@ -72,7 +75,7 @@ rtError_t ApiImplDavid::LaunchKernelV2(Kernel * const kernel, uint32_t blockDim,
     return LaunchKernelByArgsWithType(kernel, blockDim, curStm, argsWithType, taskCfg);
 }
 
-rtError_t ApiImplDavid::XpuSetTaskFailCallback(const rtXpuDevType devType, const char_t *moduleName, void *callback)
+rtError_t ApiImplDavid::XpuSetTaskFailCallback(const rtXpuDevType devType, const char_t* moduleName, void* callback)
 {
     UNUSED(devType);
     UNUSED(moduleName);
@@ -80,7 +83,7 @@ rtError_t ApiImplDavid::XpuSetTaskFailCallback(const rtXpuDevType devType, const
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImplDavid::XpuProfilingCommandHandle(uint32_t type, void *data, uint32_t len)
+rtError_t ApiImplDavid::XpuProfilingCommandHandle(uint32_t type, void* data, uint32_t len)
 {
     UNUSED(type);
     UNUSED(data);
@@ -88,5 +91,5 @@ rtError_t ApiImplDavid::XpuProfilingCommandHandle(uint32_t type, void *data, uin
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -24,19 +24,15 @@ namespace runtime {
 #if F_DESC("UbDbSendTask")
 constexpr uint32_t STARS_UBDMA_EXIST_ERROR = 0xFFU;
 constexpr uint32_t JETTY_WORK_REQUEST_FLUSHED = 0x6U;
-static unordered_map<uint32_t, string> ubdmaTaskErr {
-    {1U, "unsupported opcode!"},
-    {2U, "local operation error!"},
-    {3U, "remote operation error!"},
-    {4U, "transaction retry counter exceeded!"},
-    {5U, "transaction ack timeout!"},
-    {6U, "jetty work request flushed!"}
-};
+static unordered_map<uint32_t, string> ubdmaTaskErr{
+    {1U, "unsupported opcode!"},      {2U, "local operation error!"},
+    {3U, "remote operation error!"},  {4U, "transaction retry counter exceeded!"},
+    {5U, "transaction ack timeout!"}, {6U, "jetty work request flushed!"}};
 
-rtError_t UbDbSendTaskInit(TaskInfo* taskInfo, const rtUbDbInfo_t *dbInfo, const uint16_t source)
+rtError_t UbDbSendTaskInit(TaskInfo* taskInfo, const rtUbDbInfo_t* dbInfo, const uint16_t source)
 {
     TaskCommonInfoInit(taskInfo);
-    UbSendTaskInfo *ubSend = &taskInfo->u.ubSendTask;
+    UbSendTaskInfo* ubSend = &taskInfo->u.ubSendTask;
     taskInfo->type = TS_TASK_TYPE_UB_DB_SEND;
     taskInfo->typeName = const_cast<char_t*>("UB_DB_SEND");
     taskInfo->isNoRingbuffer = 1U;
@@ -52,19 +48,20 @@ rtError_t UbDbSendTaskInit(TaskInfo* taskInfo, const rtUbDbInfo_t *dbInfo, const
     return RT_ERROR_NONE;
 }
 
-void PrintErrorInfoForUbDbSendTask(TaskInfo *taskInfo, const uint32_t devId)
+void PrintErrorInfoForUbDbSendTask(TaskInfo* taskInfo, const uint32_t devId)
 {
-    UbSendTaskInfo *ubSend = &taskInfo->u.ubSendTask;
-    Stream * const stream = taskInfo->stream;
+    UbSendTaskInfo* ubSend = &taskInfo->u.ubSendTask;
+    Stream* const stream = taskInfo->stream;
 
     const uint32_t taskId = taskInfo->id;
     const int32_t streamId = stream->Id_();
-    RT_LOG(RT_LOG_ERROR, "ub db send failed device_id=%u, stream_id=%d, task_id=%u, wrCqe=%u, dbNum=%u.",
-        devId, streamId, taskId, ubSend->wrCqe, ubSend->dbNum);
+    RT_LOG(
+        RT_LOG_ERROR, "ub db send failed device_id=%u, stream_id=%d, task_id=%u, wrCqe=%u, dbNum=%u.", devId, streamId,
+        taskId, ubSend->wrCqe, ubSend->dbNum);
     for (size_t i = 0; i < ubSend->dbNum; i++) {
-        RT_LOG(RT_LOG_ERROR, "dieId=%u, jettyId=%u, funcId=%u, piVal=%u.",
-            ubSend->info[i].dieId, ubSend->info[i].jettyId, ubSend->info[i].funcId,
-            ubSend->info[i].piVal);
+        RT_LOG(
+            RT_LOG_ERROR, "dieId=%u, jettyId=%u, funcId=%u, piVal=%u.", ubSend->info[i].dieId, ubSend->info[i].jettyId,
+            ubSend->info[i].funcId, ubSend->info[i].piVal);
     }
 }
 
@@ -74,13 +71,15 @@ static void TaskFailCallBackForDoorBellTask(TaskInfo* taskInfo, const uint32_t d
     const int32_t streamId = taskInfo->stream->Id_();
     const uint32_t threadId = taskInfo->tid;
     const uint32_t retCode = taskInfo->errorCode;
-    COND_RETURN_NORMAL(retCode == static_cast<uint32_t>(RT_ERROR_NONE),
-                       "task ok, stream_id=%d, task_id=%u, retCode=%#x.", streamId, taskId, retCode);
-    COND_RETURN_NORMAL(((retCode == TS_ERROR_END_OF_SEQUENCE) || (retCode == TS_MODEL_ABORT_NORMAL)),
-                       "task ok, stream_id=%d, task_id=%u, retCode=%#x.", streamId, taskId, retCode);
+    COND_RETURN_NORMAL(
+        retCode == static_cast<uint32_t>(RT_ERROR_NONE), "task ok, stream_id=%d, task_id=%u, retCode=%#x.", streamId,
+        taskId, retCode);
+    COND_RETURN_NORMAL(
+        ((retCode == TS_ERROR_END_OF_SEQUENCE) || (retCode == TS_MODEL_ABORT_NORMAL)),
+        "task ok, stream_id=%d, task_id=%u, retCode=%#x.", streamId, taskId, retCode);
     rtExceptionInfo_t exceptionInfo;
     rtError_t rtErrCode = RT_ERROR_NONE;
-    const char_t *const retDes = GetTsErrCodeMap(retCode, &rtErrCode);
+    const char_t* const retDes = GetTsErrCodeMap(retCode, &rtErrCode);
     rtExceptionExpandInfo_t expandInfo = {};
     expandInfo.u.ubInfo.ubType = RT_UB_TYPE_DOORBELL;
     expandInfo.u.ubInfo.ubNum = taskInfo->u.ubSendTask.dbNum;
@@ -97,8 +96,9 @@ static void TaskFailCallBackForDoorBellTask(TaskInfo* taskInfo, const uint32_t d
     exceptionInfo.deviceid = deviceId;
     exceptionInfo.expandInfo = expandInfo;
     exceptionInfo.expandInfo.type = RT_EXCEPTION_UB;
-    RT_LOG(RT_LOG_WARNING, "doorbell stream_id=%d, exception_task_id=%u, expandType=%u, retCode=%#x,[%s]",
-        streamId, exceptionInfo.taskid, exceptionInfo.expandInfo.type, rtErrCode, retDes);
+    RT_LOG(
+        RT_LOG_WARNING, "doorbell stream_id=%d, exception_task_id=%u, expandType=%u, retCode=%#x,[%s]", streamId,
+        exceptionInfo.taskid, exceptionInfo.expandInfo.type, rtErrCode, retDes);
 
     TaskFailCallBackNotify(&exceptionInfo);
 }
@@ -115,16 +115,12 @@ void DoCompleteSuccessForUbDmaDbModeTask(TaskInfo* taskInfo, const uint32_t devI
 }
 #endif
 
-void SetResultForUbDmaTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq)
+void SetResultForUbDmaTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq)
 {
     if ((logicCq.errorType & RT_STARS_EXIST_ERROR) != 0U) {
         static uint32_t errMap[TS_STARS_ERROR_MAX_INDEX] = {
-            TS_ERROR_TASK_EXCEPTION,
-            TS_ERROR_TASK_BUS_ERROR,
-            TS_ERROR_TASK_TIMEOUT,
-            TS_ERROR_TASK_SQE_ERROR,
-            TS_ERROR_TASK_RES_CONFLICT_ERROR,
-            TS_ERROR_TASK_SW_STATUS_ERROR};
+            TS_ERROR_TASK_EXCEPTION, TS_ERROR_TASK_BUS_ERROR,          TS_ERROR_TASK_TIMEOUT,
+            TS_ERROR_TASK_SQE_ERROR, TS_ERROR_TASK_RES_CONFLICT_ERROR, TS_ERROR_TASK_SW_STATUS_ERROR};
         const uint32_t errorIndex =
             static_cast<uint32_t>(BitScan(static_cast<uint64_t>(logicCq.errorType & RT_STARS_EXIST_ERROR)));
         taskInfo->errorCode = errMap[errorIndex];
@@ -140,10 +136,10 @@ void SetResultForUbDmaTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq)
 }
 
 #if F_DESC("UbDirectSendTask")
-void UbDirectSendTaskInit(TaskInfo* taskInfo, rtUbWqeInfo_t *wqeInfo)
+void UbDirectSendTaskInit(TaskInfo* taskInfo, rtUbWqeInfo_t* wqeInfo)
 {
     TaskCommonInfoInit(taskInfo);
-    DirectSendTaskInfo *directSend = &taskInfo->u.directSendTask;
+    DirectSendTaskInfo* directSend = &taskInfo->u.directSendTask;
     taskInfo->type = TS_TASK_TYPE_DIRECT_SEND;
     taskInfo->typeName = const_cast<char_t*>("UB_DIRECT_SEND");
     taskInfo->isNoRingbuffer = 1U;
@@ -159,29 +155,32 @@ void UbDirectSendTaskInit(TaskInfo* taskInfo, rtUbWqeInfo_t *wqeInfo)
 
 void PrintErrorInfoForUbDirectSendTask(TaskInfo* taskInfo, const uint32_t devId)
 {
-    DirectSendTaskInfo *directSend = &taskInfo->u.directSendTask;
-    Stream * const stream = taskInfo->stream;
+    DirectSendTaskInfo* directSend = &taskInfo->u.directSendTask;
+    Stream* const stream = taskInfo->stream;
 
     const uint32_t taskId = taskInfo->id;
     const int32_t streamId = stream->Id_();
-    RT_LOG(RT_LOG_ERROR, "ub direct send failed device_id=%u, stream_id=%d, task_id=%u,",
+    RT_LOG(
+        RT_LOG_ERROR, "ub direct send failed device_id=%u, stream_id=%d, task_id=%u,",
         " wrCqe=%hu, wqeSize=%u, dieId=%u, jettyId=%u, funcId=%u.", devId, streamId, taskId, directSend->wrCqe,
         directSend->wqeSize, directSend->dieId, directSend->jettyId, directSend->funcId);
 }
 
-static void TaskFailCallBackForDirectWqeTask(const TaskInfo * const taskInfo, const uint32_t deviceId)
+static void TaskFailCallBackForDirectWqeTask(const TaskInfo* const taskInfo, const uint32_t deviceId)
 {
     const uint32_t taskId = taskInfo->id;
     const int32_t streamId = taskInfo->stream->Id_();
     const uint32_t threadId = taskInfo->tid;
     const uint32_t retCode = taskInfo->errorCode;
-    COND_RETURN_NORMAL(retCode == static_cast<uint32_t>(RT_ERROR_NONE),
-                       "task ok, stream_id=%d, task_id=%u, retCode=%#x.", streamId, taskId, retCode);
-    COND_RETURN_NORMAL(((retCode == TS_ERROR_END_OF_SEQUENCE) || (retCode == TS_MODEL_ABORT_NORMAL)),
-                       "task ok, stream_id=%d, task_id=%u, retCode=%#x.", streamId, taskId, retCode);
+    COND_RETURN_NORMAL(
+        retCode == static_cast<uint32_t>(RT_ERROR_NONE), "task ok, stream_id=%d, task_id=%u, retCode=%#x.", streamId,
+        taskId, retCode);
+    COND_RETURN_NORMAL(
+        ((retCode == TS_ERROR_END_OF_SEQUENCE) || (retCode == TS_MODEL_ABORT_NORMAL)),
+        "task ok, stream_id=%d, task_id=%u, retCode=%#x.", streamId, taskId, retCode);
     rtExceptionInfo_t exceptionInfo;
     rtError_t rtErrCode = RT_ERROR_NONE;
-    const char_t *const retDes = GetTsErrCodeMap(retCode, &rtErrCode);
+    const char_t* const retDes = GetTsErrCodeMap(retCode, &rtErrCode);
     rtExceptionExpandInfo_t expandInfo = {};
     (void)memset_s(&(expandInfo.u.ubInfo), sizeof(expandInfo.u.ubInfo), 0, sizeof(expandInfo.u.ubInfo));
     expandInfo.u.ubInfo.ubType = RT_UB_TYPE_DIRECT_WQE;
@@ -196,8 +195,9 @@ static void TaskFailCallBackForDirectWqeTask(const TaskInfo * const taskInfo, co
     exceptionInfo.deviceid = deviceId;
     exceptionInfo.expandInfo = expandInfo;
     exceptionInfo.expandInfo.type = RT_EXCEPTION_UB;
-    RT_LOG(RT_LOG_WARNING, "stream_id=%d, exception_task_id=%u, expandType=%u, retCode=%#x,[%s]",
-        streamId, exceptionInfo.taskid, exceptionInfo.expandInfo.type, rtErrCode, retDes);
+    RT_LOG(
+        RT_LOG_WARNING, "stream_id=%d, exception_task_id=%u, expandType=%u, retCode=%#x,[%s]", streamId,
+        exceptionInfo.taskid, exceptionInfo.expandInfo.type, rtErrCode, retDes);
 
     TaskFailCallBackNotify(&exceptionInfo);
 }
@@ -213,7 +213,7 @@ void DoCompleteSuccessForUbDmaDirectWqeModeTask(TaskInfo* taskInfo, const uint32
     }
 }
 
-uint32_t GetSendSqeNumForDirectWqeTask(const TaskInfo * const taskInfo)
+uint32_t GetSendSqeNumForDirectWqeTask(const TaskInfo* const taskInfo)
 {
     // wqeSize 0：64B，1:128B
     uint32_t sqeNum = 0U;
@@ -228,35 +228,37 @@ uint32_t GetSendSqeNumForDirectWqeTask(const TaskInfo * const taskInfo)
 }
 #endif
 
-static void ConstructDavidSqeForUbDirectSendTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
+static void ConstructDavidSqeForUbDirectSendTask(TaskInfo* taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
-    Stream * const stream = taskInfo->stream;
+    Stream* const stream = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsUbdmaDirectWqemodeSqe * const ubdmaDirectSqe = &(davidSqe->davidUbdmaDirectSqe);
+    RtDavidStarsUbdmaDirectWqemodeSqe* const ubdmaDirectSqe = &(davidSqe->davidUbdmaDirectSqe);
     ubdmaDirectSqe->header.type = RT_DAVID_SQE_TYPE_UBDMA;
     ubdmaDirectSqe->mode = static_cast<uint16_t>(rtDavidUbDmaSqeMode::RT_DAVID_SQE_DIRECTWQE_MODE);
     ubdmaDirectSqe->dieId = taskInfo->u.directSendTask.dieId;
-    ubdmaDirectSqe->wqeSize =taskInfo->u.directSendTask.wqeSize;
+    ubdmaDirectSqe->wqeSize = taskInfo->u.directSendTask.wqeSize;
     ubdmaDirectSqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
     ubdmaDirectSqe->sqeLength = (taskInfo->u.directSendTask.wqeSize == 1) ? 2U : 1U;
     ubdmaDirectSqe->jettyId = taskInfo->u.directSendTask.jettyId;
     ubdmaDirectSqe->funcId = taskInfo->u.directSendTask.funcId;
     PrintDavidSqe(davidSqe, "UbDirectSend Part0");
     constexpr size_t ubWqesize = 64UL;
-    uint8_t *wqe = taskInfo->u.directSendTask.wqe;
+    uint8_t* wqe = taskInfo->u.directSendTask.wqe;
     for (uint32_t i = 0U; i <= taskInfo->u.directSendTask.wqeSize; i++) {
-        rtDavidSqe_t *curSqe = davidSqe + i + 1U;
+        rtDavidSqe_t* curSqe = davidSqe + i + 1U;
         if (sqBaseAddr != 0ULL) {
             const uint32_t pos = taskInfo->id + i + 1U;
             curSqe = GetSqPosAddr(sqBaseAddr, pos);
         }
         const errno_t ret = memcpy_s(curSqe, sizeof(rtDavidSqe_t), wqe + (i * ubWqesize), ubWqesize);
         if (ret != EOK) {
-            RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to call memcpy_s to copy wqe,"
-                " src=%p, dest=%p, dest_max=%zu, count=%zu, retCode=%#x.", wqe + (i * ubWqesize), curSqe,
-                sizeof(rtDavidSqe_t), ubWqesize, ret);
+            RT_LOG_INNER_MSG(
+                RT_LOG_ERROR,
+                "Failed to call memcpy_s to copy wqe,"
+                " src=%p, dest=%p, dest_max=%zu, count=%zu, retCode=%#x.",
+                wqe + (i * ubWqesize), curSqe, sizeof(rtDavidSqe_t), ubWqesize, ret);
             ubdmaDirectSqe->header.type = RT_DAVID_SQE_TYPE_END;
             break;
         }
@@ -264,17 +266,18 @@ static void ConstructDavidSqeForUbDirectSendTask(TaskInfo *taskInfo, void *const
         descInfo << "UbDirectSend Part " << (i + 1U);
         PrintDavidSqe(curSqe, descInfo.str().c_str());
     }
-    RT_LOG(RT_LOG_INFO, "UbDirectSendTask stream_id=%d, task_id=%hu, wqeSize=%u.",
-        stream->Id_(), taskInfo->id, ubdmaDirectSqe->wqeSize);
+    RT_LOG(
+        RT_LOG_INFO, "UbDirectSendTask stream_id=%d, task_id=%hu, wqeSize=%u.", stream->Id_(), taskInfo->id,
+        ubdmaDirectSqe->wqeSize);
 }
 
-static void ConstructDavidSqeForUbDbSendTask(TaskInfo *taskInfo, void *const sqe, const TaskSqeInfo& sqeInfo)
+static void ConstructDavidSqeForUbDbSendTask(TaskInfo* taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsUbdmaDBmodeSqe * const ubdmaDbSqe = &(davidSqe->davidUbdmaDbSqe);
-    Stream * const stream = taskInfo->stream;
+    RtDavidStarsUbdmaDBmodeSqe* const ubdmaDbSqe = &(davidSqe->davidUbdmaDbSqe);
+    Stream* const stream = taskInfo->stream;
     ubdmaDbSqe->header.type = RT_DAVID_SQE_TYPE_UBDMA;
     ubdmaDbSqe->header.wrCqe = 0U;
     ubdmaDbSqe->mode = static_cast<uint16_t>(rtDavidUbDmaSqeMode::RT_DAVID_SQE_DOORBELL_MODE);
@@ -293,8 +296,9 @@ static void ConstructDavidSqeForUbDbSendTask(TaskInfo *taskInfo, void *const sqe
         ubdmaDbSqe->dieId2 = taskInfo->u.ubSendTask.info[1].dieId;
     }
     PrintDavidSqe(davidSqe, "UbDbSend");
-    RT_LOG(RT_LOG_INFO, "UbDbSendTask stream_id=%d, task_id=%hu, dbNum=%u.",
-        stream->Id_(), taskInfo->id, taskInfo->u.ubSendTask.dbNum);
+    RT_LOG(
+        RT_LOG_INFO, "UbDbSendTask stream_id=%d, task_id=%hu, dbNum=%u.", stream->Id_(), taskInfo->id,
+        taskInfo->u.ubSendTask.dbNum);
 }
 
 static bool UbDmaTaskRegister()
@@ -320,7 +324,7 @@ static bool UbDmaTaskRegister()
         .setStarsResultFunc = &SetResultForUbDmaTask,
     };
 
-    const auto &chips = GetDavidChips();
+    const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_UB_DB_SEND, ubDbFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_DIRECT_SEND, directSendFuncs);
@@ -333,5 +337,5 @@ static bool UbDmaTaskRegister()
 
 static bool g_ubDmaTaskRegister = UbDmaTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -16,23 +16,21 @@
 #include "buffer_allocator.hpp"
 namespace cce {
 namespace runtime {
-constexpr uint32_t EVENT_INIT_CNT   = (2U * 1024U * 1024U);
-constexpr uint32_t PER_POOL_CNT     = EVENT_INIT_CNT;
-constexpr uint16_t MAX_POOL_CNT     = 1024U; // total count: PER_POOL_CNT * MAX_POOL_CNT = 2G
-constexpr int32_t  EVENT_INIT_VALUE = UINT16_MAX + 1;
+constexpr uint32_t EVENT_INIT_CNT = (2U * 1024U * 1024U);
+constexpr uint32_t PER_POOL_CNT = EVENT_INIT_CNT;
+constexpr uint16_t MAX_POOL_CNT = 1024U; // total count: PER_POOL_CNT * MAX_POOL_CNT = 2G
+constexpr int32_t EVENT_INIT_VALUE = UINT16_MAX + 1;
 class Device;
 class EventExpandingPool : public NoCopy {
 public:
-    explicit EventExpandingPool(Device * const dev);
+    explicit EventExpandingPool(Device* const dev);
     ~EventExpandingPool() override;
-    rtError_t AllocAndInsertEvent(void** const eventAddr, int32_t *eventId);
+    rtError_t AllocAndInsertEvent(void** const eventAddr, int32_t* eventId);
     void FreeEventId(int32_t eventId);
     rtError_t ResetBufferForEvent();
 
-    uint16_t GetPoolIndex() const
-    {
-        return poolIndex_;
-    }
+    uint16_t GetPoolIndex() const { return poolIndex_; }
+
 protected:
     Device* device_;
 
@@ -42,10 +40,10 @@ private:
     int32_t eventIdCount_;
     int32_t lastEventId_;
     uint16_t poolIndex_;
-    static void *MallocBufferForEvent(const size_t size, void * const para);
-    static void FreeBufferForEvent(void * const addr, void * const para);
+    static void* MallocBufferForEvent(const size_t size, void* const para);
+    static void FreeBufferForEvent(void* const addr, void* const para);
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_EVENT_EXPANDING_HPP
+#endif // CCE_RUNTIME_EVENT_EXPANDING_HPP

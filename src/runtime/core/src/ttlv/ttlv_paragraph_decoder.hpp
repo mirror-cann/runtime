@@ -19,15 +19,13 @@ class TTLVParagraphDecoder {
 public:
     TTLVParagraphDecoder() = default;
     virtual ~TTLVParagraphDecoder() = default;
-    void AddSentence(TTLVSentenceDecoder &sentence)
-    {
-        decoderSentence_.emplace_back(sentence);
-    }
-    TTLVSentenceDecoder &GetRecentSentence();
-    void PrintOut(std::string &outStr);
+    void AddSentence(TTLVSentenceDecoder& sentence) { decoderSentence_.emplace_back(sentence); }
+    TTLVSentenceDecoder& GetRecentSentence();
+    void PrintOut(std::string& outStr);
+
 private:
     std::vector<TTLVSentenceDecoder> decoderSentence_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // RT_RUNTIME_TTLV_PARAGRAPH_DECODER_HPP

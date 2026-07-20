@@ -15,42 +15,42 @@
 #include "stars_david.hpp"
 
 namespace {
-    constexpr uint32_t MAX_BIT_LEN = 64U;
-    constexpr uint32_t DEVICE_ERR_MSG_MAGIC = 0xA55A2021U;
-    constexpr uint32_t MAX_CORE_BLOCK_NUM  = 50U;
-    constexpr uint32_t MAX_CORE_NUM  = 75U;
-    constexpr uint32_t RINGBUFFER_ERROR_MSG_MAX_LEN  = 400U;
-    constexpr uint32_t RINGBUFFER_ERRCODE0_OFFSET = 0U;
-    constexpr uint32_t RINGBUFFER_ERRCODE2_OFFSET = 64U;
-    constexpr uint32_t RINGBUFFER_ERRCODE4_OFFSET = 128U;
-    constexpr uint32_t RINGBUFFER_HCCL_FFTSPLUS_MAX_CONTEXT_NUM = 8U;
-	constexpr uint32_t MAX_CORE_BLOCK_NUM_ON_DAVID  = 72U;
-    constexpr uint32_t MAX_TASK_NUM_ONE_CORE = 2U;
-    constexpr uint32_t RT_STARS_V2_AICORE_NUM = 36U;
-    constexpr uint32_t RT_STARS_V2_AIVECTOR_NUM = 72U;
-    constexpr uint32_t STARS_CORE_ERROR_EXT_RSV_NUM = 28U;
-    constexpr uint32_t STARS_V2_CORE_ERROR_EXT_RSV_NUM = 64U;
-}
+constexpr uint32_t MAX_BIT_LEN = 64U;
+constexpr uint32_t DEVICE_ERR_MSG_MAGIC = 0xA55A2021U;
+constexpr uint32_t MAX_CORE_BLOCK_NUM = 50U;
+constexpr uint32_t MAX_CORE_NUM = 75U;
+constexpr uint32_t RINGBUFFER_ERROR_MSG_MAX_LEN = 400U;
+constexpr uint32_t RINGBUFFER_ERRCODE0_OFFSET = 0U;
+constexpr uint32_t RINGBUFFER_ERRCODE2_OFFSET = 64U;
+constexpr uint32_t RINGBUFFER_ERRCODE4_OFFSET = 128U;
+constexpr uint32_t RINGBUFFER_HCCL_FFTSPLUS_MAX_CONTEXT_NUM = 8U;
+constexpr uint32_t MAX_CORE_BLOCK_NUM_ON_DAVID = 72U;
+constexpr uint32_t MAX_TASK_NUM_ONE_CORE = 2U;
+constexpr uint32_t RT_STARS_V2_AICORE_NUM = 36U;
+constexpr uint32_t RT_STARS_V2_AIVECTOR_NUM = 72U;
+constexpr uint32_t STARS_CORE_ERROR_EXT_RSV_NUM = 28U;
+constexpr uint32_t STARS_V2_CORE_ERROR_EXT_RSV_NUM = 64U;
+} // namespace
 
 namespace cce {
 namespace runtime {
 /*********************************** ringbuffer for STARS ***********************************/
 struct DavidSdmaScheErrorInfo {
-    uint32_t irqStatus;                 // sdma ecc err, bus error
-    uint32_t cqeStatus;                 // sdma cqe status
+    uint32_t irqStatus;     // sdma ecc err, bus error
+    uint32_t cqeStatus;     // sdma cqe status
     uint8_t sdmaChannelId;
-    uint8_t sdmaChFsmState;            // sdma channel fsm status
-    uint8_t sdmaChFree;                 // sdma channle status busy status, 1:not busy 0:busy
+    uint8_t sdmaChFsmState; // sdma channel fsm status
+    uint8_t sdmaChFree;     // sdma channle status busy status, 1:not busy 0:busy
     uint8_t rsv;
 };
 
 struct StarsSdmaScheErrorInfo {
     uint8_t sdmaChannelId;
-    uint8_t sdmaBlkFsmState;            // sdma channel fsm status
-    uint8_t dfxSdmaBlkFsmOstCnt;        // sdma channle stars config status, 1:stars config 0:not stars config
-    uint8_t sdmaChFree;                 // sdma channle status busy status, 1:not busy 0:busy
-    uint32_t irqStatus;                 // sdma ecc err, bus error
-    uint32_t cqeStatus;                 // sdma cqe status
+    uint8_t sdmaBlkFsmState;     // sdma channel fsm status
+    uint8_t dfxSdmaBlkFsmOstCnt; // sdma channle stars config status, 1:stars config 0:not stars config
+    uint8_t sdmaChFree;          // sdma channle status busy status, 1:not busy 0:busy
+    uint32_t irqStatus;          // sdma ecc err, bus error
+    uint32_t cqeStatus;          // sdma cqe status
 };
 
 struct FftsPlusSdmaErrorInfo {
@@ -60,16 +60,16 @@ struct FftsPlusSdmaErrorInfo {
     uint8_t reserve;
     uint16_t sdmaCxtid;
     uint16_t sdmaThreadid;
-    uint32_t irqStatus;                 // sdma ecc err, bus error
-    uint32_t cqeStatus;                 // sdma cqe status
+    uint32_t irqStatus; // sdma ecc err, bus error
+    uint32_t cqeStatus; // sdma cqe status
 };
 
 struct StarsErrorCommonInfo {
     uint16_t type;
     uint16_t coreNum; // exception core num
     uint16_t exceptionSlotId;
-    uint8_t flag; // MTE ERROR FLAG
-    uint8_t slotNum; // exception slot num
+    uint8_t flag;     // MTE ERROR FLAG
+    uint8_t slotNum;  // exception slot num
     uint32_t chipId;
     uint32_t dieId;
     uint16_t streamId;
@@ -247,7 +247,7 @@ struct DavidOneCoreErrorInfo {
     uint32_t subErrType;
     uint32_t isConcurrentExe; // aic是否同时执行两个task的标记位
     starsOstTaskOneCoreInfo ostTaskOneCore[MAX_TASK_NUM_ONE_CORE];
-    uint64_t aicCond; // 汇聚aicCond
+    uint64_t aicCond;         // 汇聚aicCond
     // 从aicCond开始的payload布局必须与DavidOneCoreErrorInfoExt从aicCond开始的payload布局一致。
     // 后续新增Ext寄存器只能在尾部追加，并通过validSize控制实际拷贝长度。
     uint64_t rsvExt[STARS_V2_CORE_ERROR_EXT_RSV_NUM];
@@ -358,7 +358,7 @@ struct StarsOneTimeoutSlotDfxInfo {
     uint64_t aicOwnBitmap;
     uint64_t aivOwnBitmap0;
     uint64_t aivOwnBitmap1;
-} ;
+};
 
 struct StarsCoreTimeoutDfxInfo {
     StarsErrorCommonInfo comm;
@@ -426,8 +426,8 @@ struct davidNotifyErrorInfo {
 };
 
 struct StarsTimeoutErrorInfo {
-    uint8_t  waitType;
-    uint8_t  reserve;
+    uint8_t waitType;
+    uint8_t reserve;
     uint16_t streamId;
     uint16_t sqId;
     uint16_t taskId;
@@ -464,12 +464,12 @@ struct StarsHcclFftsplusTimeoutInfo {
     } contextInfo;
 };
 
-struct StarsCcuDfxInfo{
- 	uint8_t dieId;
- 	uint8_t missionId;
- 	uint8_t status;
- 	uint8_t subStatus;
- 	uint8_t panicLog[MAX_CCU_EXCEPTION_INFO_SIZE];
+struct StarsCcuDfxInfo {
+    uint8_t dieId;
+    uint8_t missionId;
+    uint8_t status;
+    uint8_t subStatus;
+    uint8_t panicLog[MAX_CCU_EXCEPTION_INFO_SIZE];
 };
 
 struct StarsCcuErrorInfo {
@@ -482,7 +482,7 @@ struct StarsFusionKernelErrorInfo {
     StarsErrorCommonInfo comm;
     uint16_t sqeLength;
     uint16_t subType;
-    uint32_t cqeStatus;           /* 0xFFFFFFFF means invalid value */
+    uint32_t cqeStatus; /* 0xFFFFFFFF means invalid value */
     uint32_t aicError : 1;
     uint32_t aivError : 1;
     uint32_t aicpuError : 1;
@@ -524,17 +524,17 @@ struct StarsDeviceErrorInfoRingBuffer {
     union {
         StarsCoreErrorInfoRingBuffer coreErrorInfo;
         DavidCoreErrorInfoRingBuffer davidCoreErrorInfo;
-        StarsSdmaErrorInfo           sdmaErrorInfo;
-        StarsAicpuErrorInfo          aicpuErrorInfo;
-        StarsDvppErrorInfo           dvppErrorInfo;
-        StarsSqeErrorInfo            sqeErrorInfo;
-        StarsTimeoutErrorInfo        timeoutErrorInfo;
+        StarsSdmaErrorInfo sdmaErrorInfo;
+        StarsAicpuErrorInfo aicpuErrorInfo;
+        StarsDvppErrorInfo dvppErrorInfo;
+        StarsSqeErrorInfo sqeErrorInfo;
+        StarsTimeoutErrorInfo timeoutErrorInfo;
         StarsHcclFftsplusTimeoutInfo hcclFftsplusTimeoutInfo;
-        StarsDsaErrorInfo            dsaErrorInfo;
-        StarsFusionKernelErrorInfoRingBuffer   fusionKernelErrorInfo;
-        StarsCcuErrorInfo            ccuErrorInfo;
-        StarsCoreTimeoutDfxInfo      coreTimeoutDfxInfo;
-        StarsV2CoreTimeoutDfxInfo    starsV2CoreTimeoutDfxInfo;
+        StarsDsaErrorInfo dsaErrorInfo;
+        StarsFusionKernelErrorInfoRingBuffer fusionKernelErrorInfo;
+        StarsCcuErrorInfo ccuErrorInfo;
+        StarsCoreTimeoutDfxInfo coreTimeoutDfxInfo;
+        StarsV2CoreTimeoutDfxInfo starsV2CoreTimeoutDfxInfo;
     } u;
 };
 
@@ -555,22 +555,22 @@ static_assert(
 // 用在逻辑处理中，与StarsDeviceErrorInfoRingBuffer搭配
 struct StarsDeviceErrorInfo {
     union {
-        StarsCoreErrorInfo           coreErrorInfo;
-        DavidCoreErrorInfo           davidCoreErrorInfo;
-        StarsSdmaErrorInfo           sdmaErrorInfo;
-        StarsAicpuErrorInfo          aicpuErrorInfo;
-        StarsDvppErrorInfo           dvppErrorInfo;
-        StarsSqeErrorInfo            sqeErrorInfo;
-        StarsTimeoutErrorInfo        timeoutErrorInfo;
+        StarsCoreErrorInfo coreErrorInfo;
+        DavidCoreErrorInfo davidCoreErrorInfo;
+        StarsSdmaErrorInfo sdmaErrorInfo;
+        StarsAicpuErrorInfo aicpuErrorInfo;
+        StarsDvppErrorInfo dvppErrorInfo;
+        StarsSqeErrorInfo sqeErrorInfo;
+        StarsTimeoutErrorInfo timeoutErrorInfo;
         StarsHcclFftsplusTimeoutInfo hcclFftsplusTimeoutInfo;
-        StarsDsaErrorInfo            dsaErrorInfo;
-        StarsFusionKernelErrorInfo   fusionKernelErrorInfo;
-        StarsCcuErrorInfo            ccuErrorInfo;
-        StarsCoreTimeoutDfxInfo      coreTimeoutDfxInfo;
-        StarsV2CoreTimeoutDfxInfo    starsV2CoreTimeoutDfxInfo;
-    }u;
+        StarsDsaErrorInfo dsaErrorInfo;
+        StarsFusionKernelErrorInfo fusionKernelErrorInfo;
+        StarsCcuErrorInfo ccuErrorInfo;
+        StarsCoreTimeoutDfxInfo coreTimeoutDfxInfo;
+        StarsV2CoreTimeoutDfxInfo starsV2CoreTimeoutDfxInfo;
+    } u;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif

@@ -16,7 +16,7 @@ int32_t ReadHeterogenousModeFromConfigIni(void)
 {
     std::string fileName;
     // read env ASCEND_LATEST_INSTALL_PATH
-    const char_t *env = nullptr;
+    const char_t* env = nullptr;
     MM_SYS_GET_ENV(MM_ENV_ASCEND_LATEST_INSTALL_PATH, env);
     if ((env == nullptr) || (*env == '\0')) {
         RT_LOG(RT_LOG_WARNING, "can not read ASCEND_LATEST_INSTALL_PATH! isHeterogenous=0.");
@@ -39,9 +39,7 @@ static std::once_flag heterogenousOnceFlag;
 int32_t RtGetHeterogenous(void)
 {
     static int32_t isHeterogenous = 0;
-    std::call_once(heterogenousOnceFlag, [&]() {
-        isHeterogenous = ReadHeterogenousModeFromConfigIni();
-    });
+    std::call_once(heterogenousOnceFlag, [&]() { isHeterogenous = ReadHeterogenousModeFromConfigIni(); });
     return isHeterogenous;
 }
 
@@ -50,5 +48,5 @@ bool RtIsHeterogenous(void)
     constexpr int32_t isHeterogenous = 1;
     return (RtGetHeterogenous() == isHeterogenous);
 }
-}
-}
+} // namespace runtime
+} // namespace cce

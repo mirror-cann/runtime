@@ -34,12 +34,13 @@ typedef struct {
     uint32_t sqAddrItemSize;  // Size of memory units in each pool
     uint32_t sqAddrInitCount; // Indicates how many sqAddrItemSize there are in each pool.
     uint32_t sqAddrMaxCount;  // The entire pool can apply for up to how many sqAddrItemSize allocations.
-                              // When memory is insufficient, a new pool of size sqAddrInitCount * sqAddrItemSize will be allocated.
+                             // When memory is insufficient, a new pool of size sqAddrInitCount * sqAddrItemSize will be
+                             // allocated.
 } SqAddrMemoryOrder_t;
 
 class SqAddrMemoryOrder : public NoCopy {
 public:
-    explicit SqAddrMemoryOrder(Device * const dev);
+    explicit SqAddrMemoryOrder(Device* const dev);
     ~SqAddrMemoryOrder() override;
     rtError_t Init() const;
     uint32_t GetMemOrderSizeByMemOrderType(const uint32_t memOrderType) const;
@@ -53,23 +54,23 @@ public:
      * Currently supported memOrderSize values are: 32k, 64k, 128k, 256k, 512k, 1M, 2M
      * @param [out] **sqAddr     Second-level pointer, *sqAddr is the address of the allocated pointer.
      */
-    rtError_t AllocSqAddr(const uint32_t memOrderType, uint64_t **sqAddr);
+    rtError_t AllocSqAddr(const uint32_t memOrderType, uint64_t** sqAddr);
 
     /**
      * @param [in]  memOrderType Used to indicate which pool the sqAddr was allocated from.
      * @param [in-] *sqAddr      Memory to be released, returned only to the pool.
      */
-    rtError_t FreeSqAddr(const uint64_t *sqAddr, const uint32_t memOrderType);
+    rtError_t FreeSqAddr(const uint64_t* sqAddr, const uint32_t memOrderType);
 
-    static void *DrvAllocSqAddr(const size_t size, void * const para);
-    static void DrvFreeSqAddr(void * const addr, void * const para);
+    static void* DrvAllocSqAddr(const size_t size, void* const para);
+    static void DrvFreeSqAddr(void* const addr, void* const para);
 
 private:
-    Device *device_;
+    Device* device_;
     std::mutex sqAddrAllocatorsMutex_;
     std::vector<std::pair<SQ_ADDR_MEM_ORDER_TYPE, BufferAllocator*>> sqAddrAllocators_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_SQ_ADDR_MEMORY_POOL_HPP
+#endif // CCE_RUNTIME_SQ_ADDR_MEMORY_POOL_HPP

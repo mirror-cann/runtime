@@ -17,8 +17,8 @@
 
 namespace cce {
 namespace runtime {
-rtError_t GetIpcNotifyVa(const uint32_t notifyId, Driver * const curDrv, const uint32_t deviceId, const uint32_t phyId,
-    uint64_t &Va)
+rtError_t GetIpcNotifyVa(
+    const uint32_t notifyId, Driver* const curDrv, const uint32_t deviceId, const uint32_t phyId, uint64_t& Va)
 {
     UNUSED(curDrv);
     UNUSED(phyId);
@@ -28,7 +28,7 @@ rtError_t GetIpcNotifyVa(const uint32_t notifyId, Driver * const curDrv, const u
     return RT_ERROR_NONE;
 }
 
-rtError_t GetConnectUbFlagFromDrv(const uint32_t deviceId, bool &connectUbFlag)
+rtError_t GetConnectUbFlagFromDrv(const uint32_t deviceId, bool& connectUbFlag)
 {
     UNUSED(deviceId);
     connectUbFlag = false;
@@ -37,12 +37,14 @@ rtError_t GetConnectUbFlagFromDrv(const uint32_t deviceId, bool &connectUbFlag)
 
 rtError_t InitDrvEventThread(const uint32_t deviceId)
 {
-    COND_RETURN_WARN(&halDrvEventThreadInit == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        &halDrvEventThreadInit == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halDrvEventThreadInit does not exist");
 
     const drvError_t err = halDrvEventThreadInit(deviceId);
-    COND_RETURN_ERROR_MSG_INNER(err != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(err),
-        "Failed to init drv event thread, error=%#x, devId=%u", RT_GET_DRV_ERRCODE(err), deviceId);
+    COND_RETURN_ERROR_MSG_INNER(
+        err != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(err), "Failed to init drv event thread, error=%#x, devId=%u",
+        RT_GET_DRV_ERRCODE(err), deviceId);
     return RT_GET_DRV_ERRCODE(err);
 }
 
@@ -51,25 +53,23 @@ rtError_t GetDrvSentinelMode(void)
     constexpr int32_t sentinelIndex = 11;
     int32_t sentinelMode = 0;
     int64_t dieNum = 0;
-    Driver *curDrv = nullptr;
+    Driver* curDrv = nullptr;
     curDrv = Runtime::Instance()->driverFactory_.GetDriver(NPU_DRIVER);
     rtError_t err = curDrv->GetCentreNotify(sentinelIndex, &sentinelMode); /* index 11可以获取是否为哨兵模式 */
-    COND_RETURN_ERROR_MSG_INNER(err != RT_ERROR_NONE, err,
-        "Failed to get driver sentinel mode, error=%#x.", err);
+    COND_RETURN_ERROR_MSG_INNER(err != RT_ERROR_NONE, err, "Failed to get driver sentinel mode, error=%#x.", err);
     err = curDrv->GetDevInfo(0, MODULE_TYPE_AICORE, INFO_TYPE_DIE_NUM, &dieNum);
-    COND_RETURN_ERROR_MSG_INNER(err != RT_ERROR_NONE, err,
-        "Failed to get die number, error=%#x.", err);
+    COND_RETURN_ERROR_MSG_INNER(err != RT_ERROR_NONE, err, "Failed to get die number, error=%#x.", err);
     // 1：to lowpower  3: lowpower
     const bool mode = ((sentinelMode == 1) || (sentinelMode == 3) || (dieNum == 0)) ? true : false;
     Runtime::Instance()->SetSentinelMode(mode);
-    RT_LOG(RT_LOG_INFO,"Get sentinel mode info success.sentinelMode=%u,dieNum=%lld", sentinelMode, dieNum);
+    RT_LOG(RT_LOG_INFO, "Get sentinel mode info success.sentinelMode=%u,dieNum=%lld", sentinelMode, dieNum);
     return RT_ERROR_NONE;
 }
 
-bool IsOfflineNotSupportMemType(const rtMemType_t &type)
+bool IsOfflineNotSupportMemType(const rtMemType_t& type)
 {
     UNUSED(type);
     return false;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

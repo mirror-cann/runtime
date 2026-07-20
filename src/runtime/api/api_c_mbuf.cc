@@ -21,22 +21,22 @@ extern "C" {
 #endif // __cplusplus
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufInit(rtMemBuffCfg_t *cfg)
+rtError_t rtMbufInit(rtMemBuffCfg_t* cfg)
 {
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     const rtError_t error = apiMbufInstance->MbufInit(cfg);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT); // special state
-    COND_RETURN_WITH_NOLOG(error == RT_ERROR_DRV_REPEATED_INIT, ACL_ERROR_RT_REPEATED_INIT); // special state
+    COND_RETURN_WITH_NOLOG(error == RT_ERROR_DRV_REPEATED_INIT, ACL_ERROR_RT_REPEATED_INIT);         // special state
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufBuild(void* buff, const uint64_t size, rtMbufPtr_t *mbufPtr)
+rtError_t rtMbufBuild(void* buff, const uint64_t size, rtMbufPtr_t* mbufPtr)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(buff, ACL_ERROR_RT_PARAM_INVALID);
     const rtError_t error = apiMbufInstance->MbufBuild(buff, size, mbufPtr);
@@ -46,10 +46,10 @@ rtError_t rtMbufBuild(void* buff, const uint64_t size, rtMbufPtr_t *mbufPtr)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufAlloc(rtMbufPtr_t *memBuf, uint64_t size)
+rtError_t rtMbufAlloc(rtMbufPtr_t* memBuf, uint64_t size)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(memBuf, ACL_ERROR_RT_PARAM_INVALID);
     const rtError_t error = apiMbufInstance->MbufAlloc(memBuf, size);
@@ -59,10 +59,10 @@ rtError_t rtMbufAlloc(rtMbufPtr_t *memBuf, uint64_t size)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufAllocEx(rtMbufPtr_t *memBuf, uint64_t size, uint64_t flag, int32_t grpId)
+rtError_t rtMbufAllocEx(rtMbufPtr_t* memBuf, uint64_t size, uint64_t flag, int32_t grpId)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(memBuf, ACL_ERROR_RT_PARAM_INVALID);
     const rtError_t error = apiMbufInstance->MbufAllocEx(memBuf, size, flag, grpId);
@@ -72,10 +72,10 @@ rtError_t rtMbufAllocEx(rtMbufPtr_t *memBuf, uint64_t size, uint64_t flag, int32
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufUnBuild(const rtMbufPtr_t mbufPtr, void **buff, uint64_t *size)
+rtError_t rtMbufUnBuild(const rtMbufPtr_t mbufPtr, void** buff, uint64_t* size)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(mbufPtr, ACL_ERROR_RT_PARAM_INVALID);
     const rtError_t error = apiMbufInstance->MbufUnBuild(mbufPtr, buff, size);
@@ -85,9 +85,9 @@ rtError_t rtMbufUnBuild(const rtMbufPtr_t mbufPtr, void **buff, uint64_t *size)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtBuffGet(const rtMbufPtr_t mbufPtr, void *buff, const uint64_t size)
+rtError_t rtBuffGet(const rtMbufPtr_t mbufPtr, void* buff, const uint64_t size)
 {
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(buff, ACL_ERROR_RT_PARAM_INVALID);
     const rtError_t error = apiMbufInstance->MbufGet(mbufPtr, buff, size);
@@ -95,12 +95,11 @@ rtError_t rtBuffGet(const rtMbufPtr_t mbufPtr, void *buff, const uint64_t size)
     return ACL_RT_SUCCESS;
 }
 
-
 VISIBILITY_DEFAULT
-rtError_t rtBuffPut(const rtMbufPtr_t mbufPtr, void *buff)
+rtError_t rtBuffPut(const rtMbufPtr_t mbufPtr, void* buff)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(buff, ACL_ERROR_RT_PARAM_INVALID);
     const rtError_t error = apiMbufInstance->MbufPut(mbufPtr, buff);
@@ -108,12 +107,11 @@ rtError_t rtBuffPut(const rtMbufPtr_t mbufPtr, void *buff)
     return ACL_RT_SUCCESS;
 }
 
-
 VISIBILITY_DEFAULT
 rtError_t rtMbufFree(rtMbufPtr_t memBuf)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(memBuf, ACL_ERROR_RT_PARAM_INVALID);
     const rtError_t error = apiMbufInstance->MbufFree(memBuf);
@@ -126,7 +124,7 @@ VISIBILITY_DEFAULT
 rtError_t rtMbufSetDataLen(rtMbufPtr_t memBuf, uint64_t len)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(memBuf, ACL_ERROR_RT_PARAM_INVALID);
     const rtError_t error = apiMbufInstance->MbufSetDataLen(memBuf, len);
@@ -135,9 +133,9 @@ rtError_t rtMbufSetDataLen(rtMbufPtr_t memBuf, uint64_t len)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufGetDataLen(rtMbufPtr_t memBuf, uint64_t *len)
+rtError_t rtMbufGetDataLen(rtMbufPtr_t memBuf, uint64_t* len)
 {
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(memBuf, ACL_ERROR_RT_PARAM_INVALID);
     NULL_PTR_RETURN_MSG_OUTER(len, ACL_ERROR_RT_PARAM_INVALID);
@@ -148,9 +146,9 @@ rtError_t rtMbufGetDataLen(rtMbufPtr_t memBuf, uint64_t *len)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufGetBuffAddr(rtMbufPtr_t memBuf, void **buf)
+rtError_t rtMbufGetBuffAddr(rtMbufPtr_t memBuf, void** buf)
 {
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(memBuf, ACL_ERROR_RT_PARAM_INVALID);
     NULL_PTR_RETURN_MSG_OUTER(buf, ACL_ERROR_RT_PARAM_INVALID);
@@ -161,9 +159,9 @@ rtError_t rtMbufGetBuffAddr(rtMbufPtr_t memBuf, void **buf)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufGetBuffSize(rtMbufPtr_t memBuf, uint64_t *totalSize)
+rtError_t rtMbufGetBuffSize(rtMbufPtr_t memBuf, uint64_t* totalSize)
 {
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(memBuf, ACL_ERROR_RT_PARAM_INVALID);
     NULL_PTR_RETURN_MSG_OUTER(totalSize, ACL_ERROR_RT_PARAM_INVALID);
@@ -174,9 +172,9 @@ rtError_t rtMbufGetBuffSize(rtMbufPtr_t memBuf, uint64_t *totalSize)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufGetPrivInfo(rtMbufPtr_t memBuf,  void **priv, uint64_t *size)
+rtError_t rtMbufGetPrivInfo(rtMbufPtr_t memBuf, void** priv, uint64_t* size)
 {
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(memBuf, ACL_ERROR_RT_PARAM_INVALID);
     NULL_PTR_RETURN_MSG_OUTER(priv, ACL_ERROR_RT_PARAM_INVALID);
@@ -188,9 +186,9 @@ rtError_t rtMbufGetPrivInfo(rtMbufPtr_t memBuf,  void **priv, uint64_t *size)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufCopyBufRef(rtMbufPtr_t memBuf, rtMbufPtr_t *newMemBuf)
+rtError_t rtMbufCopyBufRef(rtMbufPtr_t memBuf, rtMbufPtr_t* newMemBuf)
 {
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG_OUTER(memBuf, ACL_ERROR_RT_PARAM_INVALID);
     NULL_PTR_RETURN_MSG_OUTER(newMemBuf, ACL_ERROR_RT_PARAM_INVALID);
@@ -203,7 +201,7 @@ rtError_t rtMbufCopyBufRef(rtMbufPtr_t memBuf, rtMbufPtr_t *newMemBuf)
 VISIBILITY_DEFAULT
 rtError_t rtMbufChainAppend(rtMbufPtr_t memBufChainHead, rtMbufPtr_t memBuf)
 {
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG(memBufChainHead, ACL_ERROR_RT_PARAM_INVALID);
     NULL_PTR_RETURN_MSG(memBuf, ACL_ERROR_RT_PARAM_INVALID);
@@ -214,9 +212,9 @@ rtError_t rtMbufChainAppend(rtMbufPtr_t memBufChainHead, rtMbufPtr_t memBuf)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufChainGetMbufNum(rtMbufPtr_t memBufChainHead, uint32_t *num)
+rtError_t rtMbufChainGetMbufNum(rtMbufPtr_t memBufChainHead, uint32_t* num)
 {
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG(memBufChainHead, ACL_ERROR_RT_PARAM_INVALID);
     NULL_PTR_RETURN_MSG(num, ACL_ERROR_RT_PARAM_INVALID);
@@ -227,9 +225,9 @@ rtError_t rtMbufChainGetMbufNum(rtMbufPtr_t memBufChainHead, uint32_t *num)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMbufChainGetMbuf(rtMbufPtr_t memBufChainHead, uint32_t index, rtMbufPtr_t *memBuf)
+rtError_t rtMbufChainGetMbuf(rtMbufPtr_t memBufChainHead, uint32_t index, rtMbufPtr_t* memBuf)
 {
-    ApiMbuf * const apiMbufInstance = ApiMbuf::Instance();
+    ApiMbuf* const apiMbufInstance = ApiMbuf::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiMbufInstance);
     NULL_PTR_RETURN_MSG(memBufChainHead, ACL_ERROR_RT_PARAM_INVALID);
     NULL_PTR_RETURN_MSG(memBuf, ACL_ERROR_RT_PARAM_INVALID);

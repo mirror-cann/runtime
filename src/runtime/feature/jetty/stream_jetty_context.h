@@ -22,7 +22,7 @@ class Driver;
 
 struct StreamJettyContext {
     static constexpr uint32_t WQE_BUFFER_DEPTH = 2048U;
-    static constexpr uint32_t WQE_SIZE = 64U;  // sizeof(rtDavidSqe_t)
+    static constexpr uint32_t WQE_SIZE = 64U; // sizeof(rtDavidSqe_t)
     static constexpr uint32_t JETTY_DEPTH_MAX = 32768U;
 
     // Host WQE buffers, each chunk is WQE_BUFFER_DEPTH * WQE_SIZE bytes
@@ -32,18 +32,18 @@ struct StreamJettyContext {
     uint32_t capacity = 0U;
 
     // Record of tasks that need jetty info patch: (taskInfo pointer, wqeCount)
- 	std::vector<std::pair<TaskInfo*, uint32_t>> taskWqeCounts;
+    std::vector<std::pair<TaskInfo*, uint32_t>> taskWqeCounts;
     JettyType jettyType = JettyType::JETTY_TYPE_MAX;
     bool isLargeDepth = false;
     uint64_t jettyHandle = 0U;
 
-    uint8_t *GetNextWqeBuffer() const;
-    rtError_t ExpandCapacity(Driver *driver);
-    rtError_t RoundUpCapacity(Driver *driver, uint32_t deviceId);
-    void ReleaseBuffers(Driver *driver);
+    uint8_t* GetNextWqeBuffer() const;
+    rtError_t ExpandCapacity(Driver* driver);
+    rtError_t RoundUpCapacity(Driver* driver, uint32_t deviceId);
+    void ReleaseBuffers(Driver* driver);
 
 private:
-    rtError_t AllocWqeBuffer(Driver *driver);
+    rtError_t AllocWqeBuffer(Driver* driver);
 };
 
 } // namespace runtime

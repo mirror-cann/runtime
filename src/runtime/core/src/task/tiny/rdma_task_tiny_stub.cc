@@ -16,14 +16,14 @@
 namespace cce {
 namespace runtime {
 
-void PrintErrorInfoForRDMAPiValueModifyTask(TaskInfo *const taskInfo, const uint32_t devId)
+void PrintErrorInfoForRDMAPiValueModifyTask(TaskInfo* const taskInfo, const uint32_t devId)
 {
     UNUSED(taskInfo);
     UNUSED(devId);
 }
 
 rtError_t SubmitRdmaPiValueModifyTask(
-    Stream *const stm, const rtFftsPlusTaskInfo_t *const fftsPlusTaskInfo, const void *deviceDescAlignBuf)
+    Stream* const stm, const rtFftsPlusTaskInfo_t* const fftsPlusTaskInfo, const void* deviceDescAlignBuf)
 {
     UNUSED(stm);
     UNUSED(fftsPlusTaskInfo);
@@ -31,46 +31,43 @@ rtError_t SubmitRdmaPiValueModifyTask(
     return RT_ERROR_NONE;
 }
 
-void ConstructSqeRdmaPiValueModifyTask(TaskInfo *taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeRdmaPiValueModifyTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     UNUSED(taskInfo);
     UNUSED(command);
 }
 
-void RdmaPiValueModifyTaskUnInit(TaskInfo *taskInfo)
-{
-    UNUSED(taskInfo);
-}
+void RdmaPiValueModifyTaskUnInit(TaskInfo* taskInfo) { UNUSED(taskInfo); }
 
-void PrintDfxInfoForRdmaPiValueModifyTask(const TaskInfo *taskInfo, const uint32_t devId)
+void PrintDfxInfoForRdmaPiValueModifyTask(const TaskInfo* taskInfo, const uint32_t devId)
 {
     UNUSED(taskInfo);
     UNUSED(devId);
 }
 
-uint32_t GetSendSqeNumForRdmaDbSendTask(TaskInfo * const taskInfo)
+uint32_t GetSendSqeNumForRdmaDbSendTask(TaskInfo* const taskInfo)
 {
     UNUSED(taskInfo);
     return 1U;
 }
 
-void ToCommandBodyForRdmaSendTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForRdmaSendTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     UNUSED(taskInfo);
     UNUSED(command);
 }
 
-void ToCommandBodyForRdmaDbSendTask(TaskInfo* taskInfo, rtCommand_t * const command)
+void ToCommandBodyForRdmaDbSendTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     UNUSED(taskInfo);
     UNUSED(command);
 }
 
-void ConstructSqeForRdmaDbSendTask(TaskInfo* taskInfo, rtStarsSqe_t * const command)
+void ConstructSqeForRdmaDbSendTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     UNUSED(taskInfo);
     UNUSED(command);
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -19,13 +19,13 @@ namespace runtime {
 
 #if F_DESC("AddEndGraphTask")
 
-static void ConstructDavidSqeForAddEndGraphTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+static void ConstructDavidSqeForAddEndGraphTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsAicpuKernelSqe * const aicpuKernelSqe = &(davidSqe->aicpuSqe);
-    Stream * const stm = taskInfo->stream;
+    RtDavidStarsAicpuKernelSqe* const aicpuKernelSqe = &(davidSqe->aicpuSqe);
+    Stream* const stm = taskInfo->stream;
 
     aicpuKernelSqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
     aicpuKernelSqe->header.blockDim = 1U;
@@ -48,7 +48,8 @@ static void ConstructDavidSqeForAddEndGraphTask(TaskInfo * const taskInfo, void 
     aicpuKernelSqe->paramAddrHigh = static_cast<uint16_t>(taskInfo->u.addEndGraphTask.argptr >> UINT32_BIT_NUM);
 
     aicpuKernelSqe->taskNameStrPtrLow = static_cast<uint32_t>(taskInfo->u.addEndGraphTask.endGraphNamePtr);
-    aicpuKernelSqe->taskNameStrPtrHigh = static_cast<uint16_t>(taskInfo->u.addEndGraphTask.endGraphNamePtr >> UINT32_BIT_NUM);
+    aicpuKernelSqe->taskNameStrPtrHigh =
+        static_cast<uint16_t>(taskInfo->u.addEndGraphTask.endGraphNamePtr >> UINT32_BIT_NUM);
     aicpuKernelSqe->pL2ctrlLow = 0U;
     aicpuKernelSqe->pL2ctrlHigh = 0U;
     aicpuKernelSqe->overflowEn = 0U;
@@ -56,7 +57,7 @@ static void ConstructDavidSqeForAddEndGraphTask(TaskInfo * const taskInfo, void 
     aicpuKernelSqe->extraFieldHigh = 0U;
 
     aicpuKernelSqe->subTopicId = 0U;
-    aicpuKernelSqe->topicId = 3U; // EVENT_TS_HWTS_KERNEL
+    aicpuKernelSqe->topicId = 3U;     // EVENT_TS_HWTS_KERNEL
     aicpuKernelSqe->groupId = 0U;
     aicpuKernelSqe->usrDataLen = 40U; // size: word4-13
     aicpuKernelSqe->destPid = 0U;
@@ -64,9 +65,12 @@ static void ConstructDavidSqeForAddEndGraphTask(TaskInfo * const taskInfo, void 
     aicpuKernelSqe->res5 = 0xFFFFU;
 
     PrintDavidSqe(davidSqe, "AddEndGraphTask");
-    RT_LOG(RT_LOG_INFO, "AddEndGraphTask, topicType=%u, device_id=%u, stream_id=%d,"
-        "task_id=%hu, task_sn=%u.", static_cast<uint32_t>(aicpuKernelSqe->topicType), taskInfo->stream->Device_()->Id_(),
-        stm->Id_(), taskInfo->id, taskInfo->taskSn);
+    RT_LOG(
+        RT_LOG_INFO,
+        "AddEndGraphTask, topicType=%u, device_id=%u, stream_id=%d,"
+        "task_id=%hu, task_sn=%u.",
+        static_cast<uint32_t>(aicpuKernelSqe->topicType), taskInfo->stream->Device_()->Id_(), stm->Id_(), taskInfo->id,
+        taskInfo->taskSn);
 }
 
 #endif
@@ -94,7 +98,7 @@ static bool ModelGraphTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
 
-    const auto &chips = GetDavidChips();
+    const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_END_GRAPH, endGraphFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_EXIT_GRAPH, exitGraphFuncs);
@@ -107,5 +111,5 @@ static bool ModelGraphTaskRegister()
 
 static bool g_modelGraphTaskRegister = ModelGraphTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

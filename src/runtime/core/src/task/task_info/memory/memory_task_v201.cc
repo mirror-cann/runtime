@@ -21,12 +21,12 @@
 namespace cce {
 namespace runtime {
 #if F_DESC("MemcpyAsyncTask")
-void ConstructDavidSqeForMemcpyAsyncTask(TaskInfo *const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForMemcpyAsyncTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
-    MemcpyAsyncTaskInfo * const memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
-    Stream * const stream = taskInfo->stream;
+    MemcpyAsyncTaskInfo* const memcpyAsyncTaskInfo = &(taskInfo->u.memcpyAsyncTaskInfo);
+    Stream* const stream = taskInfo->stream;
     ConstructDavidMemcpySqe(taskInfo, davidSqe, sqBaseAddr);
 
     const uint32_t copyType = memcpyAsyncTaskInfo->copyType;
@@ -35,10 +35,11 @@ void ConstructDavidSqeForMemcpyAsyncTask(TaskInfo *const taskInfo, void *const s
         return;
     }
 
-    const bool isReduce = ((copyKind == RT_MEMCPY_SDMA_AUTOMATIC_ADD) || (copyKind == RT_MEMCPY_SDMA_AUTOMATIC_MAX) ||
-                           (copyKind == RT_MEMCPY_SDMA_AUTOMATIC_MIN) || (copyKind == RT_MEMCPY_SDMA_AUTOMATIC_EQUAL));
+    const bool isReduce =
+        ((copyKind == RT_MEMCPY_SDMA_AUTOMATIC_ADD) || (copyKind == RT_MEMCPY_SDMA_AUTOMATIC_MAX) ||
+         (copyKind == RT_MEMCPY_SDMA_AUTOMATIC_MIN) || (copyKind == RT_MEMCPY_SDMA_AUTOMATIC_EQUAL));
 
-    RtDavidStarsMemcpySqe *const memcpyAsyncSqe = &(davidSqe->memcpyAsyncSqe);
+    RtDavidStarsMemcpySqe* const memcpyAsyncSqe = &(davidSqe->memcpyAsyncSqe);
     memcpyAsyncSqe->opcode = isReduce ? GetOpcodeForReduce(taskInfo) : 0U;
     if (isReduce && (memcpyAsyncTaskInfo->copyDataType == RT_DATA_TYPE_UINT32)) {
         memcpyAsyncSqe->opcode = 0U;
@@ -46,15 +47,20 @@ void ConstructDavidSqeForMemcpyAsyncTask(TaskInfo *const taskInfo, void *const s
         memcpyAsyncSqe->opcode |= ReduceOpcodeLow(taskInfo);
     }
 
-    RT_LOG(RT_LOG_INFO, "copyKind=%u, Opcode=0x%x.", static_cast<uint32_t>(copyKind),
+    RT_LOG(
+        RT_LOG_INFO, "copyKind=%u, Opcode=0x%x.", static_cast<uint32_t>(copyKind),
         static_cast<uint32_t>(memcpyAsyncSqe->opcode));
 
     PrintDavidSqe(davidSqe, "sdmaTask");
-    RT_LOG(RT_LOG_INFO, "ConstructMemcpySqe, size=%u, qos=%u, partid=%u, copyType=%u, deviceId=%u, streamId=%d,"
-        "taskId=%hu", static_cast<uint32_t>(memcpyAsyncTaskInfo->size), memcpyAsyncSqe->qos, memcpyAsyncSqe->mapamPartId, memcpyAsyncTaskInfo->copyType,
-        taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id);
+    RT_LOG(
+        RT_LOG_INFO,
+        "ConstructMemcpySqe, size=%u, qos=%u, partid=%u, copyType=%u, deviceId=%u, streamId=%d,"
+        "taskId=%hu",
+        static_cast<uint32_t>(memcpyAsyncTaskInfo->size), memcpyAsyncSqe->qos, memcpyAsyncSqe->mapamPartId,
+        memcpyAsyncTaskInfo->copyType, taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id);
 
-    RT_LOG(RT_LOG_INFO, "MemcpyAsyncTask, deviceId=%u, streamId=%d, taskId=%u, copyType=%u",
+    RT_LOG(
+        RT_LOG_INFO, "MemcpyAsyncTask, deviceId=%u, streamId=%d, taskId=%u, copyType=%u",
         taskInfo->stream->Device_()->Id_(), static_cast<int32_t>(stream->Id_()), static_cast<uint32_t>(taskInfo->id),
         memcpyAsyncTaskInfo->copyType);
 }
@@ -179,5 +185,5 @@ static bool MemoryTaskRegister()
 }
 
 static bool g_memoryTaskRegister = MemoryTaskRegister();
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

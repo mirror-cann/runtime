@@ -14,8 +14,8 @@ namespace cce {
 namespace runtime {
 // Only for API, Get the last errcode and record it in the current thread and current ctx.
 rtError_t GetRtExtErrCodeAndSetGlobalErr(const rtError_t errCode);
-rtError_t RtCheckDeviceIdListValid(const uint32_t * const devIdList, const uint32_t devCnt);
+rtError_t RtCheckDeviceIdListValid(const uint32_t* const devIdList, const uint32_t devCnt);
 rtError_t RtCheckDeviceIdValid(const uint32_t deviceId);
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

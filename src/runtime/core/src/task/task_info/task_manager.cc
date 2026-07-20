@@ -39,19 +39,19 @@ namespace runtime {
 
 TaskFuncArrays g_taskFuncArrays[CHIP_END] = {};
 
-static PfnTaskToCmd *g_toCommandFunc = g_taskFuncArrays[CHIP_BEGIN].toCommandFunc;
-static PfnTaskToSqe *g_toSqeFunc = g_taskFuncArrays[CHIP_BEGIN].toSqeFunc;
-static PfnDoCompleteSucc *g_doCompleteSuccFunc = g_taskFuncArrays[CHIP_BEGIN].doCompleteSuccFunc;
-static PfnWaitAsyncCpCompleteFunc *g_waitAsyncCpCompleteFunc = g_taskFuncArrays[CHIP_BEGIN].waitAsyncCpCompleteFunc;
-static PfnPrintErrorInfo *g_printErrorInfoFunc = g_taskFuncArrays[CHIP_BEGIN].printErrorInfoFunc;
-static PfnTaskSetResult *g_setResultFunc = g_taskFuncArrays[CHIP_BEGIN].setResultFunc;
-static PfnTaskSetStarsResult *g_setStarsResultFunc = g_taskFuncArrays[CHIP_BEGIN].setStarsResultFunc;
-PfnTaskUnInit *g_taskUnInitFunc = g_taskFuncArrays[CHIP_BEGIN].taskUnInitFunc;
+static PfnTaskToCmd* g_toCommandFunc = g_taskFuncArrays[CHIP_BEGIN].toCommandFunc;
+static PfnTaskToSqe* g_toSqeFunc = g_taskFuncArrays[CHIP_BEGIN].toSqeFunc;
+static PfnDoCompleteSucc* g_doCompleteSuccFunc = g_taskFuncArrays[CHIP_BEGIN].doCompleteSuccFunc;
+static PfnWaitAsyncCpCompleteFunc* g_waitAsyncCpCompleteFunc = g_taskFuncArrays[CHIP_BEGIN].waitAsyncCpCompleteFunc;
+static PfnPrintErrorInfo* g_printErrorInfoFunc = g_taskFuncArrays[CHIP_BEGIN].printErrorInfoFunc;
+static PfnTaskSetResult* g_setResultFunc = g_taskFuncArrays[CHIP_BEGIN].setResultFunc;
+static PfnTaskSetStarsResult* g_setStarsResultFunc = g_taskFuncArrays[CHIP_BEGIN].setStarsResultFunc;
+PfnTaskUnInit* g_taskUnInitFunc = g_taskFuncArrays[CHIP_BEGIN].taskUnInitFunc;
 
 static rtChipType_t g_lastInitializedChipType = CHIP_BEGIN;
 static std::mutex g_taskFuncMutex;
 
-static const char_t *g_davidSqeTypeStr[] = {
+static const char_t* g_davidSqeTypeStr[] = {
     "aic",
     "aiv",
     "fusion",
@@ -193,41 +193,23 @@ uint32_t GetReportCount(const rtPkgDesc pkgStat[], const uint8_t profEnabled)
     uint32_t pkgNum = 0U;
     constexpr size_t pkgTypeNum = static_cast<size_t>(RT_PACKAGE_TYPE_BUTT);
     for (size_t loop = 0LU; loop < pkgTypeNum; loop++) {
-        pkgNum += static_cast<uint32_t>(static_cast<uint32_t>(pkgStat[loop].packageReportNum) *
-            pkgStat[loop].expectPackage);
+        pkgNum +=
+            static_cast<uint32_t>(static_cast<uint32_t>(pkgStat[loop].packageReportNum) * pkgStat[loop].expectPackage);
     }
     return pkgNum;
 }
 
-bool CheckPackageState(const TaskInfo *taskInfo)
+bool CheckPackageState(const TaskInfo* taskInfo)
 {
     return taskInfo->pkgStat[RT_PACKAGE_TYPE_TASK_REPORT].expectPackage ==
-        taskInfo->pkgStat[RT_PACKAGE_TYPE_TASK_REPORT].receivePackage;
+           taskInfo->pkgStat[RT_PACKAGE_TYPE_TASK_REPORT].receivePackage;
 }
 #endif
 
-static const char_t *g_sqeTypeStr[] = {
-    "ffts",
-    "aicpu",
-    "resv",
-    "place holder",
-    "event record",
-    "event wait",
-    "notify record",
-    "notify wait",
-    "write value",
-    "resv",
-    "resv",
-    "sdma",
-    "vpc",
-    "jpege",
-    "jpegd",
-    "dsa",
-    "rocce",
-    "pcie dma",
-    "resv",
-    "cdqm",
-    "condition",
+static const char_t* g_sqeTypeStr[] = {
+    "ffts",        "aicpu",       "resv",  "place holder", "event record", "event wait", "notify record",
+    "notify wait", "write value", "resv",  "resv",         "sdma",         "vpc",        "jpege",
+    "jpegd",       "dsa",         "rocce", "pcie dma",     "resv",         "cdqm",       "condition",
 };
 
 #if F_DESC("common func")
@@ -244,7 +226,7 @@ const char_t* GetDavidSqeDescByType(const uint8_t sqeType)
 
 const char_t* GetTaskDescByType(const uint8_t taskType)
 {
-    for (uint32_t i = 0U; i< sizeof(g_taskDesc) / sizeof(TaskTypeRegisterInfo); i++) {
+    for (uint32_t i = 0U; i < sizeof(g_taskDesc) / sizeof(TaskTypeRegisterInfo); i++) {
         if (g_taskDesc[i].type == taskType) {
             return g_taskDesc[i].name;
         }
@@ -252,21 +234,21 @@ const char_t* GetTaskDescByType(const uint8_t taskType)
     return "unknown";
 }
 
-void PrintSqe(const rtStarsSqe_t * const sqe, const char *desc)
+void PrintSqe(const rtStarsSqe_t* const sqe, const char* desc)
 {
     if (CheckLogLevel(static_cast<int32_t>(RUNTIME), DLOG_DEBUG) == 0) {
         return;
     }
 
-    const uint32_t * const cmd = reinterpret_cast<const uint32_t *>(sqe);
+    const uint32_t* const cmd = reinterpret_cast<const uint32_t*>(sqe);
     for (size_t i = 0UL; i < (sizeof(rtStarsSqe_t) / sizeof(uint32_t)); i += 8U) {
-        RT_LOG(RT_LOG_DEBUG, "%s: %08x %08x %08x %08x %08x %08x %08x %08x", desc,
-            cmd[i], cmd[i + 1U], cmd[i + 2U], cmd[i + 3U], cmd[i + 4U], cmd[i + 5U], cmd[i + 6U],
-            cmd[i + 7U]);
+        RT_LOG(
+            RT_LOG_DEBUG, "%s: %08x %08x %08x %08x %08x %08x %08x %08x", desc, cmd[i], cmd[i + 1U], cmd[i + 2U],
+            cmd[i + 3U], cmd[i + 4U], cmd[i + 5U], cmd[i + 6U], cmd[i + 7U]);
     }
 }
 
-void SetStarsResult(TaskInfo *taskInfo, const rtLogicCqReport_t &logicCq)
+void SetStarsResult(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq)
 {
     if (taskInfo->type >= TS_TASK_TYPE_RESERVED) {
         return;
@@ -277,26 +259,26 @@ void SetStarsResult(TaskInfo *taskInfo, const rtLogicCqReport_t &logicCq)
     }
 }
 
-void PrintErrorSqe(const rtStarsSqe_t * const sqe, const char_t *desc)
+void PrintErrorSqe(const rtStarsSqe_t* const sqe, const char_t* desc)
 {
-    const uint32_t * const cmd = reinterpret_cast<const uint32_t *>(sqe);
+    const uint32_t* const cmd = reinterpret_cast<const uint32_t*>(sqe);
     for (size_t i = 0UL; i < (sizeof(rtStarsSqe_t) / sizeof(uint32_t)); i += 8U) {
-        RT_LOG(RT_LOG_ERROR, "%s: %08x %08x %08x %08x %08x %08x %08x %08x", desc,
-            cmd[i], cmd[i + 1U], cmd[i + 2U], cmd[i + 3U], cmd[i + 4U], cmd[i + 5U], cmd[i + 6U],
-            cmd[i + 7U]);
+        RT_LOG(
+            RT_LOG_ERROR, "%s: %08x %08x %08x %08x %08x %08x %08x %08x", desc, cmd[i], cmd[i + 1U], cmd[i + 2U],
+            cmd[i + 3U], cmd[i + 4U], cmd[i + 5U], cmd[i + 6U], cmd[i + 7U]);
     }
 }
 
-Stream* GetReportStream(Stream *stream)
+Stream* GetReportStream(Stream* stream)
 {
-    Stream *reportStream = stream;
-    const Model *const modelObj = reportStream->Model_();
+    Stream* reportStream = stream;
+    const Model* const modelObj = reportStream->Model_();
     if (modelObj != nullptr) {
-        const auto *const captureModel = dynamic_cast<const CaptureModel *>(modelObj);
+        const auto* const captureModel = dynamic_cast<const CaptureModel*>(modelObj);
         if (captureModel != nullptr) {
             const uint16_t rootExeStreamId = captureModel->GetRootExeStreamId();
             if (rootExeStreamId != static_cast<uint16_t>(MAX_UINT16_NUM)) {
-                Stream *rootExeStream = nullptr;
+                Stream* rootExeStream = nullptr;
                 const auto ret = reportStream->Device_()->GetStreamSqCqManage()->GetStreamById(
                     static_cast<uint32_t>(rootExeStreamId), &rootExeStream);
                 if ((ret == RT_ERROR_NONE) && (rootExeStream != nullptr)) {
@@ -304,13 +286,13 @@ Stream* GetReportStream(Stream *stream)
                 }
             }
         }
-        auto *const exeStream = modelObj->GetExeStream();
+        auto* const exeStream = modelObj->GetExeStream();
         reportStream = (exeStream != nullptr) ? exeStream : reportStream;
     }
     return reportStream;
 }
 
-void PrintErrorInfo(TaskInfo *taskInfo, const uint32_t devId)
+void PrintErrorInfo(TaskInfo* taskInfo, const uint32_t devId)
 {
     if (taskInfo->type >= TS_TASK_TYPE_RESERVED) {
         return;
@@ -320,21 +302,22 @@ void PrintErrorInfo(TaskInfo *taskInfo, const uint32_t devId)
         g_printErrorInfoFunc[taskInfo->type](taskInfo, devId);
     }
 
-    const Device * const dev = taskInfo->stream->Device_();
+    const Device* const dev = taskInfo->stream->Device_();
     if (dev->IsDevicePageFault() && (dev->Id_() == devId)) {
         // all context enter context fail mode
         ContextManage::SetGlobalFailureErr(devId, RT_ERROR_TSFW_AICORE_EXCEPTION);
     }
 }
 
-void PrintErrorInfoCommon(TaskInfo *taskInfo, const uint32_t devId)
+void PrintErrorInfoCommon(TaskInfo* taskInfo, const uint32_t devId)
 {
     const int32_t streamId = taskInfo->stream->Id_();
-    Stream *const reportStream = GetReportStream(taskInfo->stream);
-    STREAM_REPORT_ERR_MSG(reportStream, ERR_MODULE_RTS, "Task execution failed, device_id=%u,"
-                          " stream_id=%d, %s=%hu, flip_num=%hu, task_type=%d.",
-                          devId, streamId, TaskIdDesc(), taskInfo->id, taskInfo->flipNum,
-                          static_cast<int32_t>(taskInfo->type));
+    Stream* const reportStream = GetReportStream(taskInfo->stream);
+    STREAM_REPORT_ERR_MSG(
+        reportStream, ERR_MODULE_RTS,
+        "Task execution failed, device_id=%u,"
+        " stream_id=%d, %s=%hu, flip_num=%hu, task_type=%d.",
+        devId, streamId, TaskIdDesc(), taskInfo->id, taskInfo->flipNum, static_cast<int32_t>(taskInfo->type));
 }
 
 // If the task does not have the corresponding docomplete function, use this function.
@@ -342,8 +325,9 @@ void DoCompleteSuccess(TaskInfo* taskInfo, const uint32_t devId)
 {
     if (unlikely(taskInfo->errorCode != static_cast<uint32_t>(RT_ERROR_NONE))) {
         taskInfo->stream->SetErrCode(taskInfo->errorCode);
-        RT_LOG(RT_LOG_ERROR, "device_id=%u, retCode=%#x, [%s].",
-               devId, taskInfo->errorCode, GetTsErrCodeDesc(taskInfo->errorCode));
+        RT_LOG(
+            RT_LOG_ERROR, "device_id=%u, retCode=%#x, [%s].", devId, taskInfo->errorCode,
+            GetTsErrCodeDesc(taskInfo->errorCode));
         PrintErrorInfo(taskInfo, devId);
     }
 }
@@ -359,7 +343,7 @@ const char_t* GetSqeDescByType(const uint8_t sqeType)
     return g_sqeTypeStr[sqeType];
 }
 
-void SetTaskTag(TaskInfo *taskInfo)
+void SetTaskTag(TaskInfo* taskInfo)
 {
     if (!Runtime::Instance()->GetNpuCollectFlag()) {
         return;
@@ -375,7 +359,7 @@ void SetTaskTag(TaskInfo *taskInfo)
     }
 }
 
-rtError_t WaitExecFinish(const TaskInfo *taskInfo)
+rtError_t WaitExecFinish(const TaskInfo* taskInfo)
 {
     if (taskInfo->type == TS_TASK_TYPE_MODEL_EXECUTE) {
         return WaitExecFinishForModelExecuteTask(taskInfo);
@@ -384,7 +368,7 @@ rtError_t WaitExecFinish(const TaskInfo *taskInfo)
     return RT_ERROR_NONE;
 }
 
-void TaskCommonInfoInit(TaskInfo *taskInfo)
+void TaskCommonInfoInit(TaskInfo* taskInfo)
 {
     taskInfo->pkgStat[RT_PACKAGE_TYPE_TASK_REPORT].packageReportNum = 1U;
     taskInfo->pkgStat[RT_PACKAGE_TYPE_TASK_REPORT].expectPackage = 1U;
@@ -409,7 +393,7 @@ uint64_t CombineTo64Bit(uint32_t high, uint32_t low)
     return temp;
 }
 
-void UpdateFlipNum(TaskInfo *taskInfo, const bool isDisableThread)
+void UpdateFlipNum(TaskInfo* taskInfo, const bool isDisableThread)
 {
     if (Runtime::Instance()->GetDisableThread() != isDisableThread) {
         return;
@@ -424,14 +408,14 @@ void UpdateFlipNum(TaskInfo *taskInfo, const bool isDisableThread)
     }
 }
 
-void SetResultCommon(TaskInfo *taskInfo, const void *const data, const uint32_t dataSize)
+void SetResultCommon(TaskInfo* taskInfo, const void* const data, const uint32_t dataSize)
 {
     UNUSED(dataSize);
-    const uint32_t *const tsData = static_cast<const uint32_t *>(data);
+    const uint32_t* const tsData = static_cast<const uint32_t*>(data);
     taskInfo->errorCode = static_cast<uint32_t>(*tsData & 0xFFFU);
 }
 
-void InitByStream(TaskInfo *const taskInfo, Stream *stream)
+void InitByStream(TaskInfo* const taskInfo, Stream* stream)
 {
     taskInfo->stream = stream;
     taskInfo->tid = GetCurrentTid();
@@ -439,7 +423,7 @@ void InitByStream(TaskInfo *const taskInfo, Stream *stream)
     taskInfo->serial = false;
 }
 
-void SetStarsResultCommon(TaskInfo *taskInfo, const rtLogicCqReport_t &logicCq)
+void SetStarsResultCommon(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq)
 {
     if ((logicCq.errorType & RT_STARS_EXIST_ERROR) != 0U) {
         if (logicCq.errorCode != TS_SUCCESS) {
@@ -452,8 +436,8 @@ void SetStarsResultCommon(TaskInfo *taskInfo, const rtLogicCqReport_t &logicCq)
                 TS_ERROR_TASK_SQE_ERROR,
                 TS_ERROR_DEBUG_REGISTER_CONFLICT,
                 TS_ERROR_DEBUG_INVALID_TASK_STATUS};
-            const uint32_t errorIndex =
-                static_cast<uint32_t>(BitScan(static_cast<uint64_t>(logicCq.errorType) & static_cast<uint64_t>(RT_STARS_EXIST_ERROR)));
+            const uint32_t errorIndex = static_cast<uint32_t>(
+                BitScan(static_cast<uint64_t>(logicCq.errorType) & static_cast<uint64_t>(RT_STARS_EXIST_ERROR)));
             taskInfo->errorCode = errMap[errorIndex];
         }
     }
@@ -472,13 +456,13 @@ rtError_t WaitAsyncCopyComplete(TaskInfo* taskInfo)
     return RT_ERROR_NONE;
 }
 
-void TaskUnInitProc(TaskInfo *taskInfo)
+void TaskUnInitProc(TaskInfo* taskInfo)
 {
     if (taskInfo->type >= TS_TASK_TYPE_RESERVED) {
         return;
     }
 
-    Stream * const stream = taskInfo->stream;
+    Stream* const stream = taskInfo->stream;
     const uint16_t taskId = taskInfo->id;
 
     if (Runtime::Instance()->GetNpuCollectFlag()) {
@@ -496,7 +480,7 @@ void DoCompleteError(const uint32_t completeError)
     UNUSED(completeError);
 }
 
-void Complete(TaskInfo *const taskInfo, const uint32_t devId = RT_MAX_DEV_NUM)
+void Complete(TaskInfo* const taskInfo, const uint32_t devId = RT_MAX_DEV_NUM)
 {
     if (taskInfo->error != 0U) {
         DoCompleteError(taskInfo->error);
@@ -507,7 +491,7 @@ void Complete(TaskInfo *const taskInfo, const uint32_t devId = RT_MAX_DEV_NUM)
     }
 }
 
-void SetResult(TaskInfo* taskInfo, const void *const data, const uint32_t dataSize)
+void SetResult(TaskInfo* taskInfo, const void* const data, const uint32_t dataSize)
 {
     if (taskInfo->type >= TS_TASK_TYPE_RESERVED) {
         return;
@@ -520,7 +504,7 @@ void SetResult(TaskInfo* taskInfo, const void *const data, const uint32_t dataSi
 
 void DoTaskComplete(TaskInfo* taskInfo, const uint32_t devId)
 {
-    Stream *stm = taskInfo->stream;
+    Stream* stm = taskInfo->stream;
 
     /* task need support O(N)--O(1) */
     if (stm->GetIsSupportASyncRecycle() && stm->isHasPcieBar_) {
@@ -538,10 +522,9 @@ uint32_t GetFlipTaskId(uint32_t taskId, uint16_t flipNum)
     return flipTaskId;
 }
 
-uint32_t CovertToFlipTaskId(const int32_t streamId, const uint32_t taskId, const Device * const dev)
+uint32_t CovertToFlipTaskId(const int32_t streamId, const uint32_t taskId, const Device* const dev)
 {
-    TaskInfo *workTask = dev->GetTaskFactory()->GetTask(streamId,
-                                                        static_cast<uint16_t>(taskId));
+    TaskInfo* workTask = dev->GetTaskFactory()->GetTask(streamId, static_cast<uint16_t>(taskId));
     if (workTask != nullptr) {
         return GetFlipTaskId(workTask->id, workTask->flipNum);
     } else {
@@ -560,11 +543,11 @@ uint32_t CovertToFlipTaskId(const TaskInfo* const taskInfo, const uint32_t taskI
     }
 }
 
-void GetBinAndKernelNameExceptionArgs(const Kernel * const kernel, rtExceptionArgsInfo_t *argsInfo)
+void GetBinAndKernelNameExceptionArgs(const Kernel* const kernel, rtExceptionArgsInfo_t* argsInfo)
 {
-    Program *programPtr = kernel->Program_();
+    Program* programPtr = kernel->Program_();
     const uint32_t nameOffset = kernel->NameOffset();
-    const std::string &progkernelNames = programPtr->GetKernelNamesBuffer();
+    const std::string& progkernelNames = programPtr->GetKernelNamesBuffer();
     const size_t progkernelNamesSize = progkernelNames.size();
     if (nameOffset >= progkernelNamesSize) {
         RT_LOG(RT_LOG_WARNING, "ameOffset >= progkernelNamesSize");
@@ -578,46 +561,46 @@ void GetBinAndKernelNameExceptionArgs(const Kernel * const kernel, rtExceptionAr
 
     const std::string kernelNameStr = progkernelNames.substr(nameOffset, i - nameOffset);
     const uint32_t buffSize = kernelNameStr.length() + 1U;
-    argsInfo->exceptionKernelInfo.kernelName = new(std::nothrow) char[buffSize];
+    argsInfo->exceptionKernelInfo.kernelName = new (std::nothrow) char[buffSize];
     COND_RETURN_VOID(argsInfo->exceptionKernelInfo.kernelName == nullptr, "kernelName malloc failed");
 
-    const errno_t ret = strcpy_s(const_cast<char *>(argsInfo->exceptionKernelInfo.kernelName),
-        buffSize, kernelNameStr.c_str());
-    COND_PROC_RETURN_ERROR_MSG_INNER((ret != EOK), , DELETE_A(argsInfo->exceptionKernelInfo.kernelName),
-        "Failed to call strcpy_s to copy %s, size=%u, retCode=%#x.",
-        kernelNameStr.c_str(), buffSize, ret);
+    const errno_t ret =
+        strcpy_s(const_cast<char*>(argsInfo->exceptionKernelInfo.kernelName), buffSize, kernelNameStr.c_str());
+    COND_PROC_RETURN_ERROR_MSG_INNER(
+        (ret != EOK), , DELETE_A(argsInfo->exceptionKernelInfo.kernelName),
+        "Failed to call strcpy_s to copy %s, size=%u, retCode=%#x.", kernelNameStr.c_str(), buffSize, ret);
 
     argsInfo->exceptionKernelInfo.kernelNameSize = kernelNameStr.length();
     argsInfo->exceptionKernelInfo.bin = RtPtrToPtr<rtBinHandle>(programPtr->GetInnerHandle());
     argsInfo->exceptionKernelInfo.binSize = programPtr->GetBinarySize();
-    RT_LOG(RT_LOG_INFO, "kernel_name=%s, kernelNameSize=%u, binSize=%u.",
-            argsInfo->exceptionKernelInfo.kernelName,
-            argsInfo->exceptionKernelInfo.kernelNameSize,
-            argsInfo->exceptionKernelInfo.binSize);
+    RT_LOG(
+        RT_LOG_INFO, "kernel_name=%s, kernelNameSize=%u, binSize=%u.", argsInfo->exceptionKernelInfo.kernelName,
+        argsInfo->exceptionKernelInfo.kernelNameSize, argsInfo->exceptionKernelInfo.binSize);
 }
 
-void GetKernelExceptionDfxInfo(const Kernel * const kernel, const rtArgsSizeInfo_t * const sizeInfo,
-    void * const args, const uint32_t argsSize, rtExceptionArgsInfo_t * const argsInfo)
+void GetKernelExceptionDfxInfo(
+    const Kernel* const kernel, const rtArgsSizeInfo_t* const sizeInfo, void* const args, const uint32_t argsSize,
+    rtExceptionArgsInfo_t* const argsInfo)
 {
     if ((kernel != nullptr) && (kernel->Program_() != nullptr)) {
         GetBinAndKernelNameExceptionArgs(kernel, argsInfo);
     }
- 
+
     if ((kernel != nullptr) && (kernel->DfxAddr() != nullptr) && (kernel->DfxSize() != 0ULL)) {
         argsInfo->exceptionKernelInfo.dfxSize = kernel->DfxSize();
         argsInfo->exceptionKernelInfo.dfxAddr = kernel->DfxAddr();
         argsInfo->exceptionKernelInfo.elfDataFlag = kernel->ElfDataFlag();
-        RT_LOG(RT_LOG_INFO, "dfxSize=%u, dfxAddr=%p, elfDataFlag=%u.",
-            argsInfo->exceptionKernelInfo.dfxSize,
-            argsInfo->exceptionKernelInfo.dfxAddr,
-            argsInfo->exceptionKernelInfo.elfDataFlag);
+        RT_LOG(
+            RT_LOG_INFO, "dfxSize=%u, dfxAddr=%p, elfDataFlag=%u.", argsInfo->exceptionKernelInfo.dfxSize,
+            argsInfo->exceptionKernelInfo.dfxAddr, argsInfo->exceptionKernelInfo.elfDataFlag);
     }
 
     if (sizeInfo->infoAddr != nullptr) {
         argsInfo->sizeInfo.infoAddr = sizeInfo->infoAddr;
         argsInfo->sizeInfo.atomicIndex = sizeInfo->atomicIndex;
-        RT_LOG(RT_LOG_INFO, "GetExceptionArgs infoAddr=%p, atomicIndex=%u.",
-            argsInfo->sizeInfo.infoAddr, argsInfo->sizeInfo.atomicIndex);
+        RT_LOG(
+            RT_LOG_INFO, "GetExceptionArgs infoAddr=%p, atomicIndex=%u.", argsInfo->sizeInfo.infoAddr,
+            argsInfo->sizeInfo.atomicIndex);
     }
 
     if ((args != nullptr) && (argsSize > 0U)) {
@@ -628,7 +611,7 @@ void GetKernelExceptionDfxInfo(const Kernel * const kernel, const rtArgsSizeInfo
     return;
 }
 
-void GetExceptionArgs(TaskInfo* taskInfo, rtExceptionArgsInfo_t *argsInfo)
+void GetExceptionArgs(TaskInfo* taskInfo, rtExceptionArgsInfo_t* argsInfo)
 {
     (void)memset_s(argsInfo, sizeof(rtExceptionArgsInfo_t), 0, sizeof(rtExceptionArgsInfo_t));
     if (taskInfo == nullptr) {
@@ -637,32 +620,31 @@ void GetExceptionArgs(TaskInfo* taskInfo, rtExceptionArgsInfo_t *argsInfo)
     }
 
     RT_LOG(RT_LOG_INFO, "GetExceptionArgs taskInfo->type=%u", taskInfo->type);
-    if ((taskInfo->type != TS_TASK_TYPE_KERNEL_AICORE) &&
-        (taskInfo->type != TS_TASK_TYPE_KERNEL_AIVEC)) {
+    if ((taskInfo->type != TS_TASK_TYPE_KERNEL_AICORE) && (taskInfo->type != TS_TASK_TYPE_KERNEL_AIVEC)) {
         return;
     }
 
-    AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
-    Kernel *kernel = aicTaskInfo->kernel;
-    GetKernelExceptionDfxInfo(kernel, &(aicTaskInfo->inputArgsSize), aicTaskInfo->comm.args,
-        aicTaskInfo->comm.argsSize, argsInfo);
+    AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
+    Kernel* kernel = aicTaskInfo->kernel;
+    GetKernelExceptionDfxInfo(
+        kernel, &(aicTaskInfo->inputArgsSize), aicTaskInfo->comm.args, aicTaskInfo->comm.argsSize, argsInfo);
     return;
 }
 
-static bool IsAicpuKernelHandleValid(const AicpuTaskInfo * const aicpuTaskInfo)
+static bool IsAicpuKernelHandleValid(const AicpuTaskInfo* const aicpuTaskInfo)
 {
     if ((aicpuTaskInfo == nullptr) || (aicpuTaskInfo->kernel == nullptr)) {
         return false;
     }
-    const rtInnerObject * const innerObject = aicpuTaskInfo->kernelInnerHandle;
+    const rtInnerObject* const innerObject = aicpuTaskInfo->kernelInnerHandle;
     return ((innerObject != nullptr) && (innerObject->magic.load() == RT_KERNEL_MAGIC));
 }
 
-static bool GetAicpuExceptionNameCopySize(const AicpuTaskInfo * const aicpuTaskInfo, const void * const nameAddr,
-    size_t &copySize)
+static bool GetAicpuExceptionNameCopySize(
+    const AicpuTaskInfo* const aicpuTaskInfo, const void* const nameAddr, size_t& copySize)
 {
-    if ((aicpuTaskInfo == nullptr) || (aicpuTaskInfo->comm.args == nullptr) ||
-        (aicpuTaskInfo->comm.argsSize == 0U) || (nameAddr == nullptr)) {
+    if ((aicpuTaskInfo == nullptr) || (aicpuTaskInfo->comm.args == nullptr) || (aicpuTaskInfo->comm.argsSize == 0U) ||
+        (nameAddr == nullptr)) {
         return false;
     }
 
@@ -678,33 +660,30 @@ static bool GetAicpuExceptionNameCopySize(const AicpuTaskInfo * const aicpuTaskI
         return false;
     }
 
-    copySize = static_cast<size_t>(std::min(argsEnd - nameBegin,
-        static_cast<uintptr_t>(KERNEL_INFO_ENTRY_SIZE)));
+    copySize = static_cast<size_t>(std::min(argsEnd - nameBegin, static_cast<uintptr_t>(KERNEL_INFO_ENTRY_SIZE)));
     return copySize > 0U;
 }
 
-static void CopyAicpuExceptionNameFromArgs(TaskInfo * const taskInfo, const void * const nameAddr,
-    std::string &name)
+static void CopyAicpuExceptionNameFromArgs(TaskInfo* const taskInfo, const void* const nameAddr, std::string& name)
 {
-    AicpuTaskInfo * const aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
+    AicpuTaskInfo* const aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
     size_t copySize = 0U;
     if (!GetAicpuExceptionNameCopySize(aicpuTaskInfo, nameAddr, copySize)) {
         return;
     }
 
     char_t nameBuffer[KERNEL_INFO_ENTRY_SIZE] = {};
-    Driver * const driver = taskInfo->stream->Device_()->Driver_();
+    Driver* const driver = taskInfo->stream->Device_()->Driver_();
     if (driver == nullptr) {
         return;
     }
-    const rtError_t error = driver->MemCopySync(nameBuffer, copySize, nameAddr, copySize,
-        RT_MEMCPY_DEVICE_TO_HOST);
+    const rtError_t error = driver->MemCopySync(nameBuffer, copySize, nameAddr, copySize, RT_MEMCPY_DEVICE_TO_HOST);
     if (error != RT_ERROR_NONE) {
         RT_LOG(RT_LOG_WARNING, "Copy AICPU exception name failed, nameAddr=%p, retCode=%#x.", nameAddr, error);
         return;
     }
 
-    const char_t * const nameEnd = static_cast<const char_t *>(std::memchr(nameBuffer, '\0', copySize));
+    const char_t* const nameEnd = static_cast<const char_t*>(std::memchr(nameBuffer, '\0', copySize));
     if (nameEnd == nullptr) {
         RT_LOG(RT_LOG_WARNING, "Get AICPU exception name failed, string is not null-terminated.");
         return;
@@ -712,17 +691,17 @@ static void CopyAicpuExceptionNameFromArgs(TaskInfo * const taskInfo, const void
     name.assign(nameBuffer, static_cast<size_t>(nameEnd - nameBuffer));
 }
 
-static void GetAicpuExceptionName(TaskInfo * const taskInfo, const void * const nameAddr,
-    const KernelInfoType nameType, std::string &name)
+static void GetAicpuExceptionName(
+    TaskInfo* const taskInfo, const void* const nameAddr, const KernelInfoType nameType, std::string& name)
 {
     if ((taskInfo == nullptr) || (taskInfo->stream == nullptr) || (taskInfo->stream->Device_() == nullptr) ||
         (nameAddr == nullptr)) {
         return;
     }
 
-    ArgLoader * const argLoader = taskInfo->stream->Device_()->ArgLoader_();
+    ArgLoader* const argLoader = taskInfo->stream->Device_()->ArgLoader_();
     if (argLoader != nullptr) {
-        argLoader->GetKernelInfoFromAddr(name, nameType, const_cast<void *>(nameAddr));
+        argLoader->GetKernelInfoFromAddr(name, nameType, const_cast<void*>(nameAddr));
         if (!name.empty()) {
             return;
         }
@@ -730,7 +709,7 @@ static void GetAicpuExceptionName(TaskInfo * const taskInfo, const void * const 
     CopyAicpuExceptionNameFromArgs(taskInfo, nameAddr, name);
 }
 
-void GetAicpuExceptionDetailInfo(TaskInfo *taskInfo, rtAicpuExDetailInfo_t *detailInfo)
+void GetAicpuExceptionDetailInfo(TaskInfo* taskInfo, rtAicpuExDetailInfo_t* detailInfo)
 {
     if (detailInfo == nullptr) {
         RT_LOG(RT_LOG_WARNING, "detailInfo is nullptr.");
@@ -747,34 +726,39 @@ void GetAicpuExceptionDetailInfo(TaskInfo *taskInfo, rtAicpuExDetailInfo_t *deta
         return;
     }
 
-    Stream * const stream = taskInfo->stream;
-    RT_LOG(RT_LOG_INFO, "Get AICPU exception detail info, device_id=%u, stream_id=%d, task_id=%hu, "
-        "task_type=%u.", stream->Device_()->Id_(), stream->Id_(), taskInfo->id, taskInfo->type);
+    Stream* const stream = taskInfo->stream;
+    RT_LOG(
+        RT_LOG_INFO,
+        "Get AICPU exception detail info, device_id=%u, stream_id=%d, task_id=%hu, "
+        "task_type=%u.",
+        stream->Device_()->Id_(), stream->Id_(), taskInfo->id, taskInfo->type);
 
-    AicpuTaskInfo * const aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
+    AicpuTaskInfo* const aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
     detailInfo->argAddr = aicpuTaskInfo->comm.args;
     detailInfo->argsize = aicpuTaskInfo->comm.argsSize;
     if (!IsAicpuKernelHandleValid(aicpuTaskInfo)) {
         if ((aicpuTaskInfo->kernel != nullptr) || (aicpuTaskInfo->kernelInnerHandle != nullptr)) {
-            RT_LOG(RT_LOG_WARNING, "AICPU kernel handle is invalid, kernel=%p, kernelInnerHandle=%p.",
+            RT_LOG(
+                RT_LOG_WARNING, "AICPU kernel handle is invalid, kernel=%p, kernelInnerHandle=%p.",
                 aicpuTaskInfo->kernel, aicpuTaskInfo->kernelInnerHandle);
         }
         return;
     }
 
-    detailInfo->funcHandle = static_cast<rtFuncHandle>(const_cast<rtInnerObject *>(aicpuTaskInfo->kernelInnerHandle));
+    detailInfo->funcHandle = static_cast<rtFuncHandle>(const_cast<rtInnerObject*>(aicpuTaskInfo->kernelInnerHandle));
 }
 
-static void SetAicpuExceptionStringInfo(TaskInfo *taskInfo, rtAicpuExDetailInfo_t *detailInfo,
-    std::string &soName, std::string &functionName, std::string &kernelName)
+static void SetAicpuExceptionStringInfo(
+    TaskInfo* taskInfo, rtAicpuExDetailInfo_t* detailInfo, std::string& soName, std::string& functionName,
+    std::string& kernelName)
 {
     if ((taskInfo == nullptr) || (detailInfo == nullptr) || (taskInfo->type != TS_TASK_TYPE_KERNEL_AICPU)) {
         return;
     }
 
-    AicpuTaskInfo * const aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
+    AicpuTaskInfo* const aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
     if (IsAicpuKernelHandleValid(aicpuTaskInfo)) {
-        Kernel * const kernel = aicpuTaskInfo->kernel;
+        Kernel* const kernel = aicpuTaskInfo->kernel;
         soName = kernel->GetCpuKernelSo();
         functionName = kernel->GetCpuFuncName();
         kernelName = kernel->GetCpuOpType();
@@ -790,25 +774,27 @@ static void SetAicpuExceptionStringInfo(TaskInfo *taskInfo, rtAicpuExDetailInfo_
     detailInfo->functionName = functionName.empty() ? nullptr : functionName.c_str();
 }
 
-static TaskInfo *GetTaskForFailCallback(const Device * const dev, const uint32_t streamId, const uint32_t taskId,
-    const bool isNeedTransTaskId, uint32_t &exceptionTaskId)
+static TaskInfo* GetTaskForFailCallback(
+    const Device* const dev, const uint32_t streamId, const uint32_t taskId, const bool isNeedTransTaskId,
+    uint32_t& exceptionTaskId)
 {
     if (dev->IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_TASK_ALLOC_FROM_STREAM_POOL)) {
-        TaskInfo * const workTask = GetTaskInfo(dev, streamId, taskId, isNeedTransTaskId);
+        TaskInfo* const workTask = GetTaskInfo(dev, streamId, taskId, isNeedTransTaskId);
         if (workTask != nullptr) {
             exceptionTaskId = workTask->taskSn;
         }
         return workTask;
     }
 
-    TaskInfo * const workTask = dev->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId),
-        static_cast<uint16_t>(taskId));
+    TaskInfo* const workTask =
+        dev->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), static_cast<uint16_t>(taskId));
     exceptionTaskId = CovertToFlipTaskId(workTask, taskId);
     return workTask;
 }
 
-static rtExceptionExpandType_t SetExceptionExpandInfo(TaskInfo *workTask, rtExceptionExpandInfo_t * const expandInfo,
-    std::string &aicpuSoName, std::string &aicpuFunctionName, std::string &aicpuKernelName)
+static rtExceptionExpandType_t SetExceptionExpandInfo(
+    TaskInfo* workTask, rtExceptionExpandInfo_t* const expandInfo, std::string& aicpuSoName,
+    std::string& aicpuFunctionName, std::string& aicpuKernelName)
 {
     if (workTask == nullptr) {
         return RT_EXCEPTION_INVALID;
@@ -821,21 +807,22 @@ static rtExceptionExpandType_t SetExceptionExpandInfo(TaskInfo *workTask, rtExce
 
     if (workTask->type == TS_TASK_TYPE_KERNEL_AICPU) {
         GetAicpuExceptionDetailInfo(workTask, &(expandInfo->u.aicpuInfo));
-        SetAicpuExceptionStringInfo(workTask, &(expandInfo->u.aicpuInfo),
-            aicpuSoName, aicpuFunctionName, aicpuKernelName);
+        SetAicpuExceptionStringInfo(
+            workTask, &(expandInfo->u.aicpuInfo), aicpuSoName, aicpuFunctionName, aicpuKernelName);
         return RT_EXCEPTION_AICPU;
     }
 
     return RT_EXCEPTION_INVALID;
 }
 
-void TaskFailCallBack(const uint32_t streamId, const uint32_t taskId,
-                      const uint32_t threadId, const uint32_t retCode,
-                      const Device * const dev, bool isNeedTransTaskId)
+void TaskFailCallBack(
+    const uint32_t streamId, const uint32_t taskId, const uint32_t threadId, const uint32_t retCode,
+    const Device* const dev, bool isNeedTransTaskId)
 {
-    COND_RETURN_DEBUG(((retCode == static_cast<uint32_t>(RT_ERROR_NONE)) || (retCode == TS_ERROR_END_OF_SEQUENCE) ||
-                       (retCode == TS_MODEL_ABORT_NORMAL)), ,
-                      "task ok, stream_id=%u, task_id=%u, retCode=%#x.", streamId, taskId, retCode);
+    COND_RETURN_DEBUG(
+        ((retCode == static_cast<uint32_t>(RT_ERROR_NONE)) || (retCode == TS_ERROR_END_OF_SEQUENCE) ||
+         (retCode == TS_MODEL_ABORT_NORMAL)),
+        , "task ok, stream_id=%u, task_id=%u, retCode=%#x.", streamId, taskId, retCode);
     if (dev->GetDeviceStatus() == RT_ERROR_DEVICE_TASK_ABORT) {
         RT_LOG(RT_LOG_WARNING, "Do not call task fail callback in task abort status!");
         return;
@@ -844,15 +831,15 @@ void TaskFailCallBack(const uint32_t streamId, const uint32_t taskId,
     rtExceptionInfo_t exceptionInfo;
     (void)memset_s(&exceptionInfo, sizeof(rtExceptionInfo_t), 0, sizeof(rtExceptionInfo_t));
     rtError_t rtErrCode = RT_ERROR_NONE;
-    const char_t *const retDes = GetTsErrCodeMap(retCode, &rtErrCode);
+    const char_t* const retDes = GetTsErrCodeMap(retCode, &rtErrCode);
 
     uint32_t exceptionTaskId = 0xFFFFFFFFU;
-    TaskInfo * const workTask = GetTaskForFailCallback(dev, streamId, taskId, isNeedTransTaskId, exceptionTaskId);
+    TaskInfo* const workTask = GetTaskForFailCallback(dev, streamId, taskId, isNeedTransTaskId, exceptionTaskId);
     std::string aicpuSoName;
     std::string aicpuFunctionName;
     std::string aicpuKernelName;
-    const rtExceptionExpandType_t type = SetExceptionExpandInfo(workTask, &exceptionInfo.expandInfo,
-        aicpuSoName, aicpuFunctionName, aicpuKernelName);
+    const rtExceptionExpandType_t type =
+        SetExceptionExpandInfo(workTask, &exceptionInfo.expandInfo, aicpuSoName, aicpuFunctionName, aicpuKernelName);
 
     exceptionInfo.retcode = static_cast<uint32_t>(RT_TRANS_EXT_ERRCODE(rtErrCode));
     exceptionInfo.taskid = exceptionTaskId;
@@ -862,8 +849,9 @@ void TaskFailCallBack(const uint32_t streamId, const uint32_t taskId,
     exceptionInfo.deviceid = dev->Id_();
     exceptionInfo.expandInfo.type = type;
 
-    RT_LOG(RT_LOG_WARNING, "stream_id=%u, exposed_stream_id=%u, exception_task_id=%u, retCode=%#x,[%s]",
-        streamId, exposedStreamId, exceptionTaskId, rtErrCode, retDes);
+    RT_LOG(
+        RT_LOG_WARNING, "stream_id=%u, exposed_stream_id=%u, exception_task_id=%u, retCode=%#x,[%s]", streamId,
+        exposedStreamId, exceptionTaskId, rtErrCode, retDes);
 
     TaskFailCallBackNotify(&exceptionInfo);
     if ((type == RT_EXCEPTION_AICORE) &&
@@ -872,9 +860,9 @@ void TaskFailCallBack(const uint32_t streamId, const uint32_t taskId,
     }
 }
 
-void ToCommand(TaskInfo *taskInfo, rtCommand_t *const command)
+void ToCommand(TaskInfo* taskInfo, rtCommand_t* const command)
 {
-    Stream * const stream = taskInfo->stream;
+    Stream* const stream = taskInfo->stream;
     command->taskID = taskInfo->id;
     if (!stream->IsCtrlStream()) {
         command->streamID = static_cast<uint16_t>(stream->Id_());
@@ -908,7 +896,7 @@ void ToCommand(TaskInfo *taskInfo, rtCommand_t *const command)
     }
 }
 
-void ToConstructSqe(TaskInfo *taskInfo, rtStarsSqe_t *const command)
+void ToConstructSqe(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     // same as ToCommand
     taskInfo->bindFlag = taskInfo->stream->GetBindFlag();
@@ -922,7 +910,7 @@ void ToConstructSqe(TaskInfo *taskInfo, rtStarsSqe_t *const command)
     taskInfo->pkgStat[RT_PACKAGE_TYPE_TASK_REPORT].expectPackage = static_cast<uint16_t>(sendSqeNum);
 }
 
-TaskInfo *GetRealReportFaultTask(TaskInfo *taskInfo, const void *info)
+TaskInfo* GetRealReportFaultTask(TaskInfo* taskInfo, const void* info)
 {
     const tsTaskType_t type = taskInfo->type;
     if (type == TS_TASK_TYPE_MODEL_EXECUTE) {
@@ -934,7 +922,7 @@ TaskInfo *GetRealReportFaultTask(TaskInfo *taskInfo, const void *info)
     }
 }
 
-void PushBackErrInfo(TaskInfo* taskInfo, const void *errInfo, uint32_t len)
+void PushBackErrInfo(TaskInfo* taskInfo, const void* errInfo, uint32_t len)
 {
     if (taskInfo == nullptr) {
         RT_LOG_INNER_MSG(RT_LOG_ERROR, "PushBackErrInfo failed because taskInfo cannot be a NULL pointer.");
@@ -968,20 +956,21 @@ void SetSqPos(TaskInfo* taskInfo, const uint32_t pos)
     if (taskInfo->type == TS_TASK_TYPE_LABEL_SET) {
         SetLabelInfoForLabelSetTask(taskInfo, pos);
     }
-    
+
     if (taskInfo->bindFlag == 0U) {
         if (taskInfo->type == TS_TASK_TYPE_EVENT_RECORD) {
-            EventRecordTaskInfo *eventRecordInfo = &(taskInfo->u.eventRecordTaskInfo);
+            EventRecordTaskInfo* eventRecordInfo = &(taskInfo->u.eventRecordTaskInfo);
             if (eventRecordInfo->event != nullptr) {
                 eventRecordInfo->event->SetRecordPos(static_cast<uint16_t>(pos));
             }
         } else if (taskInfo->type == TS_TASK_TYPE_DAVID_EVENT_RECORD) {
-            DavidEventRecordTaskInfo *davidEventRecordInfo = &(taskInfo->u.davidEventRecordTaskInfo);
+            DavidEventRecordTaskInfo* davidEventRecordInfo = &(taskInfo->u.davidEventRecordTaskInfo);
             if (davidEventRecordInfo->event != nullptr) {
                 davidEventRecordInfo->event->SetRecordPos(static_cast<uint16_t>(pos));
             }
         } else if ((taskInfo->type == TS_TASK_TYPE_NOTIFY_WAIT) && (taskInfo->u.notifywaitTask.isEndGraphNotify)) {
-            (void)taskInfo->stream->Device_()->StoreEndGraphNotifyInfo(taskInfo->stream->Id_(), taskInfo->u.notifywaitTask.captureModel, pos);
+            (void)taskInfo->stream->Device_()->StoreEndGraphNotifyInfo(
+                taskInfo->stream->Id_(), taskInfo->u.notifywaitTask.captureModel, pos);
         } else {
             // no operation
         }
@@ -990,7 +979,7 @@ void SetSqPos(TaskInfo* taskInfo, const uint32_t pos)
     }
 }
 
-void SaveTaskInfo(TaskInfo *const taskInfo, TaskInfo *submitTask)
+void SaveTaskInfo(TaskInfo* const taskInfo, TaskInfo* submitTask)
 {
     taskInfo->type = submitTask->type;
     taskInfo->typeName = submitTask->typeName;
@@ -1011,7 +1000,7 @@ void SaveTaskInfo(TaskInfo *const taskInfo, TaskInfo *submitTask)
     SetTaskTag(taskInfo);
 }
 
-bool IsNeedFreeStreamRes(const TaskInfo *task)
+bool IsNeedFreeStreamRes(const TaskInfo* task)
 {
     if (task->type == TS_TASK_TYPE_MAINTENANCE) {
         if (task->u.maintenanceTaskInfo.mtType == MT_STREAM_DESTROY) {
@@ -1026,31 +1015,29 @@ bool IsNeedFreeStreamRes(const TaskInfo *task)
 #if F_DESC("钩子注册框架")
 const std::vector<rtChipType_t>& GetV100Chips()
 {
-    static const std::vector<rtChipType_t> chips = {
-        CHIP_MINI, CHIP_CLOUD, CHIP_ADC, CHIP_LHISI, CHIP_DC, CHIP_910_B_93,
-        CHIP_NO_DEVICE, CHIP_MINI_V3, CHIP_ASCEND_031, CHIP_NANO, CHIP_RESERVED,
-        CHIP_AS31XM1, CHIP_610LITE, CHIP_CLOUD_V3, CHIP_BS9SX1A
-    };
+    static const std::vector<rtChipType_t> chips = {CHIP_MINI,       CHIP_CLOUD,    CHIP_ADC,       CHIP_LHISI,
+                                                    CHIP_DC,         CHIP_910_B_93, CHIP_NO_DEVICE, CHIP_MINI_V3,
+                                                    CHIP_ASCEND_031, CHIP_NANO,     CHIP_RESERVED,  CHIP_AS31XM1,
+                                                    CHIP_610LITE,    CHIP_CLOUD_V3, CHIP_BS9SX1A};
     return chips;
 }
 
 const std::vector<rtChipType_t>& GetDavidChips()
 {
     static const std::vector<rtChipType_t> chips = {
-        CHIP_DAVID, CHIP_CLOUD_V5, CHIP_MC62CM12A, CHIP_MC32DM11A, CHIP_ASCEND_350
-    };
+        CHIP_DAVID, CHIP_CLOUD_V5, CHIP_MC62CM12A, CHIP_MC32DM11A, CHIP_ASCEND_350};
     return chips;
 }
 
 const std::vector<rtChipType_t>& GetV200Chips()
 {
-    static const std::vector<rtChipType_t> chips = { CHIP_DAVID, CHIP_CLOUD_V5, CHIP_ASCEND_350 };
+    static const std::vector<rtChipType_t> chips = {CHIP_DAVID, CHIP_CLOUD_V5, CHIP_ASCEND_350};
     return chips;
 }
 
 const std::vector<rtChipType_t>& GetV201Chips()
 {
-    static const std::vector<rtChipType_t> chips = { CHIP_MC62CM12A, CHIP_MC32DM11A };
+    static const std::vector<rtChipType_t> chips = {CHIP_MC62CM12A, CHIP_MC32DM11A};
     return chips;
 }
 
@@ -1060,12 +1047,12 @@ void RegTaskFunc(rtChipType_t chipType, tsTaskType_t taskType, const TaskFuncSin
         RT_LOG(RT_LOG_ERROR, "Invalid chipType = %d, valid range: [%d, %d).", chipType, CHIP_BEGIN, CHIP_END);
         return;
     }
-    
+
     if (taskType >= TS_TASK_TYPE_RESERVED) {
         RT_LOG(RT_LOG_ERROR, "Invalid taskType = %d, valid range: [0, %d).", taskType, TS_TASK_TYPE_RESERVED);
         return;
     }
-    
+
     TaskFuncArrays& arrays = g_taskFuncArrays[chipType];
     arrays.toCommandFunc[taskType] = funcs.toCommandFunc;
     arrays.toSqeFunc[taskType] = funcs.toSqeFunc;
@@ -1075,7 +1062,7 @@ void RegTaskFunc(rtChipType_t chipType, tsTaskType_t taskType, const TaskFuncSin
     arrays.printErrorInfoFunc[taskType] = funcs.printErrorInfoFunc;
     arrays.setResultFunc[taskType] = funcs.setResultFunc;
     arrays.setStarsResultFunc[taskType] = funcs.setStarsResultFunc;
-    
+
     return;
 }
 
@@ -1085,16 +1072,16 @@ void RefreshTaskFuncPointer(rtChipType_t chipType)
         RT_LOG(RT_LOG_ERROR, "Invalid chipType = %d, valid range: [%d, %d).", chipType, CHIP_BEGIN, CHIP_END);
         return;
     }
-    
+
     std::lock_guard<std::mutex> lock(g_taskFuncMutex);
-    
+
     if (g_lastInitializedChipType == chipType) {
         return;
     }
-    
+
     g_lastInitializedChipType = chipType;
-    
-    TaskFuncArrays &arrays = g_taskFuncArrays[chipType];
+
+    TaskFuncArrays& arrays = g_taskFuncArrays[chipType];
     g_toCommandFunc = arrays.toCommandFunc;
     g_toSqeFunc = arrays.toSqeFunc;
     g_doCompleteSuccFunc = arrays.doCompleteSuccFunc;
@@ -1108,5 +1095,5 @@ void RefreshTaskFuncPointer(rtChipType_t chipType)
 
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

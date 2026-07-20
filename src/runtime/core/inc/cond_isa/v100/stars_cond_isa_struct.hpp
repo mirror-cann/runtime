@@ -19,7 +19,7 @@ namespace runtime {
 #pragma pack(1)
 
 enum rtStarsCondIsaRegister_t : uint32_t {
-    RT_STARS_COND_ISA_REGISTER_R0 = 0,       // R0 is always zero, can't be destination register
+    RT_STARS_COND_ISA_REGISTER_R0 = 0, // R0 is always zero, can't be destination register
     RT_STARS_COND_ISA_REGISTER_R1 = 1,
     RT_STARS_COND_ISA_REGISTER_R2 = 2,
     RT_STARS_COND_ISA_REGISTER_R3 = 3,
@@ -43,7 +43,7 @@ struct RtStarsCondOpLoad {
 struct RtStarsCondOpLoadImm {
     uint32_t opCode : 7;
     uint32_t rd : 3;
-    uint32_t reserved : 2;  // reserved
+    uint32_t reserved : 2; // reserved
     uint32_t func3 : 3;
     uint32_t immdAddrHigh : 17;
     uint32_t immdAddrLow;
@@ -66,10 +66,10 @@ struct RtStarsCondOpStore {
 struct RtStarsCondOpImm {
     uint32_t opCode : 7;
     uint32_t rd : 3;
-    uint32_t reserved0 : 2;  // reserved
+    uint32_t reserved0 : 2; // reserved
     uint32_t func3 : 3;
     uint32_t rs1 : 3;
-    uint32_t reserved1 : 2;  // reserved
+    uint32_t reserved1 : 2; // reserved
     uint32_t immd : 12;
 };
 
@@ -78,10 +78,10 @@ struct RtStarsCondOpImm {
 struct RtStarsCondOpImmSLLI {
     uint32_t opCode : 7;
     uint32_t rd : 3;
-    uint32_t reserved0 : 2;  // reserved
+    uint32_t reserved0 : 2; // reserved
     uint32_t func3 : 3;
     uint32_t rs1 : 3;
-    uint32_t reserved1 : 2;  // reserved
+    uint32_t reserved1 : 2; // reserved
     uint32_t shamt : 6;
     uint32_t func7 : 6;
 };
@@ -93,12 +93,12 @@ struct RtStarsCondOpImmSLLI {
 struct RtStarsCondOpOp {
     uint32_t opCode : 7;
     uint32_t rd : 3;
-    uint32_t reserved0 : 2;  // reserved
+    uint32_t reserved0 : 2; // reserved
     uint32_t func3 : 3;
     uint32_t rs1 : 3;
-    uint32_t reserved1 : 2;  // reserved
+    uint32_t reserved1 : 2; // reserved
     uint32_t rs2 : 3;
-    uint32_t reserved3 : 2;  // reserved
+    uint32_t reserved3 : 2; // reserved
     uint32_t func7 : 7;
 };
 
@@ -109,9 +109,9 @@ using RtStarsCondOpNop = RtStarsCondOpImm;
 struct RtStarsCondOpLHWI {
     uint32_t opCode : 7;
     uint32_t rd : 3;
-    uint32_t reserved0 : 2;  // reserved
+    uint32_t reserved0 : 2; // reserved
     uint32_t func3 : 3;
-    uint32_t reserved1 : 2;  // reserved
+    uint32_t reserved1 : 2; // reserved
     uint32_t immd : 15;
 };
 
@@ -119,7 +119,7 @@ struct RtStarsCondOpLHWI {
 struct RtStarsCondOpLLWI {
     uint32_t opCode : 7;
     uint32_t rd : 3;
-    uint32_t reserved0 : 2;  // reserved
+    uint32_t reserved0 : 2; // reserved
     uint32_t func3 : 3;
     uint32_t immdHigh : 17;
     uint32_t immdLow : 32;
@@ -142,7 +142,7 @@ struct RtStarsCondOpBranch {
 struct RtStarsCondOpStreamActiveI {
     uint32_t opCode : 7;
     uint32_t rd : 3;
-    uint32_t reserved0 : 2;  // reserved
+    uint32_t reserved0 : 2; // reserved
     uint32_t func3 : 3;
     uint32_t reserved1 : 5;
     uint32_t sqId : 12;
@@ -169,7 +169,7 @@ using RtStarsCondOpStreamDeActiveR = RtStarsCondOpStreamActiveR;
 struct RtStarsCondOpStreamGotoI {
     uint32_t opCode : 7;
     uint32_t rd : 3;
-    uint32_t reserved0 : 2;  // reserved
+    uint32_t reserved0 : 2; // reserved
     uint32_t func3 : 3;
     uint32_t reserved1 : 17;
     uint32_t sqId : 11;
@@ -234,6 +234,6 @@ struct RtStarsSetCsrJumpPc {
 };
 
 #pragma pack(pop)
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // __CCE_RUNTIME_STARS_COND_ISA_STRUCT_HPP__

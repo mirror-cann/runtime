@@ -47,16 +47,15 @@ void RawDevice::InitResource()
 {
     int64_t totalCoreNum = 0;
     (void)driver_->GetDevInfo(deviceId_, MODULE_TYPE_AICORE, INFO_TYPE_CORE_NUM, &totalCoreNum);
-    if (GetDevProperties().reduceAicNum &&
-        (totalCoreNum == RT_AICORE_NUM_25)) {
+    if (GetDevProperties().reduceAicNum && (totalCoreNum == RT_AICORE_NUM_25)) {
         totalCoreNum = RT_AICORE_NUM_25 - 1U;
     }
     InsertResInit(RT_DEV_RES_CUBE_CORE, static_cast<uint32_t>(totalCoreNum));
     InsertResLimit(RT_DEV_RES_CUBE_CORE, static_cast<uint32_t>(totalCoreNum));
     (void)driver_->GetDevInfo(deviceId_, MODULE_TYPE_VECTOR_CORE, INFO_TYPE_CORE_NUM, &totalCoreNum);
     if (GetDevProperties().reduceAicNum &&
-        (totalCoreNum == RT_AICORE_NUM_25 * 2)) {    // 2: vector core is double of cube core
-        totalCoreNum = (RT_AICORE_NUM_25 - 1U) * 2;  // 2: vector core is double of cube core
+        (totalCoreNum == RT_AICORE_NUM_25 * 2)) {   // 2: vector core is double of cube core
+        totalCoreNum = (RT_AICORE_NUM_25 - 1U) * 2; // 2: vector core is double of cube core
     }
     InsertResInit(RT_DEV_RES_VECTOR_CORE, static_cast<uint32_t>(totalCoreNum));
     InsertResLimit(RT_DEV_RES_VECTOR_CORE, static_cast<uint32_t>(totalCoreNum));
@@ -104,5 +103,5 @@ void RawDevice::ResetResLimit(void)
         resLimitArray_[i] = resInitArray_[i];
     }
 }
-}  // namespace runtime
-}
+} // namespace runtime
+} // namespace cce

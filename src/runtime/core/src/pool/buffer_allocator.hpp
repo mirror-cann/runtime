@@ -23,54 +23,48 @@ constexpr int32_t BUFF_SLIP_NUMBER = static_cast<int32_t>(4U * 1024U * 1024U);
 
 class BufferAllocator : public NoCopy {
 public:
-    enum Strategy {
-        LINEAR,
-        EXPONENTIAL
-    };
-    typedef void *(*AllocFuncPtr)(size_t size, void *para);
-    typedef void (*FreeFuncPtr)(void *addr, void *para);
-    explicit BufferAllocator(const uint32_t size, const uint32_t initCnt = 256, const uint32_t maxCnt = 0x10000,
+    enum Strategy { LINEAR, EXPONENTIAL };
+    typedef void* (*AllocFuncPtr)(size_t size, void* para);
+    typedef void (*FreeFuncPtr)(void* addr, void* para);
+    explicit BufferAllocator(
+        const uint32_t size, const uint32_t initCnt = 256, const uint32_t maxCnt = 0x10000,
         const Strategy stg = EXPONENTIAL, const AllocFuncPtr allocFunctionPtr = DefaultAlloc,
-        const FreeFuncPtr freeFunctionPtr = DefaultFree, void * const allocParam = nullptr);
+        const FreeFuncPtr freeFunctionPtr = DefaultFree, void* const allocParam = nullptr);
     ~BufferAllocator() override;
     static bool openHugeBuff_;
     int32_t AllocId(const bool isLogError = true);
-    void *AllocItem(const bool isLogError = true)
+    void* AllocItem(const bool isLogError = true)
     {
-        return static_cast<void *>(GetItemById(AllocId(isLogError), isLogError));
+        return static_cast<void*>(GetItemById(AllocId(isLogError), isLogError));
     }
     int32_t AllocIdWithoutRetry(const bool isLogError = true);
-    
-    void *GetItemById(const int32_t id, const bool isLogError = true) const;
-    int32_t GetIdByItem(const void * const item) const;
+
+    void* GetItemById(const int32_t id, const bool isLogError = true) const;
+    int32_t GetIdByItem(const void* const item) const;
     void FreeById(int32_t id)
     {
         if (id < BUFF_SLIP_NUMBER) {
             bitmap_.FreeId(id);
             return;
         }
-        
+
         if (hugeBitmap_ != nullptr) {
             hugeBitmap_->FreeId(id - BUFF_SLIP_NUMBER);
         }
     }
-    void FreeByItem(const void *item) 
-    {
-        FreeById(GetIdByItem(item));
-    }
+    void FreeByItem(const void* item) { FreeById(GetIdByItem(item)); }
 
-    static void OpenHugeBuff(void) {
-        openHugeBuff_ = true;
-    }
+    static void OpenHugeBuff(void) { openHugeBuff_ = true; }
 
-    rtError_t MemsetBuffers(Device *device, uint32_t value);
+    rtError_t MemsetBuffers(Device* device, uint32_t value);
+
 private:
-    static void *DefaultAlloc(size_t size, void *para)
+    static void* DefaultAlloc(size_t size, void* para)
     {
         UNUSED(para);
         if (size > 0) {
             RT_LOG(RT_LOG_INFO, "Runtime_alloc_size %u(bytes)", size);
-            void *ptr = malloc(size);
+            void* ptr = malloc(size);
             if (ptr != nullptr) {
                 (void)memset_s(ptr, static_cast<size_t>(size), 0, static_cast<size_t>(size));
             }
@@ -79,7 +73,7 @@ private:
         }
         return nullptr;
     }
-    static void DefaultFree(void *addr, void *para)
+    static void DefaultFree(void* addr, void* para)
     {
         UNUSED(para);
         free(addr);
@@ -92,7 +86,8 @@ private:
     }
     uint32_t GetIncreasedCount(uint32_t count) const
     {
-        return (allocStrategy_ == LINEAR) ? (count + initCount_) : (count * 2); // 根据allocStrategy_选择增加initCount_或者扩大2倍
+        return (allocStrategy_ == LINEAR) ? (count + initCount_) :
+                                            (count * 2); // 根据allocStrategy_选择增加initCount_或者扩大2倍
     }
     uint32_t AccumulatePoolCount(uint32_t idx) const
     {
@@ -106,12 +101,12 @@ private:
         if (id < BUFF_SLIP_NUMBER) {
             return bitmap_.IsIdOccupied(id);
         }
-        
+
         if (hugeBitmap_ != nullptr) {
             return hugeBitmap_->IsIdOccupied(id - BUFF_SLIP_NUMBER);
         } else {
             return false;
-        }    
+        }
     }
 
     const Strategy allocStrategy_;
@@ -120,16 +115,16 @@ private:
     const uint32_t maxCount_;
     uint32_t poolSize_;
     Bitmap bitmap_;
-    void *const para_;
-    uint8_t *volatile *pool_;
+    void* const para_;
+    uint8_t* volatile* pool_;
     uint32_t volatile currentCount_;
     const AllocFuncPtr allocFunc_;
     const FreeFuncPtr freeFunc_;
     std::atomic<bool> allocFuncState_;
     std::mutex hugeBitmapMutex_;
-    Bitmap *hugeBitmap_{nullptr};
+    Bitmap* hugeBitmap_{nullptr};
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_BUFFER_ALLOCATOR_HPP
+#endif // CCE_RUNTIME_BUFFER_ALLOCATOR_HPP

@@ -14,17 +14,17 @@
 namespace cce {
 namespace runtime {
 
-uint16_t GetSqeEventId(const rtStarsSqe_t *sqe)
+uint16_t GetSqeEventId(const rtStarsSqe_t* sqe)
 {
     UNUSED(sqe);
     return 0;
 }
 
-void ConstructSqeForNotifyRecordTask(TaskInfo *taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForNotifyRecordTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     UNUSED(taskInfo);
     UNUSED(command);
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

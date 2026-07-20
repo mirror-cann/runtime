@@ -19,7 +19,7 @@ namespace runtime {
 // memory type to string
 const char_t* MemLocationTypeToStr(const rtMemLocationType type);
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_MEM_TYPE_HPP
+#endif // CCE_RUNTIME_MEM_TYPE_HPP

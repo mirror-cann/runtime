@@ -15,7 +15,7 @@
 namespace cce {
 namespace runtime {
 
-void ConstructDavidAsyncUbDbSqe(TaskInfo * const taskInfo, rtDavidSqe_t *const command)
+void ConstructDavidAsyncUbDbSqe(TaskInfo* const taskInfo, rtDavidSqe_t* const command)
 {
     UNUSED(taskInfo);
     UNUSED(command);

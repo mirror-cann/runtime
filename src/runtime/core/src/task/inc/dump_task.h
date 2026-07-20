@@ -16,32 +16,33 @@
 
 namespace cce {
 namespace runtime {
-rtError_t FusionDumpAddrSetTaskInit(TaskInfo* taskInfo, const uint16_t modelIndex, const void *const address,
-    const uint32_t dumpDataSize, const uint32_t fusionFlag);
-rtError_t DataDumpLoadInfoTaskInit(TaskInfo* taskInfo, const void *const dumpInfoPtr,
-    const uint32_t len, const uint16_t kernelType);
-rtError_t DebugRegisterTaskInit(TaskInfo* taskInfo, const uint32_t mdlId,
-    const void *const address, const uint32_t curFlag);
+rtError_t FusionDumpAddrSetTaskInit(
+    TaskInfo* taskInfo, const uint16_t modelIndex, const void* const address, const uint32_t dumpDataSize,
+    const uint32_t fusionFlag);
+rtError_t DataDumpLoadInfoTaskInit(
+    TaskInfo* taskInfo, const void* const dumpInfoPtr, const uint32_t len, const uint16_t kernelType);
+rtError_t DebugRegisterTaskInit(
+    TaskInfo* taskInfo, const uint32_t mdlId, const void* const address, const uint32_t curFlag);
 rtError_t DebugUnRegisterTaskInit(TaskInfo* taskInfo, const uint32_t mdlId);
-rtError_t DebugRegisterForStreamTaskInit(TaskInfo* taskInfo, const uint32_t stmId,
-    const void *const address, const uint32_t curFlag);
+rtError_t DebugRegisterForStreamTaskInit(
+    TaskInfo* taskInfo, const uint32_t stmId, const void* const address, const uint32_t curFlag);
 rtError_t DebugUnRegisterForStreamTaskInit(TaskInfo* taskInfo, const uint32_t stmId);
 
-void ToCommandBodyForFusionDumpAddrSetTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void ToCommandBodyForDataDumpLoadInfoTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void ToCommandBodyForDebugRegisterTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void ToCommandBodyForDebugUnRegisterTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void ToCommandBodyForDebugRegisterForStreamTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void ToCmdBodyForDebugUnRegisterForStreamTask(TaskInfo* taskInfo, rtCommand_t *const command);
+void ToCommandBodyForFusionDumpAddrSetTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void ToCommandBodyForDataDumpLoadInfoTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void ToCommandBodyForDebugRegisterTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void ToCommandBodyForDebugUnRegisterTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void ToCommandBodyForDebugRegisterForStreamTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void ToCmdBodyForDebugUnRegisterForStreamTask(TaskInfo* taskInfo, rtCommand_t* const command);
 
-void SetStarsResultForDataDumpLoadInfoTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq);
+void SetStarsResultForDataDumpLoadInfoTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq);
 
-rtError_t AicpuInfoLoadTaskInit(TaskInfo* taskInfo, const void *const aicpuInfo, const uint32_t len);
-void ToCommandBodyForAicpuInfoLoadTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void SetStarsResultForAicpuInfoLoadTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq);
+rtError_t AicpuInfoLoadTaskInit(TaskInfo* taskInfo, const void* const aicpuInfo, const uint32_t len);
+void ToCommandBodyForAicpuInfoLoadTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void SetStarsResultForAicpuInfoLoadTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq);
 
 rtError_t NopTaskInit(TaskInfo* taskInfo);
-void ToCommandForNopTask(TaskInfo *const taskInfo, rtCommand_t *const command);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_DUMP_TASK_H
+void ToCommandForNopTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_DUMP_TASK_H

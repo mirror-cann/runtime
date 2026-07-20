@@ -15,26 +15,25 @@ namespace runtime {
 
 bool IsDvppTask(const uint16_t sqeType)
 {
-    return ((sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_VPC)) ||
-            (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_NSC)) ||
-            (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_DSS)));
+    return (
+        (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_VPC)) ||
+        (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_NSC)) ||
+        (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_DSS)));
 }
 
 bool IsNeedRetryTask(const uint16_t sqeType)
 {
-    return ((sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_VPC)) ||
-            (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_NSC)));
+    return (
+        (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_VPC)) ||
+        (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_NSC)));
 }
 
-bool IsSupportType(const uint16_t sqeType)
-{
-    return IsDvppTask(sqeType);
-}
+bool IsSupportType(const uint16_t sqeType) { return IsDvppTask(sqeType); }
 
 bool IsLogicCqInvalid(const uint8_t errorType)
 {
     return (errorType == static_cast<uint8_t>(RT_STARS_CQE_ERR_TYPE_TASK_TIMEOUT));
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

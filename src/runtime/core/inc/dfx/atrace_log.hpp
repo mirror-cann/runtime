@@ -17,11 +17,11 @@ namespace cce {
 namespace runtime {
 
 namespace {
-    constexpr uint32_t PER_ATRACE_LOG_LEN = 112U;
+constexpr uint32_t PER_ATRACE_LOG_LEN = 112U;
 }
 
 typedef enum TagTaskRecycleFuncType {
-    TYPE_SENDINGWAIT    = 0,
+    TYPE_SENDINGWAIT = 0,
     TYPE_TRYRECYCLETASK,
     TYPE_FUNC_RESERVED
 } TaskRecycleFuncType;
@@ -29,7 +29,7 @@ typedef enum TagTaskRecycleFuncType {
 typedef struct TagCqReportParams {
     uint32_t cqId;
     uint32_t errCode;
-    uint8_t  cqType;
+    uint8_t cqType;
 } CqReportParams;
 
 typedef struct tagTaskRecycleParams {
@@ -46,7 +46,7 @@ typedef struct tagEventWaitParams {
 } EventWaitParams;
 
 struct EventRecordParams {
-    int32_t  eventId;
+    int32_t eventId;
     uint32_t waitCqFlag;
     uint16_t waitCqId;
     bool isCountNotify;
@@ -96,24 +96,24 @@ struct AtraceParams {
 };
 
 typedef enum tagAtraceSubmitType {
-    TYPE_CQ_REPORT         = 0,
-    TYPE_TASK_RECYCLE      = 1,
-    TYPE_EVENT_WAIT        = 2,
-    TYPE_EVENT_RECORD      = 3,
-    TYPE_EVENT_RESET       = 4,
-    TYPE_NOTIFY_WAIT       = 5,
-    TYPE_NOTIFY_RECORD     = 6,
-    TYPE_RESERVED          = 7
+    TYPE_CQ_REPORT = 0,
+    TYPE_TASK_RECYCLE = 1,
+    TYPE_EVENT_WAIT = 2,
+    TYPE_EVENT_RECORD = 3,
+    TYPE_EVENT_RESET = 4,
+    TYPE_NOTIFY_WAIT = 5,
+    TYPE_NOTIFY_RECORD = 6,
+    TYPE_RESERVED = 7
 } AtraceSubmitType;
 
-void AtraceSubmitLog(AtraceSubmitType type, const AtraceParams &atraceParams);
+void AtraceSubmitLog(AtraceSubmitType type, const AtraceParams& atraceParams);
 void TrySaveAtraceLogs(TraEventHandle handle);
 void RegAtraceInfoInit(void);
-rtError_t AtraceSubmitForEventWait(const AtraceParams &atraceParams);
-rtError_t AtraceSubmitForNotifyWait(const AtraceParams &atraceParams);
-rtError_t AtraceSubmitForEventRecord(const AtraceParams &atraceParams);
-rtError_t AtraceSubmitForLogicCqRecord(const AtraceParams &atraceParams);
-}
-}
+rtError_t AtraceSubmitForEventWait(const AtraceParams& atraceParams);
+rtError_t AtraceSubmitForNotifyWait(const AtraceParams& atraceParams);
+rtError_t AtraceSubmitForEventRecord(const AtraceParams& atraceParams);
+rtError_t AtraceSubmitForLogicCqRecord(const AtraceParams& atraceParams);
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_ATRACE_LOG_HPP

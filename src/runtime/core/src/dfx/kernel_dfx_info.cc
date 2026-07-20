@@ -24,17 +24,19 @@ rtError_t KernelDfxInfo::SetKernelDfxInfoCallback(rtKernelDfxInfoType type, rtKe
     return RT_ERROR_NONE;
 }
 
-rtError_t KernelDfxInfo::ExecuteKernelDfxInfoFunc(rtKernelDfxInfoType type, uint32_t coreType, uint32_t coreId, const uint8_t *buffer, uint64_t length)
+rtError_t KernelDfxInfo::ExecuteKernelDfxInfoFunc(
+    rtKernelDfxInfoType type, uint32_t coreType, uint32_t coreId, const uint8_t* buffer, uint64_t length)
 {
     const std::unique_lock<std::mutex> regMapLock(kernelDfxInfoCallbackMutex_);
     auto iter = kernelDfxInfoCallbackMap_.find(type);
     if (iter != kernelDfxInfoCallbackMap_.end()) {
-        RT_LOG(RT_LOG_INFO, "ExecuteKernelDfxInfoFunc start, type=%d, coreType=%u, coreId=%u, buffer=%p, length=%llu", 
+        RT_LOG(
+            RT_LOG_INFO, "ExecuteKernelDfxInfoFunc start, type=%d, coreType=%u, coreId=%u, buffer=%p, length=%llu",
             type, coreType, coreId, buffer, length);
         iter->second(type, coreType, coreId, buffer, length);
         RT_LOG(RT_LOG_INFO, "ExecuteKernelDfxInfoFunc end");
     }
     return RT_ERROR_NONE;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -24,11 +24,11 @@ public:
     FuncSymbolTable() = default;
     ~FuncSymbolTable() override;
 
-    rtError_t Register(void *binHandle, const void *symbol, const char_t * const kernelName);
-    Kernel *Lookup(const void *symbol);
+    rtError_t Register(void* binHandle, const void* symbol, const char_t* const kernelName);
+    Kernel* Lookup(const void* symbol);
 
 private:
-    std::map<const void *, Kernel *> funcSymbolMap_;
+    std::map<const void*, Kernel*> funcSymbolMap_;
     SpinLock funcSymbolMapLock_;
 };
 

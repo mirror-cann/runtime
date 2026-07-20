@@ -24,18 +24,18 @@ public:
 
 protected:
     // handle overflow cqe
-    void ProcessOverFlowReport(const rtTaskReport_t * const errorReport, const uint32_t tsRetCode) const;
-    void ProcessNullTaskOverFlowReport(const uint32_t streamId, const uint32_t taskId,
-        const uint32_t retCode) const;
+    void ProcessOverFlowReport(const rtTaskReport_t* const errorReport, const uint32_t tsRetCode) const;
+    void ProcessNullTaskOverFlowReport(const uint32_t streamId, const uint32_t taskId, const uint32_t retCode) const;
 
-    void ReportReceive(const rtTaskReport_t * const report, TaskInfo * const reportTask);
-    void ReportExceptProc(const TaskInfo * const reportTask, const uint32_t errCode, const uint32_t errorDesc = 0xFFFFFFFFU);
+    void ReportReceive(const rtTaskReport_t* const report, TaskInfo* const reportTask);
+    void ReportExceptProc(
+        const TaskInfo* const reportTask, const uint32_t errCode, const uint32_t errorDesc = 0xFFFFFFFFU);
     Kernel* SearchErrorKernel(const uint16_t devId, const Program* const prog) const;
 
 private:
     PackageRebuilder rebuilder_;
 }; // class HwtsEngine
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_HWTS_ENGINE_HPP
+#endif // CCE_RUNTIME_HWTS_ENGINE_HPP

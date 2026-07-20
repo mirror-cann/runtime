@@ -26,16 +26,15 @@ class Device;
 class Stream;
 class Event;
 
-inline void UpdateAddrField(const void * const kerArgs,
-                            void * const argsHostAddr,
-                            const uint16_t hostInputInfoNum,
-                            const rtHostInputInfo * const hostInputInfoPtr)
+inline void UpdateAddrField(
+    const void* const kerArgs, void* const argsHostAddr, const uint16_t hostInputInfoNum,
+    const rtHostInputInfo* const hostInputInfoPtr)
 {
     for (uint16_t i = 0U; i < hostInputInfoNum; i++) {
         const uint32_t addrOffset = hostInputInfoPtr[i].addrOffset;
         const uint32_t dataOffset = hostInputInfoPtr[i].dataOffset;
-        *(RtPtrToPtr<uint64_t *, char_t *>(RtPtrToPtr<char_t *, void *>(argsHostAddr) + addrOffset)) =
-            RtPtrToValue<const void *>(kerArgs) + dataOffset;
+        *(RtPtrToPtr<uint64_t*, char_t*>(RtPtrToPtr<char_t*, void*>(argsHostAddr) + addrOffset)) =
+            RtPtrToValue<const void*>(kerArgs) + dataOffset;
     }
 }
 
@@ -46,29 +45,22 @@ struct ArgLoaderResult {
 };
 
 struct StreamSwitchNLoadResult {
-    const void *valuePtr;
-    const void *trueStreamPtr;
+    const void* valuePtr;
+    const void* trueStreamPtr;
 };
 
-enum KernelInfoType {
-    SO_NAME,
-    KERNEL_NAME,
-    MAX_NAME
-};
+enum KernelInfoType { SO_NAME, KERNEL_NAME, MAX_NAME };
 
 struct Handle {
-    void *kerArgs;
+    void* kerArgs;
     bool freeArgs;
-    H2DCopyMgr *argsAlloc;
+    H2DCopyMgr* argsAlloc;
 };
-
 
 // Management of argment loading.
 class ArgLoader : public NoCopy {
 public:
-    explicit ArgLoader(Device *dev) : NoCopy(), drv_(dev->Driver_()), device_(dev)
-    {
-    }
+    explicit ArgLoader(Device* dev) : NoCopy(), drv_(dev->Driver_()), device_(dev) {}
 
     ~ArgLoader() override
     {
@@ -80,18 +72,17 @@ public:
     // for starsv2
     virtual rtError_t AllocCopyPtrWithGenericPolicy(const uint32_t size, ArgLoaderResult* const result) = 0;
 
-    virtual rtError_t Load(const rtArgsEx_t * const argsInfo,
-                           Stream * const stm, ArgLoaderResult * const result) = 0;
-    virtual rtError_t LoadForMix(const rtArgsEx_t * const argsInfo,
-                                 Stream * const stm, ArgLoaderResult * const result, bool &mixOpt) = 0;
-    virtual rtError_t PureLoad(const uint32_t size, const void * const args, ArgLoaderResult * const result) = 0;
-    virtual rtError_t Release(void * const argHandle) = 0;
+    virtual rtError_t Load(const rtArgsEx_t* const argsInfo, Stream* const stm, ArgLoaderResult* const result) = 0;
+    virtual rtError_t LoadForMix(
+        const rtArgsEx_t* const argsInfo, Stream* const stm, ArgLoaderResult* const result, bool& mixOpt) = 0;
+    virtual rtError_t PureLoad(const uint32_t size, const void* const args, ArgLoaderResult* const result) = 0;
+    virtual rtError_t Release(void* const argHandle) = 0;
 
-    virtual rtError_t LoadCpuKernelArgs(const rtArgsEx_t * const argsInfo, Stream * const stm,
-                                        ArgLoaderResult * const result) = 0;
-    virtual rtError_t LoadCpuKernelArgsEx(const rtAicpuArgsEx_t * const argsInfo, Stream * const stm,
-                                          ArgLoaderResult * const result) = 0;
-    virtual rtError_t GetKernelInfoDevAddr(const char_t * const name, const KernelInfoType type, void ** const addr)
+    virtual rtError_t LoadCpuKernelArgs(
+        const rtArgsEx_t* const argsInfo, Stream* const stm, ArgLoaderResult* const result) = 0;
+    virtual rtError_t LoadCpuKernelArgsEx(
+        const rtAicpuArgsEx_t* const argsInfo, Stream* const stm, ArgLoaderResult* const result) = 0;
+    virtual rtError_t GetKernelInfoDevAddr(const char_t* const name, const KernelInfoType type, void** const addr)
     {
         (void)name;
         (void)type;
@@ -99,7 +90,7 @@ public:
         return RT_ERROR_NONE;
     }
 
-    virtual void GetKernelInfoFromAddr(std::string &name, const KernelInfoType type, void* addr)
+    virtual void GetKernelInfoFromAddr(std::string& name, const KernelInfoType type, void* addr)
     {
         (void)name;
         (void)type;
@@ -107,10 +98,9 @@ public:
     }
     virtual void RestoreAiCpuKernelInfo(void) = 0;
 
-    virtual rtError_t LoadStreamSwitchNArgs(Stream * const stm, const void * const valuePtr,
-                                            const uint32_t valueSize, Stream ** const trueStreamPtr,
-                                            const uint32_t elementSize, const rtSwitchDataType_t dataType,
-                                            StreamSwitchNLoadResult * const result) = 0;
+    virtual rtError_t LoadStreamSwitchNArgs(
+        Stream* const stm, const void* const valuePtr, const uint32_t valueSize, Stream** const trueStreamPtr,
+        const uint32_t elementSize, const rtSwitchDataType_t dataType, StreamSwitchNLoadResult* const result) = 0;
     virtual bool CheckPcieBar(void) = 0;
 
     virtual rtError_t AllocCopyPtr(uint32_t size, LoadPolicy policy, ArgLoaderResult* result)
@@ -143,9 +133,9 @@ public:
     }
 
 protected:
-    Driver *drv_;
-    Device *device_;
+    Driver* drv_;
+    Device* device_;
 };
-}
-}
-#endif  // __CCE_RUNTIME_ARG_LOADER_HPP__
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_ARG_LOADER_HPP__

@@ -19,13 +19,14 @@
 namespace cce {
 namespace runtime {
 
-void ConstructDavidSqeForStreamLabelSwitchByIndexTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForStreamLabelSwitchByIndexTask(
+    TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
-    StmLabelSwitchByIdxTaskInfo * const stmLblSwiByIdx = &(taskInfo->u.stmLabelSwitchIdxTask);
+    RtDavidStarsFunctionCallSqe& fnCallSqe = davidSqe->fuctionCallSqe;
+    StmLabelSwitchByIdxTaskInfo* const stmLblSwiByIdx = &(taskInfo->u.stmLabelSwitchIdxTask);
     fnCallSqe.header.type = RT_DAVID_SQE_TYPE_COND;
     fnCallSqe.condsSubType = CONDS_SUB_TYPE_LABEL_SWITCH_BY_INDEX;
     fnCallSqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
@@ -39,18 +40,19 @@ void ConstructDavidSqeForStreamLabelSwitchByIndexTask(TaskInfo * const taskInfo,
     ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "StreamLabelSwitchByIndexTask");
-    RT_LOG(RT_LOG_INFO, "StreamLabelSwitchByIndex, deviceId=%u, streamId=%d, taskId=%hu",
+    RT_LOG(
+        RT_LOG_INFO, "StreamLabelSwitchByIndex, deviceId=%u, streamId=%d, taskId=%hu",
         taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), taskInfo->id);
 }
 
-void ConstructDavidSqeForStreamSwitchTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForStreamSwitchTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
-    Stream * const stm = taskInfo->stream;
-    StreamSwitchTaskInfo * const streamSwitchTask = &(taskInfo->u.streamswitchTask);
+    Stream* const stm = taskInfo->stream;
+    StreamSwitchTaskInfo* const streamSwitchTask = &(taskInfo->u.streamswitchTask);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
+    RtDavidStarsFunctionCallSqe& fnCallSqe = davidSqe->fuctionCallSqe;
 
     fnCallSqe.header.type = RT_DAVID_SQE_TYPE_COND;
     if (streamSwitchTask->isCondEx) {
@@ -69,8 +71,9 @@ void ConstructDavidSqeForStreamSwitchTask(TaskInfo * const taskInfo, void *const
     ConstructFunctionCallInstr(funcAddr, (streamSwitchTask->funCallMemSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "StreamSwitchTask");
-    RT_LOG(RT_LOG_INFO, "StreamSwitchTask, deviceId=%u, streamId=%d, taskId=%hu, trueStreamId=%u.",
-        stm->Device_()->Id_(), stm->Id_(), taskInfo->id, streamSwitchTask->trueStreamId);
+    RT_LOG(
+        RT_LOG_INFO, "StreamSwitchTask, deviceId=%u, streamId=%d, taskId=%hu, trueStreamId=%u.", stm->Device_()->Id_(),
+        stm->Id_(), taskInfo->id, streamSwitchTask->trueStreamId);
     return;
 }
 
@@ -134,12 +137,12 @@ static bool CondOpStreamTaskRegister()
 
 static bool g_condOpStreamTaskRegister = CondOpStreamTaskRegister();
 
-void Construct1stDavidSqeForCaptureConditionTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe)
+void Construct1stDavidSqeForCaptureConditionTask(TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe)
 {
     // 构造第1个David SQE：条件算子，判断条件变量值并跳转执行子模型
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    CaptureConditionTaskInfo *condTaskInfo = &(taskInfo->u.captureConditionTask);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    CaptureConditionTaskInfo* condTaskInfo = &(taskInfo->u.captureConditionTask);
+    RtDavidStarsFunctionCallSqe& sqe = davidSqe->fuctionCallSqe;
     sqe.header.type = RT_DAVID_SQE_TYPE_COND;
     sqe.condsSubType = CONDS_SUB_TYPE_CAPTURE_MODEL_COND;
     sqe.kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
@@ -150,12 +153,12 @@ void Construct1stDavidSqeForCaptureConditionTask(TaskInfo * const taskInfo, rtDa
     PrintDavidSqe(davidSqe, "CaptureConditionTask[0]:CondFirst");
 }
 
-void Construct2ndDavidSqeForCaptureConditionTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe)
+void Construct2ndDavidSqeForCaptureConditionTask(TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe)
 {
     // 构造第2个David SQE：NotifyWait，等待子模型执行完成的notify信号
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    CaptureConditionTaskInfo *condTaskInfo = &(taskInfo->u.captureConditionTask);
-    RtDavidStarsNotifySqe &notifySqe = davidSqe->notifySqe;
+    CaptureConditionTaskInfo* condTaskInfo = &(taskInfo->u.captureConditionTask);
+    RtDavidStarsNotifySqe& notifySqe = davidSqe->notifySqe;
     notifySqe.header.type = RT_DAVID_SQE_TYPE_NOTIFY_WAIT;
     notifySqe.kernelCredit = RT_STARS_NEVER_TIMEOUT_KERNEL_CREDIT;
     notifySqe.notifyId = condTaskInfo->notifyId;
@@ -169,22 +172,24 @@ void Construct2ndDavidSqeForCaptureConditionTask(TaskInfo * const taskInfo, rtDa
     PrintDavidSqe(davidSqe, "CaptureConditionTask[1]:NotifyWait");
 }
 
-void Construct3rdDavidSqeForCaptureConditionTask(TaskInfo * const taskInfo, rtDavidSqe_t *const davidSqe)
+void Construct3rdDavidSqeForCaptureConditionTask(TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe)
 {
     // 构造第3个David SQE：JumpBack（仅while类型），条件成立时跳回循环起始位置重新执行
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsFunctionCallSqe &sqe = davidSqe->fuctionCallSqe;
+    RtDavidStarsFunctionCallSqe& sqe = davidSqe->fuctionCallSqe;
 
-    CaptureConditionTaskInfo *condTaskInfo = &(taskInfo->u.captureConditionTask);
+    CaptureConditionTaskInfo* condTaskInfo = &(taskInfo->u.captureConditionTask);
     RtStarsCaptureWhileCondJumpBackFc fc = {};
     const uint64_t funcCallSize = static_cast<uint64_t>(sizeof(RtStarsCaptureWhileCondJumpBackFc));
     ConstructCaptureConditionJumpBackFc(taskInfo, fc);
 
-    rtError_t ret = taskInfo->stream->Device_()->Driver_()->MemCopySync(condTaskInfo->jumpBackFuncCallSvmMem,
-        condTaskInfo->jumpBackFunCallMemSize, &fc, funcCallSize, RT_MEMCPY_HOST_TO_DEVICE);
+    rtError_t ret = taskInfo->stream->Device_()->Driver_()->MemCopySync(
+        condTaskInfo->jumpBackFuncCallSvmMem, condTaskInfo->jumpBackFunCallMemSize, &fc, funcCallSize,
+        RT_MEMCPY_HOST_TO_DEVICE);
     if (ret != RT_ERROR_NONE) {
         sqe.header.type = RT_STARS_SQE_TYPE_INVALID;
-        RT_LOG_INNER_MSG(RT_LOG_ERROR,
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR,
             "Failed to call MemCopySync to copy function call mem. dest=%p, dest_max=%lu, count=%lu, retCode=%#x.",
             condTaskInfo->jumpBackFuncCallSvmMem, condTaskInfo->jumpBackFunCallMemSize, funcCallSize,
             static_cast<uint32_t>(ret));
@@ -200,25 +205,26 @@ void Construct3rdDavidSqeForCaptureConditionTask(TaskInfo * const taskInfo, rtDa
     ConstructFunctionCallInstr(funcAddr, (condTaskInfo->jumpBackFunCallMemSize / 4UL), sqe);
 
     PrintDavidSqe(davidSqe, "CaptureConditionTaskJumpBackDavid");
-    RT_LOG(RT_LOG_INFO, "CaptureConditionTaskJumpBackDavid, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.",
+    RT_LOG(
+        RT_LOG_INFO, "CaptureConditionTaskJumpBackDavid, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u.",
         taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), taskInfo->id, taskInfo->taskSn);
 }
 
-void ConstructDavidSqeForCaptureConditionTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForCaptureConditionTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
     UNUSED(sqeInfo);
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     constexpr uint8_t CONDITION_SQE_INDEX_1 = 1U;
     constexpr uint8_t CONDITION_SQE_INDEX_2 = 2U;
 
     Construct1stDavidSqeForCaptureConditionTask(taskInfo, &davidSqe[0]);
     Construct2ndDavidSqeForCaptureConditionTask(taskInfo, &davidSqe[CONDITION_SQE_INDEX_1]);
 
-    CaptureConditionTaskInfo *condTaskInfo = &(taskInfo->u.captureConditionTask);
+    CaptureConditionTaskInfo* condTaskInfo = &(taskInfo->u.captureConditionTask);
     if (condTaskInfo->condHandle->GetCondType() == RT_COND_TASK_TYPE_WHILE) {
         Construct3rdDavidSqeForCaptureConditionTask(taskInfo, &davidSqe[CONDITION_SQE_INDEX_2]);
     }
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

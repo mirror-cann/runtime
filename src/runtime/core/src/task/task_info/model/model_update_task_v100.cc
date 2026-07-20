@@ -17,12 +17,12 @@
 namespace cce {
 namespace runtime {
 
-static void ConstructSqeForModelUpdateTask(TaskInfo * const taskInfo, rtStarsSqe_t *const command)
+static void ConstructSqeForModelUpdateTask(TaskInfo* const taskInfo, rtStarsSqe_t* const command)
 {
-    MdlUpdateTaskInfo *mdlUpdateTaskInfo = &(taskInfo->u.mdlUpdateTask);
-    Stream * const stm = taskInfo->stream;
+    MdlUpdateTaskInfo* mdlUpdateTaskInfo = &(taskInfo->u.mdlUpdateTask);
+    Stream* const stm = taskInfo->stream;
 
-    RtStarsPhSqe *const sqe = &(command->phSqe);
+    RtStarsPhSqe* const sqe = &(command->phSqe);
     sqe->type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
     sqe->ie = 0U;
     sqe->pre_p = 1U;
@@ -42,12 +42,15 @@ static void ConstructSqeForModelUpdateTask(TaskInfo * const taskInfo, rtStarsSqe
     sqe->u.mdTaskUpdateInfo.desStreamId = mdlUpdateTaskInfo->desStreamId;
     sqe->u.mdTaskUpdateInfo.exeStreamId = mdlUpdateTaskInfo->exeStreamId;
 
-    RT_LOG(RT_LOG_INFO, "[Offset]descBuf=%llu,tilingKey=%llu,blockDim=%llu,tilingTab=%llu.",
-        mdlUpdateTaskInfo->descBufOffset, mdlUpdateTaskInfo->tilingKeyOffset,
-        mdlUpdateTaskInfo->blockDimOffset, mdlUpdateTaskInfo->tilingTabOffset);
+    RT_LOG(
+        RT_LOG_INFO, "[Offset]descBuf=%llu,tilingKey=%llu,blockDim=%llu,tilingTab=%llu.",
+        mdlUpdateTaskInfo->descBufOffset, mdlUpdateTaskInfo->tilingKeyOffset, mdlUpdateTaskInfo->blockDimOffset,
+        mdlUpdateTaskInfo->tilingTabOffset);
 
     PrintSqe(command, "ModelUpdateTask");
-    RT_LOG(RT_LOG_INFO, "Send TS_TASK_TYPE_MODEL_TASK_UPDATE succ,"
+    RT_LOG(
+        RT_LOG_INFO,
+        "Send TS_TASK_TYPE_MODEL_TASK_UPDATE succ,"
         "sqe_type=%u, pre_p=%u, stream_id=%u, task_id=%u, task_type=%u",
         sqe->type, sqe->pre_p, sqe->rt_streamID, sqe->task_id, sqe->task_type);
 
@@ -67,7 +70,7 @@ static bool ModelUpdateTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommon,
     };
 
-    const auto &chips = GetV100Chips();
+    const auto& chips = GetV100Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_MODEL_TASK_UPDATE, funcs);
     }
@@ -77,5 +80,5 @@ static bool ModelUpdateTaskRegister()
 
 static bool g_modelUpdateTaskRegister = ModelUpdateTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -17,37 +17,39 @@ namespace runtime {
 
 #if F_DESC("DavinciMultipleTask")
 
-rtError_t DavinciMultipleTaskInit(TaskInfo* taskInfo, const void *const multipleTaskInfo, const uint32_t flag)
+rtError_t DavinciMultipleTaskInit(TaskInfo* taskInfo, const void* const multipleTaskInfo, const uint32_t flag)
 {
     TaskCommonInfoInit(taskInfo);
-    DavinciMultiTaskInfo *multiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
-    const rtMultipleTaskInfo_t *info = static_cast<const rtMultipleTaskInfo_t *>(multipleTaskInfo);
+    DavinciMultiTaskInfo* multiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    const rtMultipleTaskInfo_t* info = static_cast<const rtMultipleTaskInfo_t*>(multipleTaskInfo);
 
     taskInfo->type = TS_TASK_TYPE_MULTIPLE_TASK;
     taskInfo->typeName = "MULTIPLE_TASK";
     taskInfo->needPostProc = true;
-    multiTaskInfo->multipleTaskInfo = const_cast<void *>(multipleTaskInfo);
+    multiTaskInfo->multipleTaskInfo = const_cast<void*>(multipleTaskInfo);
     multiTaskInfo->multipleTaskCqeNum = 0U;
     multiTaskInfo->sqeType = 0U;
     multiTaskInfo->errorType = 0U;
     multiTaskInfo->cqeErrorCode = 0U;
     multiTaskInfo->hasUnderstudyTask = false;
     multiTaskInfo->sqeNum = info->taskNum;
-    multiTaskInfo->cmdListVec = new (std::nothrow) std::vector<void *>();
+    multiTaskInfo->cmdListVec = new (std::nothrow) std::vector<void*>();
     multiTaskInfo->flag = flag;
-    COND_RETURN_AND_MSG_OUTER(multiTaskInfo->cmdListVec == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        sizeof(std::vector<void *>), "new");
+    COND_RETURN_AND_MSG_OUTER(
+        multiTaskInfo->cmdListVec == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(std::vector<void*>),
+        "new");
 
-    multiTaskInfo->argHandleVec = new (std::nothrow) std::vector<void *>();
-    COND_PROC_RETURN_AND_MSG_OUTER(multiTaskInfo->argHandleVec == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-        DELETE_O(multiTaskInfo->cmdListVec), sizeof(std::vector<void *>), "new");
+    multiTaskInfo->argHandleVec = new (std::nothrow) std::vector<void*>();
+    COND_PROC_RETURN_AND_MSG_OUTER(
+        multiTaskInfo->argHandleVec == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+        DELETE_O(multiTaskInfo->cmdListVec), sizeof(std::vector<void*>), "new");
 
     return RT_ERROR_NONE;
 }
 
 void ResetCmdList(TaskInfo* taskInfo)
 {
-    DavinciMultiTaskInfo *davMulTask = &taskInfo->u.davinciMultiTaskInfo;
+    DavinciMultiTaskInfo* davMulTask = &taskInfo->u.davinciMultiTaskInfo;
     if (davMulTask->cmdListVec == nullptr) {
         RT_LOG(RT_LOG_INFO, "davMulTask->cmdListVec is nullptr.");
         return;
@@ -71,9 +73,9 @@ void ResetCmdList(TaskInfo* taskInfo)
     davMulTask->cmdListVec = nullptr;
 }
 
-void IncMultipleTaskCqeNum(TaskInfo *taskInfo)
+void IncMultipleTaskCqeNum(TaskInfo* taskInfo)
 {
-    DavinciMultiTaskInfo *davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    DavinciMultiTaskInfo* davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
 
     if (davinciMultiTaskInfo->multipleTaskCqeNum == 0xFFU) {
         RT_LOG(RT_LOG_WARNING, "multipleTaskCqeNum_=%u", davinciMultiTaskInfo->multipleTaskCqeNum);
@@ -84,24 +86,24 @@ void IncMultipleTaskCqeNum(TaskInfo *taskInfo)
     return;
 }
 
-uint32_t GetSendSqeNumForDavinciMultipleTask(const TaskInfo * const taskInfo)
+uint32_t GetSendSqeNumForDavinciMultipleTask(const TaskInfo* const taskInfo)
 {
-    const DavinciMultiTaskInfo *multiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    const DavinciMultiTaskInfo* multiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
 
     RT_LOG(RT_LOG_INFO, "sqe num is %u", multiTaskInfo->sqeNum);
     return multiTaskInfo->sqeNum;
 }
 
-uint8_t GetMultipleTaskCqeNum(TaskInfo * const taskInfo)
+uint8_t GetMultipleTaskCqeNum(TaskInfo* const taskInfo)
 {
-    DavinciMultiTaskInfo *multiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    DavinciMultiTaskInfo* multiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
 
     return multiTaskInfo->multipleTaskCqeNum;
 }
 
-void DecMultipleTaskCqeNum(TaskInfo *taskInfo)
+void DecMultipleTaskCqeNum(TaskInfo* taskInfo)
 {
-    DavinciMultiTaskInfo *davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    DavinciMultiTaskInfo* davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
     if (davinciMultiTaskInfo->multipleTaskCqeNum == 0U) {
         RT_LOG(RT_LOG_WARNING, "multipleTaskCqeNum_=%u", davinciMultiTaskInfo->multipleTaskCqeNum);
         return;
@@ -111,11 +113,11 @@ void DecMultipleTaskCqeNum(TaskInfo *taskInfo)
     return;
 }
 
-void SetMultipleTaskCqeErrorInfo(TaskInfo *taskInfo, uint8_t sqeType, uint8_t errorType, uint32_t errorCode)
+void SetMultipleTaskCqeErrorInfo(TaskInfo* taskInfo, uint8_t sqeType, uint8_t errorType, uint32_t errorCode)
 {
-    DavinciMultiTaskInfo *davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    DavinciMultiTaskInfo* davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
 
-    if (davinciMultiTaskInfo->sqeType == 0U) {  // first cqe
+    if (davinciMultiTaskInfo->sqeType == 0U) { // first cqe
         davinciMultiTaskInfo->sqeType = sqeType;
         davinciMultiTaskInfo->errorType = errorType;
         davinciMultiTaskInfo->cqeErrorCode = errorCode;
@@ -130,16 +132,18 @@ void SetMultipleTaskCqeErrorInfo(TaskInfo *taskInfo, uint8_t sqeType, uint8_t er
         }
     }
 
-    RT_LOG(RT_LOG_DEBUG, "sqeType=%u, errorType=%u, errorCode=%u, MultiSqeType=%u, MultiErrorType=%u, MultiCqeErrorCode=%u",
-           sqeType, errorType, errorCode, davinciMultiTaskInfo->sqeType, davinciMultiTaskInfo->errorType,
-           davinciMultiTaskInfo->cqeErrorCode);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "sqeType=%u, errorType=%u, errorCode=%u, MultiSqeType=%u, MultiErrorType=%u, MultiCqeErrorCode=%u", sqeType,
+        errorType, errorCode, davinciMultiTaskInfo->sqeType, davinciMultiTaskInfo->errorType,
+        davinciMultiTaskInfo->cqeErrorCode);
     return;
 }
 
-void GetMultipleTaskCqeErrorInfo(TaskInfo * const taskInfo, volatile uint8_t &sqeType,
-                                 volatile uint8_t &errorType, volatile uint32_t &errorCode)
+void GetMultipleTaskCqeErrorInfo(
+    TaskInfo* const taskInfo, volatile uint8_t& sqeType, volatile uint8_t& errorType, volatile uint32_t& errorCode)
 {
-    DavinciMultiTaskInfo *davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    DavinciMultiTaskInfo* davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
 
     sqeType = davinciMultiTaskInfo->sqeType;
     errorType = davinciMultiTaskInfo->errorType;
@@ -149,5 +153,5 @@ void GetMultipleTaskCqeErrorInfo(TaskInfo * const taskInfo, volatile uint8_t &sq
 
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

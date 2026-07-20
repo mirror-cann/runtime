@@ -50,17 +50,17 @@ static const std::unordered_set<RtOptionalFeatureType> CHIP_ADC_FEATURE{
     RtOptionalFeatureType::RT_FEATURE_NOTIFY_WAIT,
     RtOptionalFeatureType::RT_FEATURE_KERNEL_UMA_SUPER_ARGS_ALLOC,
     RtOptionalFeatureType::RT_FEATURE_PROFILING_ONLINE_DEVICE_MEM_CLEAR,
-    RtOptionalFeatureType::RT_FEATURE_DFX_TS_GET_DEVICE_MSG
-};
+    RtOptionalFeatureType::RT_FEATURE_DFX_TS_GET_DEVICE_MSG};
 
 REGISTER_CHIP_FEATURE_SET(CHIP_ADC, CHIP_ADC_FEATURE);
 
 static constexpr uint32_t CQE_DEPTH = 4096U;
 static constexpr uint32_t DEFAULT_CQE_SIZE = 12U;
 static constexpr uint32_t RT_HWTS_MAX_KERNEL_CREDIT_UINT32 = 255U; // HWTS MAX KERNEL_CREDIT = 255.
-static constexpr uint32_t RT_HWTS_610_DEFAULT_KERNEL_CREDIT_UINT32 = 72U; // The TS 610 reference time is 2415919.104 us.
+static constexpr uint32_t RT_HWTS_610_DEFAULT_KERNEL_CREDIT_UINT32 =
+    72U;                                                           // The TS 610 reference time is 2415919.104 us.
 static constexpr double RT_HWTS_610_TASK_KERNEL_CREDIT_SCALE_US = 33554.432; // 2^25 / 1000M *1000*1000(us)
-static constexpr uint64_t ENGINE_WAIT_COMPLETION_TIMEOUT = 2000UL; //2000ms
+static constexpr uint64_t ENGINE_WAIT_COMPLETION_TIMEOUT = 2000UL;           // 2000ms
 
 static const DevProperties CHIP_ADC_PROPERTIES = {
     .engineType = "HWTS",
@@ -199,5 +199,5 @@ static const DevProperties CHIP_ADC_PROPERTIES = {
     .swapBufferProfCfgOffset = 0U,
 };
 REGISTER_DEV_PROPERTIES(CHIP_ADC, CHIP_ADC_PROPERTIES);
-}
-}
+} // namespace runtime
+} // namespace cce

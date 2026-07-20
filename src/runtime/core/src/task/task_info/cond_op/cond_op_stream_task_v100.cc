@@ -19,11 +19,11 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("StreamSwitchTask")
-void ConstructSqeForStreamSwitchTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForStreamSwitchTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    Stream * const stm = taskInfo->stream;
+    Stream* const stm = taskInfo->stream;
     StreamSwitchTaskInfo* streamSwitchTask = &(taskInfo->u.streamswitchTask);
-    RtStarsFunctionCallSqe &sqe = command->fuctionCallSqe;
+    RtStarsFunctionCallSqe& sqe = command->fuctionCallSqe;
     sqe.kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
     sqe.csc = 1U;
     sqe.sqeHeader.l1_lock = 0U;
@@ -45,18 +45,19 @@ void ConstructSqeForStreamSwitchTask(TaskInfo* taskInfo, rtStarsSqe_t *const com
     ConstructFunctionCallInstr(funcAddr, (streamSwitchTask->funCallMemSize / 4UL), sqe);
 
     PrintSqe(command, "StreamSwitchTask");
-    RT_LOG(RT_LOG_INFO, "StreamSwitchTask current stream_id=%d task_id=%hu true_stream_id_=%u.",
-        stm->Id_(), taskInfo->id, streamSwitchTask->trueStreamId);
+    RT_LOG(
+        RT_LOG_INFO, "StreamSwitchTask current stream_id=%d task_id=%hu true_stream_id_=%u.", stm->Id_(), taskInfo->id,
+        streamSwitchTask->trueStreamId);
 
     return;
 }
 #endif
 
 #if F_DESC("StreamLabelSwitchByIndexTask")
-void ConstructSqeForStreamLabelSwitchByIndexTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForStreamLabelSwitchByIndexTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
-    RtStarsFunctionCallSqe &sqe = command->fuctionCallSqe;
-    StmLabelSwitchByIdxTaskInfo *stmLblSwiByIdx = &taskInfo->u.stmLabelSwitchIdxTask;
+    RtStarsFunctionCallSqe& sqe = command->fuctionCallSqe;
+    StmLabelSwitchByIdxTaskInfo* stmLblSwiByIdx = &taskInfo->u.stmLabelSwitchIdxTask;
 
     sqe.kernel_credit = RT_STARS_DEFAULT_KERNEL_CREDIT;
     sqe.csc = 1U;
@@ -136,5 +137,5 @@ static bool CondOpStreamTaskRegister()
 
 static bool g_condOpStreamTaskRegister = CondOpStreamTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

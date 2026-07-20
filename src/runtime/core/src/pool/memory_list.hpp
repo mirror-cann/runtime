@@ -35,17 +35,18 @@ public:
 
     ~MemoryList() noexcept override;
     // 调用前确定是否需要加锁保护
-    rtError_t AddBlock(void *address, size_t size);
+    rtError_t AddBlock(void* address, size_t size);
     // 调用前确定是否需要加锁保护
     void* GetBlock(size_t size);
     // 查看地址是否在链表中存储
     bool ContainsAddress(void* address) const;
+
 private:
     void RemoveNode(ListNode* node);
 
     ListNode* head_ = nullptr;
     ListNode* tail_ = nullptr;
 };
-}
-}
-#endif  // CCE_RUNTIME_MEMORY_LIST_HPP
+} // namespace runtime
+} // namespace cce
+#endif // CCE_RUNTIME_MEMORY_LIST_HPP

@@ -12,31 +12,22 @@
 
 namespace cce {
 namespace runtime {
-EventExpandingPool::EventExpandingPool(Device * const dev)
+EventExpandingPool::EventExpandingPool(Device* const dev)
     : NoCopy(), device_(dev), eventIdCount_(EVENT_INIT_VALUE), lastEventId_(0U), poolIndex_(0U)
-{
-}
+{}
 
-EventExpandingPool::~EventExpandingPool()
-{
-}
+EventExpandingPool::~EventExpandingPool() {}
 
-rtError_t EventExpandingPool::AllocAndInsertEvent(void ** const eventAddr, int32_t *eventId)
+rtError_t EventExpandingPool::AllocAndInsertEvent(void** const eventAddr, int32_t* eventId)
 {
     UNUSED(eventAddr);
     UNUSED(eventId);
     return RT_ERROR_NONE;
 }
 
-void EventExpandingPool::FreeEventId(int32_t eventId)
-{
-    UNUSED(eventId);
-}
+void EventExpandingPool::FreeEventId(int32_t eventId) { UNUSED(eventId); }
 
-rtError_t EventExpandingPool::ResetBufferForEvent()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t EventExpandingPool::ResetBufferForEvent() { return RT_ERROR_NONE; }
 
-}
-}
+} // namespace runtime
+} // namespace cce

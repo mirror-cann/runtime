@@ -20,14 +20,14 @@ class EngineLogObserver : public EngineObserver {
 public:
     EngineLogObserver() = default;
     ~EngineLogObserver() override = default;
-    void TaskSubmited(Device * const dev, TaskInfo * const tsk) override;
-    void TaskLaunched(const uint32_t devId, TaskInfo * const tsk, rtTsCommand_t * const command) override;
-    virtual void TaskLaunchedEx(const uint32_t devId, TaskInfo * const tsk, rtTsCommand_t * const command) const;
-    void TaskFinished(const uint32_t devId, const TaskInfo * const tsk) override;
+    void TaskSubmited(Device* const dev, TaskInfo* const tsk) override;
+    void TaskLaunched(const uint32_t devId, TaskInfo* const tsk, rtTsCommand_t* const command) override;
+    virtual void TaskLaunchedEx(const uint32_t devId, TaskInfo* const tsk, rtTsCommand_t* const command) const;
+    void TaskFinished(const uint32_t devId, const TaskInfo* const tsk) override;
 
 private:
-    void KernelTaskEventLogProc(const uint32_t devId, const TaskInfo * const logProcTask,
-        const char_t * const kernelType) const;
+    void KernelTaskEventLogProc(
+        const uint32_t devId, const TaskInfo* const logProcTask, const char_t* const kernelType) const;
     uint64_t task_launched_num_{0UL};
     uint64_t task_finished_num_{0UL};
 };
@@ -37,15 +37,12 @@ public:
     Logger() = default;
     ~Logger() override = default;
 
-    const EngineLogObserver *EngineLogObserver_() const
-    {
-        return &engineLogObserver_;
-    }
+    const EngineLogObserver* EngineLogObserver_() const { return &engineLogObserver_; }
 
 private:
     EngineLogObserver engineLogObserver_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_LOGGER_HPP__
+#endif // __CCE_RUNTIME_LOGGER_HPP__

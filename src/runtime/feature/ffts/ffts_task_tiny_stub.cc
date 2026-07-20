@@ -13,23 +13,20 @@
 namespace cce {
 namespace runtime {
 
-uint32_t GetSendSqeNumForFftsPlusTask(const TaskInfo * const taskInfo)
+uint32_t GetSendSqeNumForFftsPlusTask(const TaskInfo* const taskInfo)
 {
     UNUSED(taskInfo);
     return 1U;
 }
 
-void PushBackErrInfoForFftsPlusTask(TaskInfo* taskInfo, const void *errInfo, uint32_t len)
+void PushBackErrInfoForFftsPlusTask(TaskInfo* taskInfo, const void* errInfo, uint32_t len)
 {
     UNUSED(taskInfo);
     UNUSED(errInfo);
     UNUSED(len);
 }
 
-void FftsPlusTaskUnInit(TaskInfo * const taskInfo)
-{
-    UNUSED(taskInfo);
-}
+void FftsPlusTaskUnInit(TaskInfo* const taskInfo) { UNUSED(taskInfo); }
 
 void PrintErrorInfoForFftsPlusTask(TaskInfo* taskInfo, const uint32_t devId)
 {
@@ -37,13 +34,13 @@ void PrintErrorInfoForFftsPlusTask(TaskInfo* taskInfo, const uint32_t devId)
     UNUSED(devId);
 }
 
-void SetStarsResultForFftsPlusTask(TaskInfo* taskInfo, const rtLogicCqReport_t &logicCq)
+void SetStarsResultForFftsPlusTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq)
 {
     UNUSED(taskInfo);
     UNUSED(logicCq);
 }
 
-void ConstructSqeForFftsPlusTask(TaskInfo* taskInfo, rtStarsSqe_t *const command)
+void ConstructSqeForFftsPlusTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
 {
     UNUSED(taskInfo);
     UNUSED(command);
@@ -55,10 +52,10 @@ void DoCompleteSuccForFftsPlusTask(TaskInfo* taskInfo, const uint32_t devId)
     UNUSED(devId);
 }
 
-void SqeTaskUpdateForFftsPlus(TaskInfo* taskInfo, rtStarsSqe_t * const fftsplusSqe)
+void SqeTaskUpdateForFftsPlus(TaskInfo* taskInfo, rtStarsSqe_t* const fftsplusSqe)
 {
     UNUSED(taskInfo);
     UNUSED(fftsplusSqe);
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

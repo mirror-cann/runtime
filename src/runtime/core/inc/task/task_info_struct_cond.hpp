@@ -9,54 +9,54 @@
  */
 #ifndef CCE_RUNTIME_TASK_INFO_STRUCT_COND_HPP
 #define CCE_RUNTIME_TASK_INFO_STRUCT_COND_HPP
- 
+
 #include "task_info_base.hpp"
- 
+
 #define THREAD_FOR_PRE_LOAD (30U)
- 
+
 namespace cce {
 namespace runtime {
 class Event;
 // StreamLabelSwitchByIndexTask
 struct StmLabelSwitchByIdxTaskInfo {
-    void *indexPtr;
-    void *labelInfoPtr;
-    void *funcCallSvmMem;
-    void *dfxPtr;
-    void *baseFuncCallSvmMem;
+    void* indexPtr;
+    void* labelInfoPtr;
+    void* funcCallSvmMem;
+    void* dfxPtr;
+    void* baseFuncCallSvmMem;
     uint64_t phyIndexPtr;
     uint64_t phyLabelInfoPtr;
     uint32_t max;
     uint32_t funCallMemSize;
 };
- 
+
 struct StreamSwitchTaskInfo {
-    Stream *trueStream;
-    void *funcCallSvmMem;
-    void *baseFuncCallSvmMem;
-    void *dfxPtr;
+    Stream* trueStream;
+    void* funcCallSvmMem;
+    void* baseFuncCallSvmMem;
+    void* dfxPtr;
     uint64_t ptr;
-    uint64_t phyPtr;   // ptr_ physic addr
+    uint64_t phyPtr;             // ptr_ physic addr
     uint64_t funCallMemSize;
-    int64_t value; // only used when isCondEx_=false
-    uint64_t valuePtr; // only used when isCondEx_=true
-    uint64_t phyValuePtr; // only used when isCondEx_=true
+    int64_t value;               // only used when isCondEx_=false
+    uint64_t valuePtr;           // only used when isCondEx_=true
+    uint64_t phyValuePtr;        // only used when isCondEx_=true
     uint32_t trueStreamId;
-    rtSwitchDataType_t dataType;  // only used when isCondEx_=true
+    rtSwitchDataType_t dataType; // only used when isCondEx_=true
     rtCondition_t condition;
     bool isCondEx;
 };
- 
+
 struct StreamActiveTaskInfo {
-    Stream *activeStream;
-    void *funcCallSvmMem;
-    void *baseFuncCallSvmMem;
-    void *dfxPtr;
+    Stream* activeStream;
+    void* funcCallSvmMem;
+    void* baseFuncCallSvmMem;
+    void* dfxPtr;
     uint64_t funCallMemSize;
     uint32_t activeStreamId;
     uint32_t activeStreamSqId;
 };
- 
+
 struct MemWaitValueTaskInfo {
     uint64_t devAddr;
     uint64_t value;
@@ -65,33 +65,33 @@ struct MemWaitValueTaskInfo {
     uint32_t flag;
     uint16_t curIndex;
     uint16_t awSize;
-    void *baseFuncCallSvmMem;
-    void *funcCallSvmMem2;
-    void *writeValueAddr;
-    Event *event;
+    void* baseFuncCallSvmMem;
+    void* funcCallSvmMem2;
+    void* writeValueAddr;
+    Event* event;
     // 普通stream wait消费software event latest时会增加eventId引用，task回收时需按本次绑定的id释放。
     int32_t retainedEventId;
 };
- 
+
 struct DqsCommonTaskInfo {
-    void *funcCallSvmMem;
-    void *baseFuncCallSvmMem;
-    void *dfxPtr;
+    void* funcCallSvmMem;
+    void* baseFuncCallSvmMem;
+    void* dfxPtr;
     uint64_t funCallMemSize;
     uint64_t sqId;
 };
- 
+
 struct RdmaSendTaskInfo {
     uint32_t sqIndex;
     uint32_t wqeIndex;
 };
- 
+
 struct RdmaDbSendTaskInfo {
     rtRdmaDbIndex_t taskDbIndex;
     rtRdmaDbInfo_t taskDbInfo;
     uint32_t taskSeq; // for stars model task
 };
- 
+
 struct RdmaPiValueModifyInfo {
     void* funCallMemAddr; // 只需要释放funCallMemAddr
     void* funCallMemAddrAlign;
@@ -99,35 +99,35 @@ struct RdmaPiValueModifyInfo {
     uint32_t rdmaSubContextCount;
     size_t funCallMemSize;
 };
- 
+
 struct DqsZeroCopyTaskInfo {
     DqsCommonTaskInfo commonTaskInfo;
- 
-    void *destPtr;
-    void *offsetPtr;
+
+    void* destPtr;
+    void* offsetPtr;
     uint64_t allocSize;
     rtDqsZeroCopyType copyType;
 };
- 
+
 struct DqsSchedEndTaskInfo {
-    Stream *stream;
+    Stream* stream;
 };
- 
+
 struct DqsInterChipProcTaskInfo {
     DqsCommonTaskInfo commonTaskInfo;
- 
+
     uint32_t groupIdx;
 };
- 
+
 struct DqsAdspcTaskInfo {
     DqsCommonTaskInfo commonTaskInfo;
- 
+
     uint64_t qmngrEnqRegAddr;
     uint64_t qmngrOwRegAddr;
     uint64_t mbufFreeRegAddr;
-    uint8_t  cqeHeadTailMask;
+    uint8_t cqeHeadTailMask;
 };
- 
+
 struct StreamSwitchNTaskInfo {
     uint64_t ptr;
     uint64_t phyPtr; // ptr_ physic addr
@@ -140,7 +140,7 @@ struct StreamSwitchNTaskInfo {
     rtSwitchDataType_t dataType;
     bool isTransAddr;
 };
- 
-}
-}
-#endif  // CCE_RUNTIME_TASK_INFO_STRUCT_COND_HPP
+
+} // namespace runtime
+} // namespace cce
+#endif // CCE_RUNTIME_TASK_INFO_STRUCT_COND_HPP

@@ -16,38 +16,17 @@ rtError_t RawDevice::AllocSimtStackPhyBase(const rtChipType_t chipType)
     return RT_ERROR_NONE;
 }
 
-rtError_t RawDevice::FreeSimtStackPhyBase()
-{
-    return RT_ERROR_NONE;
-}
-rtError_t RawDevice::AllocStackPhyBaseDavid()
-{
-    return RT_ERROR_NONE;
-}
-rtError_t RawDevice::UbArgLoaderInit(void)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t RawDevice::FreeSimtStackPhyBase() { return RT_ERROR_NONE; }
+rtError_t RawDevice::AllocStackPhyBaseDavid() { return RT_ERROR_NONE; }
+rtError_t RawDevice::UbArgLoaderInit(void) { return RT_ERROR_NONE; }
 
-rtError_t RawDevice::SendTopicMsgVersionToAicpu(void)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t RawDevice::SendTopicMsgVersionToAicpu(void) { return RT_ERROR_NONE; }
 
-rtError_t RawDevice::CntNotifiesReAllocId(void)
-{
-    return RT_ERROR_NONE;
-}
+rtError_t RawDevice::CntNotifiesReAllocId(void) { return RT_ERROR_NONE; }
 
-void RawDevice::PushCntNotify(CountNotify * const nty)
-{
-    UNUSED(nty);
-}
+void RawDevice::PushCntNotify(CountNotify* const nty) { UNUSED(nty); }
 
-void RawDevice::RemoveCntNotify(CountNotify * const nty)
-{
-    UNUSED(nty);
-}
+void RawDevice::RemoveCntNotify(CountNotify* const nty) { UNUSED(nty); }
 
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -15,11 +15,11 @@
 #include "task_manager.h"
 namespace cce {
 namespace runtime {
-    void CcuLaunchTaskInit(TaskInfo *taskInfo, rtCcuTaskInfo_t *const ccuInfo);
-    void PrintErrorInfoForCcuLaunchTask(TaskInfo *taskInfo, const uint32_t devId);
-    void DoCompleteSuccessForCcuLaunchTask(TaskInfo* taskInfo, const uint32_t devId);
-    void SetResultForCcuLaunchTask(TaskInfo *taskInfo, const rtLogicCqReport_t &logicCq);
-}  // namespace runtime
-}  // namespace cce
+void CcuLaunchTaskInit(TaskInfo* taskInfo, rtCcuTaskInfo_t* const ccuInfo);
+void PrintErrorInfoForCcuLaunchTask(TaskInfo* taskInfo, const uint32_t devId);
+void DoCompleteSuccessForCcuLaunchTask(TaskInfo* taskInfo, const uint32_t devId);
+void SetResultForCcuLaunchTask(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq);
+} // namespace runtime
+} // namespace cce
 
 #endif

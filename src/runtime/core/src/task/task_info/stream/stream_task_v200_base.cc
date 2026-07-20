@@ -20,14 +20,14 @@
 namespace cce {
 namespace runtime {
 
-void ConstructDavidSqeForStreamActiveTask(TaskInfo * const taskInfo, void *const sqe, const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForStreamActiveTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
-    StreamActiveTaskInfo * const streamActiveTask = &(taskInfo->u.streamactiveTask);
-    Stream * const stream = taskInfo->stream;
+    StreamActiveTaskInfo* const streamActiveTask = &(taskInfo->u.streamactiveTask);
+    Stream* const stream = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsFunctionCallSqe &fnCallSqe = davidSqe->fuctionCallSqe;
+    RtDavidStarsFunctionCallSqe& fnCallSqe = davidSqe->fuctionCallSqe;
 
     fnCallSqe.header.type = RT_DAVID_SQE_TYPE_COND;
     fnCallSqe.condsSubType = CONDS_SUB_TYPE_STREAM_ACTIVE;
@@ -43,18 +43,18 @@ void ConstructDavidSqeForStreamActiveTask(TaskInfo * const taskInfo, void *const
     ConstructFunctionCallInstr(funcAddr, (funcCallSize / 4UL), fnCallSqe);
 
     PrintDavidSqe(davidSqe, "StreamActiveTask");
-    RT_LOG(RT_LOG_INFO, "StreamActiveTask, deviceId=%u, streamId=%d, taskId=%hu, activeStreamId=%u.",
+    RT_LOG(
+        RT_LOG_INFO, "StreamActiveTask, deviceId=%u, streamId=%d, taskId=%hu, activeStreamId=%u.",
         stream->Device_()->Id_(), stream->Id_(), taskInfo->id, streamActiveTask->activeStreamId);
 }
 
-void ConstructDavidSqeForOverflowSwitchSetTask(TaskInfo * const taskInfo, void *const sqe,
-    const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForOverflowSwitchSetTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
-    OverflowSwitchSetTaskInfo * const overflowSwiSet = &(taskInfo->u.overflowSwitchSetTask);
+    RtDavidPlaceHolderSqe* const phSqe = &(davidSqe->phSqe);
+    OverflowSwitchSetTaskInfo* const overflowSwiSet = &(taskInfo->u.overflowSwitchSetTask);
     phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
     phSqe->header.preP = 1U;
     phSqe->taskType = TS_TASK_TYPE_SET_OVERFLOW_SWITCH;
@@ -64,19 +64,21 @@ void ConstructDavidSqeForOverflowSwitchSetTask(TaskInfo * const taskInfo, void *
     phSqe->u.streamOverflowSwitchInfo.isSwitchOn = overflowSwiSet->switchFlag ? 1U : 0U;
 
     PrintDavidSqe(davidSqe, "OverflowSwitchSetTask");
-    RT_LOG(RT_LOG_INFO, "OverflowSwitchSetTask target, device_id=%u, stream_id=%d, target_stream_id=%d, task_id=%hu,"
-        "task_sn=%u, switch %s.", taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), overflowSwiSet->targetStm->Id_(),
-        taskInfo->id, taskInfo->taskSn, overflowSwiSet->switchFlag ? "on" : "off");
+    RT_LOG(
+        RT_LOG_INFO,
+        "OverflowSwitchSetTask target, device_id=%u, stream_id=%d, target_stream_id=%d, task_id=%hu,"
+        "task_sn=%u, switch %s.",
+        taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), overflowSwiSet->targetStm->Id_(), taskInfo->id,
+        taskInfo->taskSn, overflowSwiSet->switchFlag ? "on" : "off");
 }
 
-void ConstructDavidSqeForStreamTagSetTask(TaskInfo * const taskInfo, void *const sqe,
-    const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForStreamTagSetTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    StreamTagSetTaskInfo * const stmTagSetTsk = &(taskInfo->u.stmTagSetTask);
-    RtDavidPlaceHolderSqe * const phSqe = &(davidSqe->phSqe);
+    StreamTagSetTaskInfo* const stmTagSetTsk = &(taskInfo->u.stmTagSetTask);
+    RtDavidPlaceHolderSqe* const phSqe = &(davidSqe->phSqe);
     phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
     phSqe->header.preP = 1U;
     phSqe->taskType = TS_TASK_TYPE_SET_STREAM_GE_OP_TAG;
@@ -86,20 +88,21 @@ void ConstructDavidSqeForStreamTagSetTask(TaskInfo * const taskInfo, void *const
     phSqe->u.streamSetTagInfo.geOpTag = stmTagSetTsk->geOpTag;
 
     PrintDavidSqe(davidSqe, "StreamTagSetTask");
-    RT_LOG(RT_LOG_INFO, "StreamTagSetTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, target_stream_id=%d, "
-        "sqe_task_id=%u, geOpTag=%u.", taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(),
-        taskInfo->id, taskInfo->taskSn, stmTagSetTsk->targetStm->Id_(), phSqe->header.taskId,
-        stmTagSetTsk->geOpTag);
+    RT_LOG(
+        RT_LOG_INFO,
+        "StreamTagSetTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, target_stream_id=%d, "
+        "sqe_task_id=%u, geOpTag=%u.",
+        taskInfo->stream->Device_()->Id_(), taskInfo->stream->Id_(), taskInfo->id, taskInfo->taskSn,
+        stmTagSetTsk->targetStm->Id_(), phSqe->header.taskId, stmTagSetTsk->geOpTag);
 }
 
-void ConstructDavidSqeForCallbackLaunchTask(TaskInfo * const taskInfo, void *const sqe,
-    const TaskSqeInfo &sqeInfo)
+void ConstructDavidSqeForCallbackLaunchTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidPlaceHolderSqe *const phSqe = &(davidSqe->phSqe);
-    Stream * const stm = taskInfo->stream;
+    RtDavidPlaceHolderSqe* const phSqe = &(davidSqe->phSqe);
+    Stream* const stm = taskInfo->stream;
     phSqe->header.type = RT_DAVID_SQE_TYPE_PLACE_HOLDER;
     phSqe->header.preP = 1U;
     phSqe->taskType = TS_TASK_TYPE_HOSTFUNC_CALLBACK;
@@ -112,7 +115,7 @@ void ConstructDavidSqeForCallbackLaunchTask(TaskInfo * const taskInfo, void *con
 
     /* word6-7 */
     phSqe->u.callBackInfo.notifyId = static_cast<uint32_t>(taskInfo->u.callbackLaunchTask.eventId);
-    phSqe->u.callBackInfo.taskId = taskInfo->id;  //  send taskId callback cqe
+    phSqe->u.callBackInfo.taskId = taskInfo->id; //  send taskId callback cqe
     phSqe->u.callBackInfo.isBlock = taskInfo->u.callbackLaunchTask.isBlock;
 
     phSqe->u.callBackInfo.isOnline = stm->Device_()->Driver_()->GetRunMode() == RT_RUN_MODE_OFFLINE ? 0U : 1U;
@@ -134,14 +137,15 @@ void ConstructDavidSqeForCallbackLaunchTask(TaskInfo * const taskInfo, void *con
 
     /* word14 */
     phSqe->u.callBackInfo.subTopicId = 0U;
-    phSqe->u.callBackInfo.topicId = 26U;     // EVENT_TS_CALLBACK_MSG
-    phSqe->u.callBackInfo.groupId = 11U;     // 11U, drv defined
+    phSqe->u.callBackInfo.topicId = 26U;    // EVENT_TS_CALLBACK_MSG
+    phSqe->u.callBackInfo.groupId = 11U;    // 11U, drv defined
     phSqe->u.callBackInfo.usrDataLen = 32U; // word 4 to word 11
     /* word15 */
     phSqe->u.callBackInfo.destPid = 0U;
 
     PrintDavidSqe(davidSqe, "CallbackLaunch");
-    RT_LOG(RT_LOG_INFO, "CallbackLaunch, stream_id=%hu, task_id=%hu, notify_id=%hu, isBlock=%hu, pid=%u",
+    RT_LOG(
+        RT_LOG_INFO, "CallbackLaunch, stream_id=%hu, task_id=%hu, notify_id=%hu, isBlock=%hu, pid=%u",
         phSqe->u.callBackInfo.streamId, taskInfo->id, phSqe->u.callBackInfo.notifyId, phSqe->u.callBackInfo.isBlock,
         phSqe->u.callBackInfo.destPid);
 }
@@ -276,5 +280,5 @@ static bool StreamTaskRegister()
 }
 
 static bool g_streamTaskRegister = StreamTaskRegister();
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -42,14 +42,13 @@ namespace runtime {
 TIMESTAMP_EXTERN(rtStreamCreate_AllocStreamSqCq);
 TIMESTAMP_EXTERN(rtStreamCreate_AllocLogicCq);
 
-DavidStream::DavidStream(Device * const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp * const dvppGrp)
+DavidStream::DavidStream(Device* const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp* const dvppGrp)
     : Stream(dev, prio, stmFlags, dvppGrp)
-{
-}
+{}
 
 DavidStream::~DavidStream()
 {
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     if (Runtime::IsProcessExiting(rt)) {
         FinalizeDavidHostStateOnExit();
         return;
@@ -80,7 +79,7 @@ void DavidStream::RecycleArgHandlesOnDestroy()
         }
     }
     argHandleRecycleList_.clear();
-    
+
     if (this->GetArgHandle() != nullptr) {
         this->ArgManagePtr()->RecycleDevLoader(this->GetArgHandle());
         this->SetArgHandle(nullptr);
@@ -100,8 +99,8 @@ void DavidStream::ReleaseSqCqResourcesOnDestroy()
     }
 
     if (dvppGrp_ != nullptr) {
-        (void)device_->Driver_()->StreamUnBindLogicCq(device_->Id_(), device_->DevGetTsId(),
-            static_cast<uint32_t>(streamId_), dvppGrp_->getLogicCqId());
+        (void)device_->Driver_()->StreamUnBindLogicCq(
+            device_->Id_(), device_->DevGetTsId(), static_cast<uint32_t>(streamId_), dvppGrp_->getLogicCqId());
     } else {
         (void)device_->GetStreamSqCqManage()->FreeLogicCq(static_cast<uint32_t>(streamId_));
     }
@@ -115,8 +114,11 @@ void DavidStream::ReleaseSqCqResourcesOnDestroy()
 bool DavidStream::ReleaseDriverResourcesOnDestroy()
 {
     if ((device_->GetDevStatus() != RT_ERROR_NONE) && (this->GetBindFlag())) {
-        RT_LOG(RT_LOG_WARNING, "Device fault and the model binds this stream, device_id=%u, stream_id=%d, "
-            "Cannot delete.", device_->Id_(), streamId_);
+        RT_LOG(
+            RT_LOG_WARNING,
+            "Device fault and the model binds this stream, device_id=%u, stream_id=%d, "
+            "Cannot delete.",
+            device_->Id_(), streamId_);
         return false;
     }
     (void)FreeExecutedTimesSvm();
@@ -126,8 +128,8 @@ bool DavidStream::ReleaseDriverResourcesOnDestroy()
         const rtError_t error = device_->Driver_()->NotifyIdFree(
             static_cast<int32_t>(device_->Id_()), cntNotifyId_, device_->DevGetTsId(), 0U, true);
         if (error != RT_ERROR_NONE) {
-            RT_LOG_INNER_MSG(RT_LOG_ERROR,
-                "NotifyIdFree failed, device_id=%u, stream_id=%d, notify_id=%u, retCode=%#x.",
+            RT_LOG_INNER_MSG(
+                RT_LOG_ERROR, "NotifyIdFree failed, device_id=%u, stream_id=%d, notify_id=%u, retCode=%#x.",
                 device_->Id_(), streamId_, cntNotifyId_, static_cast<uint32_t>(error));
         }
     }
@@ -137,7 +139,7 @@ bool DavidStream::ReleaseDriverResourcesOnDestroy()
         SetMemContainOverflowAddr(nullptr);
     }
 
-    for (void * const addr : devTilingTblAddr) {
+    for (void* const addr : devTilingTblAddr) {
         RT_LOG(RT_LOG_INFO, "Id=%u, devCopyMem=%p", device_->Id_(), addr);
         (void)device_->Driver_()->DevMemFree(addr, device_->Id_());
     }
@@ -166,7 +168,7 @@ void DavidStream::FinalizeDavidHostStateOnExit()
     cntNotifyId_ = MAX_UINT32_NUM;
 }
 
-rtError_t DavidStream::SkipTearDownOnExit(Device * const dev, int32_t stmId)
+rtError_t DavidStream::SkipTearDownOnExit(Device* const dev, int32_t stmId)
 {
     UNUSED(stmId);
     if (dev != nullptr) {
@@ -180,7 +182,7 @@ void DavidStream::TearDownAutoSplitSlaves()
     if (!(IsAutoSplitSq() && autoSplitCtx_ != nullptr && !IsSlaveStream())) {
         return;
     }
-    for (Stream *slave : autoSplitCtx_->slaveStreams) {
+    for (Stream* slave : autoSplitCtx_->slaveStreams) {
         if (slave != nullptr) {
             (void)Context_()->TearDownStream(slave, true);
         }
@@ -209,7 +211,7 @@ void DavidStream::FreeStreamIdAndSqCq()
             streamSwitchInfo_[0].stream_id = UINT32_MAX;
             streamSwitchInfo_[0].sq_id = GetSqId();
             streamSwitchInfo_[0].sq_depth = GetSqDepth();
-            streamSwitchInfo_[0].stream_mem = RtValueToPtr<void *>(GetSqBaseAddr());
+            streamSwitchInfo_[0].stream_mem = RtValueToPtr<void*>(GetSqBaseAddr());
             /* stream unbind sq */
             (void)device_->Driver_()->SqSwitchStreamBatch(device_->Id_(), streamSwitchInfo_, 1U);
         }
@@ -218,9 +220,9 @@ void DavidStream::FreeStreamIdAndSqCq()
     DELETE_A(streamSwitchInfo_);
     FreeStreamId();
     if ((IsSoftwareSqEnable() || IsAutoSplitSq()) && (GetSqBaseAddr() != 0U)) {
-        SqAddrMemoryOrder *sqAddrMemoryManage = device_->GetSqAddrMemoryManage();
+        SqAddrMemoryOrder* sqAddrMemoryManage = device_->GetSqAddrMemoryManage();
         if (sqAddrMemoryManage != nullptr) {
-            (void)sqAddrMemoryManage->FreeSqAddr(RtValueToPtr<uint64_t *>(GetSqBaseAddr()), GetSqMemOrderType());
+            (void)sqAddrMemoryManage->FreeSqAddr(RtValueToPtr<uint64_t*>(GetSqBaseAddr()), GetSqMemOrderType());
         }
     }
     if (GetSqIdMemAddr() != 0UL) {
@@ -245,8 +247,8 @@ rtError_t DavidStream::CreateStreamArgRes()
     COND_RETURN_AND_MSG_OUTER(argManage_ == nullptr, RT_ERROR_CALLOC, ErrorCode::EE1013, sizeof(UbArgManage), "new");
 
     if ((flags_ & RT_STREAM_FAST_LAUNCH) == 0U) {
-        RT_LOG(RT_LOG_INFO, "Non-fast_launch stream does not alloc args res, stream_id=%d, flags=0x%x",
-            streamId_, flags_);
+        RT_LOG(
+            RT_LOG_INFO, "Non-fast_launch stream does not alloc args res, stream_id=%d, flags=0x%x", streamId_, flags_);
         return RT_ERROR_NONE;
     }
 
@@ -254,40 +256,42 @@ rtError_t DavidStream::CreateStreamArgRes()
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidStream::SubmitMaintenanceTask(const MtType type, bool isForceRecycle, int32_t targetStmId, 
-    const uint32_t logicCqId, bool terminal)
+rtError_t DavidStream::SubmitMaintenanceTask(
+    const MtType type, bool isForceRecycle, int32_t targetStmId, const uint32_t logicCqId, bool terminal)
 {
     (void)terminal;
     (void)logicCqId;
-    TaskInfo *tsk = nullptr;
+    TaskInfo* tsk = nullptr;
     uint32_t pos = 0xFFFFU;
     rtError_t error = CheckTaskCanSend(this);
-    ERROR_RETURN_MSG_INNER(error, "Failed to check if task can be sent, stream_id=%d, target_stream_id=%d, retCode=%#x.",
-        streamId_, targetStmId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to check if task can be sent, stream_id=%d, target_stream_id=%d, retCode=%#x.", streamId_,
+        targetStmId, static_cast<uint32_t>(error));
     StreamLock();
     error = AllocTaskInfo(&tsk, this, pos);
-    ERROR_PROC_RETURN_MSG_INNER(error, StreamUnLock();, "Failed to alloc task, stream_id=%d, target_stream_id=%d,"
-        " retCode=%#x.", streamId_, targetStmId, static_cast<uint32_t>(error));
+    ERROR_PROC_RETURN_MSG_INNER(error, StreamUnLock();,
+                                                      "Failed to alloc task, stream_id=%d, target_stream_id=%d,"
+                                                      " retCode=%#x.",
+                                                      streamId_, targetStmId, static_cast<uint32_t>(error));
     SaveTaskCommonInfo(tsk, this, pos);
     (void)MaintenanceTaskInit(tsk, type, static_cast<uint32_t>(targetStmId), isForceRecycle);
     tsk->isCqeNeedConcern = true;
     error = DavidSendTask(tsk, this);
-    ERROR_PROC_RETURN_MSG_INNER(error, 
-                                TaskUnInitProc(tsk);
-                                TaskRollBack(this, pos);
-                                StreamUnLock();,
-                                "Failed to submit task, retCode=%#x, stream_id=%d, target_stream_id=%d, pos=%u.",
+    ERROR_PROC_RETURN_MSG_INNER(error, TaskUnInitProc(tsk); TaskRollBack(this, pos); StreamUnLock();
+                                , "Failed to submit task, retCode=%#x, stream_id=%d, target_stream_id=%d, pos=%u.",
                                 static_cast<uint32_t>(error), streamId_, targetStmId, pos);
     StreamUnLock();
     const bool isNeedStreamSync = (tsk->isNeedStreamSync == 0U) ? false : true;
     error = SubmitTaskPostProc(this, pos, isNeedStreamSync);
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit task post-process, stream_id=%d, target_stream_id=%d, retCode=%#x.",
-        streamId_, targetStmId, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit task post-process, stream_id=%d, target_stream_id=%d, retCode=%#x.", streamId_,
+        targetStmId, static_cast<uint32_t>(error));
     return error;
 }
 
-static void ProcessEventRecordTask(TaskInfo *taskInfo, int32_t &eventId, uint32_t &isCountNotify, uint32_t &countValue) {
-    DavidEventRecordTaskInfo *eventRecordTaskInfo = &(taskInfo->u.davidEventRecordTaskInfo);
+static void ProcessEventRecordTask(TaskInfo* taskInfo, int32_t& eventId, uint32_t& isCountNotify, uint32_t& countValue)
+{
+    DavidEventRecordTaskInfo* eventRecordTaskInfo = &(taskInfo->u.davidEventRecordTaskInfo);
     eventId = eventRecordTaskInfo->eventId;
     if (eventRecordTaskInfo->isCountNotify == 1U) {
         isCountNotify = 1U;
@@ -295,8 +299,9 @@ static void ProcessEventRecordTask(TaskInfo *taskInfo, int32_t &eventId, uint32_
     }
 }
 
-static void ProcessEventWaitTask(TaskInfo *taskInfo, int32_t &eventId, uint32_t &isCountNotify, uint32_t &countValue) {
-    DavidEventWaitTaskInfo *eventWaitTaskInfo = &(taskInfo->u.davidEventWaitTaskInfo);
+static void ProcessEventWaitTask(TaskInfo* taskInfo, int32_t& eventId, uint32_t& isCountNotify, uint32_t& countValue)
+{
+    DavidEventWaitTaskInfo* eventWaitTaskInfo = &(taskInfo->u.davidEventWaitTaskInfo);
     eventId = eventWaitTaskInfo->eventId;
     if (eventWaitTaskInfo->isCountNotify == 1U) {
         isCountNotify = 1U;
@@ -304,14 +309,15 @@ static void ProcessEventWaitTask(TaskInfo *taskInfo, int32_t &eventId, uint32_t 
     }
 }
 
-static void GetEventIdOrNotifyId(TaskInfo *taskInfo, int32_t &eventId, uint32_t &isCountNotify, uint32_t &countValue,
-    uint32_t &notifyId, uint64_t &devAddr)
+static void GetEventIdOrNotifyId(
+    TaskInfo* taskInfo, int32_t& eventId, uint32_t& isCountNotify, uint32_t& countValue, uint32_t& notifyId,
+    uint64_t& devAddr)
 {
-    DavidEventResetTaskInfo *eventResetTaskInfo = nullptr;
+    DavidEventResetTaskInfo* eventResetTaskInfo = nullptr;
     NotifyWaitTaskInfo* notifyWaitTask = nullptr;
-    NotifyRecordTaskInfo *notifyRecord = nullptr;
-    MemWriteValueTaskInfo *memWriteValueTask = nullptr;
-    MemWaitValueTaskInfo *memWaitValueTask = nullptr;
+    NotifyRecordTaskInfo* notifyRecord = nullptr;
+    MemWriteValueTaskInfo* memWriteValueTask = nullptr;
+    MemWaitValueTaskInfo* memWaitValueTask = nullptr;
 
     switch (taskInfo->type) {
         case TS_TASK_TYPE_DAVID_EVENT_RECORD:
@@ -366,40 +372,44 @@ void DavidStream::DebugDotPrintForModelStm()
             continue;
         }
         i = IsSoftwareSqEnable() ? (static_cast<uint32_t>(nextTask->id) + 1U) :
-            (static_cast<uint32_t>(nextTask->id) + nextTask->sqeNum);
+                                   (static_cast<uint32_t>(nextTask->id) + nextTask->sqeNum);
         int32_t eventId = INVALID_EVENT_ID;
         uint32_t notifyId = MAX_UINT32_NUM;
         uint32_t countValue = MAX_UINT32_NUM;
-        uint32_t isCountNotify= 0U;
+        uint32_t isCountNotify = 0U;
         uint64_t devAddr = MAX_UINT64_NUM;
-        GetEventIdOrNotifyId(nextTask, eventId, isCountNotify, countValue, notifyId, devAddr);  
+        GetEventIdOrNotifyId(nextTask, eventId, isCountNotify, countValue, notifyId, devAddr);
 
         if (eventId != INVALID_EVENT_ID) {
             if (isCountNotify == 1U) {
-                RT_LOG(RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, event_id=%d, cnt_value=%u.",
-                device_->Id_(), Id_(), nextTask->id, nextTask->typeName, eventId, countValue);
+                RT_LOG(
+                    RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, event_id=%d, cnt_value=%u.",
+                    device_->Id_(), Id_(), nextTask->id, nextTask->typeName, eventId, countValue);
             } else {
-                RT_LOG(RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, event_id=%d.",
-                device_->Id_(), Id_(), nextTask->id, nextTask->typeName, eventId);
+                RT_LOG(
+                    RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, event_id=%d.", device_->Id_(),
+                    Id_(), nextTask->id, nextTask->typeName, eventId);
             }
             continue;
         }
 
         if (notifyId != MAX_UINT32_NUM) {
-            RT_LOG(RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, notify_id=%u.",
-                device_->Id_(), Id_(), nextTask->id, nextTask->typeName, notifyId);
+            RT_LOG(
+                RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, notify_id=%u.", device_->Id_(),
+                Id_(), nextTask->id, nextTask->typeName, notifyId);
             continue;
         }
 
         if (devAddr != MAX_UINT64_NUM) {
-            RT_LOG(RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, dev_addr=0x%llx.",
-                device_->Id_(), Id_(), nextTask->id, nextTask->typeName, devAddr);
+            RT_LOG(
+                RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, dev_addr=0x%llx.", device_->Id_(),
+                Id_(), nextTask->id, nextTask->typeName, devAddr);
             continue;
-        } 
+        }
 
         if ((nextTask->type == TS_TASK_TYPE_KERNEL_AICORE) || (nextTask->type == TS_TASK_TYPE_KERNEL_AIVEC)) {
             std::string mixTypeName = "NO_MIX";
-            const auto &aicTaskInfo = nextTask->u.aicTaskInfo;
+            const auto& aicTaskInfo = nextTask->u.aicTaskInfo;
             const uint8_t mixType = (aicTaskInfo.kernel != nullptr) ? aicTaskInfo.kernel->GetMixType() : 0U;
             if (mixType == MIX_AIC || mixType == MIX_AIC_AIV_MAIN_AIC) {
                 (void)mixTypeName.assign("MIX_AIC");
@@ -409,41 +419,43 @@ void DavidStream::DebugDotPrintForModelStm()
                 ;
             }
 
-            RT_LOG(RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, mix_type=%s.",
-                device_->Id_(), Id_(), nextTask->id, nextTask->typeName, mixTypeName.c_str());
+            RT_LOG(
+                RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s, mix_type=%s.", device_->Id_(),
+                Id_(), nextTask->id, nextTask->typeName, mixTypeName.c_str());
             continue;
         }
 
-        RT_LOG(RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s.",
-            device_->Id_(), Id_(), nextTask->id, nextTask->typeName);
+        RT_LOG(
+            RT_LOG_EVENT, "device_id=%u, stream_id=%d, task_id=%hu, task_type=%s.", device_->Id_(), Id_(), nextTask->id,
+            nextTask->typeName);
     }
 }
 
-void DavidStream::BuildTraceEventForTask(TaskInfo *const task, const uint32_t flags, TraceEvent &record) const
+void DavidStream::BuildTraceEventForTask(TaskInfo* const task, const uint32_t flags, TraceEvent& record) const
 {
     std::string taskName;
     std::string taskType = (task->typeName != nullptr) ? task->typeName : "Unknown";
-    const Kernel *kernel = nullptr;
+    const Kernel* kernel = nullptr;
 
     // 获取任务名称
     if ((task->type == TS_TASK_TYPE_KERNEL_AICORE) || (task->type == TS_TASK_TYPE_KERNEL_AIVEC)) {
-        AicTaskInfo *aicTaskInfo = &(task->u.aicTaskInfo);
+        AicTaskInfo* aicTaskInfo = &(task->u.aicTaskInfo);
         kernel = aicTaskInfo->kernel;
         record.args.numBlocks = static_cast<int32_t>(aicTaskInfo->comm.dim);
         record.args.schemMode = static_cast<int32_t>(aicTaskInfo->schemMode);
-        record.args.taskRation = (kernel != nullptr) ? static_cast<int32_t>(kernel->GetTaskRation()) : 0; 
+        record.args.taskRation = (kernel != nullptr) ? static_cast<int32_t>(kernel->GetTaskRation()) : 0;
         std::string kernelNameStr = (kernel != nullptr) ? kernel->Name_() : "AICORE_KERNEL";
         taskName = kernelNameStr;
         if ((flags & DEBUG_JSON_PRINT_VERBOSE) != 0U) {
             SetTraceKernelArgs(aicTaskInfo, task->id, record.args);
         }
     } else if (task->type == TS_TASK_TYPE_KERNEL_AICPU) {
-        AicpuTaskInfo *aicpuTaskInfo = &(task->u.aicpuTaskInfo);
+        AicpuTaskInfo* aicpuTaskInfo = &(task->u.aicpuTaskInfo);
         record.args.numBlocks = static_cast<int32_t>(aicpuTaskInfo->comm.dim);
         kernel = aicpuTaskInfo->kernel;
         std::string kernelName = (kernel != nullptr) ? kernel->GetCpuOpType() : "AICPU_KERNEL";
         taskName = (!kernelName.empty()) ? kernelName : "AICPU_KERNEL";
-    }  else if (task->type == TS_TASK_TYPE_FUSION_KERNEL) {
+    } else if (task->type == TS_TASK_TYPE_FUSION_KERNEL) {
         FusionTaskInfo* fusionTaskInfo = &(task->u.fusionKernelTask);
         taskName = BuildFusionKernelTaskName(fusionTaskInfo);
     } else {
@@ -456,8 +468,8 @@ void DavidStream::BuildTraceEventForTask(TaskInfo *const task, const uint32_t fl
     uint32_t countValue = MAX_UINT32_NUM;
     uint32_t isCountNotify = 0U;
     uint64_t devAddr = MAX_UINT64_NUM;
-    GetEventIdOrNotifyId(task, eventId, isCountNotify, countValue, notifyId, devAddr);  
-    
+    GetEventIdOrNotifyId(task, eventId, isCountNotify, countValue, notifyId, devAddr);
+
     // 构建完整的任务名称
     if (eventId != INVALID_EVENT_ID) {
         if (isCountNotify == 1U) {
@@ -469,7 +481,7 @@ void DavidStream::BuildTraceEventForTask(TaskInfo *const task, const uint32_t fl
         taskName += "_" + std::to_string(notifyId);
     } else if (devAddr != MAX_UINT64_NUM) {
         taskName += "_" + std::to_string(devAddr);
-    } else  {
+    } else {
         // no op
     }
     record.name = taskName;
@@ -478,28 +490,30 @@ void DavidStream::BuildTraceEventForTask(TaskInfo *const task, const uint32_t fl
     FillTaskExtendInfo(task, record);
 }
 
-void DavidStream::DebugJsonPrintForModelStm(std::ofstream& outputFile, const uint32_t modelId, const bool isLastStm,
-    const uint32_t flags)
+void DavidStream::DebugJsonPrintForModelStm(
+    std::ofstream& outputFile, const uint32_t modelId, const bool isLastStm, const uint32_t flags)
 {
     if (!GetBindFlag()) {
-        RT_LOG(RT_LOG_DEBUG, "Model debug json print unmatch, bindFlag=%d, device_id=%u, stream_id=%d.", 
-            GetBindFlag(), device_->Id_(), Id_());
+        RT_LOG(
+            RT_LOG_DEBUG, "Model debug json print unmatch, bindFlag=%d, device_id=%u, stream_id=%d.", GetBindFlag(),
+            device_->Id_(), Id_());
         return;
     }
-    
+
     // 获取任务队列的头尾指针
     uint16_t head = 0U;
     uint16_t tail = 0U;
     GetTaskQueueHeadTail(head, tail);
 
-    RT_LOG(RT_LOG_DEBUG, "Model debug json print, device_id=%u, stream_id=%d, head=%hu, tail=%hu.", 
-        device_->Id_(), Id_(), head, tail);
-    
+    RT_LOG(
+        RT_LOG_DEBUG, "Model debug json print, device_id=%u, stream_id=%d, head=%hu, tail=%hu.", device_->Id_(), Id_(),
+        head, tail);
+
     // 构建TraceEvent记录数组
     std::vector<TraceEvent> recordArray;
     pid_t pid = getpid();
     uint32_t taskDur = 0;
-    
+
     for (uint32_t i = head; i < tail;) {
         TaskInfo* nextTask = GetTaskInfo(this->Device_(), Id_(), i);
         if (unlikely(nextTask == nullptr)) {
@@ -507,16 +521,16 @@ void DavidStream::DebugJsonPrintForModelStm(std::ofstream& outputFile, const uin
             continue;
         }
         i = IsSoftwareSqEnable() ? (static_cast<uint32_t>(nextTask->id) + 1U) :
-            (static_cast<uint32_t>(nextTask->id) + nextTask->sqeNum);
-        
+                                   (static_cast<uint32_t>(nextTask->id) + nextTask->sqeNum);
+
         // 构建并添加TraceEvent记录
         TraceEvent record = {};
         BuildTraceEventForTask(nextTask, flags, record);
         record.pid = std::to_string(pid) + " aclGraph";
         record.tid = "stream" + std::to_string(streamId_);
         record.ts = taskDur;
-        taskDur += 10U;  // ts表示每个节点的显示位置，表明了流内任务的先后顺序，按照10递增
-        record.dur = 9.5F;   // 表示节点的显示宽度，固定为9.5
+        taskDur += 10U; // ts表示每个节点的显示位置，表明了流内任务的先后顺序，按照10递增
+        record.dur = 9.5F; // 表示节点的显示宽度，固定为9.5
         record.ph = "X";
         record.args.modelId = modelId;
         record.args.streamId = streamId_;
@@ -539,13 +553,13 @@ void DavidStream::DebugJsonPrintForModelStm(std::ofstream& outputFile, const uin
 rtError_t DavidStream::TearDown(const bool terminal, bool flag)
 {
     (void)terminal;
-    Stream *exeStream = this;
-    Device * const dev = device_;
+    Stream* exeStream = this;
+    Device* const dev = device_;
     const int32_t stmId = streamId_;
     uint16_t head = 0U;
     uint16_t tail = 0U;
 
-    Runtime * const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     if (Runtime::IsProcessExiting(rt)) {
         return SkipTearDownOnExit(dev, stmId);
     }
@@ -561,7 +575,7 @@ rtError_t DavidStream::TearDown(const bool terminal, bool flag)
         return RT_ERROR_NONE;
     }
 
-    (dynamic_cast<TaskResManageDavid *>(taskResMang_))->GetHeadTail(head, tail);
+    (dynamic_cast<TaskResManageDavid*>(taskResMang_))->GetHeadTail(head, tail);
     bool isForceRecycle = GetForceRecycleFlag(flag);
     if (isForceRecycle) {
         exeStream = dev->GetCtrlSQStream(dev->PrimaryStream_());
@@ -570,28 +584,31 @@ rtError_t DavidStream::TearDown(const bool terminal, bool flag)
         }
         isForceRecycle_ = isForceRecycle;
     }
-    RT_LOG(RT_LOG_INFO, "stream_id=%d, sq_id=%u, head=%hu, tail=%hu, isForceRecycle=%d, flag=%d, failMode=%u.",
-        stmId, sqId_, head, tail, isForceRecycle, flag, GetFailureMode());
-    if (!((dynamic_cast<TaskResManageDavid *>(taskResMang_))->IsEmpty())) {
+    RT_LOG(
+        RT_LOG_INFO, "stream_id=%d, sq_id=%u, head=%hu, tail=%hu, isForceRecycle=%d, flag=%d, failMode=%u.", stmId,
+        sqId_, head, tail, isForceRecycle, flag, GetFailureMode());
+    if (!((dynamic_cast<TaskResManageDavid*>(taskResMang_))->IsEmpty())) {
         NULL_PTR_RETURN_MSG(exeStream, RT_ERROR_STREAM_NULL);
-        (void)static_cast<DavidStream *>(exeStream)->SubmitMaintenanceTask(MT_STREAM_RECYCLE_TASK, isForceRecycle, stmId);
+        (void)static_cast<DavidStream*>(exeStream)->SubmitMaintenanceTask(
+            MT_STREAM_RECYCLE_TASK, isForceRecycle, stmId);
     }
 
-    while ((!((dynamic_cast<TaskResManageDavid *>(taskResMang_))->IsEmpty())) &&
-        (device_->GetDevRunningState() == static_cast<uint32_t>(DEV_RUNNING_NORMAL))) {
+    while ((!((dynamic_cast<TaskResManageDavid*>(taskResMang_))->IsEmpty())) &&
+           (device_->GetDevRunningState() == static_cast<uint32_t>(DEV_RUNNING_NORMAL))) {
         if (abortStatus_ == RT_ERROR_DEVICE_TASK_ABORT) {
             RT_LOG(RT_LOG_WARNING, "stream is abort, stream_id=%d, pendingNum=%d.", stmId, pendingNum_.Value());
             break;
         }
         StreamSyncLock();
-        (dynamic_cast<TaskResManageDavid *>(taskResMang_))->GetHeadTail(head, tail);
-        RT_LOG(RT_LOG_DEBUG, "recycling stream_id=%d, head=%hu, tail=%hu, isForceRecycle=%u.",
-            stmId, head, tail, isForceRecycle);
+        (dynamic_cast<TaskResManageDavid*>(taskResMang_))->GetHeadTail(head, tail);
+        RT_LOG(
+            RT_LOG_DEBUG, "recycling stream_id=%d, head=%hu, tail=%hu, isForceRecycle=%u.", stmId, head, tail,
+            isForceRecycle);
         (void)TaskReclaimByStream(this, false);
         StreamSyncUnLock();
     }
 
-    RawDevice* const rawDev = dynamic_cast<RawDevice *>(device_);
+    RawDevice* const rawDev = dynamic_cast<RawDevice*>(device_);
     rawDev->PollEndGraphNotifyInfo();
 
     dev->DelStreamFromMessageQueue(this);
@@ -606,18 +623,23 @@ rtError_t DavidStream::SetupByFlagAndCheck(void)
 {
     rtError_t error = RT_ERROR_NONE;
     error = CreateStreamTaskRes();
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_STREAM_NEW,
-        "Failed to create stream task res, stream_id=%d, retCode=%#x.", streamId_, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, RT_ERROR_STREAM_NEW, "Failed to create stream task res, stream_id=%d, retCode=%#x.",
+        streamId_, static_cast<uint32_t>(error));
     taskPublicBuffSize_ = GetSqDepth();
     taskPublicBuff_ = new (std::nothrow) uint32_t[taskPublicBuffSize_];
-    COND_RETURN_AND_MSG_OUTER(taskPublicBuff_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013,
-        sizeof(uint32_t) * taskPublicBuffSize_, "new");
+    COND_RETURN_AND_MSG_OUTER(
+        taskPublicBuff_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sizeof(uint32_t) * taskPublicBuffSize_,
+        "new");
     error = CreateArgRecycleList(static_cast<uint32_t>(taskPublicBuffSize_));
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, RT_ERROR_STREAM_NEW, "Failed to create args recycle list, stream_id=%d, size=%u, retCode=%#x.",
-        streamId_, taskPublicBuffSize_, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, RT_ERROR_STREAM_NEW,
+        "Failed to create args recycle list, stream_id=%d, size=%u, retCode=%#x.", streamId_, taskPublicBuffSize_,
+        static_cast<uint32_t>(error));
     error = CreateStreamArgRes();
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error,
-        "Failed to create stream args res, stream_id=%d, retCode=%#x.", streamId_, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Failed to create stream args res, stream_id=%d, retCode=%#x.", streamId_,
+        static_cast<uint32_t>(error));
 
     error = CheckGroup();
     COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
@@ -629,8 +651,9 @@ rtError_t DavidStream::SetupByFlagAndCheck(void)
     }
     if ((flags_ & RT_STREAM_AICPU) != 0U) {
         error = Runtime::Instance()->AllocAiCpuStreamId(streamId_);
-        ERROR_RETURN_MSG_INNER(error, "Failed to alloc aicpu stream id, retCode=%#x, stream_id=%d.",
-            static_cast<uint32_t>(error), streamId_);
+        ERROR_RETURN_MSG_INNER(
+            error, "Failed to alloc aicpu stream id, retCode=%#x, stream_id=%d.", static_cast<uint32_t>(error),
+            streamId_);
         return RT_ERROR_NONE; // AiCpuStream not participate in scheduling
     }
 
@@ -645,10 +668,10 @@ rtError_t DavidStream::SetupByFlagAndCheck(void)
     SetSatMode(device_->GetSatMode());
 
     /**** alloc sq cq id *****/
-    const auto stmSqCqManage = RtPtrToUnConstPtr<StreamSqCqManage *>(device_->GetStreamSqCqManage());
+    const auto stmSqCqManage = RtPtrToUnConstPtr<StreamSqCqManage*>(device_->GetStreamSqCqManage());
     error = stmSqCqManage->AllocDavidStreamSqCq(this, priority_, 0U, sqId_, cqId_, sqAddr_);
     if (error == RT_ERROR_DRV_NO_RESOURCES) {
-        DeviceSqCqPool *sqcqPool = device_->GetDeviceSqCqManage();
+        DeviceSqCqPool* sqcqPool = device_->GetDeviceSqCqManage();
         if ((sqcqPool->GetSqCqPoolFreeResNum() == 0U) && (Context_() != nullptr)) {
             (void)Context_()->TryRecycleCaptureModelResource(1U, 0U, nullptr);
         }
@@ -661,17 +684,16 @@ rtError_t DavidStream::SetupByFlagAndCheck(void)
     }
 
     if (error != RT_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "[SqCqManage]Alloc sq cq fail, stream_id=%d, retCode=%#x.",
-            streamId_, static_cast<uint32_t>(error));
+        RT_LOG(
+            RT_LOG_ERROR, "[SqCqManage]Alloc sq cq fail, stream_id=%d, retCode=%#x.", streamId_,
+            static_cast<uint32_t>(error));
         if ((error == RT_ERROR_DRV_NO_RESOURCES) || (error == RT_ERROR_DEVICE_SQCQ_POOL_RESOURCE_FULL)) {
-            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc Stream resource",
-                "Too many streams are created");
+            RT_LOG_OUTER_MSG_IMPL(ErrorCode::EE1023, "Alloc Stream resource", "Too many streams are created");
         }
         return error;
     }
 
-    RT_LOG(RT_LOG_DEBUG, "[StreamSetup]alloc sq cq success: stream_id=%d, sqId=%u, cqId=%u", streamId_, sqId_,
-        cqId_);
+    RT_LOG(RT_LOG_DEBUG, "[StreamSetup]alloc sq cq success: stream_id=%d, sqId=%u, cqId=%u", streamId_, sqId_, cqId_);
 
     error = AllocLogicCq(true, true, stmSqCqManage);
     TIMESTAMP_END(rtStreamCreate_AllocLogicCq);
@@ -679,17 +701,19 @@ rtError_t DavidStream::SetupByFlagAndCheck(void)
 
     if ((flags_ & RT_STREAM_PERSISTENT) != 0U) {
         error = AllocExecutedTimesSvm();
-        ERROR_RETURN_MSG_INNER(error, "Failed to alloc svm for executed times, stream_id=%d, retCode=%#x.",
-            streamId_, static_cast<uint32_t>(error));
+        ERROR_RETURN_MSG_INNER(
+            error, "Failed to alloc svm for executed times, stream_id=%d, retCode=%#x.", streamId_,
+            static_cast<uint32_t>(error));
         uint32_t addrLen = 0U;
-        error = device_->Driver_()->GetSqRegVirtualAddrBySqid(static_cast<int32_t>(device_->Id_()),
-                                                                device_->DevGetTsId(),
-                                                                sqId_, &sqRegVirtualAddr_, &addrLen);
-        ERROR_RETURN(error, "Failed to get sq reg virtual addr, deviceId=%u, sqId=%u, retCode=%#x.",
-            device_->Id_(), sqId_, static_cast<uint32_t>(error));
+        error = device_->Driver_()->GetSqRegVirtualAddrBySqid(
+            static_cast<int32_t>(device_->Id_()), device_->DevGetTsId(), sqId_, &sqRegVirtualAddr_, &addrLen);
+        ERROR_RETURN(
+            error, "Failed to get sq reg virtual addr, deviceId=%u, sqId=%u, retCode=%#x.", device_->Id_(), sqId_,
+            static_cast<uint32_t>(error));
         RT_LOG(RT_LOG_INFO, "Success to get sq=%u sq reg virtual addr length=%u.", sqId_, addrLen);
         error = SetSqRegVirtualAddrToDevice(sqRegVirtualAddr_);
-        ERROR_RETURN_MSG_INNER(error, "Failed to set sq virtual addr to device, sqId=%u, retCode=%#x.", sqId_,
+        ERROR_RETURN_MSG_INNER(
+            error, "Failed to set sq virtual addr to device, sqId=%u, retCode=%#x.", sqId_,
             static_cast<uint32_t>(error));
     }
 
@@ -708,33 +732,37 @@ rtError_t DavidStream::Setup()
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
 
     InitEmbeddedInnerHandle<Stream>(this);
-    RT_LOG(RT_LOG_INFO, "stream setup end, stream_id=%d, sq_id=%u, cq_id=%u, device_id=%u, isHasArgPool_=%d, flag=%u.",
-           streamId_, sqId_, cqId_, device_->Id_(), isHasArgPool_, flags_);
+    RT_LOG(
+        RT_LOG_INFO, "stream setup end, stream_id=%d, sq_id=%u, cq_id=%u, device_id=%u, isHasArgPool_=%d, flag=%u.",
+        streamId_, sqId_, cqId_, device_->Id_(), isHasArgPool_, flags_);
     StreamStateCallbackManager::Instance().Notify(this, true);
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidStream::AddTaskToList(const TaskInfo * const tsk)
+rtError_t DavidStream::AddTaskToList(const TaskInfo* const tsk)
 {
     if (tsk->needPostProc == true) {
         const std::lock_guard<std::mutex> stmLock(publicTaskMutex_);
         const uint32_t tail = (publicQueueTail_ + 1U) % taskPublicBuffSize_;
         if (unlikely(publicQueueHead_ == tail)) {
-            RT_LOG(RT_LOG_WARNING, "task public buff full, stream_id=%d, task_id=%hu, head=%u, tail=%u",
-                streamId_, tsk->id, publicQueueHead_, publicQueueTail_);
+            RT_LOG(
+                RT_LOG_WARNING, "task public buff full, stream_id=%d, task_id=%hu, head=%u, tail=%u", streamId_,
+                tsk->id, publicQueueHead_, publicQueueTail_);
             return RT_ERROR_STREAM_FULL;
         }
         taskPublicBuff_[publicQueueTail_ % taskPublicBuffSize_] = tsk->id;
         publicQueueTail_ = tail;
-        RT_LOG(RT_LOG_INFO, "public task, stream_id=%d, task_id=%hu, task_type=%d (%s), head=%u, "
-            "tail=%u", streamId_, tsk->id, static_cast<int32_t>(tsk->type), tsk->typeName,
-            publicQueueHead_, publicQueueTail_);
+        RT_LOG(
+            RT_LOG_INFO,
+            "public task, stream_id=%d, task_id=%hu, task_type=%d (%s), head=%u, "
+            "tail=%u",
+            streamId_, tsk->id, static_cast<int32_t>(tsk->type), tsk->typeName, publicQueueHead_, publicQueueTail_);
     }
 
     return RT_ERROR_NONE;
 }
 
-void DavidStream::RecordPosToTaskIdMap(TaskInfo * const tsk, const uint32_t sendSqeNum)
+void DavidStream::RecordPosToTaskIdMap(TaskInfo* const tsk, const uint32_t sendSqeNum)
 {
     const uint32_t rtsqDepth = GetSqDepth();
     // 正常不会翻转，申请task的地方，如果task超规格会申请级联流
@@ -751,7 +779,7 @@ void DavidStream::RecordPosToTaskIdMap(TaskInfo * const tsk, const uint32_t send
     return;
 }
 
-rtError_t DavidStream::StarsAddTaskToStream(TaskInfo * const tsk, const uint32_t sendSqeNum)
+rtError_t DavidStream::StarsAddTaskToStream(TaskInfo* const tsk, const uint32_t sendSqeNum)
 {
     NULL_PTR_RETURN_MSG(tsk, RT_ERROR_TASK_NULL);
     if (!GetBindFlag() && !IsAutoSplitSq()) {
@@ -761,23 +789,27 @@ rtError_t DavidStream::StarsAddTaskToStream(TaskInfo * const tsk, const uint32_t
         }
     } else {
         const rtError_t ret = PackingTaskGroup(tsk, static_cast<uint16_t>(streamId_));
-        ERROR_PROC_RETURN_MSG_INNER(ret, SetTaskGroupErrCode(ret);,
-            "Failed to pack task group, stream_id=%d, task_id=%hu.", streamId_, tsk->id);
-        if ((this->Model_()!= nullptr) && (tsk->type != TS_TASK_TYPE_MODEL_MAINTAINCE)) {
+        ERROR_PROC_RETURN_MSG_INNER(ret, SetTaskGroupErrCode(ret);
+                                    , "Failed to pack task group, stream_id=%d, task_id=%hu.", streamId_, tsk->id);
+        if ((this->Model_() != nullptr) && (tsk->type != TS_TASK_TYPE_MODEL_MAINTAINCE)) {
             this->Model_()->SetKernelTaskId(tsk->taskSn, GetExposedStreamId());
         }
         delayRecycleTaskid_.push_back(tsk->id);
 
-        Model *model = tsk->stream->Model_();
+        Model* model = tsk->stream->Model_();
         if ((model != nullptr) && (model->GetModelType() == RT_MODEL_CAPTURE_MODEL)) {
-            tsk->modelSeqId = dynamic_cast<CaptureModel *>(model)->GenerateSeqId();
-            RT_LOG(RT_LOG_INFO, "device_id=%u, stream_id=%d, task_id=%hu, sequence id=%u.",
-                tsk->stream->Device_()->Id_(), streamId_, tsk->id, tsk->modelSeqId);
+            tsk->modelSeqId = dynamic_cast<CaptureModel*>(model)->GenerateSeqId();
+            RT_LOG(
+                RT_LOG_INFO, "device_id=%u, stream_id=%d, task_id=%hu, sequence id=%u.", tsk->stream->Device_()->Id_(),
+                streamId_, tsk->id, tsk->modelSeqId);
         }
     }
-    RT_LOG(RT_LOG_INFO, "%s stream, stream_id=%d, task_id=%hu, task_sn=%u, type=%d(%s), "
-        "sqe_num=%u, device_id=%u", GetBindFlag() ? "model" : "single-operator", streamId_, tsk->id,
-        tsk->taskSn, static_cast<int32_t>(tsk->type), tsk->typeName, sendSqeNum, tsk->stream->Device_()->Id_());
+    RT_LOG(
+        RT_LOG_INFO,
+        "%s stream, stream_id=%d, task_id=%hu, task_sn=%u, type=%d(%s), "
+        "sqe_num=%u, device_id=%u",
+        GetBindFlag() ? "model" : "single-operator", streamId_, tsk->id, tsk->taskSn, static_cast<int32_t>(tsk->type),
+        tsk->typeName, sendSqeNum, tsk->stream->Device_()->Id_());
     SetLastTaskId(static_cast<uint32_t>(tsk->id));
     if ((tsk->isNeedStreamSync != 0U) || (tsk->isCqeNeedConcern != 0U) ||
         ((tsk->type == TS_TASK_TYPE_MEMCPY) && (tsk->u.memcpyAsyncTaskInfo.isConcernedRecycle))) {
@@ -802,7 +834,7 @@ bool DavidStream::IsCntNotifyReachThreshold(void)
     return false;
 }
 
-rtError_t DavidStream::ApplyCntValue(uint32_t &cntValue)
+rtError_t DavidStream::ApplyCntValue(uint32_t& cntValue)
 {
     if (cntNotifyId_ == MAX_UINT32_NUM) {
         return RT_ERROR_INVALID_VALUE;
@@ -812,7 +844,7 @@ rtError_t DavidStream::ApplyCntValue(uint32_t &cntValue)
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidStream::ApplyCntNotifyId(int32_t &newEventId)
+rtError_t DavidStream::ApplyCntNotifyId(int32_t& newEventId)
 {
     const auto deviceId = device_->Id_();
     const auto tsId = device_->DevGetTsId();
@@ -821,8 +853,9 @@ rtError_t DavidStream::ApplyCntNotifyId(int32_t &newEventId)
     if (unlikely(cntNotifyId_ == MAX_UINT32_NUM)) {
         const rtError_t error = driver->NotifyIdAlloc(static_cast<int32_t>(deviceId), &cntNotifyId_, tsId, 0U, true);
         if (error != RT_ERROR_NONE) {
-            RT_LOG_INNER_MSG(RT_LOG_ERROR, "Alloc notifyId failed, device_id=%u, retCode=%#x.",
-                deviceId, static_cast<uint32_t>(error));
+            RT_LOG_INNER_MSG(
+                RT_LOG_ERROR, "Alloc notifyId failed, device_id=%u, retCode=%#x.", deviceId,
+                static_cast<uint32_t>(error));
             return error;
         }
         recordVersion_.Set(0);
@@ -831,7 +864,7 @@ rtError_t DavidStream::ApplyCntNotifyId(int32_t &newEventId)
     return RT_ERROR_NONE;
 }
 
-void DavidStream::GetCntNotifyId(int32_t &newEventId)
+void DavidStream::GetCntNotifyId(int32_t& newEventId)
 {
     if (unlikely(cntNotifyId_ == MAX_UINT32_NUM)) {
         newEventId = MAX_INT32_NUM;
@@ -846,52 +879,61 @@ uint32_t DavidStream::GetCurSqPos() const
         return Stream::GetCurSqPos();
     }
 
-    TaskResManageDavid *taskRes = RtPtrToPtr<TaskResManageDavid *>(taskResMang_);
+    TaskResManageDavid* taskRes = RtPtrToPtr<TaskResManageDavid*>(taskResMang_);
     return static_cast<uint32_t>(taskRes->GetTaskPosTail());
 }
 
-rtError_t DavidStream::StarsGetPublicTaskHead(TaskInfo *workTask, const bool isTaskBind, const uint16_t tailTaskId,
-    uint16_t * const delTaskId)
+rtError_t DavidStream::StarsGetPublicTaskHead(
+    TaskInfo* workTask, const bool isTaskBind, const uint16_t tailTaskId, uint16_t* const delTaskId)
 {
     (void)workTask;
     (void)isTaskBind;
     NULL_PTR_RETURN_MSG(delTaskId, RT_ERROR_TASK_NULL);
-    TaskResManageDavid *taskRes = RtPtrToPtr<TaskResManageDavid *>(taskResMang_);
+    TaskResManageDavid* taskRes = RtPtrToPtr<TaskResManageDavid*>(taskResMang_);
     const uint32_t taskResTail = taskRes->GetTaskPosTail();
     const std::lock_guard<std::mutex> stmLock(publicTaskMutex_);
     if (publicQueueHead_ != publicQueueTail_) {
-        const uint32_t fixTaskPos= taskPublicBuff_[publicQueueHead_];
+        const uint32_t fixTaskPos = taskPublicBuff_[publicQueueHead_];
         const uint16_t relTaskPos = static_cast<uint16_t>(fixTaskPos & 0xFFFFU);
         if (tailTaskId < taskResTail) {
             if (tailTaskId >= relTaskPos || relTaskPos > taskResTail) {
                 *delTaskId = relTaskPos;
                 return RT_ERROR_NONE;
             }
-            RT_LOG(RT_LOG_DEBUG, "relTask is not executed in scenario 1, stream_id=%d, tailTaskId=%u, relTaskPos=%u, "
-                   "publicHead=%u, publicTail=%u, taskResTail=%u.", streamId_, tailTaskId, relTaskPos,
-                   publicQueueHead_, publicQueueTail_, taskResTail);
+            RT_LOG(
+                RT_LOG_DEBUG,
+                "relTask is not executed in scenario 1, stream_id=%d, tailTaskId=%u, relTaskPos=%u, "
+                "publicHead=%u, publicTail=%u, taskResTail=%u.",
+                streamId_, tailTaskId, relTaskPos, publicQueueHead_, publicQueueTail_, taskResTail);
             return RT_ERROR_STREAM_INVALID;
         } else if (tailTaskId > taskResTail) {
             if (relTaskPos <= tailTaskId && relTaskPos > taskResTail) {
                 *delTaskId = relTaskPos;
                 return RT_ERROR_NONE;
             }
-            RT_LOG(RT_LOG_DEBUG, "relTask is not executed in scenario 2, stream_id=%d, tailTaskId=%u, relTaskPos=%u, "
-                "publicHead=%u, publicTail=%u, taskResTail=%u.", streamId_, tailTaskId, relTaskPos,
-                publicQueueHead_, publicQueueTail_, taskResTail);
+            RT_LOG(
+                RT_LOG_DEBUG,
+                "relTask is not executed in scenario 2, stream_id=%d, tailTaskId=%u, relTaskPos=%u, "
+                "publicHead=%u, publicTail=%u, taskResTail=%u.",
+                streamId_, tailTaskId, relTaskPos, publicQueueHead_, publicQueueTail_, taskResTail);
             return RT_ERROR_STREAM_INVALID;
         } else {
             // no operation
         }
 
-        RT_LOG(RT_LOG_ERROR, "tailTaskId[%u] == taskResTail[%u] is invalid, stream_id=%d, publicHead=%u, publicTail=%u, "
-            "taskResTail=%u.", tailTaskId, taskResTail, streamId_, publicQueueHead_, publicQueueTail_, taskResTail);
+        RT_LOG(
+            RT_LOG_ERROR,
+            "tailTaskId[%u] == taskResTail[%u] is invalid, stream_id=%d, publicHead=%u, publicTail=%u, "
+            "taskResTail=%u.",
+            tailTaskId, taskResTail, streamId_, publicQueueHead_, publicQueueTail_, taskResTail);
         return RT_ERROR_INVALID_VALUE;
     } else {
         // no operation
     }
-    RT_LOG(RT_LOG_DEBUG, "public task list null, stream_id=%d, tailTaskId=%u, publicHead=%u, publicTail=%u, taskResTail=%u",
-        streamId_, static_cast<uint32_t>(tailTaskId), publicQueueHead_, publicQueueTail_, taskResTail);
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "public task list null, stream_id=%d, tailTaskId=%u, publicHead=%u, publicTail=%u, taskResTail=%u", streamId_,
+        static_cast<uint32_t>(tailTaskId), publicQueueHead_, publicQueueTail_, taskResTail);
     return RT_ERROR_STREAM_EMPTY;
 }
 
@@ -899,16 +941,18 @@ rtError_t DavidStream::DavidUpdatePublicQueue()
 {
     const std::lock_guard<std::mutex> stmLock(publicTaskMutex_);
     if (publicQueueHead_ != publicQueueTail_) {
-        const uint32_t fixTaskPos= taskPublicBuff_[publicQueueHead_];
+        const uint32_t fixTaskPos = taskPublicBuff_[publicQueueHead_];
         const uint16_t relTaskPos = static_cast<uint16_t>(fixTaskPos & 0xFFFFU);
         publicQueueHead_ = ((publicQueueHead_ + 1U) % taskPublicBuffSize_);
         finishTaskId_ = relTaskPos;
-        RT_LOG(RT_LOG_DEBUG, "public task list update, stream_id=%d, finishTaskId_=%u, head=%u, tail=%u",
-            streamId_, finishTaskId_, publicQueueHead_, publicQueueTail_);
+        RT_LOG(
+            RT_LOG_DEBUG, "public task list update, stream_id=%d, finishTaskId_=%u, head=%u, tail=%u", streamId_,
+            finishTaskId_, publicQueueHead_, publicQueueTail_);
         return RT_ERROR_NONE;
     } else {
-        RT_LOG(RT_LOG_DEBUG, "public task list null, stream_id=%d, head=%u, tail=%u",
-            streamId_, publicQueueHead_, publicQueueTail_);
+        RT_LOG(
+            RT_LOG_DEBUG, "public task list null, stream_id=%d, head=%u, tail=%u", streamId_, publicQueueHead_,
+            publicQueueTail_);
         return RT_ERROR_STREAM_EMPTY;
     }
 }
@@ -949,15 +993,15 @@ void DavidStream::StarsShowPublicQueueDfxInfo(void)
         tailIndex[i] = (tailStart + i) % taskPublicBuffSize_;
     }
 
-    RT_LOG(RT_LOG_EVENT, "public head info, headStart=%u, public_pos_id::%u, %u, %u, %u, %u, %u.",
-        headStart, taskPublicBuff_[headIndex[0U]], taskPublicBuff_[headIndex[1U]],
-        taskPublicBuff_[headIndex[2U]], taskPublicBuff_[headIndex[3U]],
-        taskPublicBuff_[headIndex[4U]], taskPublicBuff_[headIndex[5U]]);
+    RT_LOG(
+        RT_LOG_EVENT, "public head info, headStart=%u, public_pos_id::%u, %u, %u, %u, %u, %u.", headStart,
+        taskPublicBuff_[headIndex[0U]], taskPublicBuff_[headIndex[1U]], taskPublicBuff_[headIndex[2U]],
+        taskPublicBuff_[headIndex[3U]], taskPublicBuff_[headIndex[4U]], taskPublicBuff_[headIndex[5U]]);
 
-    RT_LOG(RT_LOG_EVENT, "public tail info, tailStart=%u, public_pos_id::%u, %u, %u, %u, %u, %u.",
-        tailIndex, taskPublicBuff_[tailIndex[0U]], taskPublicBuff_[tailIndex[1U]],
-        taskPublicBuff_[tailIndex[2U]], taskPublicBuff_[tailIndex[3U]],
-        taskPublicBuff_[tailIndex[4U]], taskPublicBuff_[tailIndex[5U]]);
+    RT_LOG(
+        RT_LOG_EVENT, "public tail info, tailStart=%u, public_pos_id::%u, %u, %u, %u, %u, %u.", tailIndex,
+        taskPublicBuff_[tailIndex[0U]], taskPublicBuff_[tailIndex[1U]], taskPublicBuff_[tailIndex[2U]],
+        taskPublicBuff_[tailIndex[3U]], taskPublicBuff_[tailIndex[4U]], taskPublicBuff_[tailIndex[5U]]);
 }
 
 void DavidStream::StarsShowStmDfxInfo(void)
@@ -967,10 +1011,10 @@ void DavidStream::StarsShowStmDfxInfo(void)
     }
 }
 
-uint32_t DavidStream::GetPendingNum() const 
+uint32_t DavidStream::GetPendingNum() const
 {
     if (likely(taskResMang_ != nullptr)) {
-        return (dynamic_cast<TaskResManageDavid *>(taskResMang_))->GetPendingNum();
+        return (dynamic_cast<TaskResManageDavid*>(taskResMang_))->GetPendingNum();
     }
     return 0U;
 }
@@ -978,13 +1022,14 @@ uint32_t DavidStream::GetPendingNum() const
 rtError_t DavidStream::SubmitRecordTask(int32_t timeout)
 {
     const rtError_t error = ProcStreamRecordTask(this, timeout);
-    ERROR_RETURN_MSG_INNER(error, "Failed to submit record task, device_id=%u, stream_id=%d, retCode=%#x.",
-        device_->Id_(), streamId_, static_cast<uint32_t>(error));
+    ERROR_RETURN_MSG_INNER(
+        error, "Failed to submit record task, device_id=%u, stream_id=%d, retCode=%#x.", device_->Id_(), streamId_,
+        static_cast<uint32_t>(error));
     return RT_ERROR_NONE;
 }
 
 rtError_t DavidStream::PrintStmDfxAndCheckDevice(
-    uint64_t &beginCnt, uint64_t &endCnt, uint16_t &checkCount, uint32_t tryCount)
+    uint64_t& beginCnt, uint64_t& endCnt, uint16_t& checkCount, uint32_t tryCount)
 {
     constexpr uint16_t perDetectTimes = 1000U;
     if ((tryCount % perDetectTimes) == 0) {
@@ -999,20 +1044,19 @@ rtError_t DavidStream::PrintStmDfxAndCheckDevice(
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidStream::QueryWaitTask(bool &isWaitFlag, const uint32_t taskId)
+rtError_t DavidStream::QueryWaitTask(bool& isWaitFlag, const uint32_t taskId)
 {
     if (device_ == nullptr) {
         RT_LOG(RT_LOG_WARNING, "device is null, stream_id=%d", streamId_);
         return RT_ERROR_NONE;
     }
-    COND_RETURN_AND_MSG_INNER(taskResMang_ == nullptr, RT_ERROR_INVALID_VALUE,
-        "taskResMang_ is nullptr, stream_id=%d.", streamId_);
-    TaskResManageDavid *taskRes = RtPtrToPtr<TaskResManageDavid *>(taskResMang_);
+    COND_RETURN_AND_MSG_INNER(
+        taskResMang_ == nullptr, RT_ERROR_INVALID_VALUE, "taskResMang_ is nullptr, stream_id=%d.", streamId_);
+    TaskResManageDavid* taskRes = RtPtrToPtr<TaskResManageDavid*>(taskResMang_);
     uint16_t sqHead = 0U;
     const uint16_t sqTail = taskRes->GetTaskPosTail();
     const rtError_t error = GetDrvSqHead(this, sqHead);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Query sq head failed, retCode=%#x",
-        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Query sq head failed, retCode=%#x", static_cast<uint32_t>(error));
 
     if (sqHead < sqTail) {
         if (sqHead > taskId || taskId > sqTail) {
@@ -1025,12 +1069,13 @@ rtError_t DavidStream::QueryWaitTask(bool &isWaitFlag, const uint32_t taskId)
     } else {
         isWaitFlag = true;
     }
-    RT_LOG(RT_LOG_INFO, "device_id=%u, isWaitFlag=%d, stream_id=%u, head=%u, tail=%u, pos=%u.",
-        device_->Id_(), isWaitFlag, streamId_, sqHead, sqTail, taskId);
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%u, isWaitFlag=%d, stream_id=%u, head=%u, tail=%u, pos=%u.", device_->Id_(), isWaitFlag,
+        streamId_, sqHead, sqTail, taskId);
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidStream::GetLastTaskIdFromRtsq(uint32_t &lastTaskId)
+rtError_t DavidStream::GetLastTaskIdFromRtsq(uint32_t& lastTaskId)
 {
     UNUSED(lastTaskId);
     return RT_ERROR_NONE;
@@ -1048,19 +1093,19 @@ uint32_t DavidStream::StarsGetMaxTryCount() const
 #endif
 }
 
-rtError_t DavidStream::JudgeTaskFinish(uint16_t taskPos, bool &isFinished)
+rtError_t DavidStream::JudgeTaskFinish(uint16_t taskPos, bool& isFinished)
 {
     COND_RETURN_WARN(device_ == nullptr, RT_ERROR_NONE, "device is null, stream_id=%d", streamId_);
-    COND_RETURN_AND_MSG_INNER(taskResMang_ == nullptr, RT_ERROR_INVALID_VALUE,
-        "taskResMang_ is nullptr, stream_id=%d.", streamId_);
-    TaskResManageDavid *taskRes = RtPtrToPtr<TaskResManageDavid *>(taskResMang_);
+    COND_RETURN_AND_MSG_INNER(
+        taskResMang_ == nullptr, RT_ERROR_INVALID_VALUE, "taskResMang_ is nullptr, stream_id=%d.", streamId_);
+    TaskResManageDavid* taskRes = RtPtrToPtr<TaskResManageDavid*>(taskResMang_);
     uint16_t sqHead = 0U;
     const uint32_t sqId = sqId_;
     const uint32_t tsId = device_->DevGetTsId();
     const uint16_t sqTail = taskRes->GetTaskPosTail();
     const rtError_t error = device_->Driver_()->GetSqHead(device_->Id_(), tsId, sqId, sqHead);
-    COND_RETURN_ERROR(error != RT_ERROR_NONE, error, "Query sq head failed, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(
+        error != RT_ERROR_NONE, error, "Query sq head failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     if (sqHead < sqTail) {
         if (sqHead > taskPos || taskPos > sqTail) {
@@ -1077,17 +1122,18 @@ rtError_t DavidStream::JudgeTaskFinish(uint16_t taskPos, bool &isFinished)
     } else {
         isFinished = true;
     }
-    RT_LOG(RT_LOG_INFO, "device_id=%u, is_finished=%u, stream_id=%d, head=%u, tail=%u, pos=%u",
-        device_->Id_(), isFinished, streamId_, sqHead, sqTail, taskPos);
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%u, is_finished=%u, stream_id=%d, head=%u, tail=%u, pos=%u", device_->Id_(), isFinished,
+        streamId_, sqHead, sqTail, taskPos);
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidStream::JudgeHeadTailPos(rtEventStatus_t * const status, uint16_t eventPos)
+rtError_t DavidStream::JudgeHeadTailPos(rtEventStatus_t* const status, uint16_t eventPos)
 {
     bool isFinished = false;
     const rtError_t error = JudgeTaskFinish(eventPos, isFinished);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "Query task status failed, retCode=%#x.",
-        static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "Query task status failed, retCode=%#x.", static_cast<uint32_t>(error));
 
     if (isFinished) {
         *status = RT_EVENT_RECORDED;
@@ -1095,8 +1141,7 @@ rtError_t DavidStream::JudgeHeadTailPos(rtEventStatus_t * const status, uint16_t
         *status = RT_EVENT_INIT;
     }
 
-    RT_LOG(RT_LOG_INFO, "device_id=%u, status=%d, stream_id=%d, pos=%u",
-        device_->Id_(), *status, streamId_, eventPos);
+    RT_LOG(RT_LOG_INFO, "device_id=%u, status=%d, stream_id=%d, pos=%u", device_->Id_(), *status, streamId_, eventPos);
     return RT_ERROR_NONE;
 }
 
@@ -1123,7 +1168,7 @@ void DavidStream::ResetDavidStreamConstruct()
     SetExecuteEndTaskId(static_cast<uint16_t>(MAX_UINT16_NUM));
     SetStreamStatus(StreamStatus::NORMAL);
     if (taskResMang_ != nullptr) {
-        (dynamic_cast<TaskResManageDavid *>(taskResMang_))->ResetTaskRes();
+        (dynamic_cast<TaskResManageDavid*>(taskResMang_))->ResetTaskRes();
     }
 }
 
@@ -1134,7 +1179,7 @@ uint32_t DavidStream::GetDelayRecycleTaskSqeNum(void) const
     }
 
     if (taskResMang_ != nullptr) {
-        return (dynamic_cast<TaskResManageDavid *>(taskResMang_))->GetTaskPosTail();
+        return (dynamic_cast<TaskResManageDavid*>(taskResMang_))->GetTaskPosTail();
     }
     return 0UL;
 }
@@ -1146,13 +1191,15 @@ rtError_t DavidStream::ResClear(uint64_t timeout)
     uint64_t tryCount = 0ULL;
     constexpr uint64_t perDetectTimes = 1000ULL;
     if (taskResMang_ != nullptr) {
-        while ((dynamic_cast<TaskResManageDavid *>(taskResMang_))->GetPendingNum() > 0U) {
-            COND_RETURN_AND_MSG_INNER((device_->GetDevRunningState() == static_cast<uint32_t>(DEV_RUNNING_DOWN)),
-                RT_ERROR_DRV_ERR, "device_id=%u is down, clear stream_id=%u", device_->Id_(), streamId_);
+        while ((dynamic_cast<TaskResManageDavid*>(taskResMang_))->GetPendingNum() > 0U) {
+            COND_RETURN_AND_MSG_INNER(
+                (device_->GetDevRunningState() == static_cast<uint32_t>(DEV_RUNNING_DOWN)), RT_ERROR_DRV_ERR,
+                "device_id=%u is down, clear stream_id=%u", device_->Id_(), streamId_);
             isForceRecycle_ = true;
             SetNeedRecvCqeFlag(false);
-            RT_LOG(RT_LOG_INFO, "stream_id=%d, pendingNum=%d, forcerecycle.", streamId_,
-                (dynamic_cast<TaskResManageDavid *>(taskResMang_))->GetPendingNum());
+            RT_LOG(
+                RT_LOG_INFO, "stream_id=%d, pendingNum=%d, forcerecycle.", streamId_,
+                (dynamic_cast<TaskResManageDavid*>(taskResMang_))->GetPendingNum());
             StreamSyncLock();
             if (IsSeparateSendAndRecycle()) {
                 StreamRecycleLock();
@@ -1164,10 +1211,11 @@ rtError_t DavidStream::ResClear(uint64_t timeout)
             StreamSyncUnLock();
             timeCost = ClockGetTimeIntervalUs(startTime);
             tryCount++;
-            if(timeout > 0ULL && tryCount % perDetectTimes == 0ULL) {
-                COND_RETURN_AND_MSG_INNER((timeCost >= timeout), RT_ERROR_WAIT_TIMEOUT,
-                    "TaskReclaimByStream timeout, device_id=%u, stream_id=%d, time=%lu us",
-                    device_->Id_(), streamId_, timeCost);
+            if (timeout > 0ULL && tryCount % perDetectTimes == 0ULL) {
+                COND_RETURN_AND_MSG_INNER(
+                    (timeCost >= timeout), RT_ERROR_WAIT_TIMEOUT,
+                    "TaskReclaimByStream timeout, device_id=%u, stream_id=%d, time=%lu us", device_->Id_(), streamId_,
+                    timeCost);
                 (void)mmSleep(1U);
             }
         }
@@ -1193,18 +1241,23 @@ rtError_t DavidStream::StreamRecoverAbort()
     uint64_t count;
     do {
         error = RecoverAbortByType(OP_RECOVER_STREAM, sqId_, result);
-        COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "Failed to recover stream, stream_id=%d, sq_id=%d, "
-            "retCode=%#x.", streamId_, sqId_, static_cast<uint32_t>(error));
+        COND_RETURN_ERROR(
+            (error != RT_ERROR_NONE), error,
+            "Failed to recover stream, stream_id=%d, sq_id=%d, "
+            "retCode=%#x.",
+            streamId_, sqId_, static_cast<uint32_t>(error));
         if (result == TS_SUCCESS) {
             break;
         }
-        COND_RETURN_AND_MSG_INNER((result == TS_ERROR_ILLEGAL_PARAM) || (result == TS_APP_EXIT_UNFINISHED),
-            RT_ERROR_TSFW_ILLEGAL_PARAM,
+        COND_RETURN_AND_MSG_INNER(
+            (result == TS_ERROR_ILLEGAL_PARAM) || (result == TS_APP_EXIT_UNFINISHED), RT_ERROR_TSFW_ILLEGAL_PARAM,
             "Tsfw param invalid or app exit unfinished, device_id=%u, "
-            "stream_id=%d, sq_id=%d, result=%u.", device_->Id_(), streamId_, sqId_, result);
+            "stream_id=%d, sq_id=%d, result=%u.",
+            device_->Id_(), streamId_, sqId_, result);
 
         count = GetTimeInterval(beginTime);
-        COND_RETURN_AND_MSG_INNER((count >= static_cast<uint64_t>(RT_ABORT_STREAM_TIMEOUT)), RT_ERROR_WAIT_TIMEOUT,
+        COND_RETURN_AND_MSG_INNER(
+            (count >= static_cast<uint64_t>(RT_ABORT_STREAM_TIMEOUT)), RT_ERROR_WAIT_TIMEOUT,
             "Abort query timeout, device_id=%u, stream_id=%d, time=%lums", device_->Id_(), streamId_, count);
         (void)mmSleep(1U);
     } while (result == TS_ERROR_APP_QUEUE_FULL);
@@ -1212,16 +1265,18 @@ rtError_t DavidStream::StreamRecoverAbort()
     uint32_t status;
     do {
         error = QueryRecoverStatusByType(status, RECOVER_STS_QUERY_BY_SQID, sqId_);
-        COND_RETURN_ERROR((error != RT_ERROR_NONE), error, "abort query fail, retCode=%#x.",
-            static_cast<uint32_t>(error));
+        COND_RETURN_ERROR(
+            (error != RT_ERROR_NONE), error, "abort query fail, retCode=%#x.", static_cast<uint32_t>(error));
         if (status == RECOVER_SUCC) {
             break;
         }
-        COND_RETURN_AND_MSG_INNER((status == TS_ERROR_ILLEGAL_PARAM), RT_ERROR_TSFW_ILLEGAL_PARAM,
+        COND_RETURN_AND_MSG_INNER(
+            (status == TS_ERROR_ILLEGAL_PARAM), RT_ERROR_TSFW_ILLEGAL_PARAM,
             "Tsfw param invalid or app exit unfinished, device_id=%u, stream_id=%d, sq_id=%d, status=%u.",
             device_->Id_(), streamId_, sqId_, status);
         count = GetTimeInterval(beginTime);
-        COND_RETURN_AND_MSG_INNER((count >= static_cast<uint64_t>(RT_ABORT_STREAM_TIMEOUT)), RT_ERROR_WAIT_TIMEOUT,
+        COND_RETURN_AND_MSG_INNER(
+            (count >= static_cast<uint64_t>(RT_ABORT_STREAM_TIMEOUT)), RT_ERROR_WAIT_TIMEOUT,
             "Abort query timeout, device_id=%u, stream_id=%d, time=%lums", device_->Id_(), streamId_, count);
         (void)mmSleep(5U);
     } while (true);
@@ -1239,29 +1294,34 @@ rtError_t DavidStream::StreamRecoverAbort()
 rtError_t DavidStream::StreamTaskClean()
 {
     const uint32_t devId = device_->Id_();
-    Driver * const devDrv = device_->Driver_();
+    Driver* const devDrv = device_->Driver_();
     const uint32_t tsId = device_->DevGetTsId();
     bool enable = true;
     rtError_t error = devDrv->GetSqEnable(devId, tsId, sqId_, enable);
-    COND_RETURN_ERROR((error != RT_ERROR_NONE), error,
-        "Get sq enable status fail, device_id=%u, ts_id=%d, stream_id=%d, sq_id=%d", devId, tsId, streamId_, sqId_);
-    COND_RETURN_AND_MSG_INNER((enable != false), RT_ERROR_STREAM_INVALID,
-        "Sq must be disable when clean task, device_id=%u, ts_id=%d, stream_id=%d, sq_id=%d",
+    COND_RETURN_ERROR(
+        (error != RT_ERROR_NONE), error, "Get sq enable status fail, device_id=%u, ts_id=%d, stream_id=%d, sq_id=%d",
         devId, tsId, streamId_, sqId_);
+    COND_RETURN_AND_MSG_INNER(
+        (enable != false), RT_ERROR_STREAM_INVALID,
+        "Sq must be disable when clean task, device_id=%u, ts_id=%d, stream_id=%d, sq_id=%d", devId, tsId, streamId_,
+        sqId_);
     if (IsAutoSplitSq() && !IsSlaveStream() && autoSplitCtx_ != nullptr) {
-        for (Stream *slave : autoSplitCtx_->slaveStreams) {
+        for (Stream* slave : autoSplitCtx_->slaveStreams) {
             error = Model_()->UnbindStream(slave, false);
-            COND_RETURN_AND_MSG_INNER((error != RT_ERROR_NONE), error,
-                "UnbindStream failed, stream_id=%u, retCode=%#x.", slave->Id_(), static_cast<uint32_t>(error));
+            COND_RETURN_AND_MSG_INNER(
+                (error != RT_ERROR_NONE), error, "UnbindStream failed, stream_id=%u, retCode=%#x.", slave->Id_(),
+                static_cast<uint32_t>(error));
             (void)Context_()->TearDownStream(slave, true);
         }
         error = Model_()->ModelUnBindTaskSubmit(this, true);
-        COND_RETURN_AND_MSG_INNER((error != RT_ERROR_NONE), error,
-            "Stream unbind failed, stream_id=%d, retCode=%#x.", Id_(), static_cast<uint32_t>(error));
+        COND_RETURN_AND_MSG_INNER(
+            (error != RT_ERROR_NONE), error, "Stream unbind failed, stream_id=%d, retCode=%#x.", Id_(),
+            static_cast<uint32_t>(error));
         Model_()->ModelPushFrontStream(this);
         error = ReBuildStreamId();
-        COND_RETURN_AND_MSG_INNER((error != RT_ERROR_NONE), error,
-            "ReBuildStreamId failed, stream_id=%u, retCode=%#x.", Id_(), static_cast<uint32_t>(error));
+        COND_RETURN_AND_MSG_INNER(
+            (error != RT_ERROR_NONE), error, "ReBuildStreamId failed, stream_id=%u, retCode=%#x.", Id_(),
+            static_cast<uint32_t>(error));
         autoSplitCtx_->slaveStreams.clear();
         autoSplitCtx_->curStreamSqeCount = 0;
         SetBindFlag(true);
@@ -1281,18 +1341,16 @@ bool DavidStream::IsWaitFinish(const uint32_t finishedTaskId, const uint32_t sub
     UNUSED(finishedTaskId);
     uint16_t head = 0U;
     uint16_t tail = 0U;
-    RtPtrToPtr<TaskResManageDavid *>(taskResMang_)->GetHeadTail(head, tail);
+    RtPtrToPtr<TaskResManageDavid*>(taskResMang_)->GetHeadTail(head, tail);
     const bool flip = (head < tail) ? false : true;
     const bool flag1 = (!flip) && (!((submittedTaskId >= head) && (submittedTaskId < tail)));
     const bool flag2 = flip && ((submittedTaskId >= tail) && (submittedTaskId < head));
     return (flag1 || flag2 || (head == tail));
 }
 
-rtError_t DavidStream::GetAbortStatus() const {
-    return abortStatus_;
-}
+rtError_t DavidStream::GetAbortStatus() const { return abortStatus_; }
 
-bool DavidStream::AddArgToRecycleList(TaskInfo * const tsk)
+bool DavidStream::AddArgToRecycleList(TaskInfo* const tsk)
 {
     if (argRecycleList_ == nullptr) {
         return false;
@@ -1304,7 +1362,7 @@ bool DavidStream::AddArgToRecycleList(TaskInfo * const tsk)
         return false;
     }
 
-    RecycleArgs *recycleArgs = *(argRecycleList_ + argRecycleListTail_);
+    RecycleArgs* recycleArgs = *(argRecycleList_ + argRecycleListTail_);
     if ((tsk->type == TS_TASK_TYPE_KERNEL_AICORE) || (tsk->type == TS_TASK_TYPE_KERNEL_AIVEC)) {
         recycleArgs->argHandle = tsk->u.aicTaskInfo.comm.argHandle;
         tsk->u.aicTaskInfo.comm.argHandle = nullptr;
@@ -1323,7 +1381,7 @@ bool DavidStream::AddArgToRecycleList(TaskInfo * const tsk)
 
 void DavidStream::ProcArgRecycleList(void)
 {
-    RecycleArgs *recycleArgs = GetNextRecycleArg();
+    RecycleArgs* recycleArgs = GetNextRecycleArg();
     while (recycleArgs != nullptr) {
         if (recycleArgs->argHandle != nullptr) {
             if (argManage_ != nullptr) {
@@ -1335,7 +1393,7 @@ void DavidStream::ProcArgRecycleList(void)
     }
 }
 
-void DavidStream::ArgReleaseSingleTask(TaskInfo * const taskInfo, bool freeStmPool)
+void DavidStream::ArgReleaseSingleTask(TaskInfo* const taskInfo, bool freeStmPool)
 {
     if (freeStmPool) {
         if (argManage_ != nullptr) {
@@ -1345,7 +1403,7 @@ void DavidStream::ArgReleaseSingleTask(TaskInfo * const taskInfo, bool freeStmPo
     }
     if (IsDavinciTask(taskInfo)) {
         auto commDavinciInfo = (taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) ? &(taskInfo->u.aicpuTaskInfo.comm) :
-            &(taskInfo->u.aicTaskInfo.comm);
+                                                                               &(taskInfo->u.aicTaskInfo.comm);
 
         if (taskInfo->type == TS_TASK_TYPE_KERNEL_AICPU) {
             this->SetArgHandle(commDavinciInfo->argHandle);
@@ -1357,12 +1415,12 @@ void DavidStream::ArgReleaseSingleTask(TaskInfo * const taskInfo, bool freeStmPo
 
         commDavinciInfo->argHandle = nullptr;
     } else if (IsFusionKernelTask(taskInfo)) {
-        FusionTaskInfo *fusionKernelTask = &(taskInfo->u.fusionKernelTask);
+        FusionTaskInfo* fusionKernelTask = &(taskInfo->u.fusionKernelTask);
         if (argManage_ != nullptr) {
             argManage_->RecycleDevLoader(fusionKernelTask->argHandle);
         }
         fusionKernelTask->argHandle = nullptr;
-    } else{
+    } else {
         // no operation
     }
 }
@@ -1375,9 +1433,9 @@ void DavidStream::ArgReleaseStmPool(TaskInfo* const taskInfo) const
     taskInfo->stmArgPos = UINT32_MAX;
 }
 
-void DavidStream::ArgReleaseMultipleTask(TaskInfo * const taskInfo)
+void DavidStream::ArgReleaseMultipleTask(TaskInfo* const taskInfo)
 {
-    DavinciMultiTaskInfo *davMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    DavinciMultiTaskInfo* davMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
     if (davMultiTaskInfo->argHandleVec != nullptr) {
         for (auto iter : *(davMultiTaskInfo->argHandleVec)) {
             if (argManage_ != nullptr) {
@@ -1403,7 +1461,7 @@ bool DavidStream::IsTaskExcuted(const uint32_t executeEndTaskid, const uint32_t 
     return IsWaitFinish(executeEndTaskid, taskId);
 }
 
-rtError_t DavidStream::GetTaskIdByPos(const uint16_t pos, uint32_t &taskId)
+rtError_t DavidStream::GetTaskIdByPos(const uint16_t pos, uint32_t& taskId)
 {
     if (IsSoftwareSqEnable() || IsAutoSplitSq()) {
         return Stream::GetTaskIdByPos(pos, taskId);
@@ -1411,7 +1469,7 @@ rtError_t DavidStream::GetTaskIdByPos(const uint16_t pos, uint32_t &taskId)
 
     COND_RETURN_DEBUG(taskResMang_ == nullptr, RT_ERROR_NONE, "taskResMang_ is null");
 
-    TaskInfo *taskInfo = (dynamic_cast<TaskResManageDavid *>(taskResMang_))->GetTaskInfo(pos);
+    TaskInfo* taskInfo = (dynamic_cast<TaskResManageDavid*>(taskResMang_))->GetTaskInfo(pos);
     COND_RETURN_WARN(taskInfo == nullptr, RT_ERROR_INVALID_VALUE, "taskInfo is null, pos=%u", pos);
 
     taskId = taskInfo->id;
@@ -1422,7 +1480,7 @@ uint32_t DavidStream::GetTaskPosHead() const
 {
     COND_RETURN_DEBUG(taskResMang_ == nullptr, RT_ERROR_NONE, "taskResMang_ is null");
 
-    TaskResManageDavid *taskRes = RtPtrToPtr<TaskResManageDavid *>(taskResMang_);
+    TaskResManageDavid* taskRes = RtPtrToPtr<TaskResManageDavid*>(taskResMang_);
     return static_cast<uint32_t>(taskRes->GetTaskPosHead());
 }
 
@@ -1430,7 +1488,7 @@ uint32_t DavidStream::GetTaskPosTail() const
 {
     COND_RETURN_DEBUG(taskResMang_ == nullptr, RT_ERROR_NONE, "taskResMang_ is null");
 
-    TaskResManageDavid *taskRes = RtPtrToPtr<TaskResManageDavid *>(taskResMang_);
+    TaskResManageDavid* taskRes = RtPtrToPtr<TaskResManageDavid*>(taskResMang_);
     return static_cast<uint32_t>(taskRes->GetTaskPosTail());
 }
 
@@ -1466,7 +1524,7 @@ bool DavidStream::SynchronizeDelayTime(const uint16_t finishedId, const uint16_t
 
 void DavidStream::EraseCacheStream()
 {
-    Profiler * const profilerPtr = Runtime::Instance()->Profiler_();
+    Profiler* const profilerPtr = Runtime::Instance()->Profiler_();
     if (profilerPtr != nullptr) {
         profilerPtr->EraseStream(this);
     }
@@ -1495,15 +1553,16 @@ void DavidStream::ExpandStreamRecycleModelBindStreamAllTask(const bool cleanFlag
     taskPersistentTail_.Set(0U);
     StreamSyncUnLock();
     posToTaskIdMapLock_.lock();
-    (void)memset_s(posToTaskIdMap_, posToTaskIdMapSize_ * sizeof(uint16_t), 0xFFU,
-        posToTaskIdMapSize_ * sizeof(uint16_t));
+    (void)memset_s(
+        posToTaskIdMap_, posToTaskIdMapSize_ * sizeof(uint16_t), 0xFFU, posToTaskIdMapSize_ * sizeof(uint16_t));
     posToTaskIdMapLock_.unlock();
     SetLastTaskId(0);
 
     return;
 }
 
-void DavidStream::GetTaskQueueHeadTail(uint16_t& head, uint16_t& tail) const {
+void DavidStream::GetTaskQueueHeadTail(uint16_t& head, uint16_t& tail) const
+{
     if (IsSoftwareSqEnable() || IsAutoSplitSq()) {
         if (!delayRecycleTaskid_.empty()) {
             head = *delayRecycleTaskid_.begin();
@@ -1511,33 +1570,33 @@ void DavidStream::GetTaskQueueHeadTail(uint16_t& head, uint16_t& tail) const {
             tail++;
         }
     } else {
-        if(taskResMang_ == nullptr) {
-            RT_LOG(RT_LOG_WARNING, " taskResMang_ is null, device_id=%u, stream_id=%d.", 
-            device_->Id_(), Id_());
+        if (taskResMang_ == nullptr) {
+            RT_LOG(RT_LOG_WARNING, " taskResMang_ is null, device_id=%u, stream_id=%d.", device_->Id_(), Id_());
             return;
         }
-        (dynamic_cast<TaskResManageDavid *>(taskResMang_))->GetHeadTail(head, tail);
+        (dynamic_cast<TaskResManageDavid*>(taskResMang_))->GetHeadTail(head, tail);
     }
 }
 
 rtError_t DavidStream::ReAllocStreamId()
 {
-    rtError_t error = device_->Driver_()->ReAllocResourceId(device_->Id_(), device_->DevGetTsId(), priority_,
-        static_cast<uint32_t>(streamId_), DRV_STREAM_ID);
-    ERROR_RETURN_MSG_INNER(error, "Realloc stream_id failed, stream_id=%d, device_id=%u, ret=%d.",
-        streamId_, device_->Id_(), error);
+    rtError_t error = device_->Driver_()->ReAllocResourceId(
+        device_->Id_(), device_->DevGetTsId(), priority_, static_cast<uint32_t>(streamId_), DRV_STREAM_ID);
+    ERROR_RETURN_MSG_INNER(
+        error, "Realloc stream_id failed, stream_id=%d, device_id=%u, ret=%d.", streamId_, device_->Id_(), error);
 
-    StreamSqCqManage *stmSqCqManage = device_->GetStreamSqCqManage();
+    StreamSqCqManage* stmSqCqManage = device_->GetStreamSqCqManage();
     error = stmSqCqManage->ReAllocDavidSqCqId(this);
-    ERROR_RETURN_MSG_INNER(error, "Realloc sqcq_id failed, stream_id=%d, device_id=%u, sq_id=%u, ret=%d.",
-        streamId_, device_->Id_(), sqId_, error);
+    ERROR_RETURN_MSG_INNER(
+        error, "Realloc sqcq_id failed, stream_id=%d, device_id=%u, sq_id=%u, ret=%d.", streamId_, device_->Id_(),
+        sqId_, error);
 
     uint32_t addrLen = 0U;
     if ((flags_ & RT_STREAM_PERSISTENT) != 0U) {
-        error = device_->Driver_()->GetSqRegVirtualAddrBySqid(static_cast<int32_t>(device_->Id_()),
-        device_->DevGetTsId(), sqId_, &sqRegVirtualAddr_, &addrLen);
-        ERROR_RETURN_MSG_INNER(error, "Fail to get sq reg virtual addr, device_id=%u, sq_id=%u, ret=%d.",
-            device_->Id_(), sqId_, error);
+        error = device_->Driver_()->GetSqRegVirtualAddrBySqid(
+            static_cast<int32_t>(device_->Id_()), device_->DevGetTsId(), sqId_, &sqRegVirtualAddr_, &addrLen);
+        ERROR_RETURN_MSG_INNER(
+            error, "Fail to get sq reg virtual addr, device_id=%u, sq_id=%u, ret=%d.", device_->Id_(), sqId_, error);
 
         error = SetSqRegVirtualAddrToDevice(sqRegVirtualAddr_);
         ERROR_RETURN_MSG_INNER(error, "Fail to copy sq_id=%u virtual addr to device, ret=%d.", sqId_, error);
@@ -1549,11 +1608,13 @@ rtError_t DavidStream::ReAllocStreamId()
 rtError_t DavidStream::Restore()
 {
     rtError_t error = ReAllocStreamId();
-    ERROR_RETURN(error, "Stream restore failed, stream_id=%d, device_id=%u, ret=%#x.", streamId_, device_->Id_(), error);
+    ERROR_RETURN(
+        error, "Stream restore failed, stream_id=%d, device_id=%u, ret=%#x.", streamId_, device_->Id_(), error);
     if (GetExecutedTimesSvm() != nullptr) {
         error = device_->Driver_()->MemSetSync(GetExecutedTimesSvm(), sizeof(uint16_t), 0xFFU, sizeof(uint16_t));
-        COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE,
-            error, "MemSetSync stream executed times SVM failed, ret=%#x.", static_cast<uint32_t>(error));
+        COND_RETURN_ERROR_MSG_INNER(
+            error != RT_ERROR_NONE, error, "MemSetSync stream executed times SVM failed, ret=%#x.",
+            static_cast<uint32_t>(error));
     }
 
     const std::lock_guard<std::mutex> notifyLock(cntNotifyInfoLock_);
@@ -1561,15 +1622,16 @@ rtError_t DavidStream::Restore()
         const uint32_t deviceId = device_->Id_();
         const uint32_t tsId = device_->DevGetTsId();
         error = device_->Driver_()->ReAllocResourceId(deviceId, tsId, 0U, cntNotifyId_, DRV_CNT_NOTIFY_ID);
-        ERROR_RETURN(error, "Realloc cnt_notify_id failed, cnt_notify_id=%u, device_id=%u, ret=%#x.",
-            cntNotifyId_, deviceId, static_cast<uint32_t>(error));
+        ERROR_RETURN(
+            error, "Realloc cnt_notify_id failed, cnt_notify_id=%u, device_id=%u, ret=%#x.", cntNotifyId_, deviceId,
+            static_cast<uint32_t>(error));
     }
 
     recordVersion_.Set(0);
     return RT_ERROR_NONE;
 }
 
-bool DavidStream::IsNeedUpdateTask(const TaskInfo * const updateTask) const
+bool DavidStream::IsNeedUpdateTask(const TaskInfo* const updateTask) const
 {
     const std::vector<tagTsTaskType> updateTasks = {TS_TASK_TYPE_MEMCPY};
     return std::find(updateTasks.begin(), updateTasks.end(), updateTask->type) != updateTasks.end();
@@ -1577,23 +1639,24 @@ bool DavidStream::IsNeedUpdateTask(const TaskInfo * const updateTask) const
 
 rtError_t DavidStream::UpdateSnapShotSqe()
 {
-    Context *ctx = Context_();
+    Context* ctx = Context_();
     if (ctx == nullptr) {
         RT_LOG(RT_LOG_ERROR, "Context is nullptr, stream_id=%d.", Id_());
         return RT_ERROR_INVALID_VALUE;
     }
-    Device *dev = Device_();
-    Stream * const ctrlStream = ctx->GetCtrlSQStream();
+    Device* dev = Device_();
+    Stream* const ctrlStream = ctx->GetCtrlSQStream();
 
     // 获取任务队列的头尾指针
     uint16_t head = 0U;
     uint16_t tail = 0U;
     GetTaskQueueHeadTail(head, tail);
 
-    RT_LOG(RT_LOG_DEBUG, "UpdateSnapShotSqe, device_id=%u, stream_id=%d, head=%hu, tail=%hu.", 
-        dev->Id_(), Id_(), head, tail);
+    RT_LOG(
+        RT_LOG_DEBUG, "UpdateSnapShotSqe, device_id=%u, stream_id=%d, head=%hu, tail=%hu.", dev->Id_(), Id_(), head,
+        tail);
 
-    TaskInfo *nextTask = nullptr;
+    TaskInfo* nextTask = nullptr;
     for (uint32_t i = head; i < tail;) {
         nextTask = GetTaskInfo(this->Device_(), Id_(), i);
         if (nextTask == nullptr) {
@@ -1601,7 +1664,7 @@ rtError_t DavidStream::UpdateSnapShotSqe()
             continue;
         }
         i = IsSoftwareSqEnable() || IsAutoSplitSq() ? (static_cast<uint32_t>(nextTask->id) + 1U) :
-            (static_cast<uint32_t>(nextTask->id) + nextTask->sqeNum);
+                                                      (static_cast<uint32_t>(nextTask->id) + nextTask->sqeNum);
 
         RT_LOG(RT_LOG_DEBUG, "Stream_id=%d, pos=%u, type=%d.", Id_(), i, nextTask->type);
         if (IsNeedUpdateTask(nextTask)) {
@@ -1616,8 +1679,8 @@ rtError_t DavidStream::UpdateSnapShotSqe()
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidStream::HandleTaskUpdate(TaskInfo* workTask, CaptureModel* model,
-    uint8_t* sqeBufferBackup, uint32_t sendSqeNum)
+rtError_t DavidStream::HandleTaskUpdate(
+    TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum)
 {
     RT_LOG(
         RT_LOG_INFO, "update task begin, stream_id=%d, task_id=%hu, task_type=%d(%s).", streamId_, workTask->id,
@@ -1626,7 +1689,7 @@ rtError_t DavidStream::HandleTaskUpdate(TaskInfo* workTask, CaptureModel* model,
     model->SetKernelTaskId(static_cast<uint32_t>(workTask->id), streamId_);
     uint8_t sqeBuffer[SQE_SIZE_MAX] = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
-    ToConstructDavidSqe(workTask, static_cast<void *>(sqeBuffer), sqeInfo);
+    ToConstructDavidSqe(workTask, static_cast<void*>(sqeBuffer), sqeInfo);
 
     // Update the host-side head and tail
     // 这里的pending num再发生错误的时候不需要减1
@@ -1635,22 +1698,26 @@ rtError_t DavidStream::HandleTaskUpdate(TaskInfo* workTask, CaptureModel* model,
 
     const uint64_t sqeSize = static_cast<uint64_t>(sendSqeNum) * SQE_SIZE_UNIT;
     const auto ret = memcpy_s(
-        RtPtrToPtr<void*>(sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos), sqeSize, static_cast<void*>(sqeBuffer), sqeSize);
-    COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_INVALID_VALUE,
-        "Failed to call memcpy_s, dest=%p, dest_max=%lu, src=%p, sqe_num=%u, retCode=%d, device_id=%u, stream_id=%d, task_id=%hu, task_type=%d(%s).",
-        sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos, sqeSize, sqeBuffer, sendSqeNum,
-        ret, device_->Id_(), streamId_, workTask->id, workTask->type, workTask->typeName);
+        RtPtrToPtr<void*>(sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos), sqeSize, static_cast<void*>(sqeBuffer),
+        sqeSize);
+    COND_RETURN_ERROR_MSG_INNER(
+        ret != EOK, RT_ERROR_INVALID_VALUE,
+        "Failed to call memcpy_s, dest=%p, dest_max=%lu, src=%p, sqe_num=%u, retCode=%d, device_id=%u, stream_id=%d, "
+        "task_id=%hu, task_type=%d(%s).",
+        sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos, sqeSize, sqeBuffer, sendSqeNum, ret, device_->Id_(), streamId_,
+        workTask->id, workTask->type, workTask->typeName);
 
     RT_LOG(
-        RT_LOG_INFO, "update task finish, stream_id=%d, task_id=%hu, task_type=%d(%s).",
-        streamId_, workTask->id, workTask->type, workTask->typeName);
+        RT_LOG_INFO, "update task finish, stream_id=%d, task_id=%hu, task_type=%d(%s).", streamId_, workTask->id,
+        workTask->type, workTask->typeName);
     return RT_ERROR_NONE;
 }
 
 rtError_t DavidStream::HandleTaskDisable(TaskInfo* workTask, CaptureModel* model)
 {
     UNUSED(model);
-    RT_LOG(RT_LOG_INFO, "disable task, stream_id=%d, task_id=%hu, task_type=%d(%s).", streamId_, workTask->id,
+    RT_LOG(
+        RT_LOG_INFO, "disable task, stream_id=%d, task_id=%hu, task_type=%d(%s).", streamId_, workTask->id,
         workTask->type, workTask->typeName);
     // 保存argsHandle到stream上
     BackupTaskArgHandle(workTask);
@@ -1659,8 +1726,8 @@ rtError_t DavidStream::HandleTaskDisable(TaskInfo* workTask, CaptureModel* model
     return RT_ERROR_NONE;
 }
 
-rtError_t DavidStream::HandleTaskDefault(TaskInfo* workTask, CaptureModel* model,
-    uint8_t* sqeBufferBackup, uint32_t sendSqeNum)
+rtError_t DavidStream::HandleTaskDefault(
+    TaskInfo* workTask, CaptureModel* model, uint8_t* sqeBufferBackup, uint32_t sendSqeNum)
 {
     model->SetKernelTaskId(static_cast<uint32_t>(workTask->id), streamId_);
     // 获取老的sqe
@@ -1668,7 +1735,7 @@ rtError_t DavidStream::HandleTaskDefault(TaskInfo* workTask, CaptureModel* model
     uint8_t sqeBuffer[SQE_SIZE_MAX] = {};
     TaskSqeInfo sqeInfo = {0ULL, 0ULL};
     if (NeedReBuildSqe(workTask)) {
-        ToConstructDavidSqe(workTask, static_cast<void *>(sqeBuffer), sqeInfo);
+        ToConstructDavidSqe(workTask, static_cast<void*>(sqeBuffer), sqeInfo);
         oldhostSqeAddr = sqeBuffer;
     }
     // Update the host-side head and tail
@@ -1677,11 +1744,14 @@ rtError_t DavidStream::HandleTaskDefault(TaskInfo* workTask, CaptureModel* model
 
     const uint64_t sqeSize = static_cast<uint64_t>(sendSqeNum) * SQE_SIZE_UNIT;
     const auto ret = memcpy_s(
-        RtPtrToPtr<void*>(sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos), sqeSize, RtPtrToPtr<void*>(oldhostSqeAddr), sqeSize);
-    COND_RETURN_ERROR_MSG_INNER(ret != EOK, RT_ERROR_INVALID_VALUE,
-        "Failed to call memcpy_s, dest=%p, dest_max=%lu, src=%p, sqe_num=%u, retCode=%d, device_id=%u, stream_id=%d, task_id=%hu, task_type=%d(%s).",
-        sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos, sqeSize, oldhostSqeAddr, sendSqeNum,
-        ret, device_->Id_(), streamId_, workTask->id, workTask->type, workTask->typeName);
+        RtPtrToPtr<void*>(sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos), sqeSize, RtPtrToPtr<void*>(oldhostSqeAddr),
+        sqeSize);
+    COND_RETURN_ERROR_MSG_INNER(
+        ret != EOK, RT_ERROR_INVALID_VALUE,
+        "Failed to call memcpy_s, dest=%p, dest_max=%lu, src=%p, sqe_num=%u, retCode=%d, device_id=%u, stream_id=%d, "
+        "task_id=%hu, task_type=%d(%s).",
+        sqeBufferBackup + SQE_SIZE_UNIT * workTask->pos, sqeSize, oldhostSqeAddr, sendSqeNum, ret, device_->Id_(),
+        streamId_, workTask->id, workTask->type, workTask->typeName);
     RT_LOG(
         RT_LOG_INFO, "handle default task finish, stream_id=%d, task_id=%hu, task_type=%d(%s).", streamId_,
         workTask->id, workTask->type, workTask->typeName);
@@ -1689,24 +1759,25 @@ rtError_t DavidStream::HandleTaskDefault(TaskInfo* workTask, CaptureModel* model
 }
 
 // 当前暂未支持图下沉备份和恢复, 代码预埋
-rtError_t DavidStream::UpdateTaskAndSqe(TaskInfo *task, Stream *stream)
+rtError_t DavidStream::UpdateTaskAndSqe(TaskInfo* task, Stream* stream)
 {
     rtError_t error = RT_ERROR_NONE;
     if (task->type == TS_TASK_TYPE_MEMCPY) {
         // convert dma
-        if (IsPcieDma(task->u.memcpyAsyncTaskInfo.copyType) && (device_->Driver_()->GetRunMode() == RT_RUN_MODE_ONLINE)) {
-            error = device_->Driver_()->MemConvertAddr(RtPtrToValue(task->u.memcpyAsyncTaskInfo.src),
-                RtPtrToValue(task->u.memcpyAsyncTaskInfo.desPtr), task->u.memcpyAsyncTaskInfo.size,
-                &(task->u.memcpyAsyncTaskInfo.dmaAddr));
-            ERROR_RETURN_MSG_INNER(error,
-                "Convert memory address from virtual to dma physical failed, ret=%#x.", error);
+        if (IsPcieDma(task->u.memcpyAsyncTaskInfo.copyType) &&
+            (device_->Driver_()->GetRunMode() == RT_RUN_MODE_ONLINE)) {
+            error = device_->Driver_()->MemConvertAddr(
+                RtPtrToValue(task->u.memcpyAsyncTaskInfo.src), RtPtrToValue(task->u.memcpyAsyncTaskInfo.desPtr),
+                task->u.memcpyAsyncTaskInfo.size, &(task->u.memcpyAsyncTaskInfo.dmaAddr));
+            ERROR_RETURN_MSG_INNER(
+                error, "Convert memory address from virtual to dma physical failed, ret=%#x.", error);
         }
     }
-    
+
     error = UpdateDavidKernelTaskSubmit(task, stream);
     ERROR_RETURN_MSG_INNER(error, "UpdateDavidKernelTaskSubmit failed, ret=%#x.", error);
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

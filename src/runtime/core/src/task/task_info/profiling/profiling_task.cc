@@ -18,23 +18,25 @@ namespace cce {
 namespace runtime {
 
 #if F_DESC("DynamicProfilingEnableTask")
-rtError_t DynamicProfilingEnableTaskInit(TaskInfo * const taskInfo, const uint64_t processId,
-    const rtProfCfg_t *const profCfg)
+rtError_t DynamicProfilingEnableTaskInit(
+    TaskInfo* const taskInfo, const uint64_t processId, const rtProfCfg_t* const profCfg)
 {
-    ProfilingEnableTaskInfo *profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
+    ProfilingEnableTaskInfo* profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_PROFILER_DYNAMIC_ENABLE;
-    taskInfo->typeName = "PROF_ENABLE";         // PROF_ENABLE: Enable dynamic or normal profiling capabilities
+    taskInfo->typeName = "PROF_ENABLE"; // PROF_ENABLE: Enable dynamic or normal profiling capabilities
 
-    for (uint8_t &item : profilingEnableTaskInfo->eventMuxConfig) {
+    for (uint8_t& item : profilingEnableTaskInfo->eventMuxConfig) {
         item = 0U;
     }
 
     profilingEnableTaskInfo->pid = processId;
-    const errno_t ret = memcpy_s(profilingEnableTaskInfo->eventMuxConfig, static_cast<size_t>(M_PROF_EVEID_NUM),
-                                 profCfg->eventId, static_cast<size_t>(M_PROF_EVEID_NUM));
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
+    const errno_t ret = memcpy_s(
+        profilingEnableTaskInfo->eventMuxConfig, static_cast<size_t>(M_PROF_EVEID_NUM), profCfg->eventId,
+        static_cast<size_t>(M_PROF_EVEID_NUM));
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
         "Failed to call memcpy_s to copy profCfg->eventId, src=%p, dest=%p, dest_max=%u, count=%u, retCode=%#x.",
         profCfg->eventId, profilingEnableTaskInfo->eventMuxConfig, M_PROF_EVEID_NUM, M_PROF_EVEID_NUM, ret);
     profilingEnableTaskInfo->startCycle = profCfg->profStartCyc;
@@ -48,18 +50,20 @@ rtError_t DynamicProfilingEnableTaskInit(TaskInfo * const taskInfo, const uint64
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForDynamicProfilingEnableTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+void ToCommandBodyForDynamicProfilingEnableTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
-    ProfilingEnableTaskInfo *profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
+    ProfilingEnableTaskInfo* profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
 
     command->u.profilingEnable.pid = profilingEnableTaskInfo->pid;
-    const errno_t ret = memcpy_s(command->u.profilingEnable.eventMuxConfig,
-                                 static_cast<size_t>(M_PROF_EVEID_NUM),
-                                 profilingEnableTaskInfo->eventMuxConfig, static_cast<size_t>(M_PROF_EVEID_NUM));
-    COND_AND_MSG_INNER(ret != EOK,
+    const errno_t ret = memcpy_s(
+        command->u.profilingEnable.eventMuxConfig, static_cast<size_t>(M_PROF_EVEID_NUM),
+        profilingEnableTaskInfo->eventMuxConfig, static_cast<size_t>(M_PROF_EVEID_NUM));
+    COND_AND_MSG_INNER(
+        ret != EOK,
         "Failed to call memcpy_s to copy profilingEnableTaskInfo->eventMuxConfig, src=%p, dest=%p,"
-        " dest_max=%u, count=%u, retCode=%#x.", profilingEnableTaskInfo->eventMuxConfig,
-        command->u.profilingEnable.eventMuxConfig, M_PROF_EVEID_NUM, M_PROF_EVEID_NUM, ret);
+        " dest_max=%u, count=%u, retCode=%#x.",
+        profilingEnableTaskInfo->eventMuxConfig, command->u.profilingEnable.eventMuxConfig, M_PROF_EVEID_NUM,
+        M_PROF_EVEID_NUM, ret);
     command->u.profilingEnable.startCycle = profilingEnableTaskInfo->startCycle;
     command->u.profilingEnable.stopCycle = profilingEnableTaskInfo->stopCycle;
     command->u.profilingEnable.userDefinedEnable = profilingEnableTaskInfo->userDefinedEnable;
@@ -71,14 +75,14 @@ void ToCommandBodyForDynamicProfilingEnableTask(TaskInfo * const taskInfo, rtCom
 #endif
 
 #if F_DESC("DynamicProfilingDisableTask")
-rtError_t DynamicProfilingDisableTaskInit(TaskInfo * const taskInfo, const uint64_t processId,
-    const rtProfCfg_t *const profCfg)
+rtError_t DynamicProfilingDisableTaskInit(
+    TaskInfo* const taskInfo, const uint64_t processId, const rtProfCfg_t* const profCfg)
 {
-    ProfilingDisableTaskInfo *profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
+    ProfilingDisableTaskInfo* profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_PROFILER_DYNAMIC_DISABLE;
-    taskInfo->typeName = "PROF_DISABLE";        // PROF_DISABLE: Disable dynamic or normal profiling capabilities
+    taskInfo->typeName = "PROF_DISABLE"; // PROF_DISABLE: Disable dynamic or normal profiling capabilities
 
     profilingDisableTaskInfo->pid = processId;
     profilingDisableTaskInfo->isRtsProfEn = profCfg->isRtsProfEn;
@@ -88,9 +92,9 @@ rtError_t DynamicProfilingDisableTaskInit(TaskInfo * const taskInfo, const uint6
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForDynamicProfilingDisableTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+void ToCommandBodyForDynamicProfilingDisableTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
-    ProfilingDisableTaskInfo *profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
+    ProfilingDisableTaskInfo* profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
 
     command->u.profilingDisable.pid = profilingDisableTaskInfo->pid;
     command->u.profilingDisable.isTimelineProfDis = profilingDisableTaskInfo->isRtsProfEn;
@@ -101,22 +105,24 @@ void ToCommandBodyForDynamicProfilingDisableTask(TaskInfo * const taskInfo, rtCo
 #endif
 
 #if F_DESC("ProfilingEnableTask")
-rtError_t ProfilingEnableTaskInit(TaskInfo * const taskInfo, const uint64_t processId, const rtProfCfg_t *const profCfg)
+rtError_t ProfilingEnableTaskInit(TaskInfo* const taskInfo, const uint64_t processId, const rtProfCfg_t* const profCfg)
 {
-    ProfilingEnableTaskInfo *profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
+    ProfilingEnableTaskInfo* profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_PROFILING_ENABLE;
     taskInfo->typeName = "PROFILING_ENABLE";
 
-    for (uint8_t &item : profilingEnableTaskInfo->eventMuxConfig) {
+    for (uint8_t& item : profilingEnableTaskInfo->eventMuxConfig) {
         item = 0U;
     }
 
     profilingEnableTaskInfo->pid = processId;
-    const errno_t ret = memcpy_s(profilingEnableTaskInfo->eventMuxConfig, static_cast<size_t>(M_PROF_EVEID_NUM),
-                                 profCfg->eventId, static_cast<size_t>(M_PROF_EVEID_NUM));
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
+    const errno_t ret = memcpy_s(
+        profilingEnableTaskInfo->eventMuxConfig, static_cast<size_t>(M_PROF_EVEID_NUM), profCfg->eventId,
+        static_cast<size_t>(M_PROF_EVEID_NUM));
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
         "Failed to call memcpy_s to copy profCfg->eventId, src=%p, dest=%p, dest_max=%u, count=%u, retCode=%#x.",
         profCfg->eventId, profilingEnableTaskInfo->eventMuxConfig, M_PROF_EVEID_NUM, M_PROF_EVEID_NUM, ret);
     profilingEnableTaskInfo->startCycle = profCfg->profStartCyc;
@@ -130,18 +136,20 @@ rtError_t ProfilingEnableTaskInit(TaskInfo * const taskInfo, const uint64_t proc
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForProfilingEnableTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+void ToCommandBodyForProfilingEnableTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
-    ProfilingEnableTaskInfo *profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
+    ProfilingEnableTaskInfo* profilingEnableTaskInfo = &(taskInfo->u.profilingEnableTaskInfo);
 
     command->u.profilingEnable.pid = profilingEnableTaskInfo->pid;
-    const errno_t ret = memcpy_s(command->u.profilingEnable.eventMuxConfig,
-                                 static_cast<size_t>(M_PROF_EVEID_NUM),
-                                 profilingEnableTaskInfo->eventMuxConfig, static_cast<size_t>(M_PROF_EVEID_NUM));
-    COND_AND_MSG_INNER(ret != EOK,
+    const errno_t ret = memcpy_s(
+        command->u.profilingEnable.eventMuxConfig, static_cast<size_t>(M_PROF_EVEID_NUM),
+        profilingEnableTaskInfo->eventMuxConfig, static_cast<size_t>(M_PROF_EVEID_NUM));
+    COND_AND_MSG_INNER(
+        ret != EOK,
         "Failed to call memcpy_s to copy profilingEnableTaskInfo->eventMuxConfig, src=%p, dest=%p,"
-        " dest_max=%u, count=%u, retCode=%#x.", profilingEnableTaskInfo->eventMuxConfig,
-        command->u.profilingEnable.eventMuxConfig, M_PROF_EVEID_NUM, M_PROF_EVEID_NUM, ret);
+        " dest_max=%u, count=%u, retCode=%#x.",
+        profilingEnableTaskInfo->eventMuxConfig, command->u.profilingEnable.eventMuxConfig, M_PROF_EVEID_NUM,
+        M_PROF_EVEID_NUM, ret);
     command->u.profilingEnable.startCycle = profilingEnableTaskInfo->startCycle;
     command->u.profilingEnable.stopCycle = profilingEnableTaskInfo->stopCycle;
     command->u.profilingEnable.userDefinedEnable = profilingEnableTaskInfo->userDefinedEnable;
@@ -153,10 +161,9 @@ void ToCommandBodyForProfilingEnableTask(TaskInfo * const taskInfo, rtCommand_t 
 #endif
 
 #if F_DESC("ProfilingDisableTask")
-rtError_t ProfilingDisableTaskInit(TaskInfo * const taskInfo, const uint64_t processId,
-    const rtProfCfg_t *const profCfg)
+rtError_t ProfilingDisableTaskInit(TaskInfo* const taskInfo, const uint64_t processId, const rtProfCfg_t* const profCfg)
 {
-    ProfilingDisableTaskInfo *profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
+    ProfilingDisableTaskInfo* profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_PROFILING_DISABLE;
@@ -170,9 +177,9 @@ rtError_t ProfilingDisableTaskInit(TaskInfo * const taskInfo, const uint64_t pro
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForProfilingDisableTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+void ToCommandBodyForProfilingDisableTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
-    ProfilingDisableTaskInfo *profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
+    ProfilingDisableTaskInfo* profilingDisableTaskInfo = &(taskInfo->u.profilingDisableTaskInfo);
 
     command->u.profilingDisable.pid = profilingDisableTaskInfo->pid;
     command->u.profilingDisable.isTimelineProfDis = profilingDisableTaskInfo->isRtsProfEn;
@@ -183,9 +190,9 @@ void ToCommandBodyForProfilingDisableTask(TaskInfo * const taskInfo, rtCommand_t
 #endif
 
 #if F_DESC("OnlineProfEnableTask")
-rtError_t OnlineProfEnableTaskInit(TaskInfo * const taskInfo, const uint64_t onlineProfilingAddr)
+rtError_t OnlineProfEnableTaskInit(TaskInfo* const taskInfo, const uint64_t onlineProfilingAddr)
 {
-    OnlineProfEnableTaskInfo *onlineProfEnableTaskInfo = &(taskInfo->u.onlineProfEnableTaskInfo);
+    OnlineProfEnableTaskInfo* onlineProfEnableTaskInfo = &(taskInfo->u.onlineProfEnableTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_ONLINEPROF_START;
@@ -194,18 +201,19 @@ rtError_t OnlineProfEnableTaskInit(TaskInfo * const taskInfo, const uint64_t onl
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForOnlineProfEnableTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+void ToCommandBodyForOnlineProfEnableTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
-    OnlineProfEnableTaskInfo *onlineProfEnableTaskInfo = &(taskInfo->u.onlineProfEnableTaskInfo);
-    Stream * const stream = taskInfo->stream;
-    Driver * const driver = taskInfo->stream->Device_()->Driver_();
+    OnlineProfEnableTaskInfo* onlineProfEnableTaskInfo = &(taskInfo->u.onlineProfEnableTaskInfo);
+    Stream* const stream = taskInfo->stream;
+    Driver* const driver = taskInfo->stream->Device_()->Driver_();
 
     uint64_t onlineProfPhyAddr;
     RT_LOG(RT_LOG_DEBUG, "Online profiling address=%#" PRIx64, onlineProfEnableTaskInfo->onlineProfAddr);
-    const rtError_t error = driver->MemAddressTranslate(static_cast<int32_t>(stream->Device_()->Id_()),
-        onlineProfEnableTaskInfo->onlineProfAddr, &onlineProfPhyAddr);
+    const rtError_t error = driver->MemAddressTranslate(
+        static_cast<int32_t>(stream->Device_()->Id_()), onlineProfEnableTaskInfo->onlineProfAddr, &onlineProfPhyAddr);
     COND_RETURN_VOID(error != RT_ERROR_NONE, "translate virtual address to physic failed! retCode=%#x.", error);
-    RT_LOG(RT_LOG_INFO, "Online profiling address=%#" PRIx64 ", physical address=%#" PRIx64,
+    RT_LOG(
+        RT_LOG_INFO, "Online profiling address=%#" PRIx64 ", physical address=%#" PRIx64,
         onlineProfEnableTaskInfo->onlineProfAddr, onlineProfPhyAddr);
 
     command->u.onlineProfStartTask.onlineProfAddr = onlineProfPhyAddr;
@@ -214,9 +222,9 @@ void ToCommandBodyForOnlineProfEnableTask(TaskInfo * const taskInfo, rtCommand_t
 #endif
 
 #if F_DESC("OnlineProfDisableTask")
-rtError_t OnlineProfDisableTaskInit(TaskInfo * const taskInfo, const uint64_t onlineProfilingAddr)
+rtError_t OnlineProfDisableTaskInit(TaskInfo* const taskInfo, const uint64_t onlineProfilingAddr)
 {
-    OnlineProfDisableTaskInfo *onlineProfDisableTaskInfo = &(taskInfo->u.onlineProfDisableTaskInfo);
+    OnlineProfDisableTaskInfo* onlineProfDisableTaskInfo = &(taskInfo->u.onlineProfDisableTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_ONLINEPROF_STOP;
@@ -226,18 +234,18 @@ rtError_t OnlineProfDisableTaskInit(TaskInfo * const taskInfo, const uint64_t on
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForOnlineProfDisableTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+void ToCommandBodyForOnlineProfDisableTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
-    OnlineProfDisableTaskInfo *onlineProfDisableTaskInfo = &(taskInfo->u.onlineProfDisableTaskInfo);
+    OnlineProfDisableTaskInfo* onlineProfDisableTaskInfo = &(taskInfo->u.onlineProfDisableTaskInfo);
 
     command->u.onlineProfStopTask.onlineProfAddr = onlineProfDisableTaskInfo->onlineProfAddr;
 }
 #endif
 
 #if F_DESC("MdcProfTask")
-rtError_t AdcProfTaskInit(TaskInfo * const taskInfo, const uint64_t address, const uint32_t len)
+rtError_t AdcProfTaskInit(TaskInfo* const taskInfo, const uint64_t address, const uint32_t len)
 {
-    AdcProfTaskInfo *adcProfTaskInfo = &(taskInfo->u.adcProfTaskInfo);
+    AdcProfTaskInfo* adcProfTaskInfo = &(taskInfo->u.adcProfTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_ADCPROF;
@@ -248,13 +256,13 @@ rtError_t AdcProfTaskInit(TaskInfo * const taskInfo, const uint64_t address, con
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForAdcProfTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+void ToCommandBodyForAdcProfTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
     rtError_t error;
     uint64_t offset = 0UL;
-    AdcProfTaskInfo *adcProfTaskInfo = &(taskInfo->u.adcProfTaskInfo);
-    Stream * const stream = taskInfo->stream;
-    Driver * const driver = taskInfo->stream->Device_()->Driver_();
+    AdcProfTaskInfo* adcProfTaskInfo = &(taskInfo->u.adcProfTaskInfo);
+    Stream* const stream = taskInfo->stream;
+    Driver* const driver = taskInfo->stream->Device_()->Driver_();
     const uint64_t addr = adcProfTaskInfo->addr;
 
     error = driver->MemAddressTranslate(static_cast<int32_t>(stream->Device_()->Id_()), addr, &offset);
@@ -280,7 +288,7 @@ rtError_t ProfilerTraceTaskInit(TaskInfo* taskInfo, const uint64_t id, const boo
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForProfilerTraceTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForProfilerTraceTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     command->u.profilertraceTask.profilerTraceId = static_cast<uint64_t>(taskInfo->u.profilertraceTask.profilerTraceId);
     command->u.profilertraceTask.notify = static_cast<uint8_t>(taskInfo->u.profilertraceTask.notify);
@@ -288,9 +296,7 @@ void ToCommandBodyForProfilerTraceTask(TaskInfo* taskInfo, rtCommand_t *const co
 #endif
 
 #if F_DESC("ProfilerTraceExTask")
-rtError_t ProfilerTraceExTaskInit(TaskInfo* taskInfo, const uint64_t id,
-                                  const uint64_t mdlId,
-                                  const uint16_t tag)
+rtError_t ProfilerTraceExTaskInit(TaskInfo* taskInfo, const uint64_t id, const uint64_t mdlId, const uint16_t tag)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->type = TS_TASK_TYPE_PROFILER_TRACE_EX;
@@ -302,7 +308,7 @@ rtError_t ProfilerTraceExTaskInit(TaskInfo* taskInfo, const uint64_t id,
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForProfilerTraceExTask(TaskInfo* taskInfo, rtCommand_t *const command)
+void ToCommandBodyForProfilerTraceExTask(TaskInfo* taskInfo, rtCommand_t* const command)
 {
     command->u.profilerTraceExTask.profilerTraceId = taskInfo->u.profilerTraceExTask.profilerTraceId;
     command->u.profilerTraceExTask.modelId = taskInfo->u.profilerTraceExTask.modelId;
@@ -311,12 +317,13 @@ void ToCommandBodyForProfilerTraceExTask(TaskInfo* taskInfo, rtCommand_t *const 
 #endif
 
 #if F_DESC("PCTraceTask")
-rtError_t PCTraceTaskInit(TaskInfo * const taskInfo, const uint16_t enableTaskIndex,
-                          const uint16_t coreDims, std::shared_ptr<PCTrace> pcTracePtr)
+rtError_t PCTraceTaskInit(
+    TaskInfo* const taskInfo, const uint16_t enableTaskIndex, const uint16_t coreDims,
+    std::shared_ptr<PCTrace> pcTracePtr)
 {
     NULL_PTR_RETURN_MSG(pcTracePtr, RT_ERROR_PCTRACE_NULL);
 
-    PCTraceTaskInfo *pcTraceTaskInfo = &(taskInfo->u.pcTraceTaskInfo);
+    PCTraceTaskInfo* pcTraceTaskInfo = &(taskInfo->u.pcTraceTaskInfo);
     TaskCommonInfoInit(taskInfo);
 
     taskInfo->type = TS_TASK_TYPE_PCTRACE_ENABLE;
@@ -329,19 +336,20 @@ rtError_t PCTraceTaskInit(TaskInfo * const taskInfo, const uint16_t enableTaskIn
     return RT_ERROR_NONE;
 }
 
-void ToCommandBodyForPCTraceTask(TaskInfo * const taskInfo, rtCommand_t *const command)
+void ToCommandBodyForPCTraceTask(TaskInfo* const taskInfo, rtCommand_t* const command)
 {
-    PCTraceTaskInfo *pcTraceTaskInfo = &(taskInfo->u.pcTraceTaskInfo);
-    Stream * const stream = taskInfo->stream;
-    Driver * const driver = taskInfo->stream->Device_()->Driver_();
+    PCTraceTaskInfo* pcTraceTaskInfo = &(taskInfo->u.pcTraceTaskInfo);
+    Stream* const stream = taskInfo->stream;
+    Driver* const driver = taskInfo->stream->Device_()->Driver_();
 
     rtError_t error;
     uint64_t pctracePhyAddr;
     const int32_t devId = static_cast<int32_t>(stream->Device_()->Id_());
     error = driver->MemAddressTranslate(devId, pcTraceTaskInfo->pctraceAddr, &pctracePhyAddr);
     COND_RETURN_VOID(error != RT_ERROR_NONE, "translate virtual address to physic failed, retCode=%#x.", error);
-    RT_LOG(RT_LOG_INFO, "PC trace address=%#" PRIx64 ", physical address=%#" PRIx64,
-        pcTraceTaskInfo->pctraceAddr, pctracePhyAddr);
+    RT_LOG(
+        RT_LOG_INFO, "PC trace address=%#" PRIx64 ", physical address=%#" PRIx64, pcTraceTaskInfo->pctraceAddr,
+        pctracePhyAddr);
 
     command->u.pctraceTask.enableTaskID = pcTraceTaskInfo->enableTaskID;
     command->u.pctraceTask.contentAddr = pctracePhyAddr;
@@ -349,5 +357,5 @@ void ToCommandBodyForPCTraceTask(TaskInfo * const taskInfo, rtCommand_t *const c
     command->u.pctraceTask.virAddr = MAX_UINT32_NUM;
 }
 #endif
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

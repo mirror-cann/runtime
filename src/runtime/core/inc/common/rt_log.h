@@ -17,13 +17,12 @@
 #include "securec.h"
 namespace cce {
 namespace runtime {
-constexpr int32_t RT_MAX_LOG_BUF_SIZE = 896;  // Total length for slog is 1024 bytes, and head use 128 bytes.
-void RecordErrorLog(const char *file, const int32_t line, const char *fun, const char *fmt, ...);
-void RecordLog(int32_t level, const char *file, const int32_t line, const char *fun, const char *fmt, ...);
-void ReportErrMsg(std::string errorCode, const std::vector<char> &valueString);
+constexpr int32_t RT_MAX_LOG_BUF_SIZE = 896; // Total length for slog is 1024 bytes, and head use 128 bytes.
+void RecordErrorLog(const char* file, const int32_t line, const char* fun, const char* fmt, ...);
+void RecordLog(int32_t level, const char* file, const int32_t line, const char* fun, const char* fmt, ...);
+void ReportErrMsg(std::string errorCode, const std::vector<char>& valueString);
 // 具体含义见error_manager/error_code.json
-enum class ErrorCode
-{
+enum class ErrorCode {
     EE_NO_ERROR = 0,
     EE1001,
     EE1002,
@@ -51,13 +50,14 @@ enum class ErrorCode
     WE0001
 };
 std::vector<std::string> GetParamNames(ErrorCode code);
-void PrintErrMsgToLog(ErrorCode errCode, const char *file, const int32_t line, const char *func,
-    const std::vector<std::string> &values);
-void ProcessErrorCodeImpl(ErrorCode errCode, const char *file, const int32_t line, const char *func,
-    const std::vector<std::string> &values);
-inline std::string RtFmtMsg(const char *fmt, ...) {
+void PrintErrMsgToLog(
+    ErrorCode errCode, const char* file, const int32_t line, const char* func, const std::vector<std::string>& values);
+void ProcessErrorCodeImpl(
+    ErrorCode errCode, const char* file, const int32_t line, const char* func, const std::vector<std::string>& values);
+inline std::string RtFmtMsg(const char* fmt, ...)
+{
     if (fmt == nullptr) {
-          return "";
+        return "";
     }
     va_list msg;
     va_start(msg, fmt);
@@ -66,6 +66,6 @@ inline std::string RtFmtMsg(const char *fmt, ...) {
     va_end(msg);
     return (ret >= 0) ? buf : "";
 }
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

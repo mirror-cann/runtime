@@ -19,8 +19,9 @@ namespace runtime {
 
 bool BufferAllocator::openHugeBuff_ = false;
 
-BufferAllocator::BufferAllocator(const uint32_t size, const uint32_t initCnt, const uint32_t maxCnt,
-    const Strategy stg, const AllocFuncPtr allocFunctionPtr, const FreeFuncPtr freeFunctionPtr, void * const allocParam)
+BufferAllocator::BufferAllocator(
+    const uint32_t size, const uint32_t initCnt, const uint32_t maxCnt, const Strategy stg,
+    const AllocFuncPtr allocFunctionPtr, const FreeFuncPtr freeFunctionPtr, void* const allocParam)
     : NoCopy(),
       allocStrategy_(stg),
       itemSize_(size),
@@ -41,18 +42,19 @@ BufferAllocator::BufferAllocator(const uint32_t size, const uint32_t initCnt, co
     }
 
     poolSize_ = GetPoolIndex(maxCount_ - 1U) + 1U;
-    const uint32_t poolArraySize = (GetPoolIndex(maxCount_ - 1U) + 1U) * sizeof(uint8_t *);
-    pool_ = RtPtrToPtr<uint8_t **>(malloc(static_cast<size_t>(poolArraySize)));
+    const uint32_t poolArraySize = (GetPoolIndex(maxCount_ - 1U) + 1U) * sizeof(uint8_t*);
+    pool_ = RtPtrToPtr<uint8_t**>(malloc(static_cast<size_t>(poolArraySize)));
     if (pool_ == nullptr) {
         RT_LOG(RT_LOG_ERROR, "malloc array failed, size=%u(bytes)", poolArraySize);
         return;
     }
 
-    const errno_t rc = memset_s(static_cast<void *>(const_cast<uint8_t **>(pool_)), static_cast<size_t>(poolArraySize),
-        0, static_cast<size_t>(poolArraySize));
+    const errno_t rc = memset_s(
+        static_cast<void*>(const_cast<uint8_t**>(pool_)), static_cast<size_t>(poolArraySize), 0,
+        static_cast<size_t>(poolArraySize));
     if (rc != EOK) {
         RT_LOG(RT_LOG_ERROR, "memset array failed, size=%u(bytes), retCode=%d.", poolArraySize, rc);
-        free(static_cast<void *>(const_cast<uint8_t **>(pool_)));
+        free(static_cast<void*>(const_cast<uint8_t**>(pool_)));
         pool_ = nullptr;
         return;
     }
@@ -60,13 +62,13 @@ BufferAllocator::BufferAllocator(const uint32_t size, const uint32_t initCnt, co
     const auto ptr = allocFunc_(initCount_ * itemSize_, para_);
     if (ptr == nullptr) {
         RT_LOG(RT_LOG_ERROR, "allocFunc failed, init count=%u, item size=%u(bytes)", initCount_, itemSize_);
-        allocFuncState_ = false;  // allocFunc fail
-        free(static_cast<void *>(const_cast<uint8_t **>(pool_)));
+        allocFuncState_ = false; // allocFunc fail
+        free(static_cast<void*>(const_cast<uint8_t**>(pool_)));
         pool_ = nullptr;
         return;
     }
 
-    pool_[0] = static_cast<uint8_t *>(ptr);
+    pool_[0] = static_cast<uint8_t*>(ptr);
     RT_LOG(RT_LOG_INFO, "alloc success, Runtime_alloc_size %u(bytes)", poolArraySize);
 }
 
@@ -84,7 +86,7 @@ BufferAllocator::~BufferAllocator()
         }
     }
 
-    free(static_cast<void *>(const_cast<uint8_t **>(pool_)));
+    free(static_cast<void*>(const_cast<uint8_t**>(pool_)));
     pool_ = nullptr;
     DELETE_O(hugeBitmap_);
 }
@@ -131,16 +133,17 @@ int32_t BufferAllocator::AllocIdWithoutRetry(const bool isLogError)
         uint32_t newCount = GetIncreasedCount(curCount);
         newCount = (newCount > maxCount_) ? maxCount_ : newCount;
         if (CompareAndExchange(&currentCount_, curCount, newCount)) {
-            const size_t newPoolSize = (static_cast<size_t>(newCount) - static_cast<size_t>(curCount)) * static_cast<size_t>(itemSize_);
+            const size_t newPoolSize =
+                (static_cast<size_t>(newCount) - static_cast<size_t>(curCount)) * static_cast<size_t>(itemSize_);
             const uint32_t poolIdx = GetPoolIndex(newCount - 1U);
             const auto ptr = allocFunc_(newPoolSize, para_);
             if (ptr == nullptr) {
                 allocFuncState_ = false; // allocFunc fail
-                RtLogErrorLevelControl(isLogError, "Failed to call allocFunc, newPoolSize=%zu, poolIdx=%u",
-                    newPoolSize, poolIdx);
+                RtLogErrorLevelControl(
+                    isLogError, "Failed to call allocFunc, newPoolSize=%zu, poolIdx=%u", newPoolSize, poolIdx);
                 return -1;
             }
-            pool_[poolIdx] = RtPtrToPtr<uint8_t *>(ptr);
+            pool_[poolIdx] = RtPtrToPtr<uint8_t*>(ptr);
         }
         // Anyway, currentCount_ is increased
         id = AllocBitMap(currentCount_);
@@ -149,11 +152,10 @@ int32_t BufferAllocator::AllocIdWithoutRetry(const bool isLogError)
     return id;
 }
 
-void *BufferAllocator::GetItemById(const int32_t id, const bool isLogError) const
+void* BufferAllocator::GetItemById(const int32_t id, const bool isLogError) const
 {
     if ((pool_ == nullptr) || (id < 0)) {
-        RtLogErrorLevelControl(isLogError, "pool is nullptr or id less than zero, now id=%d, pool=%p.",
-            id, pool_);
+        RtLogErrorLevelControl(isLogError, "pool is nullptr or id less than zero, now id=%d, pool=%p.", id, pool_);
         return nullptr;
     }
 
@@ -168,13 +170,13 @@ void *BufferAllocator::GetItemById(const int32_t id, const bool isLogError) cons
             RtLogErrorLevelControl(isLogError, "pool failed, poolIdx=%u, id=%d", poolIdx, id);
             return nullptr;
         }
-        return static_cast<void *>(pool_[poolIdx] +
-            (static_cast<uint64_t>(static_cast<uint32_t>(id) - baseId) * itemSize_));
+        return static_cast<void*>(
+            pool_[poolIdx] + (static_cast<uint64_t>(static_cast<uint32_t>(id) - baseId) * itemSize_));
     }
     return nullptr;
 }
 
-int32_t BufferAllocator::GetIdByItem(const void * const item) const
+int32_t BufferAllocator::GetIdByItem(const void* const item) const
 {
     if (pool_ == nullptr) {
         RT_LOG(RT_LOG_ERROR, "pool array is null");
@@ -186,8 +188,8 @@ int32_t BufferAllocator::GetIdByItem(const void * const item) const
         const uint32_t poolCount = AccumulatePoolCount(i + 1U) - baseId;
         if ((pool_[i] <= item) && (item < (pool_[i] + (static_cast<uint64_t>(poolCount) * itemSize_)))) {
             const uint64_t offset = RtPtrToValue(item) - RtPtrToValue(pool_[i]);
-            const int32_t id = (static_cast<int32_t>(offset) / static_cast<int32_t>(itemSize_)) +
-                static_cast<int32_t>(baseId);
+            const int32_t id =
+                (static_cast<int32_t>(offset) / static_cast<int32_t>(itemSize_)) + static_cast<int32_t>(baseId);
             if (((offset % itemSize_) == 0ULL) && (BitmapIsOccupied(id))) {
                 return id;
             }
@@ -196,7 +198,7 @@ int32_t BufferAllocator::GetIdByItem(const void * const item) const
     return -1;
 }
 
-rtError_t BufferAllocator::MemsetBuffers(Device *device, uint32_t value)
+rtError_t BufferAllocator::MemsetBuffers(Device* device, uint32_t value)
 {
     NULL_PTR_RETURN(device, RT_ERROR_INVALID_VALUE);
     const uint64_t memSize = initCount_ * itemSize_;
@@ -204,12 +206,13 @@ rtError_t BufferAllocator::MemsetBuffers(Device *device, uint32_t value)
     for (uint32_t bufIdx = 0U; bufIdx < poolSize_; ++bufIdx) {
         if (pool_[bufIdx] != nullptr) {
             const rtError_t error = device->Driver_()->MemSetSync(pool_[bufIdx], memSize, value, memSize);
-            ERROR_RETURN(error, "Failed to call MemSetSync, destMax=%" PRIu64 ", value=%u, count=%" PRIu64,
-                memSize, value, memSize);
+            ERROR_RETURN(
+                error, "Failed to call MemSetSync, destMax=%" PRIu64 ", value=%u, count=%" PRIu64, memSize, value,
+                memSize);
         }
     }
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -16,7 +16,7 @@
 #include "device.hpp"
 #include "runtime_handle_guard.h"
 
-#define RT_NOTIFY_GET_EVENT_ID(key) ((key) & 0x3FFU)
+#define RT_NOTIFY_GET_EVENT_ID(key) ((key)&0x3FFU)
 #define RT_NOTIFY_FLAG_SHR_ID_SHADOW (0x1U << 6)
 #define RT_NOTIFY_INVALID_SRV_ID (0xFFFFU)
 #define RT_NOTIFY_MAX_SRV_ID (47U)
@@ -31,136 +31,66 @@ class Notify : public NoCopy {
 public:
     Notify(const uint32_t devId, const uint32_t taskSchId);
     ~Notify() noexcept override;
-    rtInnerObject *GetInnerHandle()
-    {
-        return &handle_;
-    }
-    const rtInnerObject *GetInnerHandle() const
-    {
-        return &handle_;
-    }
-    rtError_t GetNotifyAddress(Stream * const streamIn, uint64_t &addr);
-    rtError_t Record(Stream * const streamIn);
+    rtInnerObject* GetInnerHandle() { return &handle_; }
+    const rtInnerObject* GetInnerHandle() const { return &handle_; }
+    rtError_t GetNotifyAddress(Stream* const streamIn, uint64_t& addr);
+    rtError_t Record(Stream* const streamIn);
     rtError_t Setup();
     rtError_t SetupWithoutAllocNtyId();
     rtError_t ReAllocId() const;
-    rtError_t Wait(Stream * const streamIn, const uint32_t timeOut, const bool isEndGraphNotify = false,
-        Model* const captureModel = nullptr, std::vector<EventResource> *externalWaitRetainedResources = nullptr);
-    rtError_t Reset(Stream * const streamIn) const;
-    rtError_t CreateIpcNotify(char_t * const ipcNotifyName, const uint32_t len);
-    rtError_t OpenIpcNotify(const char_t * const ipcNotifyName, uint32_t flag);
-    rtError_t SetName(const char_t * const nameIn);
-    rtError_t GetAddrOffset(uint64_t * const devAddrOffset);
+    rtError_t Wait(
+        Stream* const streamIn, const uint32_t timeOut, const bool isEndGraphNotify = false,
+        Model* const captureModel = nullptr, std::vector<EventResource>* externalWaitRetainedResources = nullptr);
+    rtError_t Reset(Stream* const streamIn) const;
+    rtError_t CreateIpcNotify(char_t* const ipcNotifyName, const uint32_t len);
+    rtError_t OpenIpcNotify(const char_t* const ipcNotifyName, uint32_t flag);
+    rtError_t SetName(const char_t* const nameIn);
+    rtError_t GetAddrOffset(uint64_t* const devAddrOffset);
     rtError_t CheckIpcNotifyDevId();
-    void SetNotifyInfo(const uint64_t vaAddr, const char_t * const ipcNotifyName, const uint32_t curNotifyId,
-        const uint32_t curTsId);
-    uint32_t GetPhyDevId() const
-    {
-        return phyId_;
-    }
-    uint32_t GetTsId() const
-    {
-        return tsId_;
-    }
-    uint32_t GetNotifyId() const
-    {
-        return notifyid_;
-    }
-    uint32_t GetDieId() const
-    {
-        return dieId_;
-    }
+    void SetNotifyInfo(
+        const uint64_t vaAddr, const char_t* const ipcNotifyName, const uint32_t curNotifyId, const uint32_t curTsId);
+    uint32_t GetPhyDevId() const { return phyId_; }
+    uint32_t GetTsId() const { return tsId_; }
+    uint32_t GetNotifyId() const { return notifyid_; }
+    uint32_t GetDieId() const { return dieId_; }
 
-    uint32_t GetAdcDieId() const
-    {
-        return adcDieId_;
-    }
+    uint32_t GetAdcDieId() const { return adcDieId_; }
 
-    void SetEndGraphModel(Model * const model)
-    {
-        endGraphModel_ = model;
-    }
-    Model *GetEndGraphModel() const
-    {
-        return endGraphModel_;
-    }
+    void SetEndGraphModel(Model* const model) { endGraphModel_ = model; }
+    Model* GetEndGraphModel() const { return endGraphModel_; }
 
-    void SetNotifyFlag(uint32_t flag)
-    {
-        notifyFlag_ = flag;
-    }
+    void SetNotifyFlag(uint32_t flag) { notifyFlag_ = flag; }
 
-    uint32_t GetServiceId() const
-    {
-        return srvId_;
-    }
+    uint32_t GetServiceId() const { return srvId_; }
 
-    uint32_t GetChipId() const
-    {
-        return chipId_;
-    }
-    uint32_t GetDeviceId() const
-    {
-        return deviceId_;
-    }
+    uint32_t GetChipId() const { return chipId_; }
+    uint32_t GetDeviceId() const { return deviceId_; }
 
-    bool IsPod() const
-    {
-        return isPod_;
-    }
-    uint32_t GetLastLocalId() const
-    {
-        return lastLocalId_;
-    }
+    bool IsPod() const { return isPod_; }
+    uint32_t GetLastLocalId() const { return lastLocalId_; }
 
-    bool GetLastIsPcie() const
-    {
-        return lastIsPcie_;
-    }
+    bool GetLastIsPcie() const { return lastIsPcie_; }
 
-    uint64_t GetLastBaseAddr() const
-    {
-        return lastBaseAddr_;
-    }
-    void SetNotifylastBaseAddr(uint64_t lastBaseAddr)
-    {
-        lastBaseAddr_ = lastBaseAddr;
-    }
+    uint64_t GetLastBaseAddr() const { return lastBaseAddr_; }
+    void SetNotifylastBaseAddr(uint64_t lastBaseAddr) { lastBaseAddr_ = lastBaseAddr; }
 
-    void SetNotifylastLocalId(uint32_t lastLocalId)
-    {
-        lastLocalId_ = lastLocalId;
-    }
+    void SetNotifylastLocalId(uint32_t lastLocalId) { lastLocalId_ = lastLocalId; }
 
-    void SetNotifylastIsPcie(bool lastIsPcie)
-    {
-        lastIsPcie_ = lastIsPcie;
-    }
+    void SetNotifylastIsPcie(bool lastIsPcie) { lastIsPcie_ = lastIsPcie; }
 
-    const std::string &GetIpcName() const
-    {
-        return ipcName_;
-    }
+    const std::string& GetIpcName() const { return ipcName_; }
 
-    bool IsIpcNotify() const
-    {
-        return isIpcNotify_;
-    }
+    bool IsIpcNotify() const { return isIpcNotify_; }
 
-    bool IsIpcCreator() const
-    {
-        return isIpcCreator_;
-    }
+    bool IsIpcCreator() const { return isIpcCreator_; }
 
-    uint64_t GetNotifyVaAddr() const
-    {
-        return notifyVa_;
-    }
+    uint64_t GetNotifyVaAddr() const { return notifyVa_; }
     rtError_t AllocId();
     rtError_t FreeId();
+
 private:
-    rtInnerObject handle_ {};
-    rtError_t RevisedWait(Stream * const streamIn, const uint32_t timeout = 0);
+    rtInnerObject handle_{};
+    rtError_t RevisedWait(Stream* const streamIn, const uint32_t timeout = 0);
     void ReleaseDriverResourceOnDestroy();
     uint32_t notifyid_;
     uint32_t phyId_;
@@ -168,12 +98,12 @@ private:
     bool isIpcNotify_;
     bool isIpcCreator_;
     std::string ipcName_;
-    Driver *driver_;
+    Driver* driver_;
     uint32_t tsId_;
     uint32_t deviceId_;
     uint32_t dieId_;
-    uint32_t adcDieId_;  // The adcDieId_ variable indicates the dieid in the ADC form.
-    Model *endGraphModel_;
+    uint32_t adcDieId_; // The adcDieId_ variable indicates the dieid in the ADC form.
+    Model* endGraphModel_;
     uint32_t lastLocalId_;
     uint64_t lastBaseAddr_;
     bool lastIsPcie_;
@@ -182,10 +112,10 @@ private:
     uint32_t srvId_;
     uint32_t chipId_;
     bool isPod_;
-    Device *dev_{nullptr};
+    Device* dev_{nullptr};
     uint64_t notifyVa_{0ULL};
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_NOTIFY_HPP__
+#endif // __CCE_RUNTIME_NOTIFY_HPP__

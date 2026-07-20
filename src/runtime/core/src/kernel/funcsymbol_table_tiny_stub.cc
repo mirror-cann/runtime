@@ -12,8 +12,7 @@
 
 namespace cce {
 namespace runtime {
-rtError_t FuncSymbolTable::Register(void *binHandle, const void *symbol, 
-                                    const char_t * const kernelName)
+rtError_t FuncSymbolTable::Register(void* binHandle, const void* symbol, const char_t* const kernelName)
 {
     UNUSED(binHandle);
     UNUSED(symbol);
@@ -21,15 +20,12 @@ rtError_t FuncSymbolTable::Register(void *binHandle, const void *symbol,
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-Kernel *FuncSymbolTable::Lookup(const void *symbol)
+Kernel* FuncSymbolTable::Lookup(const void* symbol)
 {
     UNUSED(symbol);
     return nullptr;
 }
-FuncSymbolTable::~FuncSymbolTable()
-{
-    return;
-}
+FuncSymbolTable::~FuncSymbolTable() { return; }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

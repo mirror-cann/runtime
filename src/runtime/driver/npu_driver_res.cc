@@ -20,67 +20,74 @@ namespace runtime {
 constexpr uint32_t GET_SQ_HEAD_MAX_RETRY_TIMES = 100U;
 constexpr uint32_t GET_SQ_HEAD_QUERY_FAIL_STAT_TIMES = 1000U;
 
-static rtError_t GetFaultEvents(const uint32_t deviceId, const rtDmsEventFilter * const filter,
-                                rtDmsFaultEvent *dmsEvent, uint32_t len, uint32_t *eventCount)
+static rtError_t GetFaultEvents(
+    const uint32_t deviceId, const rtDmsEventFilter* const filter, rtDmsFaultEvent* dmsEvent, uint32_t len,
+    uint32_t* eventCount)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&halGetFaultEvent == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halGetFaultEvent does not exist");
+    COND_RETURN_WARN(
+        &halGetFaultEvent == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halGetFaultEvent does not exist");
     struct halEventFilter dmsFilter = {};
     if (filter != nullptr) {
         dmsFilter.filter_flag = static_cast<uint64_t>(RT_DSM_EVENT_FILTER_FLAG_PID);
         dmsFilter.event_id = filter->eventId;
         dmsFilter.severity = filter->severity;
         dmsFilter.node_type = filter->nodeType;
-        RT_LOG(RT_LOG_INFO, "get fault event, drv devId=%u, eventId=%#x, filterFlag=%llu, outputLen=%u.",
-            deviceId, dmsFilter.event_id, dmsFilter.filter_flag, len);
+        RT_LOG(
+            RT_LOG_INFO, "get fault event, drv devId=%u, eventId=%#x, filterFlag=%llu, outputLen=%u.", deviceId,
+            dmsFilter.event_id, dmsFilter.filter_flag, len);
     } else {
         dmsFilter.filter_flag = 0ULL;
     }
-    drvRet = halGetFaultEvent(deviceId, &dmsFilter, RtPtrToPtr<halFaultEventInfo *>(dmsEvent), len, eventCount);
+    drvRet = halGetFaultEvent(deviceId, &dmsFilter, RtPtrToPtr<halFaultEventInfo*>(dmsEvent), len, eventCount);
 
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halGetFaultEvent does not support.");
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halGetFaultEvent failed, drvRetCode=%d, drvDevId=%u, len=%u, flag=%llu.",
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halGetFaultEvent does not support.");
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api halGetFaultEvent failed, drvRetCode=%d, drvDevId=%u, len=%u, flag=%llu.",
         static_cast<int32_t>(drvRet), deviceId, len, dmsFilter.filter_flag);
 
     return RT_ERROR_NONE;
 }
 
-static rtError_t GetNotifyEvents(const uint32_t deviceId, const rtDmsEventFilter * const filter,
-                                rtDmsFaultEvent *dmsEvent, uint32_t len, uint32_t *eventCount)
+static rtError_t GetNotifyEvents(
+    const uint32_t deviceId, const rtDmsEventFilter* const filter, rtDmsFaultEvent* dmsEvent, uint32_t len,
+    uint32_t* eventCount)
 {
     UNUSED(filter);
     drvError_t drvRet = DRV_ERROR_NONE;
     struct halEventFilter dmsFilter = {};
     dmsFilter.filter_flag = 0ULL;
-    drvRet = halGetNotifyEvent(deviceId, &dmsFilter, RtPtrToPtr<halFaultEventInfo *>(dmsEvent), len, eventCount);
+    drvRet = halGetNotifyEvent(deviceId, &dmsFilter, RtPtrToPtr<halFaultEventInfo*>(dmsEvent), len, eventCount);
 
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halGetNotifyEvent does not support.");
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halGetNotifyEvent failed, drvRetCode=%d, drvDevId=%u, len=%u, flag=%llu.",
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halGetNotifyEvent does not support.");
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api halGetNotifyEvent failed, drvRetCode=%d, drvDevId=%u, len=%u, flag=%llu.",
         static_cast<int32_t>(drvRet), deviceId, len, dmsFilter.filter_flag);
 
     return RT_ERROR_NONE;
 }
 
-static rtError_t GetEventsWithTimeCheck(const uint32_t deviceId, const rtDmsEventFilter * const filter,
-                                        rtDmsFaultEvent *dmsEvent, uint32_t *eventCount, bool needLog)
+static rtError_t GetEventsWithTimeCheck(
+    const uint32_t deviceId, const rtDmsEventFilter* const filter, rtDmsFaultEvent* dmsEvent, uint32_t* eventCount,
+    bool needLog)
 {
     rtError_t error = RT_ERROR_NONE;
     uint32_t faultEvtCnt = 0U;
     uint32_t notifyEvtCnt = 0U;
     error = GetFaultEvents(deviceId, filter, dmsEvent, RAS_GET_MAX_NUM_SI, &faultEvtCnt);
-    COND_RETURN_ERROR((faultEvtCnt > RAS_GET_MAX_NUM_SI), (error == RT_ERROR_NONE) ? RT_ERROR_DRV_ERR : error,
-        "Get fault event error, device_id=%u, eventCount=%u, maxFaultNum=%u, error=%#x.",
-        deviceId, faultEvtCnt, RAS_GET_MAX_NUM_SI, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR(
+        (faultEvtCnt > RAS_GET_MAX_NUM_SI), (error == RT_ERROR_NONE) ? RT_ERROR_DRV_ERR : error,
+        "Get fault event error, device_id=%u, eventCount=%u, maxFaultNum=%u, error=%#x.", deviceId, faultEvtCnt,
+        RAS_GET_MAX_NUM_SI, static_cast<uint32_t>(error));
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
     error = GetNotifyEvents(deviceId, filter, dmsEvent + faultEvtCnt, RAS_GET_MAX_NUM_SI, &notifyEvtCnt);
     COND_RETURN_WITH_NOLOG(error != RT_ERROR_NONE, error);
     *eventCount = faultEvtCnt + notifyEvtCnt;
     int64_t devBaseTime = 0;
-    Device * const dev = Runtime::Instance()->GetDevice(deviceId, 0U, false);
+    Device* const dev = Runtime::Instance()->GetDevice(deviceId, 0U, false);
     if (dev != nullptr) {
         devBaseTime = dev->GetBaseTime();
     }
@@ -88,7 +95,8 @@ static rtError_t GetEventsWithTimeCheck(const uint32_t deviceId, const rtDmsEven
     for (uint32_t faultIndex = 0U; faultIndex < *eventCount; ++faultIndex) {
         if (dmsEvent[faultIndex].alarmRaisedTime < static_cast<uint64_t>(devBaseTime)) {
             if (needLog) {
-                RT_LOG(RT_LOG_DEBUG, "skip historical event_id=0x%x, event_time=%llu, base_time=%lld, device_id=%u.",
+                RT_LOG(
+                    RT_LOG_DEBUG, "skip historical event_id=0x%x, event_time=%llu, base_time=%lld, device_id=%u.",
                     dmsEvent[faultIndex].eventId, dmsEvent[faultIndex].alarmRaisedTime, devBaseTime, deviceId);
             }
             dmsEvent[faultIndex].eventId = 0U;
@@ -97,14 +105,15 @@ static rtError_t GetEventsWithTimeCheck(const uint32_t deviceId, const rtDmsEven
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetFaultEvent(const int32_t deviceId, const rtDmsEventFilter * const filter,
-                                   rtDmsFaultEvent *dmsEvent, uint32_t len, uint32_t *eventCount)
+rtError_t NpuDriver::GetFaultEvent(
+    const int32_t deviceId, const rtDmsEventFilter* const filter, rtDmsFaultEvent* dmsEvent, uint32_t len,
+    uint32_t* eventCount)
 {
     return GetFaultEvents(static_cast<uint32_t>(deviceId), filter, dmsEvent, len, eventCount);
 }
 
-rtError_t NpuDriver::GetAllFaultEvent(const uint32_t deviceId, rtDmsFaultEvent * const dmsEvent, uint32_t *eventCount,
-                                      bool needLog)
+rtError_t NpuDriver::GetAllFaultEvent(
+    const uint32_t deviceId, rtDmsFaultEvent* const dmsEvent, uint32_t* eventCount, bool needLog)
 {
     if (&halGetNotifyEvent != nullptr) {
         return GetEventsWithTimeCheck(deviceId, nullptr, dmsEvent, eventCount, needLog);
@@ -113,141 +122,169 @@ rtError_t NpuDriver::GetAllFaultEvent(const uint32_t deviceId, rtDmsFaultEvent *
 }
 
 rtError_t NpuDriver::ReadFaultEvent(
-    const int32_t deviceId, uint32_t timeout, const rtDmsEventFilter * const filter, rtDmsFaultEvent *dmsEvent)
+    const int32_t deviceId, uint32_t timeout, const rtDmsEventFilter* const filter, rtDmsFaultEvent* dmsEvent)
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(filter, RT_ERROR_INVALID_VALUE, "Reading an error event");
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&halReadFaultEvent == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halReadFaultEvent does not exist");
+    COND_RETURN_WARN(
+        &halReadFaultEvent == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halReadFaultEvent does not exist");
     struct halEventFilter dmsFilter = {};
     dmsFilter.filter_flag = filter->filterFlag;
     dmsFilter.event_id = filter->eventId;
     dmsFilter.severity = filter->severity;
     dmsFilter.node_type = filter->nodeType;
-    drvRet = halReadFaultEvent(deviceId, static_cast<int>(timeout), &dmsFilter,
-        RtPtrToPtr<halFaultEventInfo *>(dmsEvent));
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halReadFaultEvent does not support.");
-    COND_RETURN_WARN(drvRet == DRV_ERROR_RESOURCE_OCCUPIED, RT_ERROR_DRV_NO_RESOURCES,
+    drvRet =
+        halReadFaultEvent(deviceId, static_cast<int>(timeout), &dmsFilter, RtPtrToPtr<halFaultEventInfo*>(dmsEvent));
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halReadFaultEvent does not support.");
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_RESOURCE_OCCUPIED, RT_ERROR_DRV_NO_RESOURCES,
         "[drv api] halReadFaultEvent, drv no resource.");
 
     if (drvRet != DRV_ERROR_NONE && drvRet != DRV_ERROR_NO_EVENT) {
-        DRV_ERROR_PROCESS(drvRet,
-            "Call driver api halReadFaultEvent failed, drvRetCode=%d, drvDevId=%d, flag=%llu, eventId=%u, timeout=%ums.",
+        DRV_ERROR_PROCESS(
+            drvRet,
+            "Call driver api halReadFaultEvent failed, drvRetCode=%d, drvDevId=%d, flag=%llu, eventId=%u, "
+            "timeout=%ums.",
             static_cast<int32_t>(drvRet), deviceId, dmsFilter.filter_flag, dmsFilter.event_id, timeout);
     }
 
     return RT_GET_DRV_ERRCODE(drvRet);
 }
 
-rtError_t NpuDriver::GetRasSyscnt(const uint32_t deviceId, RtHbmRasInfo *hbmRasInfo)
+rtError_t NpuDriver::GetRasSyscnt(const uint32_t deviceId, RtHbmRasInfo* hbmRasInfo)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&halGetDeviceInfoByBuff == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        &halGetDeviceInfoByBuff == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halGetDeviceInfoByBuff does not exist");
     constexpr int32_t infoType = RT_INFO_TYPE_SYS_COUNT;
     constexpr int32_t moduleType = RT_MODULE_TYPE_MEMORY;
     int32_t size = sizeof(RtHbmRasInfo);
-    RT_LOG(RT_LOG_INFO, "get hbm ras syscnt begin, device_id=%u, moduleType=%d, infoType=%d",
-        deviceId, moduleType, infoType);
-    drvRet = halGetDeviceInfoByBuff(deviceId, moduleType, infoType, static_cast<void *>(hbmRasInfo), &size);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
+    RT_LOG(
+        RT_LOG_INFO, "get hbm ras syscnt begin, device_id=%u, moduleType=%d, infoType=%d", deviceId, moduleType,
+        infoType);
+    drvRet = halGetDeviceInfoByBuff(deviceId, moduleType, infoType, static_cast<void*>(hbmRasInfo), &size);
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halGetDeviceInfoByBuff does not support.");
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halGetDeviceInfoByBuff failed, drvRetCode=%d, drvDevId=%u,"
-        "moduleType=%d, infoType=%d.", static_cast<int32_t>(drvRet), deviceId, moduleType, infoType);
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet,
+        "Call driver api halGetDeviceInfoByBuff failed, drvRetCode=%d, drvDevId=%u,"
+        "moduleType=%d, infoType=%d.",
+        static_cast<int32_t>(drvRet), deviceId, moduleType, infoType);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceInfo)
+rtError_t NpuDriver::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo* memUceInfo)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&halGetDeviceInfoByBuff == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        &halGetDeviceInfoByBuff == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halGetDeviceInfoByBuff does not exist");
     constexpr int32_t infoType = RT_INFO_TYPE_VA;
     constexpr int32_t moduleType = RT_MODULE_TYPE_MEMORY;
     int32_t size = sizeof(rtMemUceInfo);
-    RT_LOG(RT_LOG_INFO, "get mem uce info begin, device_id=%u, moduleType=%d, infoType=%d",
-        deviceId, moduleType, infoType);
-    drvRet = halGetDeviceInfoByBuff(deviceId, moduleType, infoType, static_cast<void *>(memUceInfo), &size);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
+    RT_LOG(
+        RT_LOG_INFO, "get mem uce info begin, device_id=%u, moduleType=%d, infoType=%d", deviceId, moduleType,
+        infoType);
+    drvRet = halGetDeviceInfoByBuff(deviceId, moduleType, infoType, static_cast<void*>(memUceInfo), &size);
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halGetDeviceInfoByBuff does not support.");
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halGetDeviceInfoByBuff failed, drvRetCode=%d, drvDevId=%u,"
-            "moduleType=%d, infoType=%d.", static_cast<int32_t>(drvRet), deviceId, moduleType, infoType);
+        DRV_ERROR_PROCESS(
+            drvRet,
+            "Call driver api halGetDeviceInfoByBuff failed, drvRetCode=%d, drvDevId=%u,"
+            "moduleType=%d, infoType=%d.",
+            static_cast<int32_t>(drvRet), deviceId, moduleType, infoType);
     }
 
     return RT_GET_DRV_ERRCODE(drvRet);
 }
 
-rtError_t NpuDriver::GetDeviceInfoByBuff(const uint32_t deviceId, const int32_t moduleType, const int32_t infoType,
-    void * const buf, int32_t * const size)
+rtError_t NpuDriver::GetDeviceInfoByBuff(
+    const uint32_t deviceId, const int32_t moduleType, const int32_t infoType, void* const buf, int32_t* const size)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&halGetDeviceInfoByBuff == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        &halGetDeviceInfoByBuff == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halGetDeviceInfoByBuff does not exist");
     drvRet = halGetDeviceInfoByBuff(deviceId, moduleType, infoType, buf, size);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halGetDeviceInfoByBuff does not support.");
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halGetDeviceInfoByBuff failed, drvRetCode=%d, drvDevId=%u,"
-            "moduleType=%d, infoType=%d.", static_cast<int32_t>(drvRet), deviceId, moduleType, infoType);
+        DRV_ERROR_PROCESS(
+            drvRet,
+            "Call driver api halGetDeviceInfoByBuff failed, drvRetCode=%d, drvDevId=%u,"
+            "moduleType=%d, infoType=%d.",
+            static_cast<int32_t>(drvRet), deviceId, moduleType, infoType);
     }
 
     return RT_GET_DRV_ERRCODE(drvRet);
 }
 
-rtError_t NpuDriver::SetDeviceInfoByBuff(const uint32_t deviceId, const int32_t moduleType, const int32_t infoType,
-    void * const buf, const int32_t size)
+rtError_t NpuDriver::SetDeviceInfoByBuff(
+    const uint32_t deviceId, const int32_t moduleType, const int32_t infoType, void* const buf, const int32_t size)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&halSetDeviceInfoByBuff == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        &halSetDeviceInfoByBuff == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halGetDeviceInfoByBuff does not exist");
     drvRet = halSetDeviceInfoByBuff(deviceId, moduleType, infoType, buf, size);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] halSetDeviceInfoByBuff does not support.");
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halSetDeviceInfoByBuff failed, drvRetCode=%d, drvDevId=%u,"
-            "moduleType=%d, infoType=%d.", static_cast<int32_t>(drvRet), deviceId, moduleType, infoType);
+        DRV_ERROR_PROCESS(
+            drvRet,
+            "Call driver api halSetDeviceInfoByBuff failed, drvRetCode=%d, drvDevId=%u,"
+            "moduleType=%d, infoType=%d.",
+            static_cast<int32_t>(drvRet), deviceId, moduleType, infoType);
     }
 
     return RT_GET_DRV_ERRCODE(drvRet);
 }
 
-rtError_t NpuDriver::L3PortRepair(const uint32_t deviceId, halRepairFaultInfo * const repairInfo)
+rtError_t NpuDriver::L3PortRepair(const uint32_t deviceId, halRepairFaultInfo* const repairInfo)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&halRepairFault == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halRepairFault does not exist");
+    COND_RETURN_WARN(
+        &halRepairFault == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halRepairFault does not exist");
     drvRet = halRepairFault(deviceId, repairInfo);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halRepairFault does not support.");
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halRepairFault does not support.");
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "[drv api] halRepairFault failed. drvRetCode=%d, device_id=%u.",
-            static_cast<int32_t>(drvRet), deviceId);
+        DRV_ERROR_PROCESS(
+            drvRet, "[drv api] halRepairFault failed. drvRetCode=%d, device_id=%u.", static_cast<int32_t>(drvRet),
+            deviceId);
     }
     return RT_GET_DRV_ERRCODE(drvRet);
 }
 
 rtError_t NpuDriver::GetDeviceAicpuStat(const uint32_t deviceId)
 {
-    COND_RETURN_INFO(halCheckProcessStatus == nullptr, RT_ERROR_NONE, "[drv api] halCheckProcessStatus does not exist.");
+    COND_RETURN_INFO(
+        halCheckProcessStatus == nullptr, RT_ERROR_NONE, "[drv api] halCheckProcessStatus does not exist.");
     bool isMatched = false;
     static bool firstLogFlag = true;
     const drvError_t drvRet = halCheckProcessStatus(deviceId, PROCESS_CP1, STATUS_NOMEM, &isMatched);
     if (unlikely(drvRet != DRV_ERROR_NONE)) {
         if (firstLogFlag) {
             firstLogFlag = false;
-            DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halCheckProcessStatus failed, drvRetCode=%d, drvDevId=%u.",
-                                     static_cast<int32_t>(drvRet), deviceId);
+            DRV_PROCESS_ERROR_RETURN(
+                drvRet, "Call driver api halCheckProcessStatus failed, drvRetCode=%d, drvDevId=%u.",
+                static_cast<int32_t>(drvRet), deviceId);
         } else {
-            return RT_GET_DRV_ERRCODE(drvRet); 
+            return RT_GET_DRV_ERRCODE(drvRet);
         }
     }
     if (isMatched) {
@@ -257,22 +294,21 @@ rtError_t NpuDriver::GetDeviceAicpuStat(const uint32_t deviceId)
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetDeviceStatus(uint32_t devId, drvStatus_t * const status)
+rtError_t NpuDriver::GetDeviceStatus(uint32_t devId, drvStatus_t* const status)
 {
-    COND_RETURN_WARN(&drvDeviceStatus == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] drvDeviceStatus does not exist");
+    COND_RETURN_WARN(&drvDeviceStatus == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] drvDeviceStatus does not exist");
     const drvError_t drvRet = drvDeviceStatus(devId, status);
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api drvDeviceStatus failed, drvRetCode=%d, drvDevId=%u.",
-        static_cast<int32_t>(drvRet), devId);
-    COND_PROC((drvStatus_ != (*status)),
-        RT_LOG(RT_LOG_EVENT, "GetDeviceStatus status=%d.", *status);
-        drvStatus_ = *status);
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api drvDeviceStatus failed, drvRetCode=%d, drvDevId=%u.", static_cast<int32_t>(drvRet),
+        devId);
+    COND_PROC((drvStatus_ != (*status)), RT_LOG(RT_LOG_EVENT, "GetDeviceStatus status=%d.", *status);
+              drvStatus_ = *status);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::TaskKill(const uint32_t deviceId, const uint32_t tsId,
-		              const uint32_t sqId, const uint32_t operationType)
+rtError_t NpuDriver::TaskKill(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, const uint32_t operationType)
 {
     ts_ctrl_msg_body_t killIn = {};
     ts_ctrl_msg_body_t killAck = {};
@@ -289,19 +325,20 @@ rtError_t NpuDriver::TaskKill(const uint32_t deviceId, const uint32_t tsId,
     para.msg_len = sizeof(ts_ctrl_msg_body_t);
     para.msg = static_cast<void*>(&killIn);
 
-    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halTsdrvCtl does not exist.");
+    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halTsdrvCtl does not exist.");
     RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, sqId=%u.", deviceId, tsId, sqId);
-    const drvError_t drvRet = halTsdrvCtl(deviceId, TSDRV_CTL_CMD_CTRL_MSG,
-        static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg), static_cast<void*>(&killAck), &ackCount);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+    const drvError_t drvRet = halTsdrvCtl(
+        deviceId, TSDRV_CTL_CMD_CTRL_MSG, static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg),
+        static_cast<void*>(&killAck), &ackCount);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
         "device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.", deviceId, tsId, sqId, static_cast<int32_t>(drvRet));
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::TaskAbortByType(const uint32_t deviceId, const uint32_t tsId, const uint32_t opType,
-    const uint32_t targetId, uint32_t &result)
+rtError_t NpuDriver::TaskAbortByType(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t opType, const uint32_t targetId, uint32_t& result)
 {
     ts_ctrl_msg_body_t killIn = {};
     ts_ctrl_msg_body_t killAck = {};
@@ -321,12 +358,13 @@ rtError_t NpuDriver::TaskAbortByType(const uint32_t deviceId, const uint32_t tsI
     para.msg_len = sizeof(ts_ctrl_msg_body_t);
     para.msg = static_cast<void*>(&killIn);
 
-    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halTsdrvCtl does not exist.");
+    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halTsdrvCtl does not exist.");
     RT_LOG(RT_LOG_INFO, "device_id=%u, op_type=%u, target_id=%u.", deviceId, opType, targetId);
-    const drvError_t drvRet = halTsdrvCtl(deviceId, TSDRV_CTL_CMD_CTRL_MSG,
-        static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg), static_cast<void*>(&killAck), &ackCount);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+    const drvError_t drvRet = halTsdrvCtl(
+        deviceId, TSDRV_CTL_CMD_CTRL_MSG, static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg),
+        static_cast<void*>(&killAck), &ackCount);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
         "device_id=%u, ts_id=%u, target_id=%u, drvRetCode=%d.", deviceId, tsId, targetId, static_cast<int32_t>(drvRet));
 
     if (opType == OP_ABORT_STREAM || opType == OP_STOP_STREAM) {
@@ -340,8 +378,8 @@ rtError_t NpuDriver::TaskAbortByType(const uint32_t deviceId, const uint32_t tsI
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::QueryAbortStatusByType(const uint32_t deviceId, const uint32_t tsId, const uint32_t queryType,
-    const uint32_t targetId, uint32_t &status)
+rtError_t NpuDriver::QueryAbortStatusByType(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t queryType, const uint32_t targetId, uint32_t& status)
 {
     ts_ctrl_msg_body_t queryIn = {};
     ts_ctrl_msg_body_t queryAck = {};
@@ -355,25 +393,26 @@ rtError_t NpuDriver::QueryAbortStatusByType(const uint32_t deviceId, const uint3
     para.msg_len = sizeof(ts_ctrl_msg_body_t);
     para.msg = static_cast<void*>(&queryIn);
 
-    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halTsdrvCtl does not exist.");
+    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halTsdrvCtl does not exist.");
     RT_LOG(RT_LOG_INFO, "device_id=%u, ts_id=%u, target_id=%u.", deviceId, tsId, targetId);
-    const drvError_t drvRet = halTsdrvCtl(deviceId, TSDRV_CTL_CMD_CTRL_MSG,
-        static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg), static_cast<void*>(&queryAck), &ackCount);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
-        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, target_id=%u, drvRetCode=%d.",
-        deviceId, tsId, targetId, static_cast<int32_t>(drvRet));
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, (ackCount != sizeof(ts_ctrl_msg_body_t)),
-        RT_GET_DRV_ERRCODE(DRV_ERROR_PARA_ERROR),
-        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, target_id=%u, drvRetCode=%d.",
-        deviceId, tsId, targetId, static_cast<int32_t>(drvRet));
+    const drvError_t drvRet = halTsdrvCtl(
+        deviceId, TSDRV_CTL_CMD_CTRL_MSG, static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg),
+        static_cast<void*>(&queryAck), &ackCount);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, target_id=%u, drvRetCode=%d.", deviceId, tsId, targetId,
+        static_cast<int32_t>(drvRet));
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, (ackCount != sizeof(ts_ctrl_msg_body_t)), RT_GET_DRV_ERRCODE(DRV_ERROR_PARA_ERROR),
+        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, target_id=%u, drvRetCode=%d.", deviceId, tsId, targetId,
+        static_cast<int32_t>(drvRet));
     status = queryAck.u.query_abort_ack_info.status;
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::RecoverAbortByType(const uint32_t deviceId, const uint32_t tsId, const uint32_t opType,
-    const uint32_t targetId, uint32_t &result)
+rtError_t NpuDriver::RecoverAbortByType(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t opType, const uint32_t targetId, uint32_t& result)
 {
     ts_ctrl_msg_body_t recoverIn = {};
     ts_ctrl_msg_body_t recoverAck = {};
@@ -389,12 +428,13 @@ rtError_t NpuDriver::RecoverAbortByType(const uint32_t deviceId, const uint32_t 
     para.msg_len = sizeof(ts_ctrl_msg_body_t);
     para.msg = static_cast<void*>(&recoverIn);
 
-    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halTsdrvCtl does not exist.");
+    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halTsdrvCtl does not exist.");
     RT_LOG(RT_LOG_INFO, "device_id=%u, op_type=%u, target_id=%u.", deviceId, opType, targetId);
-    const drvError_t drvRet = halTsdrvCtl(deviceId, TSDRV_CTL_CMD_CTRL_MSG,
-        static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg), static_cast<void*>(&recoverAck), &ackCount);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+    const drvError_t drvRet = halTsdrvCtl(
+        deviceId, TSDRV_CTL_CMD_CTRL_MSG, static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg),
+        static_cast<void*>(&recoverAck), &ackCount);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
         "device_id=%u, ts_id=%u, target_id=%u, drvRetCode=%d.", deviceId, tsId, targetId, static_cast<int32_t>(drvRet));
     if (opType == OP_RECOVER_STREAM) {
         result = recoverAck.u.recover_stream_info.result;
@@ -405,8 +445,8 @@ rtError_t NpuDriver::RecoverAbortByType(const uint32_t deviceId, const uint32_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::QueryRecoverStatusByType(const uint32_t deviceId, const uint32_t tsId, const uint32_t queryType,
-    const uint32_t targetId, uint32_t &status)
+rtError_t NpuDriver::QueryRecoverStatusByType(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t queryType, const uint32_t targetId, uint32_t& status)
 {
     ts_ctrl_msg_body_t queryIn = {};
     ts_ctrl_msg_body_t queryAck = {};
@@ -420,37 +460,39 @@ rtError_t NpuDriver::QueryRecoverStatusByType(const uint32_t deviceId, const uin
     para.msg_len = sizeof(ts_ctrl_msg_body_t);
     para.msg = static_cast<void*>(&queryIn);
 
-    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halTsdrvCtl does not exist.");
+    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halTsdrvCtl does not exist.");
     RT_LOG(RT_LOG_INFO, "device_id=%u, ts_id=%u, target_id=%u.", deviceId, tsId, targetId);
-    const drvError_t drvRet = halTsdrvCtl(deviceId, TSDRV_CTL_CMD_CTRL_MSG,
-        static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg), static_cast<void*>(&queryAck), &ackCount);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
-        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, target_id=%u, drvRetCode=%d.",
-        deviceId, tsId, targetId, static_cast<int32_t>(drvRet));
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, (ackCount != sizeof(ts_ctrl_msg_body_t)),
-        RT_GET_DRV_ERRCODE(DRV_ERROR_PARA_ERROR),
-        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, target_id=%u, drvRetCode=%d.",
-        deviceId, tsId, targetId, static_cast<int32_t>(drvRet));
+    const drvError_t drvRet = halTsdrvCtl(
+        deviceId, TSDRV_CTL_CMD_CTRL_MSG, static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg),
+        static_cast<void*>(&queryAck), &ackCount);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, target_id=%u, drvRetCode=%d.", deviceId, tsId, targetId,
+        static_cast<int32_t>(drvRet));
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, (ackCount != sizeof(ts_ctrl_msg_body_t)), RT_GET_DRV_ERRCODE(DRV_ERROR_PARA_ERROR),
+        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, target_id=%u, drvRetCode=%d.", deviceId, tsId, targetId,
+        static_cast<int32_t>(drvRet));
     status = queryAck.u.query_abort_ack_info.status;
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemUceRepair(const uint32_t deviceId, rtMemUceInfo *memUceInfo)
+rtError_t NpuDriver::MemUceRepair(const uint32_t deviceId, rtMemUceInfo* memUceInfo)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&halMemCtl == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halMemCtl does not exist");
+    COND_RETURN_WARN(&halMemCtl == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halMemCtl does not exist");
 
-    drvRet = halMemCtl(static_cast<int32_t>(RtCtrlType::RT_CTRL_TYPE_MEM_REPAIR),
-                       static_cast<void *>(memUceInfo), sizeof(rtMemUceInfo), nullptr, nullptr);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halMemCtl does not support.");
+    drvRet = halMemCtl(
+        static_cast<int32_t>(RtCtrlType::RT_CTRL_TYPE_MEM_REPAIR), static_cast<void*>(memUceInfo), sizeof(rtMemUceInfo),
+        nullptr, nullptr);
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halMemCtl does not support.");
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halMemCtl failed, drvRetCode=%d, drvDevId=%u.",
-            static_cast<int32_t>(drvRet), deviceId);
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halMemCtl failed, drvRetCode=%d, drvDevId=%u.", static_cast<int32_t>(drvRet),
+            deviceId);
     }
 
     return RT_GET_DRV_ERRCODE(drvRet);
@@ -464,21 +506,23 @@ rtError_t NpuDriver::ResourceReset(const uint32_t deviceId, const uint32_t tsId,
     in.resourceId = MAX_UINT32_NUM;
     struct halResourceConfigInfo configInfo = {};
 
-    COND_RETURN_WARN(&halResourceConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halResourceConfig does not exist");
+    COND_RETURN_WARN(
+        &halResourceConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halResourceConfig does not exist");
     const errno_t rc = memset_s(&configInfo, sizeof(halResourceConfigInfo), 0, sizeof(halResourceConfigInfo));
     COND_LOG(rc != EOK, "memset_s failed, size=%zu(bytes), retCode=%d!", sizeof(halResourceConfigInfo), rc);
     configInfo.prop = DRV_ID_RESET;
 
     const drvError_t ret = halResourceConfig(deviceId, &in, &configInfo);
-    DRV_PROCESS_ERROR_RETURN(ret, "Call driver api halResourceConfig failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+    DRV_PROCESS_ERROR_RETURN(
+        ret, "Call driver api halResourceConfig failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
         static_cast<int32_t>(ret), deviceId, tsId);
 
     if ((type == DRV_NOTIFY_ID) || (type == DRV_CNT_NOTIFY_ID)) {
         in.res[1U] = static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID);
         const drvError_t drvRet = halResourceConfig(deviceId, &in, &configInfo);
         if (drvRet != DRV_ERROR_NONE) {
-            DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceConfig failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+            DRV_ERROR_PROCESS(
+                drvRet, "Call driver api halResourceConfig failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
                 static_cast<int32_t>(drvRet), deviceId, tsId);
             return RT_GET_DRV_ERRCODE(drvRet);
         }
@@ -487,25 +531,27 @@ rtError_t NpuDriver::ResourceReset(const uint32_t deviceId, const uint32_t tsId,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetMaxStreamAndTask(const uint32_t deviceId, const uint32_t tsId, uint32_t * const maxStrCount)
+rtError_t NpuDriver::GetMaxStreamAndTask(const uint32_t deviceId, const uint32_t tsId, uint32_t* const maxStrCount)
 {
     struct halResourceInfo queryInfoInput;
     queryInfoInput.capacity = 0U;
     COND_RETURN_INFO(&halResourceInfoQuery == nullptr, RT_ERROR_NONE, "[drv api] halResourceInfoQuery does not exist.");
-    const Runtime * const rt = Runtime::Instance();
+    const Runtime* const rt = Runtime::Instance();
     drvError_t drvRet;
 
     if (rt->ChipIsHaveStars()) {
         drvRet = halResourceInfoQuery(deviceId, tsId, DRV_RESOURCE_SQ_ID, &queryInfoInput);
         if (drvRet != DRV_ERROR_NONE) {
-            DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+            DRV_ERROR_PROCESS(
+                drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
                 static_cast<int32_t>(drvRet), deviceId, tsId);
             return RT_GET_DRV_ERRCODE(drvRet);
         }
     } else {
         drvRet = halResourceInfoQuery(deviceId, tsId, DRV_RESOURCE_STREAM_ID, &queryInfoInput);
         if (drvRet != DRV_ERROR_NONE) {
-            DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+            DRV_ERROR_PROCESS(
+                drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
                 static_cast<int32_t>(drvRet), deviceId, tsId);
             return RT_GET_DRV_ERRCODE(drvRet);
         }
@@ -517,62 +563,70 @@ rtError_t NpuDriver::GetMaxStreamAndTask(const uint32_t deviceId, const uint32_t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetAvailStreamNum(const uint32_t deviceId, const uint32_t tsId, uint32_t * const streamCount)
+rtError_t NpuDriver::GetAvailStreamNum(const uint32_t deviceId, const uint32_t tsId, uint32_t* const streamCount)
 {
     struct halResourceInfo queryInfoInput;
     queryInfoInput.capacity = 0U;
     COND_RETURN_INFO(halResourceInfoQuery == nullptr, RT_ERROR_NONE, "[drv api] halResourceInfoQuery does not exist.");
-    const Runtime * const rt = Runtime::Instance();
+    const Runtime* const rt = Runtime::Instance();
     drvError_t drvRet;
 
     if (rt->ChipIsHaveStars()) {
         drvRet = halResourceInfoQuery(deviceId, tsId, DRV_RESOURCE_SQ_ID, &queryInfoInput);
         if (drvRet != DRV_ERROR_NONE) {
-            DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+            DRV_ERROR_PROCESS(
+                drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
                 static_cast<int32_t>(drvRet), deviceId, tsId);
             return RT_GET_DRV_ERRCODE(drvRet);
         }
     } else {
         drvRet = halResourceInfoQuery(deviceId, tsId, DRV_RESOURCE_STREAM_ID, &queryInfoInput);
         if (drvRet != DRV_ERROR_NONE) {
-            DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+            DRV_ERROR_PROCESS(
+                drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
                 static_cast<int32_t>(drvRet), deviceId, tsId);
             return RT_GET_DRV_ERRCODE(drvRet);
         }
     }
 
     *streamCount = queryInfoInput.capacity - queryInfoInput.usedNum;
-    RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, availStreamCount=%u, used=%u.", 
-        deviceId, tsId, *streamCount, queryInfoInput.usedNum);
+    RT_LOG(
+        RT_LOG_INFO, "deviceId=%u, tsId=%u, availStreamCount=%u, used=%u.", deviceId, tsId, *streamCount,
+        queryInfoInput.usedNum);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetAvailEventNum(const uint32_t deviceId, const uint32_t tsId, uint32_t * const eventCount)
+rtError_t NpuDriver::GetAvailEventNum(const uint32_t deviceId, const uint32_t tsId, uint32_t* const eventCount)
 {
     struct halResourceInfo queryInfoInput;
     queryInfoInput.capacity = 0U;
     COND_RETURN_INFO(&halResourceInfoQuery == nullptr, RT_ERROR_NONE, "[drv api] halResourceInfoQuery does not exist.");
-    const drvError_t drvRet = halResourceInfoQuery(deviceId, tsId,
-        IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_NOTIFY_ONLY) ? DRV_RESOURCE_NOTIFY_ID : DRV_RESOURCE_EVENT_ID,
+    const drvError_t drvRet = halResourceInfoQuery(
+        deviceId, tsId,
+        IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DEVICE_NOTIFY_ONLY) ? DRV_RESOURCE_NOTIFY_ID :
+                                                                                 DRV_RESOURCE_EVENT_ID,
         &queryInfoInput);
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
         static_cast<int32_t>(drvRet), deviceId, tsId);
 
     *eventCount = queryInfoInput.capacity - queryInfoInput.usedNum;
-    RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, availEventCount=%u, used=%u", 
-        deviceId, tsId, *eventCount, queryInfoInput.usedNum);
+    RT_LOG(
+        RT_LOG_INFO, "deviceId=%u, tsId=%u, availEventCount=%u, used=%u", deviceId, tsId, *eventCount,
+        queryInfoInput.usedNum);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetMaxModelNum(const uint32_t deviceId, const uint32_t tsId, uint32_t *maxModelCount)
+rtError_t NpuDriver::GetMaxModelNum(const uint32_t deviceId, const uint32_t tsId, uint32_t* maxModelCount)
 {
     struct halResourceInfo queryInfoInput;
     queryInfoInput.capacity = 0U;
     COND_RETURN_INFO(halResourceInfoQuery == nullptr, RT_ERROR_NONE, "[drv api] halResourceInfoQuery does not exist.");
     const drvError_t drvRet = halResourceInfoQuery(deviceId, tsId, DRV_RESOURCE_MODEL_ID, &queryInfoInput);
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api halResourceInfoQuery failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
         static_cast<int32_t>(drvRet), deviceId, tsId);
 
     *maxModelCount = queryInfoInput.capacity;
@@ -582,8 +636,7 @@ rtError_t NpuDriver::GetMaxModelNum(const uint32_t deviceId, const uint32_t tsId
 }
 
 // timeoutInterval: op execut timeout interval, uint:ns
-rtError_t NpuDriver::QueryOpExecTimeoutInterval(const uint32_t deviceId, const uint32_t tsId,
-    uint64_t &timeoutInterval)
+rtError_t NpuDriver::QueryOpExecTimeoutInterval(const uint32_t deviceId, const uint32_t tsId, uint64_t& timeoutInterval)
 {
     ts_ctrl_msg_body_t timeoutIn = {};
     ts_ctrl_msg_body_t timeoutAck = {};
@@ -595,23 +648,25 @@ rtError_t NpuDriver::QueryOpExecTimeoutInterval(const uint32_t deviceId, const u
     para.msg_len = sizeof(ts_ctrl_msg_body_t);
     para.msg = static_cast<void*>(&timeoutIn);
 
-    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halTsdrvCtl does not exist.");
-    const drvError_t drvRet = halTsdrvCtl(deviceId, TSDRV_CTL_CMD_CTRL_MSG,
-        static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg), static_cast<void*>(&timeoutAck), &ackCount);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
-        "device_id=%u, ts_id=%u, drvRetCode=%d.", deviceId, tsId, static_cast<int32_t>(drvRet));
-    
+    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halTsdrvCtl does not exist.");
+    const drvError_t drvRet = halTsdrvCtl(
+        deviceId, TSDRV_CTL_CMD_CTRL_MSG, static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg),
+        static_cast<void*>(&timeoutAck), &ackCount);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet), "device_id=%u, ts_id=%u, drvRetCode=%d.",
+        deviceId, tsId, static_cast<int32_t>(drvRet));
+
     timeoutInterval = static_cast<uint64_t>(timeoutAck.u.query_op_exec_timeout_ack_info.timeout_interval_l) |
-        (static_cast<uint64_t>(timeoutAck.u.query_op_exec_timeout_ack_info.timeout_interval_h) << 32U);
-    RT_LOG(RT_LOG_INFO, "device_id=%u, ts_id=%u, op execute timeoutInterval=%" PRIu64 "ns.",
-        deviceId, tsId, timeoutInterval);
+                      (static_cast<uint64_t>(timeoutAck.u.query_op_exec_timeout_ack_info.timeout_interval_h) << 32U);
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%u, ts_id=%u, op execute timeoutInterval=%" PRIu64 "ns.", deviceId, tsId,
+        timeoutInterval);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::QuerySq(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId,
-		             const uint32_t queryType, uint32_t &status)
+rtError_t NpuDriver::QuerySq(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, const uint32_t queryType, uint32_t& status)
 {
     ts_ctrl_msg_body_t queryIn = {};
     ts_ctrl_msg_body_t queryAck = {};
@@ -625,24 +680,26 @@ rtError_t NpuDriver::QuerySq(const uint32_t deviceId, const uint32_t tsId, const
     para.msg_len = sizeof(ts_ctrl_msg_body_t);
     para.msg = static_cast<void*>(&queryIn);
 
-    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halTsdrvCtl does not exist.");
+    COND_RETURN_WARN(&halTsdrvCtl == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halTsdrvCtl does not exist.");
     RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, sqId=%u.", deviceId, tsId, sqId);
-    const drvError_t drvRet = halTsdrvCtl(deviceId, TSDRV_CTL_CMD_CTRL_MSG,
-        static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg), static_cast<void*>(&queryAck), &ackCount);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
-        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.",
-        deviceId, tsId, sqId, static_cast<int32_t>(drvRet));
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, (ackCount != sizeof(ts_ctrl_msg_body_t)),
-        RT_GET_DRV_ERRCODE(DRV_ERROR_PARA_ERROR),
-        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.",
-        deviceId, tsId, sqId, static_cast<int32_t>(drvRet));
+    const drvError_t drvRet = halTsdrvCtl(
+        deviceId, TSDRV_CTL_CMD_CTRL_MSG, static_cast<void*>(&para), sizeof(tsdrv_ctrl_msg),
+        static_cast<void*>(&queryAck), &ackCount);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.", deviceId, tsId, sqId,
+        static_cast<int32_t>(drvRet));
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, (ackCount != sizeof(ts_ctrl_msg_body_t)), RT_GET_DRV_ERRCODE(DRV_ERROR_PARA_ERROR),
+        "[drv api] halTsdrvCtl device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.", deviceId, tsId, sqId,
+        static_cast<int32_t>(drvRet));
     status = queryAck.u.query_task_ack_info.status;
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetSqHead(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t &head, bool needLog)
+rtError_t NpuDriver::GetSqHead(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t& head, bool needLog)
 {
     UNUSED(needLog);
 
@@ -659,7 +716,8 @@ rtError_t NpuDriver::GetSqHead(const uint32_t deviceId, const uint32_t tsId, con
 
     while (retryCount < GET_SQ_HEAD_MAX_RETRY_TIMES) {
         const drvError_t drvRet = halSqCqQuery(deviceId, &queryInfoIn);
-        COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+        COND_RETURN_ERROR_MSG_CALL(
+            ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
             "[drv api] halSqCqQuery device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.", deviceId, tsId, sqId,
             static_cast<int32_t>(drvRet));
 
@@ -677,10 +735,11 @@ rtError_t NpuDriver::GetSqHead(const uint32_t deviceId, const uint32_t tsId, con
         }
 
         if (sqHeadQueryFailNum_.Value() % GET_SQ_HEAD_QUERY_FAIL_STAT_TIMES == 0U) {
-            RT_LOG(RT_LOG_EVENT, "deviceId=%u, tsId=%u, sqId=%u, head=%hu, "
+            RT_LOG(
+                RT_LOG_EVENT,
+                "deviceId=%u, tsId=%u, sqId=%u, head=%hu, "
                 "current retryCount=%u, max retryCount=%u, query fail num=%u.",
-                deviceId, tsId, sqId, head, retryCount, sqHeadRetryMaxNum_.Value(),
-                sqHeadQueryFailNum_.Value());
+                deviceId, tsId, sqId, head, retryCount, sqHeadRetryMaxNum_.Value(), sqHeadQueryFailNum_.Value());
         }
 
         sqHeadQueryFailNum_.Add(1U);
@@ -689,7 +748,7 @@ rtError_t NpuDriver::GetSqHead(const uint32_t deviceId, const uint32_t tsId, con
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetSqTail(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t &tail)
+rtError_t NpuDriver::GetSqTail(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t& tail)
 {
     struct halSqCqQueryInfo queryInfoIn = {};
     queryInfoIn.type = DRV_NORMAL_TYPE;
@@ -704,7 +763,8 @@ rtError_t NpuDriver::GetSqTail(const uint32_t deviceId, const uint32_t tsId, con
 
     while (retryCount < GET_SQ_HEAD_MAX_RETRY_TIMES) {
         const drvError_t drvRet = halSqCqQuery(deviceId, &queryInfoIn);
-        COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+        COND_RETURN_ERROR_MSG_CALL(
+            ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
             "[drv api] halSqCqQuery device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.", deviceId, tsId, sqId,
             static_cast<int32_t>(drvRet));
 
@@ -722,10 +782,11 @@ rtError_t NpuDriver::GetSqTail(const uint32_t deviceId, const uint32_t tsId, con
         }
 
         if (sqTailQueryFailNum_.Value() % GET_SQ_HEAD_QUERY_FAIL_STAT_TIMES == 0U) {
-            RT_LOG(RT_LOG_EVENT, "deviceId=%u, tsId=%u, sqId=%u, tail=%hu, "
+            RT_LOG(
+                RT_LOG_EVENT,
+                "deviceId=%u, tsId=%u, sqId=%u, tail=%hu, "
                 "current retryCount=%u, max retryCount=%u, query fail num=%u.",
-                deviceId, tsId, sqId, tail, retryCount, sqTailRetryMaxNum_.Value(),
-                sqTailQueryFailNum_.Value());
+                deviceId, tsId, sqId, tail, retryCount, sqTailRetryMaxNum_.Value(), sqTailQueryFailNum_.Value());
         }
 
         sqTailQueryFailNum_.Add(1U);
@@ -736,7 +797,8 @@ rtError_t NpuDriver::GetSqTail(const uint32_t deviceId, const uint32_t tsId, con
         readCount++;
         if (lastTail != tail) {
             lastTail = tail;
-            RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, sqId=%u, tail=%u, readCount=%u.", deviceId, tsId, sqId,
+            RT_LOG(
+                RT_LOG_INFO, "deviceId=%u, tsId=%u, sqId=%u, tail=%u, readCount=%u.", deviceId, tsId, sqId,
                 queryInfoIn.value[0], readCount);
             readCount = 0U;
         }
@@ -745,20 +807,21 @@ rtError_t NpuDriver::GetSqTail(const uint32_t deviceId, const uint32_t tsId, con
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetSqEnable(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool &enable)
+rtError_t NpuDriver::GetSqEnable(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool& enable)
 {
     struct halSqCqQueryInfo queryInfoIn = {};
     queryInfoIn.type = DRV_NORMAL_TYPE;
     queryInfoIn.tsId = tsId;
     queryInfoIn.sqId = sqId;
     queryInfoIn.cqId = 0U;
-    queryInfoIn.prop = DRV_SQCQ_PROP_SQ_STATUS ;
+    queryInfoIn.prop = DRV_SQCQ_PROP_SQ_STATUS;
     static uint16_t lastSqEnableStatus = UINT16_MAX;
     static uint32_t readCount = 0U;
 
     COND_RETURN_WARN(&halSqCqQuery == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halSqCqQuery does not exist.");
     const drvError_t drvRet = halSqCqQuery(deviceId, &queryInfoIn);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
         "[drv api] halSqCqQuery device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.", deviceId, tsId, sqId,
         static_cast<int32_t>(drvRet));
 
@@ -766,7 +829,8 @@ rtError_t NpuDriver::GetSqEnable(const uint32_t deviceId, const uint32_t tsId, c
     readCount++;
     if (lastSqEnableStatus != enable) {
         lastSqEnableStatus = enable;
-        RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, sqId=%u, enable=%u, readCount=%u.", deviceId, tsId, sqId,
+        RT_LOG(
+            RT_LOG_INFO, "deviceId=%u, tsId=%u, sqId=%u, enable=%u, readCount=%u.", deviceId, tsId, sqId,
             queryInfoIn.value[0], readCount);
         readCount = 0U;
     }
@@ -774,7 +838,7 @@ rtError_t NpuDriver::GetSqEnable(const uint32_t deviceId, const uint32_t tsId, c
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool &status)
+rtError_t NpuDriver::GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool& status)
 {
     struct halSqCqQueryInfo queryInfoIn = {};
     queryInfoIn.type = DRV_NORMAL_TYPE;
@@ -785,7 +849,8 @@ rtError_t NpuDriver::GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, 
 
     COND_RETURN_WARN(&halSqCqQuery == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halSqCqQuery does not exist.");
     const drvError_t drvRet = halSqCqQuery(deviceId, &queryInfoIn);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
         "[drv api] halSqCqQuery device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.", deviceId, tsId, sqId,
         static_cast<int32_t>(drvRet));
 
@@ -793,7 +858,7 @@ rtError_t NpuDriver::GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetCtrlSqHead(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t &head)
+rtError_t NpuDriver::GetCtrlSqHead(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t& head)
 {
     struct halSqCqQueryInfo queryInfoIn = {};
     queryInfoIn.type = DRV_CTRL_TYPE;
@@ -804,7 +869,8 @@ rtError_t NpuDriver::GetCtrlSqHead(const uint32_t deviceId, const uint32_t tsId,
 
     COND_RETURN_WARN(&halSqCqQuery == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halSqCqQuery does not exist");
     const drvError_t drvRet = halSqCqQuery(deviceId, &queryInfoIn);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
         "[drv api] for head, halSqCqQuery device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.", deviceId, tsId, sqId,
         static_cast<int32_t>(drvRet));
 
@@ -814,8 +880,7 @@ rtError_t NpuDriver::GetCtrlSqHead(const uint32_t deviceId, const uint32_t tsId,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SetSqHead(const uint32_t deviceId, const uint32_t tsId,
-                               const uint32_t sqId, const uint32_t head)
+rtError_t NpuDriver::SetSqHead(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, const uint32_t head)
 {
     struct halSqCqConfigInfo configInfo;
     configInfo.type = DRV_NORMAL_TYPE;
@@ -824,12 +889,12 @@ rtError_t NpuDriver::SetSqHead(const uint32_t deviceId, const uint32_t tsId,
     configInfo.prop = DRV_SQCQ_PROP_SQ_HEAD;
     configInfo.value[0] = head;
 
-    COND_RETURN_WARN(&halSqCqConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halSqCqConfig does not exist.");
+    COND_RETURN_WARN(&halSqCqConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halSqCqConfig does not exist.");
     RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, sqId=%u, head=%u.", deviceId, tsId, sqId, head);
     const drvError_t drvRet = halSqCqConfig(deviceId, &configInfo);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet,
+        DRV_ERROR_PROCESS(
+            drvRet,
             "Call driver api halSqCqConfig failed, drvRetCode=%d, value=%u, drvDevId=%u, "
             "tsId=%u, sqId=%u.",
             static_cast<int32_t>(drvRet), head, deviceId, tsId, sqId);
@@ -839,8 +904,8 @@ rtError_t NpuDriver::SetSqHead(const uint32_t deviceId, const uint32_t tsId,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CleanSq(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId,
-    const uint32_t streamFlag)
+rtError_t NpuDriver::CleanSq(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, const uint32_t streamFlag)
 {
     struct halSqCqConfigInfo configInfo = {};
     configInfo.type = DRV_NORMAL_TYPE;
@@ -850,19 +915,19 @@ rtError_t NpuDriver::CleanSq(const uint32_t deviceId, const uint32_t tsId, const
     configInfo.value[SQCQ_CONFIG_INFO_FLAG] =
         ((streamFlag & RT_STREAM_CP_PROCESS_USE) != 0U) ? static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
 
-    COND_RETURN_WARN(&halSqCqConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halSqCqConfig does not exist.");
+    COND_RETURN_WARN(&halSqCqConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halSqCqConfig does not exist.");
     RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, sqId=%u.", deviceId, tsId, sqId);
     const drvError_t drvRet = halSqCqConfig(deviceId, &configInfo);
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halSqCqConfig failed, drvRetCode=%d, drvDevId=%u, tsId=%u, sqId=%u.",
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api halSqCqConfig failed, drvRetCode=%d, drvDevId=%u, tsId=%u, sqId=%u.",
         static_cast<int32_t>(drvRet), deviceId, tsId, sqId);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::StreamUnBindLogicCq(const uint32_t deviceId, const uint32_t tsId,
-                                         const uint32_t streamId, const uint32_t logicCqId,
-                                         const uint32_t drvFlag)
+rtError_t NpuDriver::StreamUnBindLogicCq(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t streamId, const uint32_t logicCqId,
+    const uint32_t drvFlag)
 {
     struct halResourceIdInputInfo in;
     in.type = DRV_STREAM_ID;
@@ -875,20 +940,22 @@ rtError_t NpuDriver::StreamUnBindLogicCq(const uint32_t deviceId, const uint32_t
 
     const drvError_t drvRet = halResourceConfig(deviceId, &in, &configInfo);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceConfig failed, drvRetCode=%d, drvDevId=%u, tsId=%u, "
-            "streamId=%u, logicCq=%u.", static_cast<int32_t>(drvRet), deviceId, tsId, streamId, logicCqId);
+        DRV_ERROR_PROCESS(
+            drvRet,
+            "Call driver api halResourceConfig failed, drvRetCode=%d, drvDevId=%u, tsId=%u, "
+            "streamId=%u, logicCq=%u.",
+            static_cast<int32_t>(drvRet), deviceId, tsId, streamId, logicCqId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
-    RT_LOG(RT_LOG_INFO, "success: deviceId=%u, tsId=%u, streamId=%u, logicCq=%u.",
-        deviceId, tsId, streamId, logicCqId);
+    RT_LOG(RT_LOG_INFO, "success: deviceId=%u, tsId=%u, streamId=%u, logicCq=%u.", deviceId, tsId, streamId, logicCqId);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::StreamBindLogicCq(const uint32_t deviceId, const uint32_t tsId,
-                                       const uint32_t streamId, const uint32_t logicCqId,
-                                       const uint32_t drvFlag)
+rtError_t NpuDriver::StreamBindLogicCq(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t streamId, const uint32_t logicCqId,
+    const uint32_t drvFlag)
 {
     struct halResourceIdInputInfo in = {};
     in.type = DRV_STREAM_ID;
@@ -898,22 +965,21 @@ rtError_t NpuDriver::StreamBindLogicCq(const uint32_t deviceId, const uint32_t t
 
     struct halResourceConfigInfo configInfo = {};
     configInfo.prop = DRV_STREAM_BIND_LOGIC_CQ;
-    configInfo.value[0U] = logicCqId;   // res[0]: logicCqId
+    configInfo.value[0U] = logicCqId; // res[0]: logicCqId
 
     const drvError_t drvRet = halResourceConfig(deviceId, &in, &configInfo);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
-        "[drv api] halResourceConfig fail, device_id=%u, ts_id=%u, stream_id=%u, logicCq=%u, drvRetCode=%d.",
-        deviceId, tsId, streamId, logicCqId, static_cast<int32_t>(drvRet));
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+        "[drv api] halResourceConfig fail, device_id=%u, ts_id=%u, stream_id=%u, logicCq=%u, drvRetCode=%d.", deviceId,
+        tsId, streamId, logicCqId, static_cast<int32_t>(drvRet));
 
-    RT_LOG(RT_LOG_INFO, "success: deviceId=%u, tsId=%u, streamId=%u, logicCq=%u.",
-        deviceId, tsId, streamId, logicCqId);
+    RT_LOG(RT_LOG_INFO, "success: deviceId=%u, tsId=%u, streamId=%u, logicCq=%u.", deviceId, tsId, streamId, logicCqId);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::StreamEnableStmSyncEsched(const uint32_t deviceId, const uint32_t tsId,
-                                               const uint32_t streamId, const uint32_t grpId,
-                                               const uint32_t eventId)
+rtError_t NpuDriver::StreamEnableStmSyncEsched(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t streamId, const uint32_t grpId, const uint32_t eventId)
 {
     struct halResourceIdInputInfo in = {};
     in.type = DRV_STREAM_ID;
@@ -921,19 +987,23 @@ rtError_t NpuDriver::StreamEnableStmSyncEsched(const uint32_t deviceId, const ui
     in.resourceId = streamId;
     struct halResourceConfigInfo configInfo = {};
 
-    COND_RETURN_WARN(&halResourceConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halResourceConfig does not exist");
+    COND_RETURN_WARN(
+        &halResourceConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halResourceConfig does not exist");
     const errno_t rc = memset_s(&configInfo, sizeof(halResourceConfigInfo), 0, sizeof(halResourceConfigInfo));
     COND_LOG(rc != EOK, "memset_s failed, size=%zu(bytes), retCode=%d!", sizeof(halResourceConfigInfo), rc);
     configInfo.prop = DRV_STREAM_ENABLE_EVENT;
     configInfo.value[0U] = grpId;
     configInfo.value[1U] = eventId;
     const drvError_t drvRet = halResourceConfig(deviceId, &in, &configInfo);
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halResourceConfig failed, drvRetCode=%d, drvDevId=%u, tsId=%u, "
-        "streamId=%u, grpId=%u, eventId=%u.", static_cast<int32_t>(drvRet), deviceId, tsId, streamId, grpId, eventId);
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet,
+        "Call driver api halResourceConfig failed, drvRetCode=%d, drvDevId=%u, tsId=%u, "
+        "streamId=%u, grpId=%u, eventId=%u.",
+        static_cast<int32_t>(drvRet), deviceId, tsId, streamId, grpId, eventId);
 
-    RT_LOG(RT_LOG_INFO, "success: deviceId=%u, tsId=%u, streamId=%u, grpId=%u, eventId=%u.",
-        deviceId, tsId, streamId, grpId, eventId);
+    RT_LOG(
+        RT_LOG_INFO, "success: deviceId=%u, tsId=%u, streamId=%u, grpId=%u, eventId=%u.", deviceId, tsId, streamId,
+        grpId, eventId);
     return RT_ERROR_NONE;
 }
 
@@ -941,22 +1011,23 @@ rtError_t NpuDriver::UnbindHostPid(rtBindHostpidInfo info)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&drvUnbindHostPid == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] drvUnbindHostPid does not exist");
+    COND_RETURN_WARN(
+        &drvUnbindHostPid == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] drvUnbindHostPid does not exist");
 
     struct drvBindHostpidInfo infoNew = {};
     uint32_t len_new = sizeof(infoNew);
     uint32_t len = sizeof(info);
     errno_t ret = memcpy_s(&infoNew, len_new, &info, len);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
-                               "Call memcpy_s failed, dst length=%u, src length=%u, retCode=%d!",
-                               len_new, len, ret);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
+        "Call memcpy_s failed, dst length=%u, src length=%u, retCode=%d!", len_new, len, ret);
 
     drvRet = drvUnbindHostPid(infoNew);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] drvUnbindHostPid does not support.");
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] drvUnbindHostPid does not support.");
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api drvUnbindHostPid failed, drvRetCode=%d.", static_cast<int32_t>(drvRet));
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api drvUnbindHostPid failed, drvRetCode=%d.", static_cast<int32_t>(drvRet));
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
@@ -967,107 +1038,112 @@ rtError_t NpuDriver::BindHostPid(rtBindHostpidInfo info)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&drvBindHostPid == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] drvBindHostPid does not exist");
+    COND_RETURN_WARN(
+        &drvBindHostPid == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] drvBindHostPid does not exist");
 
     struct drvBindHostpidInfo infoNew = {};
     uint32_t len_new = sizeof(infoNew);
     uint32_t len = sizeof(info);
     errno_t ret = memcpy_s(&infoNew, len_new, &info, len);
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
-                               "Call memcpy_s failed, dst length=%u, src length=%u, retCode=%d!",
-                               len_new, len, ret);
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
+        "Call memcpy_s failed, dst length=%u, src length=%u, retCode=%d!", len_new, len, ret);
 
     drvRet = drvBindHostPid(infoNew);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] drvBindHostPid does not support.");
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] drvBindHostPid does not support.");
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api drvBindHostPid failed, drvRetCode=%d.", static_cast<int32_t>(drvRet));
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api drvBindHostPid failed, drvRetCode=%d.", static_cast<int32_t>(drvRet));
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
     return RT_GET_DRV_ERRCODE(drvRet);
 }
 
-rtError_t NpuDriver::SqSwitchStreamBatch(const uint32_t deviceId, struct sq_switch_stream_info *switchInfo,
-    const uint32_t num)
+rtError_t NpuDriver::SqSwitchStreamBatch(
+    const uint32_t deviceId, struct sq_switch_stream_info* switchInfo, const uint32_t num)
 {
-    COND_RETURN_WARN(&halSqSwitchStreamBatch == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        &halSqSwitchStreamBatch == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
         "[drv api] halSqSwitchStreamBatch does not exist.");
 
     const drvError_t drvRet = halSqSwitchStreamBatch(deviceId, switchInfo, num);
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halSqSwitchStreamBatch failed, drvRetCode=%d, drvDevId=%u, num=%u.",
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api halSqSwitchStreamBatch failed, drvRetCode=%d, drvDevId=%u, num=%u.",
         static_cast<int32_t>(drvRet), deviceId, num);
 
     RT_LOG(RT_LOG_INFO, "halSqSwitchStreamBatch success, device_id=%u, num=%u.", deviceId, num);
-    return RT_ERROR_NONE;    
+    return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::QueryProcessHostPid(int32_t pid, uint32_t *chipId, uint32_t *vfId, uint32_t *hostPid,
-    uint32_t *cpType)
+rtError_t NpuDriver::QueryProcessHostPid(
+    int32_t pid, uint32_t* chipId, uint32_t* vfId, uint32_t* hostPid, uint32_t* cpType)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&drvQueryProcessHostPid == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        &drvQueryProcessHostPid == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] drvQueryProcessHostPid does not exist");
 
     drvRet = drvQueryProcessHostPid(pid, chipId, vfId, hostPid, cpType);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
         "[drv api] drvQueryProcessHostPid does not support.");
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api drvQueryProcessHostPid failed, drvRetCode=%d.",
-            static_cast<int32_t>(drvRet));
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api drvQueryProcessHostPid failed, drvRetCode=%d.", static_cast<int32_t>(drvRet));
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
     return RT_GET_DRV_ERRCODE(drvRet);
 }
 
-rtError_t NpuDriver::ShmemSetPodPid(const char *name, uint32_t sdid, int32_t pid[], int32_t num)
+rtError_t NpuDriver::ShmemSetPodPid(const char* name, uint32_t sdid, int32_t pid[], int32_t num)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&halShmemSetPodPid == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halShmemSetPodPid does not exist");
+    COND_RETURN_WARN(
+        &halShmemSetPodPid == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halShmemSetPodPid does not exist");
 
     drvRet = halShmemSetPodPid(name, sdid, pid, num);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halShmemSetPodPid does not support.");
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halShmemSetPodPid does not support.");
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halShmemSetPodPid failed, drvRetCode=%d.", static_cast<int32_t>(drvRet));
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halShmemSetPodPid failed, drvRetCode=%d.", static_cast<int32_t>(drvRet));
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
     return RT_GET_DRV_ERRCODE(drvRet);
 }
 
-rtError_t NpuDriver::ShrIdSetPodPid(const char *name, uint32_t sdid, int32_t pid)
+rtError_t NpuDriver::ShrIdSetPodPid(const char* name, uint32_t sdid, int32_t pid)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&halShrIdSetPodPid == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halShrIdSetPodPid does not exist");
+    COND_RETURN_WARN(
+        &halShrIdSetPodPid == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halShrIdSetPodPid does not exist");
 
     drvRet = halShrIdSetPodPid(name, sdid, pid);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halShrIdSetPodPid does not support.");
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halShrIdSetPodPid failed, drvRetCode=%d.",
-        static_cast<int32_t>(drvRet));
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halShrIdSetPodPid does not support.");
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api halShrIdSetPodPid failed, drvRetCode=%d.", static_cast<int32_t>(drvRet));
 
     return RT_GET_DRV_ERRCODE(drvRet);
 }
 
-rtError_t NpuDriver::ParseSDID(const uint32_t sdid, uint32_t *srvId, uint32_t *chipId, uint32_t *dieId, uint32_t *pyhId)
+rtError_t NpuDriver::ParseSDID(const uint32_t sdid, uint32_t* srvId, uint32_t* chipId, uint32_t* dieId, uint32_t* pyhId)
 {
     drvError_t drvRet = DRV_ERROR_NONE;
 
-    COND_RETURN_WARN(&halParseSDID == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halParseSDID does not exist");
+    COND_RETURN_WARN(&halParseSDID == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halParseSDID does not exist");
 
     struct halSDIDParseInfo sdidParse;
     drvRet = halParseSDID(sdid, &sdidParse);
-    COND_RETURN_WARN(drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT,
-        "[drv api] halParseSDID does not support.");
+    COND_RETURN_WARN(
+        drvRet == DRV_ERROR_NOT_SUPPORT, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halParseSDID does not support.");
     if (drvRet != DRV_ERROR_NONE) {
         DRV_ERROR_PROCESS(drvRet, "Call driver api halParseSDID failed, drvRetCode=%d.", static_cast<int32_t>(drvRet));
         return RT_GET_DRV_ERRCODE(drvRet);
@@ -1080,10 +1156,10 @@ rtError_t NpuDriver::ParseSDID(const uint32_t sdid, uint32_t *srvId, uint32_t *c
     return RT_GET_DRV_ERRCODE(drvRet);
 }
 
-rtError_t NpuDriver::GetSqRegVirtualAddrBySqid(const int32_t deviceId, const uint32_t tsId, const uint32_t sqId,
-                                               uint64_t * const addr, uint32_t * const len)
+rtError_t NpuDriver::GetSqRegVirtualAddrBySqid(
+    const int32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint64_t* const addr, uint32_t* const len)
 {
-    if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_MAP_SQ_ADDR_TO_USER_SPACE))  {
+    if (IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_STREAM_MAP_SQ_ADDR_TO_USER_SPACE)) {
         return GetSqRegVirtualAddrBySqidForDavid(deviceId, tsId, sqId, addr);
     } else {
         struct halSqCqQueryInfo queryInfoIn = {};
@@ -1094,15 +1170,18 @@ rtError_t NpuDriver::GetSqRegVirtualAddrBySqid(const int32_t deviceId, const uin
         queryInfoIn.prop = DRV_SQCQ_PROP_SQ_REG_BASE;
         COND_RETURN_WARN(&halSqCqQuery == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halSqCqQuery does not exist");
         const drvError_t drvRet = halSqCqQuery(static_cast<uint32_t>(deviceId), &queryInfoIn);
-        COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
-                                   "[drv api] halSqCqQuery get SqSimple Virtual Addr failed device_id=%u, ts_id=%u, "
-                                   "sq_id=%u, drvRetCode=%d.", deviceId, tsId, sqId, static_cast<int32_t>(drvRet));
+        COND_RETURN_ERROR_MSG_CALL(
+            ERR_MODULE_DRV, drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+            "[drv api] halSqCqQuery get SqSimple Virtual Addr failed device_id=%u, ts_id=%u, "
+            "sq_id=%u, drvRetCode=%d.",
+            deviceId, tsId, sqId, static_cast<int32_t>(drvRet));
         // value[0] is the high 32 bit of virtual addr, value[1] is low 32 bit.
         *addr = (static_cast<uint64_t>(queryInfoIn.value[0]) << 32U) | (static_cast<uint64_t>(queryInfoIn.value[1]));
         // value[2] is addr size.
         *len = queryInfoIn.value[2];
         COND_RETURN_ERROR(*addr == 0ULL, RT_ERROR_DRV_ERR, "[drv api] halSqCqQuery get SqSimple Virtual Addr=0 fail.");
-        RT_LOG(RT_LOG_INFO, "addr high 32 bit=0x%x, addr low 32 bit=0x%x, addr=0x%" PRIx64 ", size=%u",
+        RT_LOG(
+            RT_LOG_INFO, "addr high 32 bit=0x%x, addr low 32 bit=0x%x, addr=0x%" PRIx64 ", size=%u",
             queryInfoIn.value[0], queryInfoIn.value[1], *addr, queryInfoIn.value[2]);
     }
 
@@ -1113,8 +1192,9 @@ rtError_t NpuDriver::GetSqRegVirtualAddrBySqid(const int32_t deviceId, const uin
  * Subcategory: Resource ID Alloc
  * ======================================================== */
 
-rtError_t NpuDriver::ReAllocResourceId(const uint32_t deviceId, const uint32_t tsId, const uint32_t priority,
-                                       const uint32_t resourceId, drvIdType_t idType)
+rtError_t NpuDriver::ReAllocResourceId(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t priority, const uint32_t resourceId,
+    drvIdType_t idType)
 {
     struct halResourceIdInputInfo resAllocInput = {};
     struct halResourceIdOutputInfo resAllocOutput = {};
@@ -1125,24 +1205,28 @@ rtError_t NpuDriver::ReAllocResourceId(const uint32_t deviceId, const uint32_t t
     resAllocInput.res[0U] = priority;
     resAllocInput.res[1U] = TSDRV_RES_SPECIFIED_ID;
 
-    RT_LOG(RT_LOG_INFO, "Realloc id begin, device_id=%u, priority=%u, ts_id=%u, resourceId=%u, idType=%d",
-        deviceId, priority, tsId, resourceId, idType);
+    RT_LOG(
+        RT_LOG_INFO, "Realloc id begin, device_id=%u, priority=%u, ts_id=%u, resourceId=%u, idType=%d", deviceId,
+        priority, tsId, resourceId, idType);
 
     const drvError_t drvRet = halResourceIdAlloc(deviceId, &resAllocInput, &resAllocOutput);
     if ((drvRet != DRV_ERROR_NONE) || (resourceId != resAllocOutput.resourceId)) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceIdAlloc failed, drvRetCode=%d, drvDevId=%u, priority=%u, "
+        DRV_ERROR_PROCESS(
+            drvRet,
+            "Call driver api halResourceIdAlloc failed, drvRetCode=%d, drvDevId=%u, priority=%u, "
             "tsId=%u, resourceId=%u, resAllocOutput.resourceId=%u, idType=%d.",
             static_cast<int32_t>(drvRet), deviceId, priority, tsId, resourceId, resAllocOutput.resourceId, idType);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
-    RT_LOG(RT_LOG_DEBUG, "Realloc id succ, device_id=%u, priority=%u, ts_id=%u, resourceId=%u, idType=%d",
-        deviceId, priority, tsId, resourceId, idType);
+    RT_LOG(
+        RT_LOG_DEBUG, "Realloc id succ, device_id=%u, priority=%u, ts_id=%u, resourceId=%u, idType=%d", deviceId,
+        priority, tsId, resourceId, idType);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::StreamIdAlloc(int32_t * const id, const uint32_t deviceId, const uint32_t tsId,
-                                   const uint32_t priority, uint32_t streamFlag)
+rtError_t NpuDriver::StreamIdAlloc(
+    int32_t* const id, const uint32_t deviceId, const uint32_t tsId, const uint32_t priority, uint32_t streamFlag)
 {
     struct halResourceIdInputInfo resAllocInput;
     struct halResourceIdOutputInfo resAllocOutput;
@@ -1151,33 +1235,37 @@ rtError_t NpuDriver::StreamIdAlloc(int32_t * const id, const uint32_t deviceId, 
     resAllocInput.type = DRV_STREAM_ID;
     resAllocInput.tsId = tsId;
     resAllocInput.res[0U] = priority;
-    uint32_t drvFlag = ((streamFlag & RT_STREAM_CP_PROCESS_USE) != 0U) ?
-        static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
-    if ((IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DRIVER_RESOURCE_ALLOC_WITH_VFID)) && (GetVfId() != MAX_UINT32_NUM)) {
+    uint32_t drvFlag =
+        ((streamFlag & RT_STREAM_CP_PROCESS_USE) != 0U) ? static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
+    if ((IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DRIVER_RESOURCE_ALLOC_WITH_VFID)) &&
+        (GetVfId() != MAX_UINT32_NUM)) {
         resAllocInput.res[2U] = GetVfId(); // used for david vf scene
         drvFlag |= (static_cast<uint32_t>(TSDRV_RES_RANGE_ID));
     }
     resAllocInput.res[1U] = drvFlag;
     resAllocOutput.resourceId = 0U;
 
-    RT_LOG(RT_LOG_INFO, "stream id alloc begin, device_id=%u, priority=%u, ts_id=%u, remote_stream_id=%u, vf_id=%u",
+    RT_LOG(
+        RT_LOG_INFO, "stream id alloc begin, device_id=%u, priority=%u, ts_id=%u, remote_stream_id=%u, vf_id=%u",
         deviceId, resAllocInput.res[0U], tsId, resAllocInput.res[1U], resAllocInput.res[2U]);
 
     const drvError_t drvRet = halResourceIdAlloc(deviceId, &resAllocInput, &resAllocOutput);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceIdAlloc failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halResourceIdAlloc failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
             static_cast<int32_t>(drvRet), deviceId, tsId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
     *id = static_cast<int32_t>(resAllocOutput.resourceId);
-    RT_LOG(RT_LOG_DEBUG, "Succ, stream_id=%d, priority=%u, device_id=%u, ts_id=%u, streamFlag=%u",
-        *id, priority, deviceId, tsId, streamFlag);
+    RT_LOG(
+        RT_LOG_DEBUG, "Succ, stream_id=%d, priority=%u, device_id=%u, ts_id=%u, streamFlag=%u", *id, priority, deviceId,
+        tsId, streamFlag);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::StreamIdFree(const int32_t id, const uint32_t deviceId, const uint32_t tsId,
-                                  const uint32_t streamFlag)
+rtError_t NpuDriver::StreamIdFree(
+    const int32_t id, const uint32_t deviceId, const uint32_t tsId, const uint32_t streamFlag)
 {
     struct halResourceIdInputInfo resFreeInput;
 
@@ -1185,20 +1273,23 @@ rtError_t NpuDriver::StreamIdFree(const int32_t id, const uint32_t deviceId, con
     resFreeInput.type = DRV_STREAM_ID;
     resFreeInput.tsId = tsId;
     resFreeInput.resourceId = static_cast<uint32_t>(id);
-    resFreeInput.res[1U] = ((streamFlag & RT_STREAM_CP_PROCESS_USE) != 0U) ?
-        static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
+    resFreeInput.res[1U] =
+        ((streamFlag & RT_STREAM_CP_PROCESS_USE) != 0U) ? static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
 
-    RT_LOG(RT_LOG_INFO, "stream id free begin, device_id=%u, stream_id=%u, ts_id=%u, remote_stream_id=%u",
-        deviceId, resFreeInput.resourceId, resFreeInput.tsId, resFreeInput.res[1U]);
+    RT_LOG(
+        RT_LOG_INFO, "stream id free begin, device_id=%u, stream_id=%u, ts_id=%u, remote_stream_id=%u", deviceId,
+        resFreeInput.resourceId, resFreeInput.tsId, resFreeInput.res[1U]);
     const drvError_t drvRet = halResourceIdFree(deviceId, &resFreeInput);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, streamId=%d, drvDevId=%u, tsId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, streamId=%d, drvDevId=%u, tsId=%u.",
             static_cast<int32_t>(drvRet), id, deviceId, tsId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
-    RT_LOG(RT_LOG_INFO, "Stream id free success, stream_id=%d, device_id=%u, tsId=%u, streamFlag=%u",
-        id, deviceId, tsId, streamFlag);
+    RT_LOG(
+        RT_LOG_INFO, "Stream id free success, stream_id=%d, device_id=%u, tsId=%u, streamFlag=%u", id, deviceId, tsId,
+        streamFlag);
     return RT_ERROR_NONE;
 }
 
@@ -1212,18 +1303,20 @@ rtError_t NpuDriver::StreamIdReservedFree(const int32_t id, const uint32_t devic
     resFreeInput.resourceId = static_cast<uint32_t>(id);
     resFreeInput.res[1U] = TSDRV_RES_RESERVED_ID;
 
-    RT_LOG(RT_LOG_INFO, "stream id free begin, device_id=%u, stream_id=%u, ts_id=%u, remote_stream_id=%u",
-        deviceId, resFreeInput.resourceId, resFreeInput.tsId, resFreeInput.res[1U]);
+    RT_LOG(
+        RT_LOG_INFO, "stream id free begin, device_id=%u, stream_id=%u, ts_id=%u, remote_stream_id=%u", deviceId,
+        resFreeInput.resourceId, resFreeInput.tsId, resFreeInput.res[1U]);
     const drvError_t drvRet = halResourceIdFree(deviceId, &resFreeInput);
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, streamId=%d, drvDevId=%u, tsId=%u.",
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, streamId=%d, drvDevId=%u, tsId=%u.",
         static_cast<int32_t>(drvRet), id, deviceId, tsId);
 
     RT_LOG(RT_LOG_INFO, "Stream id free success, stream_id=%d, device_id=%u, tsId=%u", id, deviceId, tsId);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::EventIdAlloc(int32_t * const id, const uint32_t deviceId, const uint32_t tsId,
-                                  const uint32_t eventFlag, const bool createFlag)
+rtError_t NpuDriver::EventIdAlloc(
+    int32_t* const id, const uint32_t deviceId, const uint32_t tsId, const uint32_t eventFlag, const bool createFlag)
 {
     struct halResourceIdInputInfo resAllocInput;
     struct halResourceIdOutputInfo resAllocOutput;
@@ -1231,8 +1324,8 @@ rtError_t NpuDriver::EventIdAlloc(int32_t * const id, const uint32_t deviceId, c
     (void)memset_s(resAllocInput.res, sizeof(resAllocInput.res), 0U, sizeof(resAllocInput.res));
     resAllocInput.type = DRV_EVENT_ID;
     resAllocInput.tsId = tsId;
-    resAllocInput.res[1U] = (eventFlag == static_cast<uint32_t>(RT_EVENT_MC2)) ?
-        static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
+    resAllocInput.res[1U] =
+        (eventFlag == static_cast<uint32_t>(RT_EVENT_MC2)) ? static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
     resAllocOutput.resourceId = 0U;
 
     drvError_t drvRet = DRV_ERROR_NONE;
@@ -1241,8 +1334,9 @@ rtError_t NpuDriver::EventIdAlloc(int32_t * const id, const uint32_t deviceId, c
     } else {
         int32_t tryCount = 0;
         do {
-            RT_LOG(RT_LOG_INFO, "event id alloc begin, device_id=%u, ts_id=%u, remote_event_id=%u",
-                deviceId, resAllocInput.tsId, resAllocInput.res[1U]);
+            RT_LOG(
+                RT_LOG_INFO, "event id alloc begin, device_id=%u, ts_id=%u, remote_event_id=%u", deviceId,
+                resAllocInput.tsId, resAllocInput.res[1U]);
             drvRet = halResourceIdAlloc(deviceId, &resAllocInput, &resAllocOutput);
             COND_PROC((drvRet != DRV_ERROR_NONE), tryCount++; (void)mmSleep(50U);)
         } while ((drvRet != DRV_ERROR_NONE) && (tryCount < 10)); // try count 10
@@ -1250,23 +1344,26 @@ rtError_t NpuDriver::EventIdAlloc(int32_t * const id, const uint32_t deviceId, c
 
     if (drvRet != DRV_ERROR_NONE) {
         if ((drvRet == DRV_ERROR_NO_EVENT_RESOURCES) && (!createFlag)) {
-            RT_LOG(RT_LOG_WARNING, "Event id alloc fail, no resources now. device_id=%u, ts_id=%u, eventFlag=%u",
-                   deviceId, tsId, eventFlag);
+            RT_LOG(
+                RT_LOG_WARNING, "Event id alloc fail, no resources now. device_id=%u, ts_id=%u, eventFlag=%u", deviceId,
+                tsId, eventFlag);
             return RT_ERROR_DRV_NO_EVENT_RESOURCES;
         }
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceIdAlloc failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halResourceIdAlloc failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
             static_cast<int32_t>(drvRet), deviceId, tsId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
     *id = static_cast<int32_t>(resAllocOutput.resourceId);
-    RT_LOG(RT_LOG_INFO, "Event id alloc success, device_id=%u, ts_id=%u, event_id=%d, eventFlag=%u",
-        deviceId, tsId, *id, eventFlag);
+    RT_LOG(
+        RT_LOG_INFO, "Event id alloc success, device_id=%u, ts_id=%u, event_id=%d, eventFlag=%u", deviceId, tsId, *id,
+        eventFlag);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::EventIdFree(const int32_t id, const uint32_t deviceId, const uint32_t tsId,
-                                 const uint32_t eventFlag)
+rtError_t NpuDriver::EventIdFree(
+    const int32_t id, const uint32_t deviceId, const uint32_t tsId, const uint32_t eventFlag)
 {
     struct halResourceIdInputInfo resFreeInput;
 
@@ -1274,23 +1371,26 @@ rtError_t NpuDriver::EventIdFree(const int32_t id, const uint32_t deviceId, cons
     resFreeInput.type = DRV_EVENT_ID;
     resFreeInput.tsId = tsId;
     resFreeInput.resourceId = static_cast<uint32_t>(id);
-    resFreeInput.res[1U] = (eventFlag == static_cast<uint32_t>(RT_EVENT_MC2)) ?
-        static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
+    resFreeInput.res[1U] =
+        (eventFlag == static_cast<uint32_t>(RT_EVENT_MC2)) ? static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
 
-    RT_LOG(RT_LOG_INFO, "event id free begin, device_id=%u, event_id=%u, ts_id=%u, remote_event_id=%u",
-        deviceId, resFreeInput.resourceId, resFreeInput.tsId, resFreeInput.res[1U]);
+    RT_LOG(
+        RT_LOG_INFO, "event id free begin, device_id=%u, event_id=%u, ts_id=%u, remote_event_id=%u", deviceId,
+        resFreeInput.resourceId, resFreeInput.tsId, resFreeInput.res[1U]);
     const drvError_t drvRet = halResourceIdFree(deviceId, &resFreeInput);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, drvDevId=%u, tsId=%u, eventId=%d.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, drvDevId=%u, tsId=%u, eventId=%d.",
             static_cast<int32_t>(drvRet), deviceId, tsId, id);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
-    RT_LOG(RT_LOG_DEBUG, "event id free success, device_id=%u, ts_id=%u, event_id=%d, eventFlag=%u",
-        deviceId, tsId, id, eventFlag);
+    RT_LOG(
+        RT_LOG_DEBUG, "event id free success, device_id=%u, ts_id=%u, event_id=%d, eventFlag=%u", deviceId, tsId, id,
+        eventFlag);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CmoIdAlloc(int32_t * const id, const uint32_t deviceId, const uint32_t tsId)
+rtError_t NpuDriver::CmoIdAlloc(int32_t* const id, const uint32_t deviceId, const uint32_t tsId)
 {
     struct halResourceIdInputInfo resAllocInput;
     struct halResourceIdOutputInfo resAllocOutput;
@@ -1302,7 +1402,8 @@ rtError_t NpuDriver::CmoIdAlloc(int32_t * const id, const uint32_t deviceId, con
 
     const drvError_t drvRet = halResourceIdAlloc(deviceId, &resAllocInput, &resAllocOutput);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceIdAlloc failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halResourceIdAlloc failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
             static_cast<int32_t>(drvRet), deviceId, tsId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
@@ -1323,7 +1424,8 @@ rtError_t NpuDriver::CmoIdFree(const int32_t id, const uint32_t deviceId, const 
 
     const drvError_t drvRet = halResourceIdFree(deviceId, &resFreeInput);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, cmoId=%d, drvDevId=%u, tsId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, cmoId=%d, drvDevId=%u, tsId=%u.",
             static_cast<int32_t>(drvRet), id, deviceId, tsId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
@@ -1332,11 +1434,12 @@ rtError_t NpuDriver::CmoIdFree(const int32_t id, const uint32_t deviceId, const 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::NotifyIdAlloc(const int32_t deviceId, uint32_t * const id, const uint32_t tsId,
-                                   const uint32_t notifyFlag, const bool isCountNotify, const bool isEvent)
+rtError_t NpuDriver::NotifyIdAlloc(
+    const int32_t deviceId, uint32_t* const id, const uint32_t tsId, const uint32_t notifyFlag,
+    const bool isCountNotify, const bool isEvent)
 {
-    struct halResourceIdInputInfo  resAllocInput;
-    struct halResourceIdOutputInfo  resAllocOutput;
+    struct halResourceIdInputInfo resAllocInput;
+    struct halResourceIdOutputInfo resAllocOutput;
 
     (void)memset_s(resAllocInput.res, sizeof(resAllocInput.res), 0U, sizeof(resAllocInput.res));
     resAllocInput.type = DRV_NOTIFY_ID;
@@ -1344,17 +1447,19 @@ rtError_t NpuDriver::NotifyIdAlloc(const int32_t deviceId, uint32_t * const id, 
         resAllocInput.type = DRV_CNT_NOTIFY_ID;
     }
     resAllocInput.tsId = tsId;
-    uint32_t drvFlag = (notifyFlag == static_cast<uint32_t>(RT_NOTIFY_MC2)) ?
-        static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
-    if ((IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DRIVER_RESOURCE_ALLOC_WITH_VFID)) && (GetVfId() != MAX_UINT32_NUM)) {
+    uint32_t drvFlag =
+        (notifyFlag == static_cast<uint32_t>(RT_NOTIFY_MC2)) ? static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
+    if ((IsSupportFeature(RtOptionalFeatureType::RT_FEATURE_DRIVER_RESOURCE_ALLOC_WITH_VFID)) &&
+        (GetVfId() != MAX_UINT32_NUM)) {
         resAllocInput.res[2U] = GetVfId(); // used for david vf scene
         drvFlag |= (static_cast<uint32_t>(TSDRV_RES_RANGE_ID));
     }
     resAllocInput.res[1U] = drvFlag;
     resAllocOutput.resourceId = 0U;
 
-    RT_LOG(RT_LOG_INFO, "notify id alloc begin, device_id=%u, ts_id=%u, remote_notify_id=%u, type=%d.",
-        deviceId, resAllocInput.tsId, resAllocInput.res[1U], static_cast<int32_t>(resAllocInput.type));
+    RT_LOG(
+        RT_LOG_INFO, "notify id alloc begin, device_id=%u, ts_id=%u, remote_notify_id=%u, type=%d.", deviceId,
+        resAllocInput.tsId, resAllocInput.res[1U], static_cast<int32_t>(resAllocInput.type));
     drvError_t drvRet = halResourceIdAlloc(static_cast<uint32_t>(deviceId), &resAllocInput, &resAllocOutput);
     if (drvRet != DRV_ERROR_NONE) {
         if ((drvRet == DRV_ERROR_NO_NOTIFY_RESOURCES) && isEvent) {
@@ -1364,15 +1469,16 @@ rtError_t NpuDriver::NotifyIdAlloc(const int32_t deviceId, uint32_t * const id, 
     }
 
     *id = resAllocOutput.resourceId;
-    RT_LOG(RT_LOG_INFO, "notify id alloc end, device_id=%d, ts_id=%u, notify_id=%u, notify_flag=%u",
-            deviceId, tsId, *id, notifyFlag);
+    RT_LOG(
+        RT_LOG_INFO, "notify id alloc end, device_id=%d, ts_id=%u, notify_id=%u, notify_flag=%u", deviceId, tsId, *id,
+        notifyFlag);
 
     return RT_ERROR_NONE;
 }
 
 TIMESTAMP_EXTERN(halResourceIdFree);
-rtError_t NpuDriver::NotifyIdFree(const int32_t deviceId, const uint32_t id, const uint32_t tsId,
-                                  const uint32_t notifyFlag, const bool isCountNotify)
+rtError_t NpuDriver::NotifyIdFree(
+    const int32_t deviceId, const uint32_t id, const uint32_t tsId, const uint32_t notifyFlag, const bool isCountNotify)
 {
     struct halResourceIdInputInfo resFreeInput;
 
@@ -1383,30 +1489,33 @@ rtError_t NpuDriver::NotifyIdFree(const int32_t deviceId, const uint32_t id, con
     }
     resFreeInput.tsId = tsId;
     resFreeInput.resourceId = id;
-    resFreeInput.res[1U] = (notifyFlag == static_cast<uint32_t>(RT_NOTIFY_MC2)) ?
-        static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
+    resFreeInput.res[1U] =
+        (notifyFlag == static_cast<uint32_t>(RT_NOTIFY_MC2)) ? static_cast<uint32_t>(TSDRV_FLAG_REMOTE_ID) : 0U;
 
-    RT_LOG(RT_LOG_INFO, "NotifyIdFree begin, device_id=%d, notify_id=%u, ts_id=%u, remote_notify_id=%u",
-        deviceId, resFreeInput.resourceId, resFreeInput.tsId, resFreeInput.res[1U]);
+    RT_LOG(
+        RT_LOG_INFO, "NotifyIdFree begin, device_id=%d, notify_id=%u, ts_id=%u, remote_notify_id=%u", deviceId,
+        resFreeInput.resourceId, resFreeInput.tsId, resFreeInput.res[1U]);
     TIMESTAMP_BEGIN(halResourceIdFree);
     const drvError_t drvRet = halResourceIdFree(static_cast<uint32_t>(deviceId), &resFreeInput);
     TIMESTAMP_END(halResourceIdFree);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, drvDevId=%d, id=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, drvDevId=%d, id=%u.",
             static_cast<int32_t>(drvRet), deviceId, id);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
-    RT_LOG(RT_LOG_INFO, "NotifyIdFree success, device_id=%d, ts_id=%u, notify_id=%u, notify_flag=%u",
-            deviceId, tsId, id, notifyFlag);
+    RT_LOG(
+        RT_LOG_INFO, "NotifyIdFree success, device_id=%d, ts_id=%u, notify_id=%u, notify_flag=%u", deviceId, tsId, id,
+        notifyFlag);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ModelIdAlloc(int32_t * const id, const uint32_t deviceId, const uint32_t tsId)
+rtError_t NpuDriver::ModelIdAlloc(int32_t* const id, const uint32_t deviceId, const uint32_t tsId)
 {
-    struct halResourceIdInputInfo  resAllocInput;
-    struct halResourceIdOutputInfo  resAllocOutput;
+    struct halResourceIdInputInfo resAllocInput;
+    struct halResourceIdOutputInfo resAllocOutput;
 
     (void)memset_s(resAllocInput.res, sizeof(resAllocInput.res), 0U, sizeof(resAllocInput.res));
     resAllocInput.type = DRV_MODEL_ID;
@@ -1419,7 +1528,8 @@ rtError_t NpuDriver::ModelIdAlloc(int32_t * const id, const uint32_t deviceId, c
 
     const drvError_t drvRet = halResourceIdAlloc(deviceId, &resAllocInput, &resAllocOutput);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceIdAlloc failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halResourceIdAlloc failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
             static_cast<int32_t>(drvRet), deviceId, tsId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
@@ -1440,7 +1550,8 @@ rtError_t NpuDriver::ModelIdFree(const int32_t id, const uint32_t deviceId, cons
 
     const drvError_t drvRet = halResourceIdFree(deviceId, &resFreeInput);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, drvDevId=%u, tsId=%u, modelId=%d.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halResourceIdFree failed, drvRetCode=%d, drvDevId=%u, tsId=%u, modelId=%d.",
             static_cast<int32_t>(drvRet), deviceId, tsId, id);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
@@ -1453,8 +1564,8 @@ rtError_t NpuDriver::ModelIdFree(const int32_t id, const uint32_t deviceId, cons
  * Subcategory: SQCQ Alloc and Free
  * ======================================================== */
 
-rtError_t NpuDriver::SqCqAllocate(const uint32_t deviceId, const uint32_t tsId, const uint32_t groupId,
-                                  uint32_t * const sqId, uint32_t * const cqId)
+rtError_t NpuDriver::SqCqAllocate(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t groupId, uint32_t* const sqId, uint32_t* const cqId)
 {
     struct halSqCqOutputInfo normalSqCqAllocOutputInfo;
     struct halSqCqInputInfo normalSqCqAllocInputInfo;
@@ -1474,13 +1585,15 @@ rtError_t NpuDriver::SqCqAllocate(const uint32_t deviceId, const uint32_t tsId, 
 
     const drvError_t drvRet = halSqCqAllocate(deviceId, &normalSqCqAllocInputInfo, &normalSqCqAllocOutputInfo);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u, groupId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u, groupId=%u.",
             static_cast<int32_t>(drvRet), deviceId, groupId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
-    RT_LOG(RT_LOG_INFO, "alloc success, deviceId=%u sqId=%u, cqId=%u.",
-        deviceId, normalSqCqAllocOutputInfo.sqId, normalSqCqAllocOutputInfo.cqId);
+    RT_LOG(
+        RT_LOG_INFO, "alloc success, deviceId=%u sqId=%u, cqId=%u.", deviceId, normalSqCqAllocOutputInfo.sqId,
+        normalSqCqAllocOutputInfo.cqId);
 
     *sqId = normalSqCqAllocOutputInfo.sqId;
     *cqId = normalSqCqAllocOutputInfo.cqId;
@@ -1501,18 +1614,17 @@ rtError_t NpuDriver::SqCqFree(const uint32_t sqId, const uint32_t cqId, const ui
 
     const drvError_t drvRet = halSqCqFree(deviceId, &SqCqFreeInputInfo);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halSqCqFree failed, drvRetCode=%d, drvDevId=%u, sqId=%u, cqId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halSqCqFree failed, drvRetCode=%d, drvDevId=%u, sqId=%u, cqId=%u.",
             static_cast<int32_t>(drvRet), deviceId, sqId, cqId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::NormalSqCqAllocate(const uint32_t deviceId, const uint32_t tsId, const uint32_t drvFlag,
-                                        uint32_t * const sqId, uint32_t * const cqId,
-                                        uint32_t * const info, const uint32_t len,
-                                        uint32_t * const msg, const uint32_t msgLen,
-                                        const int32_t retryCount)
+rtError_t NpuDriver::NormalSqCqAllocate(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t drvFlag, uint32_t* const sqId, uint32_t* const cqId,
+    uint32_t* const info, const uint32_t len, uint32_t* const msg, const uint32_t msgLen, const int32_t retryCount)
 {
     struct halSqCqInputInfo normalSqCqAllocInputInfo = {};
     struct halSqCqOutputInfo normalSqCqAllocOutputInfo;
@@ -1559,25 +1671,28 @@ rtError_t NpuDriver::NormalSqCqAllocate(const uint32_t deviceId, const uint32_t 
     }
 
     normalSqCqAllocInputInfo.cqeDepth =
-        ((sysMode_ == RUN_MACHINE_VIRTUAL && addrMode_ != 0) ?
-            CQ_DEPTH_FOR_FLAT_ADDR_VIRTURE_MACH : normalSqCqAllocInputInfo.cqeDepth);
-    RT_LOG(RT_LOG_INFO, "Set cq dep to %u, sysMode=%d addrMode=%d",
-        normalSqCqAllocInputInfo.cqeDepth, sysMode_, addrMode_);
+        ((sysMode_ == RUN_MACHINE_VIRTUAL && addrMode_ != 0) ? CQ_DEPTH_FOR_FLAT_ADDR_VIRTURE_MACH :
+                                                               normalSqCqAllocInputInfo.cqeDepth);
+    RT_LOG(
+        RT_LOG_INFO, "Set cq dep to %u, sysMode=%d addrMode=%d", normalSqCqAllocInputInfo.cqeDepth, sysMode_,
+        addrMode_);
 
     // streamid send to ts, it will be need when resource recycle
-    const errno_t ret = memcpy_s(normalSqCqAllocInputInfo.info, sizeof(normalSqCqAllocInputInfo.info), info,
-        static_cast<size_t>(len));
-    COND_RETURN_ERROR_MSG_CALL(ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
-                               "Call memcpy_s failed, dst length=%zu, src length=%u, retCode=%d!",
-                               sizeof(normalSqCqAllocInputInfo.info), len, ret);
-    RT_LOG(RT_LOG_DEBUG, "normal sqcq alloc, device_id=%u, tsId=%u, flag=%u, cqId=%u, sqId=%u.",
-        deviceId, tsId, normalSqCqAllocInputInfo.flag, *cqId, *sqId);
+    const errno_t ret =
+        memcpy_s(normalSqCqAllocInputInfo.info, sizeof(normalSqCqAllocInputInfo.info), info, static_cast<size_t>(len));
+    COND_RETURN_ERROR_MSG_CALL(
+        ERR_MODULE_SYSTEM, ret != EOK, RT_ERROR_SEC_HANDLE,
+        "Call memcpy_s failed, dst length=%zu, src length=%u, retCode=%d!", sizeof(normalSqCqAllocInputInfo.info), len,
+        ret);
+    RT_LOG(
+        RT_LOG_DEBUG, "normal sqcq alloc, device_id=%u, tsId=%u, flag=%u, cqId=%u, sqId=%u.", deviceId, tsId,
+        normalSqCqAllocInputInfo.flag, *cqId, *sqId);
 
     drvError_t drvRet = halSqCqAllocate(deviceId, &normalSqCqAllocInputInfo, &normalSqCqAllocOutputInfo);
     if (g_isAddrFlatDevice) {
         int32_t retryCountTemp = retryCount;
         while ((drvRet != DRV_ERROR_NONE) && (retryCountTemp > 0)) { // try count 10
-            (void)mmSleep(300U); // retry every 300ms
+            (void)mmSleep(300U);                                     // retry every 300ms
             retryCountTemp--;
             drvRet = halSqCqAllocate(deviceId, &normalSqCqAllocInputInfo, &normalSqCqAllocOutputInfo);
         }
@@ -1588,25 +1703,28 @@ rtError_t NpuDriver::NormalSqCqAllocate(const uint32_t deviceId, const uint32_t 
         return RT_ERROR_SQID_FULL;
     }
 
-    COND_RETURN_EVENT(drvRet == DRV_ERROR_NO_RESOURCES, RT_ERROR_DRV_NO_RESOURCES,
+    COND_RETURN_EVENT(
+        drvRet == DRV_ERROR_NO_RESOURCES, RT_ERROR_DRV_NO_RESOURCES,
         "halSqCqAllocate no resource: device_id=%u, drvRetCode=%d.", deviceId, static_cast<int32_t>(drvRet));
 
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u.",
-            static_cast<int32_t>(drvRet), deviceId);
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u.", static_cast<int32_t>(drvRet),
+            deviceId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
     *sqId = normalSqCqAllocOutputInfo.sqId;
     *cqId = normalSqCqAllocOutputInfo.cqId;
-    RT_LOG(RT_LOG_DEBUG, "Normal sqcq alloc success, device_id=%u, tsId=%u, flag=%u, sqId=%u, cqId=%u.",
-        deviceId, tsId, normalSqCqAllocInputInfo.flag, *sqId, *cqId);
+    RT_LOG(
+        RT_LOG_DEBUG, "Normal sqcq alloc success, device_id=%u, tsId=%u, flag=%u, sqId=%u, cqId=%u.", deviceId, tsId,
+        normalSqCqAllocInputInfo.flag, *sqId, *cqId);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::NormalSqCqFree(const uint32_t deviceId, const uint32_t tsId,
-                                    const uint32_t drvFlag, const uint32_t sqId, const uint32_t cqId)
+rtError_t NpuDriver::NormalSqCqFree(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t drvFlag, const uint32_t sqId, const uint32_t cqId)
 {
     struct halSqCqFreeInfo normalSqCqFreeInputInfo;
     normalSqCqFreeInputInfo.type = DRV_NORMAL_TYPE;
@@ -1614,21 +1732,25 @@ rtError_t NpuDriver::NormalSqCqFree(const uint32_t deviceId, const uint32_t tsId
     normalSqCqFreeInputInfo.sqId = sqId;
     normalSqCqFreeInputInfo.cqId = cqId;
     normalSqCqFreeInputInfo.flag = drvFlag;
-    RT_LOG(RT_LOG_INFO, "Normal sqcq free, sqId=%u, cqId=%u, device_id=%u, tsId=%u, drvFlag=%u",
+    RT_LOG(
+        RT_LOG_INFO, "Normal sqcq free, sqId=%u, cqId=%u, device_id=%u, tsId=%u, drvFlag=%u",
         normalSqCqFreeInputInfo.sqId, normalSqCqFreeInputInfo.cqId, deviceId, tsId, drvFlag);
     const drvError_t drvRet = halSqCqFree(deviceId, &normalSqCqFreeInputInfo);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halSqCqFree failed, drvRetCode=%d, drvDevId=%u, sqId=%u, cqId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halSqCqFree failed, drvRetCode=%d, drvDevId=%u, sqId=%u, cqId=%u.",
             static_cast<int32_t>(drvRet), deviceId, sqId, cqId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
-    RT_LOG(RT_LOG_INFO, "Normal sqcq free success, sqId=%u, cqId=%u, device_id=%u, tsId=%u, drvFlag=%u",
+    RT_LOG(
+        RT_LOG_INFO, "Normal sqcq free success, sqId=%u, cqId=%u, device_id=%u, tsId=%u, drvFlag=%u",
         normalSqCqFreeInputInfo.sqId, normalSqCqFreeInputInfo.cqId, deviceId, tsId, drvFlag);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::LogicCqAllocate(const uint32_t devId, const uint32_t tsId, const uint32_t streamId,
-    const bool isNeedFast, uint32_t &cqId, bool &isFastCq, const bool isCtrlSq)
+rtError_t NpuDriver::LogicCqAllocate(
+    const uint32_t devId, const uint32_t tsId, const uint32_t streamId, const bool isNeedFast, uint32_t& cqId,
+    bool& isFastCq, const bool isCtrlSq)
 {
     struct halSqCqInputInfo allocInput = {};
     allocInput.type = DRV_LOGIC_TYPE;
@@ -1655,7 +1777,8 @@ rtError_t NpuDriver::LogicCqAllocate(const uint32_t devId, const uint32_t tsId, 
     const drvError_t drvRet = halSqCqAllocate(devId, &allocInput, &allocOutput);
     if (drvRet != DRV_ERROR_NONE) {
 #ifndef CFG_DEV_PLATFORM_PC
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
             static_cast<int32_t>(drvRet), devId, tsId);
 #endif
         return RT_GET_DRV_ERRCODE(drvRet);
@@ -1665,15 +1788,18 @@ rtError_t NpuDriver::LogicCqAllocate(const uint32_t devId, const uint32_t tsId, 
         isFastCq = true;
     }
     cqId = allocOutput.cqId;
-    RT_LOG(RT_LOG_INFO, "Call halSqCqAllocate success: device_id=%u, ts_id=%u, cq_id=%u, stream_id=%u, "
-        "isNeedFast:%d, isFastCq:%d", devId, tsId, cqId, streamId, static_cast<int32_t>(isNeedFast),
-        static_cast<int32_t>(isFastCq));
+    RT_LOG(
+        RT_LOG_INFO,
+        "Call halSqCqAllocate success: device_id=%u, ts_id=%u, cq_id=%u, stream_id=%u, "
+        "isNeedFast:%d, isFastCq:%d",
+        devId, tsId, cqId, streamId, static_cast<int32_t>(isNeedFast), static_cast<int32_t>(isFastCq));
     return RT_ERROR_NONE;
 }
 
 // alloc logic cq for stars
-rtError_t NpuDriver::LogicCqAllocateV2(const uint32_t devId, const uint32_t tsId, const uint32_t streamId,
-    uint32_t &cqId, const bool isDvppGrp, const uint32_t drvFlag)
+rtError_t NpuDriver::LogicCqAllocateV2(
+    const uint32_t devId, const uint32_t tsId, const uint32_t streamId, uint32_t& cqId, const bool isDvppGrp,
+    const uint32_t drvFlag)
 {
     struct halSqCqInputInfo allocInput = {};
     uint32_t cqeDepth = 0U;
@@ -1685,7 +1811,7 @@ rtError_t NpuDriver::LogicCqAllocateV2(const uint32_t devId, const uint32_t tsId
     if (GetDevProperties().cqeDepth == static_cast<uint32_t>(CqeDepth::CQE_DEPTH_DVPP_GRP)) {
         // 16384U = 64(task num of each stream) * 256(stream num of dvpp grp)
         cqeDepth = isDvppGrp ? static_cast<uint32_t>(CqeDepth::CQE_DEPTH_DVPP_GRP) :
-            static_cast<uint32_t>(CqeDepth::CQE_DEPTH_NON_DVPP_GRP);
+                               static_cast<uint32_t>(CqeDepth::CQE_DEPTH_NON_DVPP_GRP);
     } else {
         cqeDepth = GetDevProperties().cqeDepth;
     }
@@ -1704,19 +1830,20 @@ rtError_t NpuDriver::LogicCqAllocateV2(const uint32_t devId, const uint32_t tsId
     struct halSqCqOutputInfo allocOutput = {};
     const drvError_t drvRet = halSqCqAllocate(devId, &allocInput, &allocOutput);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
             static_cast<int32_t>(drvRet), devId, tsId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
     cqId = allocOutput.cqId;
-    RT_LOG(RT_LOG_INFO, "success: deviceId=%u, tsId=%u, cqId=%u, streamId=%u, logicCq=%u, cqeDepth=%u",
-        devId, tsId, cqId, streamId, cqId, allocInput.cqeDepth);
+    RT_LOG(
+        RT_LOG_INFO, "success: deviceId=%u, tsId=%u, cqId=%u, streamId=%u, logicCq=%u, cqeDepth=%u", devId, tsId, cqId,
+        streamId, cqId, allocInput.cqeDepth);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::LogicCqFree(const uint32_t devId, const uint32_t tsId, const uint32_t cqId,
-    const uint32_t drvFlag)
+rtError_t NpuDriver::LogicCqFree(const uint32_t devId, const uint32_t tsId, const uint32_t cqId, const uint32_t drvFlag)
 {
     struct halSqCqFreeInfo freeInput;
     freeInput.type = DRV_LOGIC_TYPE;
@@ -1726,19 +1853,20 @@ rtError_t NpuDriver::LogicCqFree(const uint32_t devId, const uint32_t tsId, cons
     freeInput.flag = drvFlag;
     const drvError_t drvRet = halSqCqFree(devId, &freeInput);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet,
-            "[drv api] halSqCqFree failed:device_id=%u,tsId=%u,type=%u,cqId=%u,drvRetCode=%d.",
-            devId, freeInput.tsId, static_cast<uint32_t>(freeInput.type), freeInput.cqId, static_cast<int32_t>(drvRet));
+        DRV_ERROR_PROCESS(
+            drvRet, "[drv api] halSqCqFree failed:device_id=%u,tsId=%u,type=%u,cqId=%u,drvRetCode=%d.", devId,
+            freeInput.tsId, static_cast<uint32_t>(freeInput.type), freeInput.cqId, static_cast<int32_t>(drvRet));
         return RT_ERROR_DRV_ERR;
     }
 
-    RT_LOG(RT_LOG_INFO, "Succ:device_id=%u,ts_id=%u,type=%u,logic_cq_id=%u, drvFlag=%u.",
-           devId, freeInput.tsId, static_cast<uint32_t>(freeInput.type), freeInput.cqId, drvFlag);
+    RT_LOG(
+        RT_LOG_INFO, "Succ:device_id=%u,ts_id=%u,type=%u,logic_cq_id=%u, drvFlag=%u.", devId, freeInput.tsId,
+        static_cast<uint32_t>(freeInput.type), freeInput.cqId, drvFlag);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CtrlSqCqAllocate(const uint32_t deviceId, const uint32_t tsId,
-                                      uint32_t * const sqId, uint32_t * const cqId, const uint32_t logicCqId)
+rtError_t NpuDriver::CtrlSqCqAllocate(
+    const uint32_t deviceId, const uint32_t tsId, uint32_t* const sqId, uint32_t* const cqId, const uint32_t logicCqId)
 {
     struct halSqCqInputInfo ctrlSqCqAllocInputInfo = {};
     struct halSqCqOutputInfo ctrlSqCqAllocOutputInfo;
@@ -1760,8 +1888,9 @@ rtError_t NpuDriver::CtrlSqCqAllocate(const uint32_t deviceId, const uint32_t ts
     ctrlSqCqAllocOutputInfo.sqId = 0U;
     ctrlSqCqAllocOutputInfo.cqId = 0U;
 
-    RT_LOG(RT_LOG_DEBUG, "ctrl sqcq alloc, device_id=%u, tsId=%u, flag=%u, cqId=%u, sqId=%u, logicCqId=%u.",
-        deviceId, tsId, ctrlSqCqAllocInputInfo.flag, *cqId, *sqId, logicCqId);
+    RT_LOG(
+        RT_LOG_DEBUG, "ctrl sqcq alloc, device_id=%u, tsId=%u, flag=%u, cqId=%u, sqId=%u, logicCqId=%u.", deviceId,
+        tsId, ctrlSqCqAllocInputInfo.flag, *cqId, *sqId, logicCqId);
 
     const drvError_t drvRet = halSqCqAllocate(deviceId, &ctrlSqCqAllocInputInfo, &ctrlSqCqAllocOutputInfo);
     if (drvRet == DRV_ERROR_SQID_FULL) {
@@ -1770,21 +1899,23 @@ rtError_t NpuDriver::CtrlSqCqAllocate(const uint32_t deviceId, const uint32_t ts
     }
 
     if (drvRet != DRV_ERROR_NONE) {
-        RT_LOG(RT_LOG_WARNING, "[drv api] CtrlSqCqAllocate failed: device_id=%u, drvRetCode=%d.", deviceId,
+        RT_LOG(
+            RT_LOG_WARNING, "[drv api] CtrlSqCqAllocate failed: device_id=%u, drvRetCode=%d.", deviceId,
             static_cast<int32_t>(drvRet));
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
     *sqId = ctrlSqCqAllocOutputInfo.sqId;
     *cqId = ctrlSqCqAllocOutputInfo.cqId;
-    RT_LOG(RT_LOG_DEBUG, "ctrl sqcq alloc success, device_id=%u, tsId=%u, flag=%u, sqId=%u, cqId=%u.",
-        deviceId, tsId, ctrlSqCqAllocInputInfo.flag, *sqId, *cqId);
+    RT_LOG(
+        RT_LOG_DEBUG, "ctrl sqcq alloc success, device_id=%u, tsId=%u, flag=%u, sqId=%u, cqId=%u.", deviceId, tsId,
+        ctrlSqCqAllocInputInfo.flag, *sqId, *cqId);
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CtrlSqCqFree(const uint32_t deviceId, const uint32_t tsId,
-                                  const uint32_t sqId, const uint32_t cqId)
+rtError_t NpuDriver::CtrlSqCqFree(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, const uint32_t cqId)
 {
     struct halSqCqFreeInfo ctrlSqCqFreeInputInfo;
     ctrlSqCqFreeInputInfo.type = DRV_CTRL_TYPE;
@@ -1793,24 +1924,26 @@ rtError_t NpuDriver::CtrlSqCqFree(const uint32_t deviceId, const uint32_t tsId,
     ctrlSqCqFreeInputInfo.cqId = cqId;
     ctrlSqCqFreeInputInfo.flag = 0U;
     const drvError_t drvRet = halSqCqFree(deviceId, &ctrlSqCqFreeInputInfo);
-    RT_LOG(RT_LOG_INFO, "sqId=%u, cqId=%u, device_id=%u, tsId=%u.",
-        ctrlSqCqFreeInputInfo.sqId, ctrlSqCqFreeInputInfo.cqId, deviceId, tsId);
+    RT_LOG(
+        RT_LOG_INFO, "sqId=%u, cqId=%u, device_id=%u, tsId=%u.", ctrlSqCqFreeInputInfo.sqId, ctrlSqCqFreeInputInfo.cqId,
+        deviceId, tsId);
     if (drvRet != DRV_ERROR_NONE) {
-        RT_LOG(RT_LOG_WARNING, "[drv api] CtrlSqCqFree failed: device_id=%u, sqId=%u, cqId=%u, drvRetCode=%d.",
-            deviceId, sqId, cqId, static_cast<int32_t>(drvRet));
+        RT_LOG(
+            RT_LOG_WARNING, "[drv api] CtrlSqCqFree failed: device_id=%u, sqId=%u, cqId=%u, drvRetCode=%d.", deviceId,
+            sqId, cqId, static_cast<int32_t>(drvRet));
         return RT_GET_DRV_ERRCODE(drvRet);
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::VirtualCqAllocate(const uint32_t devId, const uint32_t tsId,
-                                       uint32_t &sqId, uint32_t &cqId, uint8_t *&addr, bool &shmSqReadonly)
+rtError_t NpuDriver::VirtualCqAllocate(
+    const uint32_t devId, const uint32_t tsId, uint32_t& sqId, uint32_t& cqId, uint8_t*& addr, bool& shmSqReadonly)
 {
     struct halSqCqInputInfo allocInput = {};
     allocInput.type = DRV_SHM_TYPE;
     allocInput.tsId = tsId;
     allocInput.sqeSize = RT_VIRTUAL_SQE_SIZE;
-    allocInput.cqeSize = RT_VIRTUAL_CQE_SIZE;  // ts and driver.
+    allocInput.cqeSize = RT_VIRTUAL_CQE_SIZE; // ts and driver.
     allocInput.sqeDepth = 1024U;
     allocInput.cqeDepth = 1024U;
     allocInput.grpId = 0U;
@@ -1819,12 +1952,12 @@ rtError_t NpuDriver::VirtualCqAllocate(const uint32_t devId, const uint32_t tsId
     struct halSqCqOutputInfo allocOutput = {};
     const drvError_t drvRet = halSqCqAllocate(devId, &allocInput, &allocOutput);
     if (drvRet == DRV_ERROR_NONE) {
-        RT_LOG(RT_LOG_INFO,
-            "VirtualCqAllocate success:dev_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, queue=%#llx, out flag=%u",
+        RT_LOG(
+            RT_LOG_INFO, "VirtualCqAllocate success:dev_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, queue=%#llx, out flag=%u",
             devId, tsId, allocOutput.sqId, allocOutput.cqId, allocOutput.queueVAddr, allocOutput.flag);
         sqId = allocOutput.sqId;
         cqId = allocOutput.cqId;
-        addr = RtPtrToPtr<uint8_t *>(static_cast<uintptr_t>(allocOutput.queueVAddr));
+        addr = RtPtrToPtr<uint8_t*>(static_cast<uintptr_t>(allocOutput.queueVAddr));
         // flag mark is read only
         shmSqReadonly = ((allocOutput.flag & static_cast<uint32_t>(TSRRV_FLAG_SQ_RDONLY)) != 0U);
         Runtime::Instance()->SetDisableThread(true);
@@ -1833,7 +1966,8 @@ rtError_t NpuDriver::VirtualCqAllocate(const uint32_t devId, const uint32_t tsId
         RT_LOG(RT_LOG_INFO, "device_id=%u does not support virtual cq, use thread mode", devId);
         return RT_GET_DRV_ERRCODE(drvRet);
     } else {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
             static_cast<int32_t>(drvRet), devId, tsId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
@@ -1849,13 +1983,13 @@ rtError_t NpuDriver::VirtualCqFree(const uint32_t devId, const uint32_t tsId, co
     freeInput.flag = 0U;
     RT_LOG(RT_LOG_DEBUG, "halSqCqFree begin: device_id=%u, ts_id=%u, sq_id=%d, cq_id=%u", devId, tsId, sqId, cqId);
     const drvError_t drvRet = halSqCqFree(devId, &freeInput);
-    RT_LOG(RT_LOG_INFO, "Call halSqCqFree finish: device_id=%u, ts_id=%u, sq_id=%d, cq_id=%u, drvRetCode=%d",
-           devId, tsId, sqId, cqId, static_cast<int32_t>(drvRet));
+    RT_LOG(
+        RT_LOG_INFO, "Call halSqCqFree finish: device_id=%u, ts_id=%u, sq_id=%d, cq_id=%u, drvRetCode=%d", devId, tsId,
+        sqId, cqId, static_cast<int32_t>(drvRet));
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DebugSqCqAllocate(const uint32_t deviceId, const uint32_t tsId,
-                                       uint32_t &sqId, uint32_t &cqId)
+rtError_t NpuDriver::DebugSqCqAllocate(const uint32_t deviceId, const uint32_t tsId, uint32_t& sqId, uint32_t& cqId)
 {
     RT_LOG(RT_LOG_DEBUG, "debug sqcq alloc, device_id=%u, tsId=%u", deviceId, tsId);
 
@@ -1870,17 +2004,19 @@ rtError_t NpuDriver::DebugSqCqAllocate(const uint32_t deviceId, const uint32_t t
 
     const drvError_t drvRet = halSqCqAllocate(deviceId, &debugSqCqAllocInputInfo, &debugSqCqAllocOutputInfo);
     if (drvRet == DRV_ERROR_SQID_FULL) {
-        RT_LOG(RT_LOG_INFO, "halSqCqAllocate: device_id=%u, ts_id=%u, drvRetCode=%d.", deviceId, tsId,
-               static_cast<int32_t>(drvRet));
+        RT_LOG(
+            RT_LOG_INFO, "halSqCqAllocate: device_id=%u, ts_id=%u, drvRetCode=%d.", deviceId, tsId,
+            static_cast<int32_t>(drvRet));
         return RT_ERROR_SQID_FULL;
     }
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
-            static_cast<int32_t>(drvRet), deviceId, tsId);
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api halSqCqAllocate failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+        static_cast<int32_t>(drvRet), deviceId, tsId);
 
     sqId = debugSqCqAllocOutputInfo.sqId;
     cqId = debugSqCqAllocOutputInfo.cqId;
-    RT_LOG(RT_LOG_DEBUG, "debug sqcq alloc success, device_id=%u, tsId=%u, sqId=%u, cqId=%u.",
-           deviceId, tsId, sqId, cqId);
+    RT_LOG(
+        RT_LOG_DEBUG, "debug sqcq alloc success, device_id=%u, tsId=%u, sqId=%u, cqId=%u.", deviceId, tsId, sqId, cqId);
     return RT_ERROR_NONE;
 }
 
@@ -1890,8 +2026,7 @@ rtError_t NpuDriver::DebugSqCqAllocate(const uint32_t deviceId, const uint32_t t
 
 rtError_t NpuDriver::EnableSq(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId)
 {
-    COND_RETURN_WARN(&halSqCqConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halSqCqConfig does not exist.");
+    COND_RETURN_WARN(&halSqCqConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halSqCqConfig does not exist.");
 
     struct halSqCqConfigInfo configInfo;
     configInfo.type = DRV_NORMAL_TYPE;
@@ -1903,7 +2038,8 @@ rtError_t NpuDriver::EnableSq(const uint32_t deviceId, const uint32_t tsId, cons
     RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, sqId=%u.", deviceId, tsId, sqId);
     const drvError_t drvRet = halSqCqConfig(deviceId, &configInfo);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet,
+        DRV_ERROR_PROCESS(
+            drvRet,
             "[drv api] halSqCqConfig DRV_NORMAL_TYPE DRV_SQCQ_PROP_SQ_STATUS value=1, "
             "device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.",
             deviceId, tsId, sqId, static_cast<int32_t>(drvRet));
@@ -1914,8 +2050,7 @@ rtError_t NpuDriver::EnableSq(const uint32_t deviceId, const uint32_t tsId, cons
 
 rtError_t NpuDriver::DisableSq(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId)
 {
-    COND_RETURN_WARN(&halSqCqConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halSqCqConfig does not exist.");
+    COND_RETURN_WARN(&halSqCqConfig == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halSqCqConfig does not exist.");
     struct halSqCqConfigInfo configInfo;
     configInfo.type = DRV_NORMAL_TYPE;
     configInfo.tsId = tsId;
@@ -1926,7 +2061,8 @@ rtError_t NpuDriver::DisableSq(const uint32_t deviceId, const uint32_t tsId, con
     RT_LOG(RT_LOG_INFO, "deviceId=%u, tsId=%u, sqId=%u.", deviceId, tsId, sqId);
     const drvError_t drvRet = halSqCqConfig(deviceId, &configInfo);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet,
+        DRV_ERROR_PROCESS(
+            drvRet,
             "[drv api] halSqCqConfig DRV_NORMAL_TYPE DRV_SQCQ_PROP_SQ_STATUS value=0, "
             "device_id=%u, ts_id=%u, sq_id=%u, drvRetCode=%d.",
             deviceId, tsId, sqId, static_cast<int32_t>(drvRet));
@@ -1940,9 +2076,9 @@ rtError_t NpuDriver::DisableSq(const uint32_t deviceId, const uint32_t tsId, con
  * Subcategory: SQCQ Send
  * ======================================================== */
 
-rtError_t NpuDriver::CommandOccupy(const uint32_t sqId, rtTsCmdSqBuf_t ** const command,
-                                   const uint32_t cmdCount, const uint32_t deviceId,
-                                   const uint32_t tsId, uint32_t * const pos)
+rtError_t NpuDriver::CommandOccupy(
+    const uint32_t sqId, rtTsCmdSqBuf_t** const command, const uint32_t cmdCount, const uint32_t deviceId,
+    const uint32_t tsId, uint32_t* const pos)
 {
     struct halSqMemGetInput sqMemGetInput;
     struct halSqMemGetOutput sqMemGetOutput;
@@ -1960,15 +2096,17 @@ rtError_t NpuDriver::CommandOccupy(const uint32_t sqId, rtTsCmdSqBuf_t ** const 
         return RT_ERROR_DRV_OCCUPY;
     }
 
-    *command = RtPtrToPtr<rtTsCmdSqBuf_t *>(const_cast<void *>(sqMemGetOutput.cmdPtr));
-    *pos     = sqMemGetOutput.pos;
-    RT_LOG(RT_LOG_DEBUG, "sqId=%u, device_id=%u, tsId=%u, cmdCount=%u, pos=%u.",
-        sqId, deviceId, tsId, sqMemGetOutput.cmdCount, *pos);
+    *command = RtPtrToPtr<rtTsCmdSqBuf_t*>(const_cast<void*>(sqMemGetOutput.cmdPtr));
+    *pos = sqMemGetOutput.pos;
+    RT_LOG(
+        RT_LOG_DEBUG, "sqId=%u, device_id=%u, tsId=%u, cmdCount=%u, pos=%u.", sqId, deviceId, tsId,
+        sqMemGetOutput.cmdCount, *pos);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SqCommandOccupy(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId,
-                                     rtHostFuncCommand_t ** const command, const uint32_t cnt)
+rtError_t NpuDriver::SqCommandOccupy(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, rtHostFuncCommand_t** const command,
+    const uint32_t cnt)
 {
     struct halSqMemGetInput sqMemGetInput;
     struct halSqMemGetOutput sqMemGetOutput;
@@ -1983,36 +2121,41 @@ rtError_t NpuDriver::SqCommandOccupy(const uint32_t deviceId, const uint32_t tsI
 
     const drvError_t drvRet = halSqMemGet(deviceId, &sqMemGetInput, &sqMemGetOutput);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halSqMemGet failed, drvRetCode=%d, drvDevId=%u, sqId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halSqMemGet failed, drvRetCode=%d, drvDevId=%u, sqId=%u.",
             static_cast<int32_t>(drvRet), deviceId, sqId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
-    *command = RtPtrToPtr<rtHostFuncCommand_t *>(RtPtrToPtr<uintptr_t>(sqMemGetOutput.cmdPtr));
+    *command = RtPtrToPtr<rtHostFuncCommand_t*>(RtPtrToPtr<uintptr_t>(sqMemGetOutput.cmdPtr));
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SqTaskSend(const uint32_t sqId, rtStarsSqe_t * const sqe, const uint32_t deviceId,
-                                const uint32_t tsId, const uint32_t sqeNum)
+rtError_t NpuDriver::SqTaskSend(
+    const uint32_t sqId, rtStarsSqe_t* const sqe, const uint32_t deviceId, const uint32_t tsId, const uint32_t sqeNum)
 {
     struct halTaskSendInfo info = {};
     info.type = DRV_NORMAL_TYPE;
-    info.sqe_addr = RtPtrToPtr<uint8_t *>(sqe);
+    info.sqe_addr = RtPtrToPtr<uint8_t*>(sqe);
     info.sqe_num = sqeNum;
     info.tsId = tsId;
     info.sqId = sqId;
 
     const drvError_t drvRet = halSqTaskSend(deviceId, &info);
     if (unlikely(drvRet != DRV_ERROR_NONE)) {
-        RT_LOG(RT_LOG_WARNING, "[drv api] halSqTaskSend failed: [sqId=%u], device_id=%u, ts_id=%u, "
-            "sqe_num=%u, drvRetCode=%d.", sqId, deviceId, tsId, sqeNum, static_cast<int32_t>(drvRet));
+        RT_LOG(
+            RT_LOG_WARNING,
+            "[drv api] halSqTaskSend failed: [sqId=%u], device_id=%u, ts_id=%u, "
+            "sqe_num=%u, drvRetCode=%d.",
+            sqId, deviceId, tsId, sqeNum, static_cast<int32_t>(drvRet));
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CommandSend(const uint32_t sqId, const rtTsCmdSqBuf_t * const command, const uint32_t reportCount,
-                                 const uint32_t deviceId, const uint32_t tsId, const uint32_t cmdCount)
+rtError_t NpuDriver::CommandSend(
+    const uint32_t sqId, const rtTsCmdSqBuf_t* const command, const uint32_t reportCount, const uint32_t deviceId,
+    const uint32_t tsId, const uint32_t cmdCount)
 {
     UNUSED(command);
     halSqMsgInfo sendInfo;
@@ -2023,19 +2166,23 @@ rtError_t NpuDriver::CommandSend(const uint32_t sqId, const rtTsCmdSqBuf_t * con
     sendInfo.reportCount = reportCount;
     const drvError_t drvRet = halSqMsgSend(deviceId, &sendInfo);
     if (unlikely(drvRet != DRV_ERROR_NONE)) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halSqMsgSend failed, drvRetCode=%d, drvDevId=%u, tsId=%u, sqId=%u, "
+        DRV_ERROR_PROCESS(
+            drvRet,
+            "Call driver api halSqMsgSend failed, drvRetCode=%d, drvDevId=%u, tsId=%u, sqId=%u, "
             "reportCount=%u, cmdCount=%u.",
             static_cast<int32_t>(drvRet), deviceId, tsId, sqId, reportCount, cmdCount);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
-    RT_LOG(RT_LOG_INFO, "device_id=%u, ts_id=%u, sq_id=%d, reportCount=%u, cmdCount=%u.",
-        deviceId, tsId, sqId, reportCount, cmdCount);
+    RT_LOG(
+        RT_LOG_INFO, "device_id=%u, ts_id=%u, sq_id=%d, reportCount=%u, cmdCount=%u.", deviceId, tsId, sqId,
+        reportCount, cmdCount);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SqCommandSend(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId,
-                                   rtHostFuncCommand_t * const command, const uint32_t cnt)
+rtError_t NpuDriver::SqCommandSend(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, rtHostFuncCommand_t* const command,
+    const uint32_t cnt)
 {
     (void)command;
     struct halSqMsgInfo sendInfo;
@@ -2049,15 +2196,16 @@ rtError_t NpuDriver::SqCommandSend(const uint32_t deviceId, const uint32_t tsId,
 
     const drvError_t drvRet = halSqMsgSend(deviceId, &sendInfo);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halSqMsgSend failed, drvRetCode=%d, drvDevId=%u, sqId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halSqMsgSend failed, drvRetCode=%d, drvDevId=%u, sqId=%u.",
             static_cast<int32_t>(drvRet), deviceId, sqId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DebugSqTaskSend(const uint32_t sqId, uint8_t *const sqe, const uint32_t deviceId,
-                                     const uint32_t tsId)
+rtError_t NpuDriver::DebugSqTaskSend(
+    const uint32_t sqId, uint8_t* const sqe, const uint32_t deviceId, const uint32_t tsId)
 {
     struct halTaskSendInfo info = {};
     info.type = DRV_GDB_TYPE;
@@ -2068,8 +2216,11 @@ rtError_t NpuDriver::DebugSqTaskSend(const uint32_t sqId, uint8_t *const sqe, co
 
     const drvError_t drvRet = halSqTaskSend(deviceId, &info);
     if (unlikely(drvRet != DRV_ERROR_NONE)) {
-        RT_LOG(RT_LOG_WARNING, "[drv api] halSqTaskSend failed: [sqId=%u], device_id=%u, ts_id=%u, "
-            "drvRetCode=%d.", sqId, deviceId, tsId, static_cast<int32_t>(drvRet));
+        RT_LOG(
+            RT_LOG_WARNING,
+            "[drv api] halSqTaskSend failed: [sqId=%u], device_id=%u, ts_id=%u, "
+            "drvRetCode=%d.",
+            sqId, deviceId, tsId, static_cast<int32_t>(drvRet));
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
@@ -2081,29 +2232,33 @@ rtError_t NpuDriver::DebugSqTaskSend(const uint32_t sqId, uint8_t *const sqe, co
  * Subcategory: CQ Report
  * ======================================================== */
 
-rtError_t NpuDriver::LogicCqReportV2(const LogicCqWaitInfo &waitInfo, uint8_t *report, uint32_t reportCnt,
-    uint32_t &realCnt)
+rtError_t NpuDriver::LogicCqReportV2(
+    const LogicCqWaitInfo& waitInfo, uint8_t* report, uint32_t reportCnt, uint32_t& realCnt)
 {
-    Runtime * const rtInstance = Runtime::Instance();
+    Runtime* const rtInstance = Runtime::Instance();
     if (waitInfo.isFastCq) {
         struct halReportInfoInput irqWaitInputInfo;
         struct halReportInfoOutput irqWaitOutputInfo;
         irqWaitInputInfo.type = DRV_LOGIC_TYPE;
-        irqWaitInputInfo.grpId = waitInfo.cqId;  // reuse grpId for cqId.
+        irqWaitInputInfo.grpId = waitInfo.cqId; // reuse grpId for cqId.
         irqWaitInputInfo.tsId = waitInfo.tsId;
         irqWaitInputInfo.timeout = waitInfo.timeout;
 
         const drvError_t drvReportWaitRet = halCqReportIrqWait(waitInfo.devId, &irqWaitInputInfo, &irqWaitOutputInfo);
-        if (unlikely((drvReportWaitRet != DRV_ERROR_NONE) && (drvReportWaitRet != DRV_ERROR_SOCKET_CLOSE) &&
-            (drvReportWaitRet != DRV_ERROR_WAIT_TIMEOUT))) {
-            RT_LOG(RT_LOG_ERROR, "[drv api] halCqReportIrqWait failed, device_id=%u, ts_id=%u"
+        if (unlikely(
+                (drvReportWaitRet != DRV_ERROR_NONE) && (drvReportWaitRet != DRV_ERROR_SOCKET_CLOSE) &&
+                (drvReportWaitRet != DRV_ERROR_WAIT_TIMEOUT))) {
+            RT_LOG(
+                RT_LOG_ERROR,
+                "[drv api] halCqReportIrqWait failed, device_id=%u, ts_id=%u"
                 ", type=%u, logicCq=%u, drvRetCode=%d",
-                waitInfo.devId, waitInfo.tsId, static_cast<uint32_t>(irqWaitInputInfo.type),
-                waitInfo.cqId, static_cast<int32_t>(drvReportWaitRet));
+                waitInfo.devId, waitInfo.tsId, static_cast<uint32_t>(irqWaitInputInfo.type), waitInfo.cqId,
+                static_cast<int32_t>(drvReportWaitRet));
         } else {
-            RT_LOG(RT_LOG_DEBUG, "fast cq, device_id=%u, ts_id=%u, type=%u, logicCq=%u, drvRetCode=%d",
-                waitInfo.devId, waitInfo.tsId, static_cast<uint32_t>(irqWaitInputInfo.type),
-                waitInfo.cqId, static_cast<int32_t>(drvReportWaitRet));
+            RT_LOG(
+                RT_LOG_DEBUG, "fast cq, device_id=%u, ts_id=%u, type=%u, logicCq=%u, drvRetCode=%d", waitInfo.devId,
+                waitInfo.tsId, static_cast<uint32_t>(irqWaitInputInfo.type), waitInfo.cqId,
+                static_cast<int32_t>(drvReportWaitRet));
         }
 
         return RT_GET_DRV_ERRCODE(drvReportWaitRet);
@@ -2123,10 +2278,12 @@ rtError_t NpuDriver::LogicCqReportV2(const LogicCqWaitInfo &waitInfo, uint8_t *r
     repRecvInfo.stream_id = waitInfo.streamId;
     repRecvInfo.task_id = waitInfo.taskId;
     repRecvInfo.report_cqe_num = reportCnt;
-    RT_LOG(RT_LOG_DEBUG, "device_id=%u,ts_id=%u,type=%u,logicCq=%u,stream_id=%u,task_id=%u,"
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "device_id=%u,ts_id=%u,type=%u,logicCq=%u,stream_id=%u,task_id=%u,"
         "timeout=%dms,report_cqe_num=%u",
-        waitInfo.devId, waitInfo.tsId, static_cast<uint32_t>(repRecvInfo.type), waitInfo.cqId,
-        waitInfo.streamId, waitInfo.taskId, repRecvInfo.timeout, reportCnt);
+        waitInfo.devId, waitInfo.tsId, static_cast<uint32_t>(repRecvInfo.type), waitInfo.cqId, waitInfo.streamId,
+        waitInfo.taskId, repRecvInfo.timeout, reportCnt);
 
     drvError_t drvReportGetRet = halCqReportRecv(waitInfo.devId, &repRecvInfo);
     RT_LOG(RT_LOG_DEBUG, "report_cqe_num=%u,drvReportGetRet=%d", repRecvInfo.report_cqe_num, drvReportGetRet);
@@ -2134,8 +2291,7 @@ rtError_t NpuDriver::LogicCqReportV2(const LogicCqWaitInfo &waitInfo, uint8_t *r
         const uint32_t grpId = rtInstance->GetStreamSyncEschedGrpID();
         const int32_t curTid = mmGetTid();
         rtInstance->StreamSyncEschedLock();
-        std::map<int32_t, uint32_t>::const_iterator it =
-            rtInstance->eschedMap_.find(curTid);
+        std::map<int32_t, uint32_t>::const_iterator it = rtInstance->eschedMap_.find(curTid);
         if (it == rtInstance->eschedMap_.end()) {
             RT_LOG(RT_LOG_ERROR, "eschedMap cannot find current os tid (=%u).", curTid);
             rtInstance->StreamSyncEschedUnLock();
@@ -2146,14 +2302,18 @@ rtError_t NpuDriver::LogicCqReportV2(const LogicCqWaitInfo &waitInfo, uint8_t *r
         drvReportGetRet = DrvEschedManage(waitInfo.devId, waitInfo.timeout, eschedTid, grpId, &repRecvInfo);
     }
     if (drvReportGetRet == DRV_ERROR_WAIT_TIMEOUT) {
-        RT_LOG(RT_LOG_DEBUG, "halCqReportRecv failed:device_id=%u,ts_id=%u,type=%u,logic_cq=%u,drv_ret_code=%d",
-               waitInfo.devId, repRecvInfo.tsId, static_cast<uint32_t>(repRecvInfo.type), repRecvInfo.cqId,
-               static_cast<int32_t>(drvReportGetRet));
+        RT_LOG(
+            RT_LOG_DEBUG, "halCqReportRecv failed:device_id=%u,ts_id=%u,type=%u,logic_cq=%u,drv_ret_code=%d",
+            waitInfo.devId, repRecvInfo.tsId, static_cast<uint32_t>(repRecvInfo.type), repRecvInfo.cqId,
+            static_cast<int32_t>(drvReportGetRet));
         return RT_GET_DRV_ERRCODE(drvReportGetRet);
     }
     if ((drvReportGetRet != DRV_ERROR_NONE) && (drvReportGetRet != DRV_ERROR_SOCKET_CLOSE)) {
-        DRV_ERROR_PROCESS(drvReportGetRet, "Call driver api halCqReportRecv failed, drvRetCode=%d, drvDevId=%u, tsId=%u, type=%u, cqId=%u.",
-            static_cast<int32_t>(drvReportGetRet), waitInfo.devId, repRecvInfo.tsId, static_cast<uint32_t>(repRecvInfo.type), repRecvInfo.cqId);
+        DRV_ERROR_PROCESS(
+            drvReportGetRet,
+            "Call driver api halCqReportRecv failed, drvRetCode=%d, drvDevId=%u, tsId=%u, type=%u, cqId=%u.",
+            static_cast<int32_t>(drvReportGetRet), waitInfo.devId, repRecvInfo.tsId,
+            static_cast<uint32_t>(repRecvInfo.type), repRecvInfo.cqId);
         return RT_GET_DRV_ERRCODE(drvReportGetRet);
     }
     realCnt = repRecvInfo.report_cqe_num;
@@ -2161,40 +2321,43 @@ rtError_t NpuDriver::LogicCqReportV2(const LogicCqWaitInfo &waitInfo, uint8_t *r
     RT_LOG(RT_LOG_DEBUG, "logic_cq real cnt=%u", realCnt);
     for (uint32_t i = 0U; i < realCnt; i++) {
         if (rtInstance->ChipIsHaveStars()) {
-            const rtLogicCqReport_t &cqe = (RtPtrToPtr<rtLogicCqReport_t *>(report))[i];
+            const rtLogicCqReport_t& cqe = (RtPtrToPtr<rtLogicCqReport_t*>(report))[i];
             PrintStarsCqeInfo(cqe, waitInfo.devId, repRecvInfo.cqId);
         } else {
-            const RtLogicCqReportMsg &cqe = (RtPtrToPtr<RtLogicCqReportMsg *>(report))[i];
-            RT_LOG(RT_LOG_DEBUG, "device_id=%u,stream_id=%hu,task_id=%hu,cq_id=%u,error_type=%hhu",
-                   waitInfo.devId, cqe.stream_id, cqe.task_id, repRecvInfo.cqId, cqe.error_type);
+            const RtLogicCqReportMsg& cqe = (RtPtrToPtr<RtLogicCqReportMsg*>(report))[i];
+            RT_LOG(
+                RT_LOG_DEBUG, "device_id=%u,stream_id=%hu,task_id=%hu,cq_id=%u,error_type=%hhu", waitInfo.devId,
+                cqe.stream_id, cqe.task_id, repRecvInfo.cqId, cqe.error_type);
         }
     }
 
     return static_cast<rtError_t>((drvReportGetRet == DRV_ERROR_SOCKET_CLOSE) ? RT_ERROR_SOCKET_CLOSE : RT_ERROR_NONE);
 }
 
-rtError_t NpuDriver::LogicCqReport(const LogicCqWaitInfo &waitInfo, rtLogicReport_t *&report, uint32_t &cnt)
+rtError_t NpuDriver::LogicCqReport(const LogicCqWaitInfo& waitInfo, rtLogicReport_t*& report, uint32_t& cnt)
 {
     struct halReportInfoInput irqWaitInputInfo;
     struct halReportInfoOutput irqWaitOutputInfo;
     irqWaitInputInfo.type = DRV_LOGIC_TYPE;
-    irqWaitInputInfo.grpId = waitInfo.cqId;  // reuse grpId for cqId.
+    irqWaitInputInfo.grpId = waitInfo.cqId; // reuse grpId for cqId.
     irqWaitInputInfo.tsId = waitInfo.tsId;
     irqWaitInputInfo.timeout = waitInfo.timeout;
 
     const drvError_t drvReportWaitRet = halCqReportIrqWait(waitInfo.devId, &irqWaitInputInfo, &irqWaitOutputInfo);
-    if (unlikely((drvReportWaitRet != DRV_ERROR_NONE)  && (drvReportWaitRet != DRV_ERROR_SOCKET_CLOSE))) {
-        RT_LOG(RT_LOG_DEBUG, "halCqReportIrqWait:device_id=%u,ts_id=%u,type=%u,cq_id=%u,drvRetCode=%d",
-               waitInfo.devId, irqWaitInputInfo.tsId, static_cast<uint32_t>(irqWaitInputInfo.type),
-               irqWaitInputInfo.grpId, static_cast<int32_t>(drvReportWaitRet));
+    if (unlikely((drvReportWaitRet != DRV_ERROR_NONE) && (drvReportWaitRet != DRV_ERROR_SOCKET_CLOSE))) {
+        RT_LOG(
+            RT_LOG_DEBUG, "halCqReportIrqWait:device_id=%u,ts_id=%u,type=%u,cq_id=%u,drvRetCode=%d", waitInfo.devId,
+            irqWaitInputInfo.tsId, static_cast<uint32_t>(irqWaitInputInfo.type), irqWaitInputInfo.grpId,
+            static_cast<int32_t>(drvReportWaitRet));
         return RT_GET_DRV_ERRCODE(drvReportWaitRet);
     }
 
     if (waitInfo.isFastCq) {
-        RT_LOG(RT_LOG_DEBUG, "fast cq,device_id=%u,ts_id=%u,type=%u,cq_id=%u",
-               waitInfo.devId, waitInfo.tsId, static_cast<uint32_t>(irqWaitInputInfo.type), waitInfo.cqId);
-        return static_cast<rtError_t>((drvReportWaitRet == DRV_ERROR_SOCKET_CLOSE) ?
-                                      RT_ERROR_SOCKET_CLOSE : RT_ERROR_NONE);
+        RT_LOG(
+            RT_LOG_DEBUG, "fast cq,device_id=%u,ts_id=%u,type=%u,cq_id=%u", waitInfo.devId, waitInfo.tsId,
+            static_cast<uint32_t>(irqWaitInputInfo.type), waitInfo.cqId);
+        return static_cast<rtError_t>(
+            (drvReportWaitRet == DRV_ERROR_SOCKET_CLOSE) ? RT_ERROR_SOCKET_CLOSE : RT_ERROR_NONE);
     }
 
     struct halReportGetInput repGetInputInfo;
@@ -2206,42 +2369,47 @@ rtError_t NpuDriver::LogicCqReport(const LogicCqWaitInfo &waitInfo, rtLogicRepor
     repGetOutputInfo.reportPtr = nullptr;
     const drvError_t drvReportGetRet = halCqReportGet(waitInfo.devId, &repGetInputInfo, &repGetOutputInfo);
     if (drvReportGetRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvReportGetRet, "Call driver api halCqReportGet failed, drvRetCode=%d, drvDevId=%u, tsId=%u, type=%u, cqId=%u.",
-            static_cast<int32_t>(drvReportGetRet), waitInfo.devId, repGetInputInfo.tsId, static_cast<uint32_t>(repGetInputInfo.type), repGetInputInfo.cqId);
+        DRV_ERROR_PROCESS(
+            drvReportGetRet,
+            "Call driver api halCqReportGet failed, drvRetCode=%d, drvDevId=%u, tsId=%u, type=%u, cqId=%u.",
+            static_cast<int32_t>(drvReportGetRet), waitInfo.devId, repGetInputInfo.tsId,
+            static_cast<uint32_t>(repGetInputInfo.type), repGetInputInfo.cqId);
         return RT_GET_DRV_ERRCODE(drvReportGetRet);
     }
 
     cnt = repGetOutputInfo.count;
-    report = static_cast<rtLogicReport_t *>(repGetOutputInfo.reportPtr);
+    report = static_cast<rtLogicReport_t*>(repGetOutputInfo.reportPtr);
 
     return static_cast<rtError_t>((drvReportWaitRet == DRV_ERROR_SOCKET_CLOSE) ? RT_ERROR_SOCKET_CLOSE : RT_ERROR_NONE);
 }
 
-rtError_t NpuDriver::DebugCqReport(const uint32_t devId, const uint32_t tsId, const uint32_t cqId,
-                                   uint8_t *const report, uint32_t &realCnt)
+rtError_t NpuDriver::DebugCqReport(
+    const uint32_t devId, const uint32_t tsId, const uint32_t cqId, uint8_t* const report, uint32_t& realCnt)
 {
     struct halReportRecvInfo repRecvInfo = {};
     repRecvInfo.type = DRV_GDB_TYPE;
     repRecvInfo.tsId = tsId;
     repRecvInfo.cqId = cqId;
-    repRecvInfo.timeout = 5000; // 超时时间，等待5000ms
+    repRecvInfo.timeout = 5000;      // 超时时间，等待5000ms
     repRecvInfo.cqe_addr = report;
-    repRecvInfo.cqe_num = 4U; // 固定的4
+    repRecvInfo.cqe_num = 4U;        // 固定的4
     repRecvInfo.report_cqe_num = 0U; // 出参
     RT_LOG(RT_LOG_DEBUG, "device_id=%u, ts_id=%u, cq_id=%u, timeout=5000ms", devId, tsId, cqId);
 
     const drvError_t drvReportGetRet = halCqReportRecv(devId, &repRecvInfo);
     RT_LOG(RT_LOG_DEBUG, "report_cqe_num=%u, drvReportGetRet=%d", repRecvInfo.report_cqe_num, drvReportGetRet);
 
-    DRV_PROCESS_ERROR_RETURN(drvReportGetRet, "Call driver api halCqReportRecv failed, drvRetCode=%d, drvDevId=%u, tsId=%u, cqId=%u.",
+    DRV_PROCESS_ERROR_RETURN(
+        drvReportGetRet, "Call driver api halCqReportRecv failed, drvRetCode=%d, drvDevId=%u, tsId=%u, cqId=%u.",
         static_cast<int32_t>(drvReportGetRet), devId, tsId, cqId);
 
     realCnt = repRecvInfo.report_cqe_num;
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CqReportIrqWait(const uint32_t deviceId, const uint32_t tsId, const uint32_t groupId,
-                                     const int32_t timeout, uint64_t * const getCqidList, const uint32_t cqidListNum)
+rtError_t NpuDriver::CqReportIrqWait(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t groupId, const int32_t timeout,
+    uint64_t* const getCqidList, const uint32_t cqidListNum)
 {
     struct halReportInfoInput irqWaitInputInfo;
     struct halReportInfoOutput irqWaitOutputInfo;
@@ -2251,19 +2419,21 @@ rtError_t NpuDriver::CqReportIrqWait(const uint32_t deviceId, const uint32_t tsI
     irqWaitInputInfo.tsId = tsId;
     irqWaitInputInfo.timeout = timeout;
     irqWaitOutputInfo.cqIdBitmap = getCqidList;
-    irqWaitOutputInfo.cqIdBitmapSize = cqidListNum;  // input para
+    irqWaitOutputInfo.cqIdBitmapSize = cqidListNum; // input para
 
     RT_LOG(RT_LOG_INFO, "Irq wait start, deviceId=%u, tsId=%u, groupId=%u.", deviceId, tsId, groupId);
 
     const drvError_t drvRet = halCqReportIrqWait(deviceId, &irqWaitInputInfo, &irqWaitOutputInfo);
-    COND_RETURN_WARN(drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
-                     "[drv api] halCqReportIrqWait: device_id=%u, tsId=%u, groupId=%u, drvRetCode=%d.",
-                     deviceId, tsId, groupId, static_cast<int32_t>(drvRet));
+    COND_RETURN_WARN(
+        drvRet != DRV_ERROR_NONE, RT_GET_DRV_ERRCODE(drvRet),
+        "[drv api] halCqReportIrqWait: device_id=%u, tsId=%u, groupId=%u, drvRetCode=%d.", deviceId, tsId, groupId,
+        static_cast<int32_t>(drvRet));
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CqReportGet(const uint32_t deviceId, const uint32_t tsId, const uint32_t cqId,
-                                 rtHostFuncCqReport_t ** const report, uint32_t * const cnt)
+rtError_t NpuDriver::CqReportGet(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t cqId, rtHostFuncCqReport_t** const report,
+    uint32_t* const cnt)
 {
     struct halReportGetInput repGetInputInfo;
     struct halReportGetOutput repGetOutputInfo;
@@ -2277,19 +2447,21 @@ rtError_t NpuDriver::CqReportGet(const uint32_t deviceId, const uint32_t tsId, c
     const drvError_t drvRet = halCqReportGet(deviceId, &repGetInputInfo, &repGetOutputInfo);
     RT_LOG(RT_LOG_INFO, "halCqReportGet count=%u", repGetOutputInfo.count);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halCqReportGet failed, drvRetCode=%d, drvDevId=%u, tsId=%u, cqId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halCqReportGet failed, drvRetCode=%d, drvDevId=%u, tsId=%u, cqId=%u.",
             static_cast<int32_t>(drvRet), deviceId, tsId, cqId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
 
     *cnt = repGetOutputInfo.count;
-    *report = RtPtrToPtr<rtHostFuncCqReport_t *>(RtPtrToPtr<uintptr_t>(repGetOutputInfo.reportPtr));
+    *report = RtPtrToPtr<rtHostFuncCqReport_t*>(RtPtrToPtr<uintptr_t>(repGetOutputInfo.reportPtr));
 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CqReportRelease(rtHostFuncCqReport_t * const report, const uint32_t deviceId,
-                                     const uint32_t cqId, const uint32_t tsId, const bool noLog)
+rtError_t NpuDriver::CqReportRelease(
+    rtHostFuncCqReport_t* const report, const uint32_t deviceId, const uint32_t cqId, const uint32_t tsId,
+    const bool noLog)
 {
     UNUSED(report);
     const uint32_t reportCount = 1U;
@@ -2303,7 +2475,8 @@ rtError_t NpuDriver::CqReportRelease(rtHostFuncCqReport_t * const report, const 
     const drvError_t drvRet = halReportRelease(deviceId, &drvRepReleaseInfo);
     if (drvRet != DRV_ERROR_NONE) {
         if (!noLog) {
-            DRV_ERROR_PROCESS(drvRet, "Call driver api halReportRelease failed, drvRetCode=%d, drvDevId=%u, cqId=%u, tsId=%u.",
+            DRV_ERROR_PROCESS(
+                drvRet, "Call driver api halReportRelease failed, drvRetCode=%d, drvDevId=%u, cqId=%u, tsId=%u.",
                 static_cast<int32_t>(drvRet), deviceId, cqId, tsId);
         }
         return RT_GET_DRV_ERRCODE(drvRet);
@@ -2314,8 +2487,8 @@ rtError_t NpuDriver::CqReportRelease(rtHostFuncCqReport_t * const report, const 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ReportWait(void ** const report, int32_t * const cnt, const uint32_t deviceId,
-                                const uint32_t tsId, const uint32_t cqId)
+rtError_t NpuDriver::ReportWait(
+    void** const report, int32_t* const cnt, const uint32_t deviceId, const uint32_t tsId, const uint32_t cqId)
 {
     struct halReportInfoInput irqWaitInputInfo = {};
     struct halReportInfoOutput irqWaitOutputInfo = {};
@@ -2326,18 +2499,21 @@ rtError_t NpuDriver::ReportWait(void ** const report, int32_t * const cnt, const
 
     const drvError_t drvReportWaitRet = halCqReportIrqWait(deviceId, &irqWaitInputInfo, &irqWaitOutputInfo);
     if (unlikely((drvReportWaitRet != DRV_ERROR_NONE) && (drvReportWaitRet != DRV_ERROR_SOCKET_CLOSE))) {
-        RT_LOG(RT_LOG_DEBUG, "[drv api] halCqReportIrqWait: device_id=%u, ts_id=%u, "
-               "drvRetCode=%d.", deviceId, tsId, drvReportWaitRet);
+        RT_LOG(
+            RT_LOG_DEBUG,
+            "[drv api] halCqReportIrqWait: device_id=%u, ts_id=%u, "
+            "drvRetCode=%d.",
+            deviceId, tsId, drvReportWaitRet);
         drvDfxShowReport(deviceId);
         return RT_GET_DRV_ERRCODE(drvReportWaitRet);
     }
 
-    const Runtime * const rt = Runtime::runtime_;
+    const Runtime* const rt = Runtime::runtime_;
     if ((rt != nullptr) && rt->IsExiting()) {
         *cnt = 0;
         *report = nullptr;
-        return static_cast<rtError_t>((drvReportWaitRet == DRV_ERROR_SOCKET_CLOSE) ?
-            RT_ERROR_SOCKET_CLOSE : RT_ERROR_NONE);
+        return static_cast<rtError_t>(
+            (drvReportWaitRet == DRV_ERROR_SOCKET_CLOSE) ? RT_ERROR_SOCKET_CLOSE : RT_ERROR_NONE);
     }
 
     struct halReportGetInput repGetInputInfo;
@@ -2350,7 +2526,8 @@ rtError_t NpuDriver::ReportWait(void ** const report, int32_t * const cnt, const
 
     const drvError_t drvReportGetRet = halCqReportGet(deviceId, &repGetInputInfo, &repGetOutputInfo);
     if (drvReportGetRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvReportGetRet, "Call driver api halCqReportGet failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+        DRV_ERROR_PROCESS(
+            drvReportGetRet, "Call driver api halCqReportGet failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
             static_cast<int32_t>(drvReportGetRet), deviceId, tsId);
         drvDfxShowReport(deviceId);
         return RT_GET_DRV_ERRCODE(drvReportGetRet);
@@ -2362,8 +2539,8 @@ rtError_t NpuDriver::ReportWait(void ** const report, int32_t * const cnt, const
     return static_cast<rtError_t>((drvReportWaitRet == DRV_ERROR_SOCKET_CLOSE) ? RT_ERROR_SOCKET_CLOSE : RT_ERROR_NONE);
 }
 
-rtError_t NpuDriver::ReportRelease(const uint32_t deviceId, const uint32_t tsId,
-                                   const uint32_t cqId, const drvSqCqType_t type)
+rtError_t NpuDriver::ReportRelease(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t cqId, const drvSqCqType_t type)
 {
     constexpr uint32_t reportCount = 1U;
     struct halReportReleaseInfo repReleaseInfo;
@@ -2374,7 +2551,8 @@ rtError_t NpuDriver::ReportRelease(const uint32_t deviceId, const uint32_t tsId,
     repReleaseInfo.count = reportCount;
     const drvError_t drvRet = halReportRelease(deviceId, &repReleaseInfo);
     if (unlikely(drvRet != DRV_ERROR_NONE)) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api halReportRelease failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api halReportRelease failed, drvRetCode=%d, drvDevId=%u, tsId=%u.",
             static_cast<int32_t>(drvRet), deviceId, tsId);
         return RT_GET_DRV_ERRCODE(drvRet);
     }
@@ -2387,39 +2565,40 @@ rtError_t NpuDriver::ReportRelease(const uint32_t deviceId, const uint32_t tsId,
  * Subcategory: SQ Backup and Restore
  * ======================================================== */
 
-rtError_t NpuDriver::SqBackup(const uint32_t deviceId, uint32_t *sqIdGroup, const size_t sqIdCnt)
+rtError_t NpuDriver::SqBackup(const uint32_t deviceId, uint32_t* sqIdGroup, const size_t sqIdCnt)
 {
-    COND_RETURN_WARN(&halStreamBackup == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halStreamBackup does not exist");
+    COND_RETURN_WARN(&halStreamBackup == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halStreamBackup does not exist");
 
     struct stream_backup_info info = {};
     info.type = DRV_RESOURCE_SQ_ID;
     info.id_num = static_cast<uint32_t>(sqIdCnt);
     info.id_list = sqIdGroup;
     const drvError_t drvRet = halStreamBackup(deviceId, &info);
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halStreamBackup failed, drvRetCode=%d, drvDevId=%u, sqIdCnt=%zu.",
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api halStreamBackup failed, drvRetCode=%d, drvDevId=%u, sqIdCnt=%zu.",
         static_cast<int32_t>(drvRet), deviceId, sqIdCnt);
 
     RT_LOG(RT_LOG_INFO, "Success to backup NPU SQ, drv deviceId=%u, sqIdCnt=%zu.", deviceId, sqIdCnt);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SqRestore(const uint32_t deviceId, uint32_t *sqIdGroup, const size_t sqIdCnt)
+rtError_t NpuDriver::SqRestore(const uint32_t deviceId, uint32_t* sqIdGroup, const size_t sqIdCnt)
 {
-    COND_RETURN_WARN(&halStreamRestore == nullptr, RT_ERROR_DRV_NOT_SUPPORT,
-        "[drv api] halStreamRestore does not exist");
+    COND_RETURN_WARN(
+        &halStreamRestore == nullptr, RT_ERROR_DRV_NOT_SUPPORT, "[drv api] halStreamRestore does not exist");
 
     struct stream_backup_info info = {};
     info.type = DRV_RESOURCE_SQ_ID;
     info.id_num = static_cast<uint32_t>(sqIdCnt);
     info.id_list = sqIdGroup;
     const drvError_t drvRet = halStreamRestore(deviceId, &info);
-    DRV_PROCESS_ERROR_RETURN(drvRet, "Call driver api halStreamRestore failed, drvRetCode=%d, drvDevId=%u, sqIdCnt=%zu.",
+    DRV_PROCESS_ERROR_RETURN(
+        drvRet, "Call driver api halStreamRestore failed, drvRetCode=%d, drvDevId=%u, sqIdCnt=%zu.",
         static_cast<int32_t>(drvRet), deviceId, sqIdCnt);
 
     RT_LOG(RT_LOG_INFO, "Success to restore NPU SQ, drv deviceId=%u, sqIdCnt=%zu.", deviceId, sqIdCnt);
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

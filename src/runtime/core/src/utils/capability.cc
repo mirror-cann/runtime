@@ -23,18 +23,11 @@ static uint32_t g_rtCapabilityTbl[] = {
     RUNTIME_FEATURE_SEND_DEVICE_ID,
     RUNTIME_FEATURE_MC2_ENHANCE,
     RUNTIME_FEATURE_STREAM_EXPAND,
-    RUNTIME_FEATURE_STREAM_EXPAND_V2
-};
+    RUNTIME_FEATURE_STREAM_EXPAND_V2};
 
-const uint32_t *GetRtCapabilityTbl(void)
-{
-    return g_rtCapabilityTbl;
-}
+const uint32_t* GetRtCapabilityTbl(void) { return g_rtCapabilityTbl; }
 
-uint32_t GetRtCapabilityTblLen(void)
-{
-    return (sizeof(g_rtCapabilityTbl) / sizeof(g_rtCapabilityTbl[0]));
-}
+uint32_t GetRtCapabilityTblLen(void) { return (sizeof(g_rtCapabilityTbl) / sizeof(g_rtCapabilityTbl[0])); }
 
 static uint16_t g_featureToTsVersionMapForTRUNK[RT_FEATURE_MAX] = {0U};
 static uint16_t g_featureToTsVersionMapForV1R1C13[RT_FEATURE_MAX] = {0U};
@@ -152,14 +145,14 @@ bool CheckFeatureIsSupportOld(const uint32_t tschVersion, rtFeature feature)
         return false;
     }
     if (actualTsVersion >= expectVersion) {
-        RT_LOG(RT_LOG_DEBUG, "support feature=%d, tschVersion=%u, expectVersion=%u",
-            feature, tschVersion, expectVersion);
+        RT_LOG(
+            RT_LOG_DEBUG, "support feature=%d, tschVersion=%u, expectVersion=%u", feature, tschVersion, expectVersion);
         return true;
     }
     return false;
 }
 
-bool CheckSupportMC2Feature(Device * const dev)
+bool CheckSupportMC2Feature(Device* const dev)
 {
     uint32_t tsFeature = dev->GetDevProperties().mc2FeatureFlag;
     if (tsFeature == 0U) {
@@ -179,5 +172,5 @@ bool CheckSupportTilingKeyWhenCompile()
         return isSupport;
     }
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

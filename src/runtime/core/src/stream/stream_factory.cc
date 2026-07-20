@@ -13,10 +13,10 @@
 
 namespace cce {
 namespace runtime {
-Stream *StreamFactory::CreateStream(
-    Device *const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp *const dvppGrp)
+Stream* StreamFactory::CreateStream(
+    Device* const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp* const dvppGrp)
 {
     return CreateStreamAndGet(dev, prio, stmFlags, dvppGrp);
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

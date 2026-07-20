@@ -16,11 +16,7 @@
 namespace cce {
 namespace runtime {
 
-enum class TaskUpdateFlag : uint8_t {
-    RT_TASK_KEEP = 0,
-    RT_TASK_UPDATE,
-    RT_TASK_DISABLE
-};
+enum class TaskUpdateFlag : uint8_t { RT_TASK_KEEP = 0, RT_TASK_UPDATE, RT_TASK_DISABLE };
 
 enum class TaskOwner : uint8_t {
     RT_TASK_USER,
@@ -32,15 +28,15 @@ enum class TaskOwner : uint8_t {
  * @brief the struct define of task
  */
 typedef struct tagTaskInfoStru {
-    Stream *stream;
-    const char_t *typeName;
+    Stream* stream;
+    const char_t* typeName;
     tsTaskType_t type;
     uint64_t taskTrackTimeStamp;
     uint32_t tid;
     uint32_t error;
     uint32_t drvErr;
     uint32_t errorCode;
-    uint32_t taskSn;         /* for dump/profiling */
+    uint32_t taskSn; /* for dump/profiling */
     uint32_t pos;
     uint32_t stmArgPos;
     uint32_t liteStreamResId;
@@ -52,7 +48,7 @@ typedef struct tagTaskInfoStru {
     uint8_t profEn;
     uint8_t updateFlag;
 
-    uint8_t serial : 1;   // false
+    uint8_t serial : 1; // false
     uint8_t terminal : 1;
     uint8_t bindFlag : 1;
     uint8_t preRecycleFlag : 1;
@@ -65,7 +61,7 @@ typedef struct tagTaskInfoStru {
     uint8_t isNoRingbuffer : 1;
     uint8_t taskOwner : 1; // 默认是user，使用此标记需关注其实际值
     uint8_t resv : 4;
-    uint8_t sqeNum : 7; // 使用sqeNum必须在对应taskini中初始化
+    uint8_t sqeNum : 7;    // 使用sqeNum必须在对应taskini中初始化
     uint8_t needPostProc : 1;
     /*-------------------------tmp begine------------------------------------*/
     // DavinciMultiTaskInfo、PCTraceTaskInfo:
@@ -173,55 +169,54 @@ typedef struct tagTaskInfoStru {
     rtPkgDesc pkgStat[RT_PACKAGE_TYPE_BUTT];
 } TaskInfo;
 
-void Complete(TaskInfo *const taskInfo, const uint32_t devId);
+void Complete(TaskInfo* const taskInfo, const uint32_t devId);
 struct TaskTypeRegisterInfo {
     uint32_t type;
     const char_t* name;
 };
 
-rtError_t WaitExecFinish(const TaskInfo *taskInfo);
+rtError_t WaitExecFinish(const TaskInfo* taskInfo);
 uint32_t GetReportCount(const rtPkgDesc pkgStat[], const uint8_t profEnabled);
-bool CheckPackageState(const TaskInfo *taskInfo);
+bool CheckPackageState(const TaskInfo* taskInfo);
 uint32_t GetFlipTaskId(uint32_t taskId, uint16_t flipNum);
-TaskInfo *GetRealReportFaultTask(TaskInfo *taskInfo, const void *info);
-void PushBackErrInfo(TaskInfo* taskInfo, const void *errInfo, uint32_t len);
-void TaskFailCallBack(const uint32_t streamId, const uint32_t taskId,
-                    const uint32_t threadId, const uint32_t retCode,
-                    const Device * const dev, bool isNeedTransTaskId = false);
-void TaskUnInitProc(TaskInfo *taskInfo);
-void SetResult(TaskInfo* taskInfo, const void *const data, const uint32_t dataSize);
-void SetStarsResult(TaskInfo *taskInfo, const rtLogicCqReport_t &logicCq);
+TaskInfo* GetRealReportFaultTask(TaskInfo* taskInfo, const void* info);
+void PushBackErrInfo(TaskInfo* taskInfo, const void* errInfo, uint32_t len);
+void TaskFailCallBack(
+    const uint32_t streamId, const uint32_t taskId, const uint32_t threadId, const uint32_t retCode,
+    const Device* const dev, bool isNeedTransTaskId = false);
+void TaskUnInitProc(TaskInfo* taskInfo);
+void SetResult(TaskInfo* taskInfo, const void* const data, const uint32_t dataSize);
+void SetStarsResult(TaskInfo* taskInfo, const rtLogicCqReport_t& logicCq);
 rtError_t WaitAsyncCopyComplete(TaskInfo* taskInfo);
 
-void UpdateFlipNum(TaskInfo *taskInfo, const bool isDisableThread);
-void InitByStream(TaskInfo *const taskInfo, Stream *stream);
+void UpdateFlipNum(TaskInfo* taskInfo, const bool isDisableThread);
+void InitByStream(TaskInfo* const taskInfo, Stream* stream);
 void DoTaskComplete(TaskInfo* taskInfo, const uint32_t devId);
 
-inline void SetAicoreArgs(TaskInfo *taskInfo, const void * const dataArgs, const uint32_t dataArgsSize, void *const dataArgHandle)
+inline void SetAicoreArgs(
+    TaskInfo* taskInfo, const void* const dataArgs, const uint32_t dataArgsSize, void* const dataArgHandle)
 {
-    AicTaskInfo *aicTaskInfo = &(taskInfo->u.aicTaskInfo);
+    AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
 
     aicTaskInfo->comm.args = const_cast<void*>(dataArgs);
     aicTaskInfo->comm.argsSize = dataArgsSize;
     aicTaskInfo->comm.argHandle = dataArgHandle;
 }
 
-inline bool IsPureSimtTask(const AicTaskInfo &aicTaskInfo)
-{
-    return (aicTaskInfo.simtParamOffset != 0U);
-}
+inline bool IsPureSimtTask(const AicTaskInfo& aicTaskInfo) { return (aicTaskInfo.simtParamOffset != 0U); }
 
-inline void SetAicpuArgs(TaskInfo *taskInfo, const void * const dataArgs, const uint32_t dataArgsSize,
-    void *const dataArgHandle)
+inline void SetAicpuArgs(
+    TaskInfo* taskInfo, const void* const dataArgs, const uint32_t dataArgsSize, void* const dataArgHandle)
 {
-    AicpuTaskInfo *aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
+    AicpuTaskInfo* aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
 
-    aicpuTaskInfo->comm.args = const_cast<void *>(dataArgs);
+    aicpuTaskInfo->comm.args = const_cast<void*>(dataArgs);
     aicpuTaskInfo->comm.argsSize = dataArgsSize;
     aicpuTaskInfo->comm.argHandle = dataArgHandle;
 }
 
-inline void SetArgs(TaskInfo *taskInfo, const void * const dataArgs, const uint32_t dataArgsSize, void *const dataArgHandle)
+inline void SetArgs(
+    TaskInfo* taskInfo, const void* const dataArgs, const uint32_t dataArgsSize, void* const dataArgHandle)
 {
     const tsTaskType_t tskType = taskInfo->type;
     if ((tskType == TS_TASK_TYPE_KERNEL_AICORE) || (tskType == TS_TASK_TYPE_KERNEL_AIVEC)) {
@@ -233,9 +228,9 @@ inline void SetArgs(TaskInfo *taskInfo, const void * const dataArgs, const uint3
     }
 }
 
-inline void SetNameArgs(TaskInfo *taskInfo, const void *const kernelSoName, const void *const kernelFuncName)
+inline void SetNameArgs(TaskInfo* taskInfo, const void* const kernelSoName, const void* const kernelFuncName)
 {
-    AicpuTaskInfo *aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
+    AicpuTaskInfo* aicpuTaskInfo = &(taskInfo->u.aicpuTaskInfo);
 
     aicpuTaskInfo->funcName = const_cast<void*>(kernelFuncName);
     aicpuTaskInfo->soName = const_cast<void*>(kernelSoName);
@@ -244,34 +239,35 @@ inline void SetNameArgs(TaskInfo *taskInfo, const void *const kernelSoName, cons
 const char_t* GetSqeDescByType(const uint8_t sqeType);
 const char_t* GetDavidSqeDescByType(const uint8_t sqeType);
 const char_t* GetTaskDescByType(const uint8_t taskType);
-bool IsNeedFreeStreamRes(const TaskInfo *task);
+bool IsNeedFreeStreamRes(const TaskInfo* task);
 
-uint32_t CovertToFlipTaskId(const int32_t streamId, const uint32_t taskId, const Device * const dev);
+uint32_t CovertToFlipTaskId(const int32_t streamId, const uint32_t taskId, const Device* const dev);
 uint32_t CovertToFlipTaskId(const TaskInfo* const taskInfo, const uint32_t taskId);
-void GetExceptionArgs(TaskInfo* taskInfo, rtExceptionArgsInfo_t *argsInfo);
-void GetAicpuExceptionDetailInfo(TaskInfo *taskInfo, rtAicpuExDetailInfo_t *detailInfo);
+void GetExceptionArgs(TaskInfo* taskInfo, rtExceptionArgsInfo_t* argsInfo);
+void GetAicpuExceptionDetailInfo(TaskInfo* taskInfo, rtAicpuExDetailInfo_t* detailInfo);
 
 void SetSqPos(TaskInfo* taskInfo, const uint32_t pos);
 void SetEndGraphNotifyWaitSqPos(TaskInfo* taskInfo, const uint32_t pos);
-uint32_t GetSendSqeNum(TaskInfo * const taskInfo);
+uint32_t GetSendSqeNum(TaskInfo* const taskInfo);
 void DoCompleteSuccess(TaskInfo* taskInfo, const uint32_t devId);
-void PrintErrorInfo(TaskInfo *taskInfo, const uint32_t devId);
+void PrintErrorInfo(TaskInfo* taskInfo, const uint32_t devId);
 
-void SaveTaskInfo(TaskInfo *const taskInfo, TaskInfo *submitTask);
-void SetTaskTag(TaskInfo *taskInfo);
-void TaskCommonInfoInit(TaskInfo *taskInfo);
+void SaveTaskInfo(TaskInfo* const taskInfo, TaskInfo* submitTask);
+void SetTaskTag(TaskInfo* taskInfo);
+void TaskCommonInfoInit(TaskInfo* taskInfo);
 bool IsSupportType(const uint16_t sqeType);
 bool IsDvppTask(const uint16_t sqeType);
 bool IsLogicCqInvalid(const uint8_t errorType);
-uint32_t GetProfTaskId(const TaskInfo * const taskInfo);
+uint32_t GetProfTaskId(const TaskInfo* const taskInfo);
 uint32_t GetTaskId(const TaskInfo* const taskInfo);
 int32_t GetTaskIdBitWidth();
 const char_t* TaskIdDesc();
 const char_t* TaskIdCamelbackNaming();
-void PrintStarsCqeInfo(const rtLogicCqReport_t &cqe, const uint32_t devId, const uint32_t cqId);
-void GetBinAndKernelNameExceptionArgs(const Kernel * const kernel, rtExceptionArgsInfo_t *argsInfo);
-void GetKernelExceptionDfxInfo(const Kernel * const kernel, const rtArgsSizeInfo_t * const sizeInfo,
-    void * const args, const uint32_t argsSize, rtExceptionArgsInfo_t * const argsInfo);
-}
-}
-#endif  // CCE_RUNTIME_TASK_INFO_HPP
+void PrintStarsCqeInfo(const rtLogicCqReport_t& cqe, const uint32_t devId, const uint32_t cqId);
+void GetBinAndKernelNameExceptionArgs(const Kernel* const kernel, rtExceptionArgsInfo_t* argsInfo);
+void GetKernelExceptionDfxInfo(
+    const Kernel* const kernel, const rtArgsSizeInfo_t* const sizeInfo, void* const args, const uint32_t argsSize,
+    rtExceptionArgsInfo_t* const argsInfo);
+} // namespace runtime
+} // namespace cce
+#endif // CCE_RUNTIME_TASK_INFO_HPP

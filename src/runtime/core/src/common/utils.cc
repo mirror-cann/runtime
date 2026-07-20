@@ -16,7 +16,7 @@
 
 namespace cce {
 namespace runtime {
-bool GetConfigIniValueInt32(const std::string &userFileName, const std::string &key, int32_t &val)
+bool GetConfigIniValueInt32(const std::string& userFileName, const std::string& key, int32_t& val)
 {
     const std::string fileName = RealPath(userFileName);
     if (fileName.empty()) {
@@ -47,17 +47,18 @@ bool GetConfigIniValueInt32(const std::string &userFileName, const std::string &
         try {
             val = std::stoi(valueOfStr);
         } catch (const std::invalid_argument& ia) {
-            RT_LOG(RT_LOG_WARNING, "%s failed: invalid_argument, string(%s), file(%s).",
-                ia.what(), line.c_str(), fileName.c_str());
+            RT_LOG(
+                RT_LOG_WARNING, "%s failed: invalid_argument, string(%s), file(%s).", ia.what(), line.c_str(),
+                fileName.c_str());
             ret = false;
         } catch (const std::out_of_range& oor) {
-            RT_LOG(RT_LOG_WARNING, "%s failed: out_of_range, string(%s), file(%s).",
-                oor.what(), line.c_str(), fileName.c_str());
+            RT_LOG(
+                RT_LOG_WARNING, "%s failed: out_of_range, string(%s), file(%s).", oor.what(), line.c_str(),
+                fileName.c_str());
             ret = false;
         }
 
-        RT_LOG(RT_LOG_INFO, "read file %s result: value=%d, valueOfStr=%s.",
-            fileName.c_str(), val, valueOfStr.c_str());
+        RT_LOG(RT_LOG_INFO, "read file %s result: value=%d, valueOfStr=%s.", fileName.c_str(), val, valueOfStr.c_str());
     }
 
     if (!ret) {
@@ -66,7 +67,7 @@ bool GetConfigIniValueInt32(const std::string &userFileName, const std::string &
     return ret;
 }
 
-const std::string RealPath(const std::string &path)
+const std::string RealPath(const std::string& path)
 {
     if (path.empty()) {
         RT_LOG(RT_LOG_ERROR, "path string is empty.");
@@ -91,12 +92,10 @@ const std::string RealPath(const std::string &path)
 
 bool IsStringNumeric(const std::string& str)
 {
-    return std::all_of(str.begin(), str.end(), [](char c) {
-        return std::isdigit(static_cast<unsigned char>(c));
-    });
+    return std::all_of(str.begin(), str.end(), [](char c) { return std::isdigit(static_cast<unsigned char>(c)); });
 }
 
-bool GetDriverPath(std::string &driverPath)
+bool GetDriverPath(std::string& driverPath)
 {
     const std::string driverPathKey = "Driver_Install_Path_Param=";
     const std::string ascendInstallPath = "/etc/ascend_install.info";
@@ -109,7 +108,7 @@ bool GetDriverPath(std::string &driverPath)
     driverPath.clear();
     std::string line;
     while (std::getline(ifs, line)) {
-        const auto &pos = line.find(driverPathKey);
+        const auto& pos = line.find(driverPathKey);
         if (pos == std::string::npos) {
             continue;
         }
@@ -122,7 +121,7 @@ bool GetDriverPath(std::string &driverPath)
     return false;
 }
 
-std::string GetFileName(const std::string &path)
+std::string GetFileName(const std::string& path)
 {
     const size_t lastSlashPos = path.find_last_of("\\/");
     if (lastSlashPos != std::string::npos) {
@@ -132,7 +131,7 @@ std::string GetFileName(const std::string &path)
     return path; // 如果没有找到斜杠，则整个字符串就是文件名
 }
 
-std::string GetFilePathByExtension(const std::string &binPath, std::string extension)
+std::string GetFilePathByExtension(const std::string& binPath, std::string extension)
 {
     std::string soFilePath;
     const auto dotPos = binPath.find_last_of(".");
@@ -144,13 +143,13 @@ std::string GetFilePathByExtension(const std::string &binPath, std::string exten
     return soFilePath;
 }
 
-const std::string RealPathForFileNotExists(const std::string &inputPath)
+const std::string RealPathForFileNotExists(const std::string& inputPath)
 {
     const std::string::size_type lastSlash = inputPath.find_last_of("/\\");
     std::string fullPath;
 
     if (lastSlash == std::string::npos) {
-        //input path contains file name only;
+        // input path contains file name only;
         fullPath = inputPath;
     } else {
         const std::string dirPath = inputPath.substr(0, lastSlash);
@@ -164,7 +163,7 @@ const std::string RealPathForFileNotExists(const std::string &inputPath)
     return fullPath;
 }
 
-bool GetConfigIniValueDouble(const std::string &userFileName, const std::string &key, double &val)
+bool GetConfigIniValueDouble(const std::string& userFileName, const std::string& key, double& val)
 {
     const std::string fileName = RealPath(userFileName);
     if (fileName.empty()) {
@@ -195,17 +194,18 @@ bool GetConfigIniValueDouble(const std::string &userFileName, const std::string 
         try {
             val = std::stod(valueOfStr);
         } catch (const std::invalid_argument& ia) {
-            RT_LOG(RT_LOG_WARNING, "%s failed: invalid_argument, string(%s), file(%s).",
-                ia.what(), line.c_str(), fileName.c_str());
+            RT_LOG(
+                RT_LOG_WARNING, "%s failed: invalid_argument, string(%s), file(%s).", ia.what(), line.c_str(),
+                fileName.c_str());
             result = false;
         } catch (const std::out_of_range& oor) {
-            RT_LOG(RT_LOG_WARNING, "%s failed: out_of_range, string(%s), file(%s).",
-                oor.what(), line.c_str(), fileName.c_str());
+            RT_LOG(
+                RT_LOG_WARNING, "%s failed: out_of_range, string(%s), file(%s).", oor.what(), line.c_str(),
+                fileName.c_str());
             result = false;
         }
 
-        RT_LOG(RT_LOG_INFO, "read file %s result: value=%f, valueOfStr=%s.",
-            fileName.c_str(), val, valueOfStr.c_str());
+        RT_LOG(RT_LOG_INFO, "read file %s result: value=%f, valueOfStr=%s.", fileName.c_str(), val, valueOfStr.c_str());
     }
 
     if (!result) {
@@ -214,10 +214,10 @@ bool GetConfigIniValueDouble(const std::string &userFileName, const std::string 
     return result;
 }
 
-uint64_t GetQuickHash(const void *data, const size_t size)
+uint64_t GetQuickHash(const void* data, const size_t size)
 {
     // Using the FNV-1a algorithm for hash computation offers faster speed.
-    const uint8_t *bytes = static_cast<const uint8_t *>(data);
+    const uint8_t* bytes = static_cast<const uint8_t*>(data);
     const uint64_t prime = 1099511628211UL;
     uint64_t hash = 14695981039346656037UL;
     for (size_t i = 0UL; i < size; i++) {
@@ -257,8 +257,8 @@ std::string EscapeJsonString(const std::string& value)
             default:
                 const uint32_t charValue = static_cast<uint32_t>(static_cast<unsigned char>(ch));
                 if (charValue < 0x20U) {
-                    oss << "\\u" << std::hex << std::setw(4) << std::setfill('0') << charValue
-                        << std::dec << std::setfill(' ');
+                    oss << "\\u" << std::hex << std::setw(4) << std::setfill('0') << charValue << std::dec
+                        << std::setfill(' ');
                 } else {
                     oss << ch;
                 }
@@ -267,5 +267,5 @@ std::string EscapeJsonString(const std::string& value)
     }
     return oss.str();
 }
-}
-}
+} // namespace runtime
+} // namespace cce

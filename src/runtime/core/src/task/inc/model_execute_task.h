@@ -15,22 +15,22 @@
 namespace cce {
 namespace runtime {
 
-rtError_t ModelExecuteTaskInit(TaskInfo * const taskInfo, Model *const modelPtr, const uint32_t modelIndex,
-                               const uint32_t firstTaskIndex);
-void ToCommandBodyForModelExecuteTask(TaskInfo * const taskInfo, rtCommand_t * const command);
-void ModelExecuteTaskUnInit(TaskInfo * const taskInfo);
-void DoCompleteSuccessForModelExecuteTask(TaskInfo * const taskInfo, const uint32_t devId);
-void PrintErrorInfoForModelExecuteTask(TaskInfo * const taskInfo, const uint32_t devId);
-void SetStarsResultForModelExecuteTask(TaskInfo * const taskInfo, const rtLogicCqReport_t &logicCq);
-TaskInfo *GetRealReportFaultTaskForModelExecuteTask(TaskInfo* const taskInfo);
-void PrintErrorModelExecuteTaskFuncCall(TaskInfo *const task);
-rtError_t AllocFuncCallMemForModelExecuteTask(TaskInfo * const taskInfo, rtStarsModelExeFuncCallPara_t &funcCallPara);
-rtError_t PrepareSqeInfoForModelExecuteTask(TaskInfo * const taskInfo);
-rtError_t FreeFuncCallHostMemAndSvmMem(TaskInfo * const taskInfo);
-void ReportModelEndGraphErrorForNotifyWaitTask(TaskInfo *taskInfo, const uint32_t devId);
-void ReportErrorInfoForModelExecuteTask(TaskInfo * const taskInfo, const uint32_t devId);
-rtError_t WaitExecFinishForModelExecuteTask(const TaskInfo *const taskInfo);
+rtError_t ModelExecuteTaskInit(
+    TaskInfo* const taskInfo, Model* const modelPtr, const uint32_t modelIndex, const uint32_t firstTaskIndex);
+void ToCommandBodyForModelExecuteTask(TaskInfo* const taskInfo, rtCommand_t* const command);
+void ModelExecuteTaskUnInit(TaskInfo* const taskInfo);
+void DoCompleteSuccessForModelExecuteTask(TaskInfo* const taskInfo, const uint32_t devId);
+void PrintErrorInfoForModelExecuteTask(TaskInfo* const taskInfo, const uint32_t devId);
+void SetStarsResultForModelExecuteTask(TaskInfo* const taskInfo, const rtLogicCqReport_t& logicCq);
+TaskInfo* GetRealReportFaultTaskForModelExecuteTask(TaskInfo* const taskInfo);
+void PrintErrorModelExecuteTaskFuncCall(TaskInfo* const task);
+rtError_t AllocFuncCallMemForModelExecuteTask(TaskInfo* const taskInfo, rtStarsModelExeFuncCallPara_t& funcCallPara);
+rtError_t PrepareSqeInfoForModelExecuteTask(TaskInfo* const taskInfo);
+rtError_t FreeFuncCallHostMemAndSvmMem(TaskInfo* const taskInfo);
+void ReportModelEndGraphErrorForNotifyWaitTask(TaskInfo* taskInfo, const uint32_t devId);
+void ReportErrorInfoForModelExecuteTask(TaskInfo* const taskInfo, const uint32_t devId);
+rtError_t WaitExecFinishForModelExecuteTask(const TaskInfo* const taskInfo);
 
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_MODEL_EXECUTE_TASK_H
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_MODEL_EXECUTE_TASK_H

@@ -19,18 +19,18 @@ namespace runtime {
 uint32_t GetSendSqeNumForRdmaDbSendTask(TaskInfo* const taskInfo);
 rtError_t RdmaSendTaskInit(TaskInfo* taskInfo, const uint32_t sqId, const uint32_t wqeId);
 rtError_t RdmaDbSendTaskInit(TaskInfo* taskInfo, const uint32_t dbIndex, const uint64_t dbInfo, const uint32_t taskSeq);
-void ToCommandBodyForRdmaSendTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void ToCommandBodyForRdmaDbSendTask(TaskInfo* taskInfo, rtCommand_t * const command);
-rtError_t RdmaPiValueModifyTaskInit(
-    TaskInfo *const taskInfo, const std::vector<uint64_t>& rdmaPiValueDeviceAddrVec);
-void GetRdmaTaskInfoFromFftsPlusTask (const rtFftsPlusTaskInfo_t *const fftsPlusTaskInfo,
-    const void *deviceDescAlignBuf, std::vector<uint64_t> &rdmaPiValueDeviceAddrVec);
+void ToCommandBodyForRdmaSendTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void ToCommandBodyForRdmaDbSendTask(TaskInfo* taskInfo, rtCommand_t* const command);
+rtError_t RdmaPiValueModifyTaskInit(TaskInfo* const taskInfo, const std::vector<uint64_t>& rdmaPiValueDeviceAddrVec);
+void GetRdmaTaskInfoFromFftsPlusTask(
+    const rtFftsPlusTaskInfo_t* const fftsPlusTaskInfo, const void* deviceDescAlignBuf,
+    std::vector<uint64_t>& rdmaPiValueDeviceAddrVec);
 rtError_t SubmitRdmaPiValueModifyTask(
-    Stream *const stm, const rtFftsPlusTaskInfo_t *const fftsPlusTaskInfo, const void *deviceDescAlignBuf);
-void ConstructSqeRdmaPiValueModifyTask(TaskInfo *taskInfo, rtStarsSqe_t *const command);
-void RdmaPiValueModifyTaskUnInit(TaskInfo *taskInfo);
-void PrintErrorInfoForRDMAPiValueModifyTask(TaskInfo *const taskInfo, const uint32_t devId);
-void PrintDfxInfoForRdmaPiValueModifyTask(const TaskInfo *taskInfo, const uint32_t devId);
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_RDMA_TASK_H
+    Stream* const stm, const rtFftsPlusTaskInfo_t* const fftsPlusTaskInfo, const void* deviceDescAlignBuf);
+void ConstructSqeRdmaPiValueModifyTask(TaskInfo* taskInfo, rtStarsSqe_t* const command);
+void RdmaPiValueModifyTaskUnInit(TaskInfo* taskInfo);
+void PrintErrorInfoForRDMAPiValueModifyTask(TaskInfo* const taskInfo, const uint32_t devId);
+void PrintDfxInfoForRdmaPiValueModifyTask(const TaskInfo* taskInfo, const uint32_t devId);
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_RDMA_TASK_H

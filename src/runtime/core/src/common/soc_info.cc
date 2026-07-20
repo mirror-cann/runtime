@@ -23,10 +23,11 @@ namespace {
 rtError_t GetChipTypeFromPlatformBySocName(const std::string& socName, rtChipType_t& chipType)
 {
     std::string result;
-    const int32_t ret = PlatformManagerV2::Instance().GetSocSpec(socName, platform_config::kVersionSection,
-        platform_config::kChipTypeField, result);
-    COND_PROC_RETURN_ERROR(ret != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE, ,
-        "Get chip type from platform failed, socName=%s, ret=%d.", socName.c_str(), ret);
+    const int32_t ret = PlatformManagerV2::Instance().GetSocSpec(
+        socName, platform_config::kVersionSection, platform_config::kChipTypeField, result);
+    COND_PROC_RETURN_ERROR(
+        ret != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE, , "Get chip type from platform failed, socName=%s, ret=%d.",
+        socName.c_str(), ret);
 
     try {
         size_t parsePos = 0U;
@@ -46,7 +47,7 @@ rtError_t GetChipTypeFromPlatformBySocName(const std::string& socName, rtChipTyp
 
     return RT_ERROR_NONE;
 }
-}  // namespace
+} // namespace
 
 rtError_t GetChipTypeFromPlatform(const char_t* const socName, rtChipType_t& chipType)
 {
@@ -59,11 +60,10 @@ rtError_t GetNpuArchByName(const char_t* const socName, int32_t* hardwareNpuArch
     COND_PROC_RETURN_ERROR(socName == nullptr, RT_ERROR_INVALID_VALUE, , "socName is null.");
     COND_PROC_RETURN_ERROR(hardwareNpuArch == nullptr, RT_ERROR_INVALID_VALUE, , "hardwareNpuArch is null.");
     std::string result = "";
-    const int32_t ret =
-        PlatformManagerV2::Instance().GetSocSpec(std::string(socName), platform_config::kVersionSection,
-            platform_config::kNpuArchField, result);
-    COND_PROC_RETURN_ERROR(ret != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE, ,
-        "Get soc spec failed, ret = %u, please check.", ret);
+    const int32_t ret = PlatformManagerV2::Instance().GetSocSpec(
+        std::string(socName), platform_config::kVersionSection, platform_config::kNpuArchField, result);
+    COND_PROC_RETURN_ERROR(
+        ret != RT_ERROR_NONE, RT_ERROR_INVALID_VALUE, , "Get soc spec failed, ret = %u, please check.", ret);
     try {
         *hardwareNpuArch = std::stoi(result);
     } catch (...) {
@@ -74,5 +74,5 @@ rtError_t GetNpuArchByName(const char_t* const socName, int32_t* hardwareNpuArch
     return RT_ERROR_NONE;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

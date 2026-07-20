@@ -28,7 +28,7 @@ public:
         return &instance;
     }
 
-    bool isSupportAllKernelDfxInfo() 
+    bool isSupportAllKernelDfxInfo()
     {
         const std::unique_lock<std::mutex> regMapLock(kernelDfxInfoCallbackMutex_);
         return kernelDfxInfoCallbackMap_.find(RT_KERNEL_DFX_INFO_DEFAULT) != kernelDfxInfoCallbackMap_.end();
@@ -46,7 +46,9 @@ public:
     }
 
     rtError_t SetKernelDfxInfoCallback(rtKernelDfxInfoType type, rtKernelDfxInfoProFunc func);
-    rtError_t ExecuteKernelDfxInfoFunc(rtKernelDfxInfoType type, uint32_t coreType, uint32_t coreId, const uint8_t *buffer, uint64_t length);
+    rtError_t ExecuteKernelDfxInfoFunc(
+        rtKernelDfxInfoType type, uint32_t coreType, uint32_t coreId, const uint8_t* buffer, uint64_t length);
+
 private:
     std::map<rtKernelDfxInfoType, rtKernelDfxInfoProFunc> kernelDfxInfoCallbackMap_;
     std::mutex kernelDfxInfoCallbackMutex_;
@@ -54,7 +56,7 @@ private:
     KernelDfxInfo() {}
 };
 
-} // runtime
-} // cce
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_KERNEL_DFX_INFO_HPP

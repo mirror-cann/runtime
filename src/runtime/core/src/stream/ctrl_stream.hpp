@@ -11,32 +11,30 @@
 #define CCE_RUNTIME_CTRL_STREAM_HPP
 
 #include "stream.hpp"
- 
+
 namespace cce {
 namespace runtime {
 class CtrlStream : public Stream {
 public:
-    explicit CtrlStream(Device * const dev) : Stream(dev, 0, 0U)
-    {
-        isCtrlStream_ = true;
-    }
+    explicit CtrlStream(Device* const dev) : Stream(dev, 0, 0U) { isCtrlStream_ = true; }
     ~CtrlStream() noexcept override;
 
     // init stream
     rtError_t Setup() override;
-    rtError_t GetTaskIdByPos(const uint16_t recycleHead, uint32_t &taskId) override;
-    rtError_t GetHeadPosFromCtrlSq(uint32_t &sqHead);
+    rtError_t GetTaskIdByPos(const uint16_t recycleHead, uint32_t& taskId) override;
+    rtError_t GetHeadPosFromCtrlSq(uint32_t& sqHead);
     rtError_t Synchronize(const bool isNeedWaitSyncCq = false, int32_t timeout = -1) override;
-    rtError_t AddTaskToStream(const uint32_t pos, const TaskInfo * const tsk);
+    rtError_t AddTaskToStream(const uint32_t pos, const TaskInfo* const tsk);
     void DelPosToCtrlTaskIdMap(uint16_t pos);
     // total sqsize if 1024, last two sq is used as head(index:1022) and tail(index:1023), only 1022 is available
     const uint32_t sqDepth = 1022;
+
 private:
     std::mutex posToCtrlTaskIdMapLock_;
     std::unordered_map<uint16_t, uint16_t> posToCtrlTaskIdMap_;
     rtError_t SynchronizeInternal(const bool isNeedWaitSyncCq, int32_t timeout);
 };
-}  // namespace runtime
-}  // namespace cce
- 
-#endif  // CCE_RUNTIME_CTRL_STREAM_HPP
+} // namespace runtime
+} // namespace cce
+
+#endif // CCE_RUNTIME_CTRL_STREAM_HPP

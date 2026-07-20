@@ -19,21 +19,18 @@ constexpr uint16_t MAGIC_NUMBER_FOR_AICPU_MSG_VERSION = 0x5A5AU;
 /* tsfw-aicpu msg version, begin with 0, if change aicpu parse way on different chip, should add 1. */
 /* 0 : for obp, primary aicpu parse way */
 /* 1 : beginning, for David, use tag_ts_aicpu_mail_box_cmd_type_new for aicpu msg cmd type */
-enum RtAicpuMsgVersion : uint8_t {
-    AICPU_MSG_VERSION_FOR_OBP   = 0,
-    AICPU_MSG_VERSION_FOR_DAVID = 1
-};
+enum RtAicpuMsgVersion : uint8_t { AICPU_MSG_VERSION_FOR_OBP = 0, AICPU_MSG_VERSION_FOR_DAVID = 1 };
 
 enum RtDavidAicpuMsgCmdType : uint8_t {
-    TS_AICPU_MSG_VERSION    = 0,   /* 0 aicpu msg version */
-    TS_AICPU_MODEL_OPERATE  = 1,   /* 1 aicpu model operate on david */
-    TS_AICPU_TIMEOUT_CONFIG = 8    /* 8 aicpu timeout config on david */
+    TS_AICPU_MSG_VERSION = 0,   /* 0 aicpu msg version */
+    TS_AICPU_MODEL_OPERATE = 1, /* 1 aicpu model operate on david */
+    TS_AICPU_TIMEOUT_CONFIG = 8 /* 8 aicpu timeout config on david */
 };
 
 namespace cce {
 namespace runtime {
 #pragma pack(push)
-#pragma pack (1)
+#pragma pack(1)
 
 struct DavidStarsAicpuModelOperate {
     uint32_t modelInfoAddrLow;
@@ -141,7 +138,7 @@ struct RtDavidStarsAicpuKernelSqe {
     /* word6-7 */
     uint32_t paramAddrLow;
     uint32_t paramAddrHigh : 16;
-    uint32_t res5 : 16;  // used, for kfcArgsFmtOffset
+    uint32_t res5 : 16; // used, for kfcArgsFmtOffset
 
     /* word8-9 */
     uint32_t taskNameStrPtrLow;
@@ -157,7 +154,7 @@ struct RtDavidStarsAicpuKernelSqe {
     uint32_t res7 : 13;
 
     /* word12-13 */
-    uint32_t extraFieldLow;  // send task id info to aicpu
+    uint32_t extraFieldLow; // send task id info to aicpu
     uint32_t extraFieldHigh;
 
     /* word14 */
@@ -170,6 +167,6 @@ struct RtDavidStarsAicpuKernelSqe {
     uint32_t destPid;
 };
 #pragma pack(pop)
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif

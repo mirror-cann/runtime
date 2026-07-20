@@ -14,9 +14,9 @@
 
 namespace cce {
 namespace runtime {
-Api *Api::Instance(const uint32_t flags)
+Api* Api::Instance(const uint32_t flags)
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     if (unlikely(rtInstance == nullptr)) {
         RT_LOG(RT_LOG_ERROR, "Runtime::Instance == nullptr");
         return nullptr;
@@ -25,9 +25,9 @@ Api *Api::Instance(const uint32_t flags)
     return rtInstance->Api_();
 }
 
-ApiMbuf *ApiMbuf::Instance()
+ApiMbuf* ApiMbuf::Instance()
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     if (unlikely(rtInstance == nullptr)) {
         RT_LOG(RT_LOG_ERROR, "Runtime::Instance == nullptr");
         return nullptr;
@@ -35,9 +35,9 @@ ApiMbuf *ApiMbuf::Instance()
     return rtInstance->ApiMbuf_();
 }
 
-ApiSoma *ApiSoma::Instance()
+ApiSoma* ApiSoma::Instance()
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     if (unlikely(rtInstance == nullptr)) {
         RT_LOG(RT_LOG_ERROR, "Runtime::Instance == nullptr");
         return nullptr;
@@ -45,5 +45,5 @@ ApiSoma *ApiSoma::Instance()
     return rtInstance->ApiSoma_();
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

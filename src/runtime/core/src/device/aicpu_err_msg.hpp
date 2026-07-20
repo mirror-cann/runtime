@@ -24,27 +24,27 @@ class Device;
 
 class AicpuErrMsg : public NoCopy {
 public:
-    explicit AicpuErrMsg(Device * const dev);
+    explicit AicpuErrMsg(Device* const dev);
     ~AicpuErrMsg() noexcept override;
     void TearDown(void) noexcept;
     void SetErrMsgBufAddr(void);
 
 private:
-    void *errMsgBuf_{nullptr};
+    void* errMsgBuf_{nullptr};
     std::mutex errMsgBufMutex_;
-    Device *device_;
+    Device* device_;
 
     void ErrMsgBufLock(void);
     void ErrMsgBufUnLock(void);
     rtError_t AllocResource(void);
     void FreeResource(void) noexcept;
-    rtError_t SendConfigMsgToAicpu(const aicpu::AicpuConfigMsg * const configMsg) const;
-    rtError_t SendTaskToAicpu(const rtKernelLaunchNames_t &launchNames, const uint32_t coreDim,
-                              const void * const args, const uint32_t argsSize, const uint32_t flag) const;
-    rtError_t FillKernelLaunchPara(const rtKernelLaunchNames_t &launchNames,
-                                   TaskInfo * const kernTask) const;
+    rtError_t SendConfigMsgToAicpu(const aicpu::AicpuConfigMsg* const configMsg) const;
+    rtError_t SendTaskToAicpu(
+        const rtKernelLaunchNames_t& launchNames, const uint32_t coreDim, const void* const args,
+        const uint32_t argsSize, const uint32_t flag) const;
+    rtError_t FillKernelLaunchPara(const rtKernelLaunchNames_t& launchNames, TaskInfo* const kernTask) const;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_AICPU_ERR_MSG_HPP__
+#endif // __CCE_RUNTIME_AICPU_ERR_MSG_HPP__

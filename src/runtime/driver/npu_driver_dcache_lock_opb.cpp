@@ -18,7 +18,7 @@
 
 namespace cce {
 namespace runtime {
-void FreeDcacheAddr(const uint32_t deviceId, void *&dcacheAddr, void *&drvHandle)
+void FreeDcacheAddr(const uint32_t deviceId, void*& dcacheAddr, void*& drvHandle)
 {
     drvHandle = nullptr;
     if (dcacheAddr != nullptr && halMemCtl != nullptr) {
@@ -26,9 +26,9 @@ void FreeDcacheAddr(const uint32_t deviceId, void *&dcacheAddr, void *&drvHandle
         munmapInfo.devid = deviceId;
         munmapInfo.ptr = RtPtrToValue(dcacheAddr);
         munmapInfo.size = 0ULL;
-        const drvError_t drvRet =
-            halMemCtl(CTRL_TYPE_PROCESS_CP_MUNMAP, RtPtrToPtr<void *>(&munmapInfo), sizeof(struct ProcessCpMunmap),
-                      nullptr, nullptr);
+        const drvError_t drvRet = halMemCtl(
+            CTRL_TYPE_PROCESS_CP_MUNMAP, RtPtrToPtr<void*>(&munmapInfo), sizeof(struct ProcessCpMunmap), nullptr,
+            nullptr);
         if (drvRet != DRV_ERROR_NONE) {
             RT_LOG(RT_LOG_ERROR, "Failed to free dcache stack physical address, drvRet=%#x.", drvRet);
         }
@@ -36,10 +36,10 @@ void FreeDcacheAddr(const uint32_t deviceId, void *&dcacheAddr, void *&drvHandle
     }
 }
 
-rtError_t AllocAddrForDcache(const uint32_t deviceId, void *&dcacheAddr, const uint64_t size, void *&drvHandle)
+rtError_t AllocAddrForDcache(const uint32_t deviceId, void*& dcacheAddr, const uint64_t size, void*& drvHandle)
 {
     COND_RETURN_WARN(halMemCtl == nullptr, RT_ERROR_FEATURE_NOT_SUPPORT, "[drv api] halMemCtl does not exist");
-    void *checkTempPtr = nullptr;
+    void* checkTempPtr = nullptr;
     size_t outSize = 0;
     drvError_t drvRet = halMemCtl(CTRL_TYPE_GET_DCACHE_ADDR, nullptr, 0, &checkTempPtr, &outSize);
     if (drvRet != DRV_ERROR_NONE) {
@@ -52,15 +52,12 @@ rtError_t AllocAddrForDcache(const uint32_t deviceId, void *&dcacheAddr, const u
     mmapInfo.ptr = RtPtrToValue(checkTempPtr);
     mmapInfo.size = size;
     mmapInfo.flag = 0ULL;
-    drvRet =
-        halMemCtl(CTRL_TYPE_PROCESS_CP_MMAP, RtPtrToPtr<void *>(&mmapInfo), sizeof(struct ProcessCpMmap), &dcacheAddr, &outSize);
-    if (drvRet != DRV_ERROR_NONE || (checkTempPtr != dcacheAddr) || (outSize == 0)) {  // 这里需要将dcacheAddr释放
-        RT_LOG(RT_LOG_WARNING,
-            "halMemCtl failed, drvRet=%u, checkTempPtr=%p, dcacheAddr=%p, outSize=%zu",
-            drvRet,
-            checkTempPtr,
-            dcacheAddr,
-            outSize);
+    drvRet = halMemCtl(
+        CTRL_TYPE_PROCESS_CP_MMAP, RtPtrToPtr<void*>(&mmapInfo), sizeof(struct ProcessCpMmap), &dcacheAddr, &outSize);
+    if (drvRet != DRV_ERROR_NONE || (checkTempPtr != dcacheAddr) || (outSize == 0)) { // 这里需要将dcacheAddr释放
+        RT_LOG(
+            RT_LOG_WARNING, "halMemCtl failed, drvRet=%u, checkTempPtr=%p, dcacheAddr=%p, outSize=%zu", drvRet,
+            checkTempPtr, dcacheAddr, outSize);
         FreeDcacheAddr(deviceId, dcacheAddr, drvHandle);
         dcacheAddr = nullptr;
         return RT_ERROR_DCACHE_MEM_ALLOC_FAIL;
@@ -70,14 +67,14 @@ rtError_t AllocAddrForDcache(const uint32_t deviceId, void *&dcacheAddr, const u
     return RT_ERROR_NONE;
 }
 
-rtError_t DcacheLockSendTask(const Context *ctx, const uint32_t blockDim, const void * const funcAddr, Stream *stream)
+rtError_t DcacheLockSendTask(const Context* ctx, const uint32_t blockDim, const void* const funcAddr, Stream* stream)
 {
     (void)ctx;
     // 算子args需要3个uint64的占位符
     constexpr uint32_t argsSize = 24U;
     uint8_t argsHost[argsSize] = {0U};
     rtArgsEx_t argsInfo = {};
-    argsInfo.args = RtPtrToPtr<void *, uint8_t *>(argsHost);
+    argsInfo.args = RtPtrToPtr<void*, uint8_t*>(argsHost);
     argsInfo.argsSize = argsSize;
     TaskCfg taskCfg = {};
     taskCfg.isBaseValid = 1U;
@@ -90,5 +87,5 @@ rtError_t DcacheLockSendTask(const Context *ctx, const uint32_t blockDim, const 
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

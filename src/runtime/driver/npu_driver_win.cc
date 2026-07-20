@@ -24,8 +24,8 @@
 namespace cce {
 namespace runtime {
 
-rtError_t NpuDriver::MallocHostSharedMemory(rtMallocHostSharedMemoryIn * const in,
-    rtMallocHostSharedMemoryOut * const out, const uint32_t deviceId)
+rtError_t NpuDriver::MallocHostSharedMemory(
+    rtMallocHostSharedMemoryIn* const in, rtMallocHostSharedMemoryOut* const out, const uint32_t deviceId)
 {
     UNUSED(in);
     UNUSED(out);
@@ -33,15 +33,15 @@ rtError_t NpuDriver::MallocHostSharedMemory(rtMallocHostSharedMemoryIn * const i
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::FreeHostSharedMemory(rtFreeHostSharedMemoryIn * const in, const uint32_t deviceId)
+rtError_t NpuDriver::FreeHostSharedMemory(rtFreeHostSharedMemoryIn* const in, const uint32_t deviceId)
 {
     UNUSED(in);
     UNUSED(deviceId);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::HostRegister(void *ptr, uint64_t size, rtHostRegisterType type, void **devPtr,
-    const uint32_t deviceId)
+rtError_t NpuDriver::HostRegister(
+    void* ptr, uint64_t size, rtHostRegisterType type, void** devPtr, const uint32_t deviceId)
 {
     UNUSED(ptr);
     UNUSED(size);
@@ -51,14 +51,14 @@ rtError_t NpuDriver::HostRegister(void *ptr, uint64_t size, rtHostRegisterType t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::HostUnregister(void *ptr,  const uint32_t deviceId)
+rtError_t NpuDriver::HostUnregister(void* ptr, const uint32_t deviceId)
 {
     UNUSED(ptr);
     UNUSED(deviceId);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::HostGetDevPointer(void *srcPtr, uint32_t devid, void **dstPtr, const bool isLogError)
+rtError_t NpuDriver::HostGetDevPointer(void* srcPtr, uint32_t devid, void** dstPtr, const bool isLogError)
 {
     UNUSED(srcPtr);
     UNUSED(devid);
@@ -67,7 +67,7 @@ rtError_t NpuDriver::HostGetDevPointer(void *srcPtr, uint32_t devid, void **dstP
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::HostAddrRegister(void * const addr, const uint64_t size, const uint32_t deviceId)
+rtError_t NpuDriver::HostAddrRegister(void* const addr, const uint64_t size, const uint32_t deviceId)
 {
     UNUSED(addr);
     UNUSED(size);
@@ -75,14 +75,14 @@ rtError_t NpuDriver::HostAddrRegister(void * const addr, const uint64_t size, co
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::HostAddrUnRegister(void * const addr, const uint32_t deviceId)
+rtError_t NpuDriver::HostAddrUnRegister(void* const addr, const uint32_t deviceId)
 {
     UNUSED(addr);
     UNUSED(deviceId);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ReserveMemAddress(void** devPtr, size_t size, size_t alignment, void *devAddr, uint64_t flags)
+rtError_t NpuDriver::ReserveMemAddress(void** devPtr, size_t size, size_t alignment, void* devAddr, uint64_t flags)
 {
     UNUSED(devPtr);
     UNUSED(size);
@@ -129,8 +129,7 @@ rtError_t NpuDriver::UnmapMem(void* devPtr)
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemMapNoAccess(
-    void *virPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags)
+rtError_t NpuDriver::MemMapNoAccess(void* virPtr, size_t size, size_t offset, rtDrvMemHandle handle, uint64_t flags)
 {
     UNUSED(virPtr);
     UNUSED(size);
@@ -140,7 +139,7 @@ rtError_t NpuDriver::MemMapNoAccess(
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemSetAccess(void *virPtr, size_t size, rtMemAccessDesc *desc, size_t count)
+rtError_t NpuDriver::MemSetAccess(void* virPtr, size_t size, rtMemAccessDesc* desc, size_t count)
 {
     UNUSED(virPtr);
     UNUSED(size);
@@ -149,7 +148,7 @@ rtError_t NpuDriver::MemSetAccess(void *virPtr, size_t size, rtMemAccessDesc *de
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemGetAccess(void *virPtr, rtMemLocation *location, uint64_t *flags)
+rtError_t NpuDriver::MemGetAccess(void* virPtr, rtMemLocation* location, uint64_t* flags)
 {
     UNUSED(virPtr);
     UNUSED(location);
@@ -157,8 +156,8 @@ rtError_t NpuDriver::MemGetAccess(void *virPtr, rtMemLocation *location, uint64_
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetAllocationGranularity(const rtDrvMemProp_t *prop, rtDrvMemGranularityOptions option,
-    size_t *granularity)
+rtError_t NpuDriver::GetAllocationGranularity(
+    const rtDrvMemProp_t* prop, rtDrvMemGranularityOptions option, size_t* granularity)
 {
     UNUSED(prop);
     UNUSED(option);
@@ -166,8 +165,8 @@ rtError_t NpuDriver::GetAllocationGranularity(const rtDrvMemProp_t *prop, rtDrvM
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ExportToShareableHandle(rtDrvMemHandle handle, rtDrvMemHandleType handleType,
-    uint64_t flags, uint64_t *shareableHandle)
+rtError_t NpuDriver::ExportToShareableHandle(
+    rtDrvMemHandle handle, rtDrvMemHandleType handleType, uint64_t flags, uint64_t* shareableHandle)
 {
     UNUSED(handle);
     UNUSED(handleType);
@@ -177,7 +176,7 @@ rtError_t NpuDriver::ExportToShareableHandle(rtDrvMemHandle handle, rtDrvMemHand
 }
 
 rtError_t NpuDriver::ExportToShareableHandleV2(
-    rtDrvMemHandle handle, rtMemSharedHandleType handleType, uint64_t flags, void *shareableHandle)
+    rtDrvMemHandle handle, rtMemSharedHandleType handleType, uint64_t flags, void* shareableHandle)
 {
     UNUSED(handle);
     UNUSED(handleType);
@@ -195,7 +194,7 @@ rtError_t NpuDriver::ImportFromShareableHandle(uint64_t shareableHandle, int32_t
 }
 
 rtError_t NpuDriver::ImportFromShareableHandleV2(
-    const void *shareableHandle, rtMemSharedHandleType handleType, int32_t devId, rtDrvMemHandle *handle)
+    const void* shareableHandle, rtMemSharedHandleType handleType, int32_t devId, rtDrvMemHandle* handle)
 {
     UNUSED(shareableHandle);
     UNUSED(handleType);
@@ -213,7 +212,7 @@ rtError_t NpuDriver::SetPidToShareableHandle(uint64_t shareableHandle, int32_t p
 }
 
 rtError_t NpuDriver::GetServerIdAndshareableHandle(
-    rtMemSharedHandleType handleType, const void *sharehandle, uint32_t *serverId, uint64_t *shareableHandle)
+    rtMemSharedHandleType handleType, const void* sharehandle, uint32_t* serverId, uint64_t* shareableHandle)
 {
     UNUSED(handleType);
     UNUSED(sharehandle);
@@ -222,34 +221,35 @@ rtError_t NpuDriver::GetServerIdAndshareableHandle(
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufInit(rtMemBuffCfg_t * const cfg)
+rtError_t NpuDriver::MbufInit(rtMemBuffCfg_t* const cfg)
 {
     UNUSED(cfg);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::BuffAlloc(const uint64_t size, void **buff)
+rtError_t NpuDriver::BuffAlloc(const uint64_t size, void** buff)
 {
     UNUSED(size);
     UNUSED(buff);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::BuffFree(void * const buff)
+rtError_t NpuDriver::BuffFree(void* const buff)
 {
     UNUSED(buff);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::BuffConfirm(void * const buff, const uint64_t size)
+rtError_t NpuDriver::BuffConfirm(void* const buff, const uint64_t size)
 {
     UNUSED(buff);
     UNUSED(size);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::BuffGetInfo(const rtBuffGetCmdType type, const void * const inBuff, const uint32_t inLen,
-    void * const outBuff, uint32_t * const outLen)
+rtError_t NpuDriver::BuffGetInfo(
+    const rtBuffGetCmdType type, const void* const inBuff, const uint32_t inLen, void* const outBuff,
+    uint32_t* const outLen)
 {
     UNUSED(type);
     UNUSED(inBuff);
@@ -259,21 +259,21 @@ rtError_t NpuDriver::BuffGetInfo(const rtBuffGetCmdType type, const void * const
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::BufEventTrigger(const char_t * const name)
+rtError_t NpuDriver::BufEventTrigger(const char_t* const name)
 {
     UNUSED(name);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufAlloc(rtMbufPtr_t * const mbufPtr, const uint64_t size)
+rtError_t NpuDriver::MbufAlloc(rtMbufPtr_t* const mbufPtr, const uint64_t size)
 {
     UNUSED(mbufPtr);
     UNUSED(size);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufAllocEx(rtMbufPtr_t * const mbufPtr, const uint64_t size,
-    const uint64_t flag, const int32_t grpId)
+rtError_t NpuDriver::MbufAllocEx(
+    rtMbufPtr_t* const mbufPtr, const uint64_t size, const uint64_t flag, const int32_t grpId)
 {
     UNUSED(mbufPtr);
     UNUSED(size);
@@ -288,7 +288,7 @@ rtError_t NpuDriver::MbufFree(rtMbufPtr_t const memBuf)
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufBuild(void * const buff, const uint64_t size, rtMbufPtr_t *mbufPtr)
+rtError_t NpuDriver::MbufBuild(void* const buff, const uint64_t size, rtMbufPtr_t* mbufPtr)
 {
     UNUSED(buff);
     UNUSED(size);
@@ -296,7 +296,7 @@ rtError_t NpuDriver::MbufBuild(void * const buff, const uint64_t size, rtMbufPtr
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufUnBuild(const rtMbufPtr_t mbufPtr, void ** const buff, uint64_t * const size)
+rtError_t NpuDriver::MbufUnBuild(const rtMbufPtr_t mbufPtr, void** const buff, uint64_t* const size)
 {
     UNUSED(mbufPtr);
     UNUSED(buff);
@@ -304,7 +304,7 @@ rtError_t NpuDriver::MbufUnBuild(const rtMbufPtr_t mbufPtr, void ** const buff, 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufGet(const rtMbufPtr_t mbufPtr, void * const buff, const uint64_t size)
+rtError_t NpuDriver::MbufGet(const rtMbufPtr_t mbufPtr, void* const buff, const uint64_t size)
 {
     UNUSED(mbufPtr);
     UNUSED(buff);
@@ -312,7 +312,7 @@ rtError_t NpuDriver::MbufGet(const rtMbufPtr_t mbufPtr, void * const buff, const
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufPut(const rtMbufPtr_t mbufPtr, void * const buff)
+rtError_t NpuDriver::MbufPut(const rtMbufPtr_t mbufPtr, void* const buff)
 {
     UNUSED(mbufPtr);
     UNUSED(buff);
@@ -326,28 +326,28 @@ rtError_t NpuDriver::MbufSetDataLen(const rtMbufPtr_t mbufPtr, const uint64_t le
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufGetDataLen(const rtMbufPtr_t mbufPtr, uint64_t *len)
+rtError_t NpuDriver::MbufGetDataLen(const rtMbufPtr_t mbufPtr, uint64_t* len)
 {
     UNUSED(mbufPtr);
     UNUSED(len);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufGetBuffSize(const rtMbufPtr_t memBuf, uint64_t * const totalSize)
+rtError_t NpuDriver::MbufGetBuffSize(const rtMbufPtr_t memBuf, uint64_t* const totalSize)
 {
     UNUSED(memBuf);
     UNUSED(totalSize);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufGetBuffAddr(const rtMbufPtr_t memBuf, void ** const buf)
+rtError_t NpuDriver::MbufGetBuffAddr(const rtMbufPtr_t memBuf, void** const buf)
 {
     UNUSED(memBuf);
     UNUSED(buf);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufGetPrivInfo(const rtMbufPtr_t memBuf,  void ** const priv, uint64_t * const size)
+rtError_t NpuDriver::MbufGetPrivInfo(const rtMbufPtr_t memBuf, void** const priv, uint64_t* const size)
 {
     UNUSED(memBuf);
     UNUSED(priv);
@@ -355,7 +355,7 @@ rtError_t NpuDriver::MbufGetPrivInfo(const rtMbufPtr_t memBuf,  void ** const pr
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufCopyBufRef(const rtMbufPtr_t mbufPtr, rtMbufPtr_t * const newMbufPtr)
+rtError_t NpuDriver::MbufCopyBufRef(const rtMbufPtr_t mbufPtr, rtMbufPtr_t* const newMbufPtr)
 {
     UNUSED(mbufPtr);
     UNUSED(newMbufPtr);
@@ -369,8 +369,8 @@ rtError_t NpuDriver::MbufChainAppend(const rtMbufPtr_t memBufChainHead, rtMbufPt
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufChainGetMbuf(rtMbufPtr_t const memBufChainHead, const uint32_t index,
-    rtMbufPtr_t * const memBuf)
+rtError_t NpuDriver::MbufChainGetMbuf(
+    rtMbufPtr_t const memBufChainHead, const uint32_t index, rtMbufPtr_t* const memBuf)
 {
     UNUSED(memBufChainHead);
     UNUSED(index);
@@ -378,22 +378,22 @@ rtError_t NpuDriver::MbufChainGetMbuf(rtMbufPtr_t const memBufChainHead, const u
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MbufChainGetMbufNum(const rtMbufPtr_t memBufChainHead, uint32_t *num)
+rtError_t NpuDriver::MbufChainGetMbufNum(const rtMbufPtr_t memBufChainHead, uint32_t* num)
 {
     UNUSED(memBufChainHead);
     UNUSED(num);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemGrpCreate(const char_t * const name, const rtMemGrpConfig_t * const cfg)
+rtError_t NpuDriver::MemGrpCreate(const char_t* const name, const rtMemGrpConfig_t* const cfg)
 {
     UNUSED(name);
     UNUSED(cfg);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemGrpCacheAlloc(const char_t *const name, const int32_t devId,
-    const rtMemGrpCacheAllocPara *const para)
+rtError_t NpuDriver::MemGrpCacheAlloc(
+    const char_t* const name, const int32_t devId, const rtMemGrpCacheAllocPara* const para)
 {
     UNUSED(name);
     UNUSED(devId);
@@ -401,8 +401,7 @@ rtError_t NpuDriver::MemGrpCacheAlloc(const char_t *const name, const int32_t de
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemGrpAddProc(const char_t * const name, const int32_t pid,
-                                   const rtMemGrpShareAttr_t * const attr)
+rtError_t NpuDriver::MemGrpAddProc(const char_t* const name, const int32_t pid, const rtMemGrpShareAttr_t* const attr)
 {
     UNUSED(name);
     UNUSED(pid);
@@ -410,44 +409,44 @@ rtError_t NpuDriver::MemGrpAddProc(const char_t * const name, const int32_t pid,
     return RT_ERROR_NONE;
 }
 
-static rtError_t MemGrpQueryGroupsOfProcess(const rtMemGrpQueryInput_t * const input,
-    rtMemGrpQueryOutput_t * const output)
+static rtError_t MemGrpQueryGroupsOfProcess(
+    const rtMemGrpQueryInput_t* const input, rtMemGrpQueryOutput_t* const output)
 {
     UNUSED(input);
     UNUSED(output);
     return RT_ERROR_NONE;
 }
 
-static rtError_t MemGrpQueryGroupId(const rtMemGrpQueryInput_t * const input, rtMemGrpQueryOutput_t * const output)
+static rtError_t MemGrpQueryGroupId(const rtMemGrpQueryInput_t* const input, rtMemGrpQueryOutput_t* const output)
 {
     UNUSED(input);
     UNUSED(output);
     return RT_ERROR_NONE;
 }
 
-static rtError_t MemGrpGrpQueryGroupAddrInfo(const rtMemGrpQueryInput_t * const input,
-    rtMemGrpQueryOutput_t * const output)
+static rtError_t MemGrpGrpQueryGroupAddrInfo(
+    const rtMemGrpQueryInput_t* const input, rtMemGrpQueryOutput_t* const output)
 {
     UNUSED(input);
     UNUSED(output);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemGrpQuery(const rtMemGrpQueryInput_t * const input, rtMemGrpQueryOutput_t * const output)
+rtError_t NpuDriver::MemGrpQuery(const rtMemGrpQueryInput_t* const input, rtMemGrpQueryOutput_t* const output)
 {
     UNUSED(input);
     UNUSED(output);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemGrpAttach(const char_t * const name, const int32_t timeout)
+rtError_t NpuDriver::MemGrpAttach(const char_t* const name, const int32_t timeout)
 {
     UNUSED(name);
     UNUSED(timeout);
     return RT_ERROR_NONE;
 }
 
- rtError_t NpuDriver::MemQueueCreate(const int32_t devId, const rtMemQueueAttr_t * const queAttr, uint32_t * const qid)
+rtError_t NpuDriver::MemQueueCreate(const int32_t devId, const rtMemQueueAttr_t* const queAttr, uint32_t* const qid)
 {
     UNUSED(devId);
     UNUSED(queAttr);
@@ -462,7 +461,7 @@ rtError_t NpuDriver::MemQueueDestroy(const int32_t devId, const uint32_t qid)
     return RT_ERROR_NONE;
 }
 
-static rtError_t CheckMemQueueSupported(bool &isSupported)
+static rtError_t CheckMemQueueSupported(bool& isSupported)
 {
     UNUSED(isSupported);
     return RT_ERROR_NONE;
@@ -481,48 +480,48 @@ rtError_t NpuDriver::MemQueueReset(const int32_t devId, const uint32_t qid)
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueExport(const int32_t devId, const uint32_t qid, const int32_t peerDevId,
-        const char * const shareName)
+rtError_t NpuDriver::MemQueueExport(
+    const int32_t devId, const uint32_t qid, const int32_t peerDevId, const char* const shareName)
 {
     UNUSED(devId);
     UNUSED(qid);
     UNUSED(peerDevId);
     UNUSED(shareName);
-    return RT_ERROR_NONE;    
+    return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueUnExport(const int32_t devId, const uint32_t qid, const int32_t peerDevId,
-        const char * const shareName)
+rtError_t NpuDriver::MemQueueUnExport(
+    const int32_t devId, const uint32_t qid, const int32_t peerDevId, const char* const shareName)
 {
     UNUSED(devId);
     UNUSED(qid);
     UNUSED(peerDevId);
     UNUSED(shareName);
-    return RT_ERROR_NONE;    
+    return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueImport(const int32_t devId, const int32_t peerDevId, const char * const shareName,
-        uint32_t * const qid)
+rtError_t NpuDriver::MemQueueImport(
+    const int32_t devId, const int32_t peerDevId, const char* const shareName, uint32_t* const qid)
 {
     UNUSED(devId);
     UNUSED(qid);
     UNUSED(peerDevId);
     UNUSED(shareName);
-    return RT_ERROR_NONE;    
+    return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueUnImport(const int32_t devId, const uint32_t qid, const int32_t peerDevId, 
-        const char * const shareName)
+rtError_t NpuDriver::MemQueueUnImport(
+    const int32_t devId, const uint32_t qid, const int32_t peerDevId, const char* const shareName)
 {
     UNUSED(devId);
     UNUSED(qid);
     UNUSED(peerDevId);
     UNUSED(shareName);
-    return RT_ERROR_NONE;    
+    return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueGrant(const int32_t devId, const uint32_t qid, const int32_t pid,
-                                   const rtMemQueueShareAttr_t * const attr)
+rtError_t NpuDriver::MemQueueGrant(
+    const int32_t devId, const uint32_t qid, const int32_t pid, const rtMemQueueShareAttr_t* const attr)
 {
     UNUSED(devId);
     UNUSED(qid);
@@ -531,8 +530,8 @@ rtError_t NpuDriver::MemQueueGrant(const int32_t devId, const uint32_t qid, cons
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueSet(const int32_t devId, const rtMemQueueSetCmdType cmd,
-    const rtMemQueueSetInputPara * const input)
+rtError_t NpuDriver::MemQueueSet(
+    const int32_t devId, const rtMemQueueSetCmdType cmd, const rtMemQueueSetInputPara* const input)
 {
     UNUSED(devId);
     UNUSED(cmd);
@@ -540,7 +539,7 @@ rtError_t NpuDriver::MemQueueSet(const int32_t devId, const rtMemQueueSetCmdType
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueEnQueue(const int32_t devId, const uint32_t qid, void * const memBuf)
+rtError_t NpuDriver::MemQueueEnQueue(const int32_t devId, const uint32_t qid, void* const memBuf)
 {
     UNUSED(devId);
     UNUSED(qid);
@@ -548,7 +547,7 @@ rtError_t NpuDriver::MemQueueEnQueue(const int32_t devId, const uint32_t qid, vo
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueDeQueue(const int32_t devId, const uint32_t qid, void ** const memBuf)
+rtError_t NpuDriver::MemQueueDeQueue(const int32_t devId, const uint32_t qid, void** const memBuf)
 {
     UNUSED(devId);
     UNUSED(qid);
@@ -556,8 +555,7 @@ rtError_t NpuDriver::MemQueueDeQueue(const int32_t devId, const uint32_t qid, vo
     return RT_ERROR_NONE;
 }
 
-static rtError_t GetBuffIovec(struct buff_iovec * const vec, const rtMemQueueBuff_t * const inBuf,
-    bool &baseNeedFree)
+static rtError_t GetBuffIovec(struct buff_iovec* const vec, const rtMemQueueBuff_t* const inBuf, bool& baseNeedFree)
 {
     UNUSED(vec);
     UNUSED(inBuf);
@@ -565,8 +563,8 @@ static rtError_t GetBuffIovec(struct buff_iovec * const vec, const rtMemQueueBuf
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueEnQueueBuff(const int32_t devId, const uint32_t qid,
-                                         const rtMemQueueBuff_t * const inBuf, const int32_t timeout)
+rtError_t NpuDriver::MemQueueEnQueueBuff(
+    const int32_t devId, const uint32_t qid, const rtMemQueueBuff_t* const inBuf, const int32_t timeout)
 {
     UNUSED(devId);
     UNUSED(qid);
@@ -575,8 +573,8 @@ rtError_t NpuDriver::MemQueueEnQueueBuff(const int32_t devId, const uint32_t qid
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueDeQueueBuff(const int32_t devId, const uint32_t qid,
-                                         const rtMemQueueBuff_t * const outBuf, const int32_t timeout)
+rtError_t NpuDriver::MemQueueDeQueueBuff(
+    const int32_t devId, const uint32_t qid, const rtMemQueueBuff_t* const outBuf, const int32_t timeout)
 {
     UNUSED(devId);
     UNUSED(qid);
@@ -585,7 +583,7 @@ rtError_t NpuDriver::MemQueueDeQueueBuff(const int32_t devId, const uint32_t qid
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueuePeek(const int32_t devId, const uint32_t qid, size_t * const bufLen, const int32_t timeout)
+rtError_t NpuDriver::MemQueuePeek(const int32_t devId, const uint32_t qid, size_t* const bufLen, const int32_t timeout)
 {
     UNUSED(devId);
     UNUSED(qid);
@@ -594,9 +592,9 @@ rtError_t NpuDriver::MemQueuePeek(const int32_t devId, const uint32_t qid, size_
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueQuery(const int32_t devId, const rtMemQueueQueryCmd_t cmd,
-                                   const void * const inBuff, const uint32_t inLen,
-                                   void * const outBuff, const uint32_t * const outLen)
+rtError_t NpuDriver::MemQueueQuery(
+    const int32_t devId, const rtMemQueueQueryCmd_t cmd, const void* const inBuff, const uint32_t inLen,
+    void* const outBuff, const uint32_t* const outLen)
 {
     UNUSED(devId);
     UNUSED(cmd);
@@ -607,7 +605,7 @@ rtError_t NpuDriver::MemQueueQuery(const int32_t devId, const rtMemQueueQueryCmd
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQueueGetQidByName(const int32_t devId, const char_t * const name, uint32_t * const qId)
+rtError_t NpuDriver::MemQueueGetQidByName(const int32_t devId, const char_t* const name, uint32_t* const qId)
 {
     UNUSED(devId);
     UNUSED(name);
@@ -623,21 +621,21 @@ rtError_t NpuDriver::MemQueueAttach(const int32_t devId, const uint32_t qid, con
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemQEventCrossDevSupported(int32_t * const isSupported)
+rtError_t NpuDriver::MemQEventCrossDevSupported(int32_t* const isSupported)
 {
     UNUSED(isSupported);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::EschedSubmitEvent(const int32_t devId, const rtEschedEventSummary_t * const evt)
+rtError_t NpuDriver::EschedSubmitEvent(const int32_t devId, const rtEschedEventSummary_t* const evt)
 {
     UNUSED(devId);
     UNUSED(evt);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::EschedSubmitEventSync(const int32_t devId, rtEschedEventSummary_t * const evt,
-                                           rtEschedEventReply_t * const ack)
+rtError_t NpuDriver::EschedSubmitEventSync(
+    const int32_t devId, rtEschedEventSummary_t* const evt, rtEschedEventReply_t* const ack)
 {
     UNUSED(devId);
     UNUSED(evt);
@@ -665,8 +663,7 @@ rtError_t NpuDriver::EschedCreateGrp(const int32_t devId, const uint32_t grpId, 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::EschedCreateGrpEx(const uint32_t devId, const uint32_t maxThreadNum,
-                                       uint32_t * const grpId)
+rtError_t NpuDriver::EschedCreateGrpEx(const uint32_t devId, const uint32_t maxThreadNum, uint32_t* const grpId)
 {
     UNUSED(devId);
     UNUSED(maxThreadNum);
@@ -674,8 +671,8 @@ rtError_t NpuDriver::EschedCreateGrpEx(const uint32_t devId, const uint32_t maxT
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::EschedSubscribeEvent(const int32_t devId, const uint32_t grpId,
-                                          const uint32_t threadId, const uint64_t eventBitmap)
+rtError_t NpuDriver::EschedSubscribeEvent(
+    const int32_t devId, const uint32_t grpId, const uint32_t threadId, const uint64_t eventBitmap)
 {
     UNUSED(devId);
     UNUSED(grpId);
@@ -684,8 +681,9 @@ rtError_t NpuDriver::EschedSubscribeEvent(const int32_t devId, const uint32_t gr
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::EschedWaitEvent(const int32_t devId, const uint32_t grpId, const uint32_t threadId,
-                                     const int32_t timeout, rtEschedEventSummary_t * const evt)
+rtError_t NpuDriver::EschedWaitEvent(
+    const int32_t devId, const uint32_t grpId, const uint32_t threadId, const int32_t timeout,
+    rtEschedEventSummary_t* const evt)
 {
     UNUSED(devId);
     UNUSED(grpId);
@@ -695,8 +693,8 @@ rtError_t NpuDriver::EschedWaitEvent(const int32_t devId, const uint32_t grpId, 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::EschedAckEvent(const int32_t devId, const rtEventIdType_t evtId,
-                                    const uint32_t subeventId, char_t * const msg, const uint32_t len)
+rtError_t NpuDriver::EschedAckEvent(
+    const int32_t devId, const rtEventIdType_t evtId, const uint32_t subeventId, char_t* const msg, const uint32_t len)
 {
     UNUSED(devId);
     UNUSED(evtId);
@@ -706,8 +704,8 @@ rtError_t NpuDriver::EschedAckEvent(const int32_t devId, const rtEventIdType_t e
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::EschedQueryInfo(const uint32_t devId, const rtEschedQueryType type,
-    rtEschedInputInfo *inPut, rtEschedOutputInfo *outPut)
+rtError_t NpuDriver::EschedQueryInfo(
+    const uint32_t devId, const rtEschedQueryType type, rtEschedInputInfo* inPut, rtEschedOutputInfo* outPut)
 {
     UNUSED(devId);
     UNUSED(type);
@@ -716,8 +714,9 @@ rtError_t NpuDriver::EschedQueryInfo(const uint32_t devId, const rtEschedQueryTy
     return RT_ERROR_NONE;
 }
 
-drvError_t NpuDriver::DrvEschedManage(const uint32_t devId, const int32_t timeout, const uint32_t eschedTid,
-                                      const uint32_t grpId, struct halReportRecvInfo *info)
+drvError_t NpuDriver::DrvEschedManage(
+    const uint32_t devId, const int32_t timeout, const uint32_t eschedTid, const uint32_t grpId,
+    struct halReportRecvInfo* info)
 {
     UNUSED(devId);
     UNUSED(timeout);
@@ -727,8 +726,9 @@ drvError_t NpuDriver::DrvEschedManage(const uint32_t devId, const int32_t timeou
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetFaultEvent(const int32_t deviceId, const rtDmsEventFilter * const filter, rtDmsFaultEvent *dmsEvent,
-    uint32_t len, uint32_t *eventCount)
+rtError_t NpuDriver::GetFaultEvent(
+    const int32_t deviceId, const rtDmsEventFilter* const filter, rtDmsFaultEvent* dmsEvent, uint32_t len,
+    uint32_t* eventCount)
 {
     UNUSED(deviceId);
     UNUSED(filter);
@@ -738,8 +738,8 @@ rtError_t NpuDriver::GetFaultEvent(const int32_t deviceId, const rtDmsEventFilte
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetAllFaultEvent(const uint32_t deviceId, rtDmsFaultEvent * const dmsEvent, uint32_t *eventCount,
-                                      bool needLog)
+rtError_t NpuDriver::GetAllFaultEvent(
+    const uint32_t deviceId, rtDmsFaultEvent* const dmsEvent, uint32_t* eventCount, bool needLog)
 {
     UNUSED(deviceId);
     UNUSED(dmsEvent);
@@ -749,7 +749,7 @@ rtError_t NpuDriver::GetAllFaultEvent(const uint32_t deviceId, rtDmsFaultEvent *
 }
 
 rtError_t NpuDriver::ReadFaultEvent(
-    const int32_t deviceId, uint32_t timeout, const rtDmsEventFilter * const filter, rtDmsFaultEvent *dmsEvent)
+    const int32_t deviceId, uint32_t timeout, const rtDmsEventFilter* const filter, rtDmsFaultEvent* dmsEvent)
 {
     UNUSED(deviceId);
     UNUSED(timeout);
@@ -758,22 +758,22 @@ rtError_t NpuDriver::ReadFaultEvent(
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetRasSyscnt(const uint32_t deviceId, RtHbmRasInfo *hbmRasInfo)
+rtError_t NpuDriver::GetRasSyscnt(const uint32_t deviceId, RtHbmRasInfo* hbmRasInfo)
 {
     UNUSED(deviceId);
     UNUSED(hbmRasInfo);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo *memUceInfo)
+rtError_t NpuDriver::GetMemUceInfo(const uint32_t deviceId, rtMemUceInfo* memUceInfo)
 {
     UNUSED(deviceId);
     UNUSED(memUceInfo);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetDeviceInfoByBuff(const uint32_t deviceId, const int32_t moduleType, const int32_t infoType,
-    void * const buf, int32_t * const size)
+rtError_t NpuDriver::GetDeviceInfoByBuff(
+    const uint32_t deviceId, const int32_t moduleType, const int32_t infoType, void* const buf, int32_t* const size)
 {
     UNUSED(deviceId);
     UNUSED(moduleType);
@@ -783,8 +783,8 @@ rtError_t NpuDriver::GetDeviceInfoByBuff(const uint32_t deviceId, const int32_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SetDeviceInfoByBuff(const uint32_t deviceId, const int32_t moduleType, const int32_t infoType,
-    void * const buf, const int32_t size)
+rtError_t NpuDriver::SetDeviceInfoByBuff(
+    const uint32_t deviceId, const int32_t moduleType, const int32_t infoType, void* const buf, const int32_t size)
 {
     UNUSED(deviceId);
     UNUSED(moduleType);
@@ -794,7 +794,7 @@ rtError_t NpuDriver::SetDeviceInfoByBuff(const uint32_t deviceId, const int32_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::L3PortRepair(const uint32_t deviceId, halRepairFaultInfo * const repairInfo)
+rtError_t NpuDriver::L3PortRepair(const uint32_t deviceId, halRepairFaultInfo* const repairInfo)
 {
     UNUSED(deviceId);
     UNUSED(repairInfo);
@@ -807,15 +807,15 @@ rtError_t NpuDriver::GetDeviceAicpuStat(const uint32_t deviceId)
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetDeviceStatus(uint32_t devId, drvStatus_t * const status)
+rtError_t NpuDriver::GetDeviceStatus(uint32_t devId, drvStatus_t* const status)
 {
     UNUSED(devId);
     UNUSED(status);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::TaskKill(const uint32_t deviceId, const uint32_t tsId,
-		              const uint32_t sqId, const uint32_t operationType)
+rtError_t NpuDriver::TaskKill(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, const uint32_t operationType)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -824,8 +824,8 @@ rtError_t NpuDriver::TaskKill(const uint32_t deviceId, const uint32_t tsId,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::TaskAbortByType(const uint32_t deviceId, const uint32_t tsId, const uint32_t opType,
-    const uint32_t targetId, uint32_t &result)
+rtError_t NpuDriver::TaskAbortByType(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t opType, const uint32_t targetId, uint32_t& result)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -835,8 +835,8 @@ rtError_t NpuDriver::TaskAbortByType(const uint32_t deviceId, const uint32_t tsI
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::QueryAbortStatusByType(const uint32_t deviceId, const uint32_t tsId, const uint32_t queryType,
-    const uint32_t targetId, uint32_t &status)
+rtError_t NpuDriver::QueryAbortStatusByType(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t queryType, const uint32_t targetId, uint32_t& status)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -846,8 +846,8 @@ rtError_t NpuDriver::QueryAbortStatusByType(const uint32_t deviceId, const uint3
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::RecoverAbortByType(const uint32_t deviceId, const uint32_t tsId, const uint32_t opType,
-    const uint32_t targetId, uint32_t &result)
+rtError_t NpuDriver::RecoverAbortByType(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t opType, const uint32_t targetId, uint32_t& result)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -857,8 +857,8 @@ rtError_t NpuDriver::RecoverAbortByType(const uint32_t deviceId, const uint32_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::QueryRecoverStatusByType(const uint32_t deviceId, const uint32_t tsId, const uint32_t queryType,
-    const uint32_t targetId, uint32_t &status)
+rtError_t NpuDriver::QueryRecoverStatusByType(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t queryType, const uint32_t targetId, uint32_t& status)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -868,7 +868,7 @@ rtError_t NpuDriver::QueryRecoverStatusByType(const uint32_t deviceId, const uin
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemUceRepair(const uint32_t deviceId, rtMemUceInfo *memUceInfo)
+rtError_t NpuDriver::MemUceRepair(const uint32_t deviceId, rtMemUceInfo* memUceInfo)
 {
     UNUSED(deviceId);
     UNUSED(memUceInfo);
@@ -883,7 +883,7 @@ rtError_t NpuDriver::ResourceReset(const uint32_t deviceId, const uint32_t tsId,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetMaxStreamAndTask(const uint32_t deviceId, const uint32_t tsId, uint32_t * const maxStrCount)
+rtError_t NpuDriver::GetMaxStreamAndTask(const uint32_t deviceId, const uint32_t tsId, uint32_t* const maxStrCount)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -891,7 +891,7 @@ rtError_t NpuDriver::GetMaxStreamAndTask(const uint32_t deviceId, const uint32_t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetAvailStreamNum(const uint32_t deviceId, const uint32_t tsId, uint32_t * const streamCount)
+rtError_t NpuDriver::GetAvailStreamNum(const uint32_t deviceId, const uint32_t tsId, uint32_t* const streamCount)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -899,7 +899,7 @@ rtError_t NpuDriver::GetAvailStreamNum(const uint32_t deviceId, const uint32_t t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetAvailEventNum(const uint32_t deviceId, const uint32_t tsId, uint32_t * const eventCount)
+rtError_t NpuDriver::GetAvailEventNum(const uint32_t deviceId, const uint32_t tsId, uint32_t* const eventCount)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -907,7 +907,7 @@ rtError_t NpuDriver::GetAvailEventNum(const uint32_t deviceId, const uint32_t ts
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetMaxModelNum(const uint32_t deviceId, const uint32_t tsId, uint32_t *maxModelCount)
+rtError_t NpuDriver::GetMaxModelNum(const uint32_t deviceId, const uint32_t tsId, uint32_t* maxModelCount)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -915,8 +915,7 @@ rtError_t NpuDriver::GetMaxModelNum(const uint32_t deviceId, const uint32_t tsId
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::QueryOpExecTimeoutInterval(const uint32_t deviceId, const uint32_t tsId,
-    uint64_t &timeoutInterval)
+rtError_t NpuDriver::QueryOpExecTimeoutInterval(const uint32_t deviceId, const uint32_t tsId, uint64_t& timeoutInterval)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -924,8 +923,9 @@ rtError_t NpuDriver::QueryOpExecTimeoutInterval(const uint32_t deviceId, const u
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ReAllocResourceId(const uint32_t deviceId, const uint32_t tsId, const uint32_t priority,
-                                       const uint32_t resourceId, drvIdType_t idType)
+rtError_t NpuDriver::ReAllocResourceId(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t priority, const uint32_t resourceId,
+    drvIdType_t idType)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -935,8 +935,8 @@ rtError_t NpuDriver::ReAllocResourceId(const uint32_t deviceId, const uint32_t t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::StreamIdAlloc(int32_t * const id, const uint32_t deviceId, const uint32_t tsId,
-                                   const uint32_t priority, uint32_t streamFlag)
+rtError_t NpuDriver::StreamIdAlloc(
+    int32_t* const id, const uint32_t deviceId, const uint32_t tsId, const uint32_t priority, uint32_t streamFlag)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -946,8 +946,8 @@ rtError_t NpuDriver::StreamIdAlloc(int32_t * const id, const uint32_t deviceId, 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::StreamIdFree(const int32_t id, const uint32_t deviceId, const uint32_t tsId,
-                                  const uint32_t streamFlag)
+rtError_t NpuDriver::StreamIdFree(
+    const int32_t id, const uint32_t deviceId, const uint32_t tsId, const uint32_t streamFlag)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -956,8 +956,8 @@ rtError_t NpuDriver::StreamIdFree(const int32_t id, const uint32_t deviceId, con
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::EventIdAlloc(int32_t * const id, const uint32_t deviceId, const uint32_t tsId,
-                                  const uint32_t eventFlag, const bool createFlag)
+rtError_t NpuDriver::EventIdAlloc(
+    int32_t* const id, const uint32_t deviceId, const uint32_t tsId, const uint32_t eventFlag, const bool createFlag)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -967,8 +967,8 @@ rtError_t NpuDriver::EventIdAlloc(int32_t * const id, const uint32_t deviceId, c
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::EventIdFree(const int32_t id, const uint32_t deviceId, const uint32_t tsId,
-                                 const uint32_t eventFlag)
+rtError_t NpuDriver::EventIdFree(
+    const int32_t id, const uint32_t deviceId, const uint32_t tsId, const uint32_t eventFlag)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -977,7 +977,7 @@ rtError_t NpuDriver::EventIdFree(const int32_t id, const uint32_t deviceId, cons
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CmoIdAlloc(int32_t * const id, const uint32_t deviceId, const uint32_t tsId)
+rtError_t NpuDriver::CmoIdAlloc(int32_t* const id, const uint32_t deviceId, const uint32_t tsId)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -993,7 +993,7 @@ rtError_t NpuDriver::CmoIdFree(const int32_t id, const uint32_t deviceId, const 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ModelIdAlloc(int32_t * const id, const uint32_t deviceId, const uint32_t tsId)
+rtError_t NpuDriver::ModelIdAlloc(int32_t* const id, const uint32_t deviceId, const uint32_t tsId)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1009,8 +1009,9 @@ rtError_t NpuDriver::ModelIdFree(const int32_t id, const uint32_t deviceId, cons
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::NotifyIdAlloc(const int32_t deviceId, uint32_t * const id, const uint32_t tsId,
-                                   const uint32_t notifyFlag, const bool isCountNotify, const bool isEvent)
+rtError_t NpuDriver::NotifyIdAlloc(
+    const int32_t deviceId, uint32_t* const id, const uint32_t tsId, const uint32_t notifyFlag,
+    const bool isCountNotify, const bool isEvent)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1021,8 +1022,8 @@ rtError_t NpuDriver::NotifyIdAlloc(const int32_t deviceId, uint32_t * const id, 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::NotifyIdFree(const int32_t deviceId, const uint32_t id, const uint32_t tsId,
-                                  const uint32_t notifyFlag, const bool isCountNotify)
+rtError_t NpuDriver::NotifyIdFree(
+    const int32_t deviceId, const uint32_t id, const uint32_t tsId, const uint32_t notifyFlag, const bool isCountNotify)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1032,8 +1033,8 @@ rtError_t NpuDriver::NotifyIdFree(const int32_t deviceId, const uint32_t id, con
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SqCqAllocate(const uint32_t deviceId, const uint32_t tsId, const uint32_t groupId,
-                                  uint32_t * const sqId, uint32_t * const cqId)
+rtError_t NpuDriver::SqCqAllocate(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t groupId, uint32_t* const sqId, uint32_t* const cqId)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1052,11 +1053,9 @@ rtError_t NpuDriver::SqCqFree(const uint32_t sqId, const uint32_t cqId, const ui
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::NormalSqCqAllocate(const uint32_t deviceId, const uint32_t tsId, const uint32_t drvFlag,
-                                        uint32_t * const sqId, uint32_t * const cqId,
-                                        uint32_t * const info, const uint32_t len,
-                                        uint32_t * const msg, const uint32_t msgLen
-                                        const int32_t retryCount)
+rtError_t NpuDriver::NormalSqCqAllocate(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t drvFlag, uint32_t* const sqId, uint32_t* const cqId,
+    uint32_t* const info, const uint32_t len, uint32_t* const msg, const uint32_t msgLen const int32_t retryCount)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1071,8 +1070,8 @@ rtError_t NpuDriver::NormalSqCqAllocate(const uint32_t deviceId, const uint32_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::NormalSqCqFree(const uint32_t deviceId, const uint32_t tsId,
-                                    const uint32_t drvFlag, const uint32_t sqId, const uint32_t cqId)
+rtError_t NpuDriver::NormalSqCqFree(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t drvFlag, const uint32_t sqId, const uint32_t cqId)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1082,8 +1081,9 @@ rtError_t NpuDriver::NormalSqCqFree(const uint32_t deviceId, const uint32_t tsId
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::LogicCqAllocate(const uint32_t devId, const uint32_t tsId, const uint32_t streamId,
-    const bool isNeedFast, uint32_t &cqId, bool &isFastCq, const bool isCtrlSq)
+rtError_t NpuDriver::LogicCqAllocate(
+    const uint32_t devId, const uint32_t tsId, const uint32_t streamId, const bool isNeedFast, uint32_t& cqId,
+    bool& isFastCq, const bool isCtrlSq)
 {
     UNUSED(devId);
     UNUSED(tsId);
@@ -1095,8 +1095,9 @@ rtError_t NpuDriver::LogicCqAllocate(const uint32_t devId, const uint32_t tsId, 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::LogicCqAllocateV2(const uint32_t devId, const uint32_t tsId, const uint32_t streamId,
-    uint32_t &cqId, const bool isDvppGrp, const uint32_t drvFlag)
+rtError_t NpuDriver::LogicCqAllocateV2(
+    const uint32_t devId, const uint32_t tsId, const uint32_t streamId, uint32_t& cqId, const bool isDvppGrp,
+    const uint32_t drvFlag)
 {
     UNUSED(devId);
     UNUSED(tsId);
@@ -1107,8 +1108,7 @@ rtError_t NpuDriver::LogicCqAllocateV2(const uint32_t devId, const uint32_t tsId
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::LogicCqFree(const uint32_t devId, const uint32_t tsId, const uint32_t cqId,
-    const uint32_t drvFlag)
+rtError_t NpuDriver::LogicCqFree(const uint32_t devId, const uint32_t tsId, const uint32_t cqId, const uint32_t drvFlag)
 {
     UNUSED(devId);
     UNUSED(tsId);
@@ -1117,8 +1117,8 @@ rtError_t NpuDriver::LogicCqFree(const uint32_t devId, const uint32_t tsId, cons
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CtrlSqCqAllocate(const uint32_t deviceId, const uint32_t tsId,
-                                      uint32_t * const sqId, uint32_t * const cqId, const uint32_t logicCqId)
+rtError_t NpuDriver::CtrlSqCqAllocate(
+    const uint32_t deviceId, const uint32_t tsId, uint32_t* const sqId, uint32_t* const cqId, const uint32_t logicCqId)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1128,8 +1128,8 @@ rtError_t NpuDriver::CtrlSqCqAllocate(const uint32_t deviceId, const uint32_t ts
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CtrlSqCqFree(const uint32_t deviceId, const uint32_t tsId,
-                                  const uint32_t sqId, const uint32_t cqId)
+rtError_t NpuDriver::CtrlSqCqFree(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, const uint32_t cqId)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1138,8 +1138,8 @@ rtError_t NpuDriver::CtrlSqCqFree(const uint32_t deviceId, const uint32_t tsId,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::VirtualCqAllocate(const uint32_t devId, const uint32_t tsId,
-                                       uint32_t &sqId, uint32_t &cqId, uint8_t *&addr, bool &shmSqReadonly)
+rtError_t NpuDriver::VirtualCqAllocate(
+    const uint32_t devId, const uint32_t tsId, uint32_t& sqId, uint32_t& cqId, uint8_t*& addr, bool& shmSqReadonly)
 {
     UNUSED(devId);
     UNUSED(tsId);
@@ -1159,8 +1159,7 @@ rtError_t NpuDriver::VirtualCqFree(const uint32_t devId, const uint32_t tsId, co
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DebugSqCqAllocate(const uint32_t deviceId, const uint32_t tsId,
-                                       uint32_t &sqId, uint32_t &cqId)
+rtError_t NpuDriver::DebugSqCqAllocate(const uint32_t deviceId, const uint32_t tsId, uint32_t& sqId, uint32_t& cqId)
 {
     UNUSED(devId);
     UNUSED(tsId);
@@ -1185,9 +1184,9 @@ rtError_t NpuDriver::DisableSq(const uint32_t deviceId, const uint32_t tsId, con
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CommandOccupy(const uint32_t sqId, rtTsCmdSqBuf_t ** const command,
-                                   const uint32_t cmdCount, const uint32_t deviceId,
-                                   const uint32_t tsId, uint32_t * const pos)
+rtError_t NpuDriver::CommandOccupy(
+    const uint32_t sqId, rtTsCmdSqBuf_t** const command, const uint32_t cmdCount, const uint32_t deviceId,
+    const uint32_t tsId, uint32_t* const pos)
 {
     UNUSED(sqId);
     UNUSED(command);
@@ -1198,8 +1197,9 @@ rtError_t NpuDriver::CommandOccupy(const uint32_t sqId, rtTsCmdSqBuf_t ** const 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SqCommandOccupy(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId,
-                                     rtHostFuncCommand_t ** const command, const uint32_t cnt)
+rtError_t NpuDriver::SqCommandOccupy(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, rtHostFuncCommand_t** const command,
+    const uint32_t cnt)
 {
     UNUSED(sqId);
     UNUSED(command);
@@ -1209,8 +1209,8 @@ rtError_t NpuDriver::SqCommandOccupy(const uint32_t deviceId, const uint32_t tsI
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SqTaskSend(const uint32_t sqId, rtStarsSqe_t * const sqe, const uint32_t deviceId,
-                                const uint32_t tsId, const uint32_t sqeNum)
+rtError_t NpuDriver::SqTaskSend(
+    const uint32_t sqId, rtStarsSqe_t* const sqe, const uint32_t deviceId, const uint32_t tsId, const uint32_t sqeNum)
 {
     UNUSED(sqId);
     UNUSED(sqe);
@@ -1220,8 +1220,9 @@ rtError_t NpuDriver::SqTaskSend(const uint32_t sqId, rtStarsSqe_t * const sqe, c
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CommandSend(const uint32_t sqId, const rtTsCmdSqBuf_t * const command, const uint32_t reportCount,
-                                 const uint32_t deviceId, const uint32_t tsId, const uint32_t cmdCount)
+rtError_t NpuDriver::CommandSend(
+    const uint32_t sqId, const rtTsCmdSqBuf_t* const command, const uint32_t reportCount, const uint32_t deviceId,
+    const uint32_t tsId, const uint32_t cmdCount)
 {
     UNUSED(sqId);
     UNUSED(command);
@@ -1232,8 +1233,9 @@ rtError_t NpuDriver::CommandSend(const uint32_t sqId, const rtTsCmdSqBuf_t * con
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SqCommandSend(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId,
-                                   rtHostFuncCommand_t * const command, const uint32_t cnt)
+rtError_t NpuDriver::SqCommandSend(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, rtHostFuncCommand_t* const command,
+    const uint32_t cnt)
 {
     UNUSED(sqId);
     UNUSED(command);
@@ -1243,8 +1245,8 @@ rtError_t NpuDriver::SqCommandSend(const uint32_t deviceId, const uint32_t tsId,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DebugSqTaskSend(const uint32_t sqId, uint8_t *const sqe, const uint32_t deviceId,
-                                     const uint32_t tsId)
+rtError_t NpuDriver::DebugSqTaskSend(
+    const uint32_t sqId, uint8_t* const sqe, const uint32_t deviceId, const uint32_t tsId)
 {
     UNUSED(sqId);
     UNUSED(sqe);
@@ -1253,8 +1255,8 @@ rtError_t NpuDriver::DebugSqTaskSend(const uint32_t sqId, uint8_t *const sqe, co
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::LogicCqReportV2(const LogicCqWaitInfo &waitInfo, uint8_t *report, uint32_t reportCnt,
-    uint32_t &realCnt)
+rtError_t NpuDriver::LogicCqReportV2(
+    const LogicCqWaitInfo& waitInfo, uint8_t* report, uint32_t reportCnt, uint32_t& realCnt)
 {
     UNUSED(waitInfo);
     UNUSED(report);
@@ -1263,7 +1265,7 @@ rtError_t NpuDriver::LogicCqReportV2(const LogicCqWaitInfo &waitInfo, uint8_t *r
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::LogicCqReport(const LogicCqWaitInfo &waitInfo, rtLogicReport_t *&report, uint32_t &cnt)
+rtError_t NpuDriver::LogicCqReport(const LogicCqWaitInfo& waitInfo, rtLogicReport_t*& report, uint32_t& cnt)
 {
     UNUSED(waitInfo);
     UNUSED(report);
@@ -1271,8 +1273,8 @@ rtError_t NpuDriver::LogicCqReport(const LogicCqWaitInfo &waitInfo, rtLogicRepor
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DebugCqReport(const uint32_t devId, const uint32_t tsId, const uint32_t cqId,
-                                   uint8_t *const report, uint32_t &realCnt)
+rtError_t NpuDriver::DebugCqReport(
+    const uint32_t devId, const uint32_t tsId, const uint32_t cqId, uint8_t* const report, uint32_t& realCnt)
 {
     UNUSED(devId);
     UNUSED(tsId);
@@ -1282,8 +1284,9 @@ rtError_t NpuDriver::DebugCqReport(const uint32_t devId, const uint32_t tsId, co
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CqReportIrqWait(const uint32_t deviceId, const uint32_t tsId, const uint32_t groupId,
-                                     const int32_t timeout, uint64_t * const getCqidList, const uint32_t cqidListNum)
+rtError_t NpuDriver::CqReportIrqWait(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t groupId, const int32_t timeout,
+    uint64_t* const getCqidList, const uint32_t cqidListNum)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1294,8 +1297,9 @@ rtError_t NpuDriver::CqReportIrqWait(const uint32_t deviceId, const uint32_t tsI
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CqReportGet(const uint32_t deviceId, const uint32_t tsId, const uint32_t cqId,
-                                 rtHostFuncCqReport_t ** const report, uint32_t * const cnt)
+rtError_t NpuDriver::CqReportGet(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t cqId, rtHostFuncCqReport_t** const report,
+    uint32_t* const cnt)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1305,8 +1309,9 @@ rtError_t NpuDriver::CqReportGet(const uint32_t deviceId, const uint32_t tsId, c
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CqReportRelease(rtHostFuncCqReport_t * const report, const uint32_t deviceId,
-                                     const uint32_t cqId, const uint32_t tsId, const bool noLog)
+rtError_t NpuDriver::CqReportRelease(
+    rtHostFuncCqReport_t* const report, const uint32_t deviceId, const uint32_t cqId, const uint32_t tsId,
+    const bool noLog)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1316,8 +1321,8 @@ rtError_t NpuDriver::CqReportRelease(rtHostFuncCqReport_t * const report, const 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ReportWait(void ** const report, int32_t * const cnt, const uint32_t deviceId,
-                                const uint32_t tsId, const uint32_t cqId)
+rtError_t NpuDriver::ReportWait(
+    void** const report, int32_t* const cnt, const uint32_t deviceId, const uint32_t tsId, const uint32_t cqId)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1327,8 +1332,8 @@ rtError_t NpuDriver::ReportWait(void ** const report, int32_t * const cnt, const
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ReportRelease(const uint32_t deviceId, const uint32_t tsId,
-                                   const uint32_t cqId, const drvSqCqType_t type)
+rtError_t NpuDriver::ReportRelease(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t cqId, const drvSqCqType_t type)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1337,7 +1342,7 @@ rtError_t NpuDriver::ReportRelease(const uint32_t deviceId, const uint32_t tsId,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SqBackup(const uint32_t deviceId, uint32_t *sqIdGroup, const size_t sqIdCnt)
+rtError_t NpuDriver::SqBackup(const uint32_t deviceId, uint32_t* sqIdGroup, const size_t sqIdCnt)
 {
     UNUSED(deviceId);
     UNUSED(sqIdGroup);
@@ -1345,7 +1350,7 @@ rtError_t NpuDriver::SqBackup(const uint32_t deviceId, uint32_t *sqIdGroup, cons
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SqRestore(const uint32_t deviceId, uint32_t *sqIdGroup, const size_t sqIdCnt)
+rtError_t NpuDriver::SqRestore(const uint32_t deviceId, uint32_t* sqIdGroup, const size_t sqIdCnt)
 {
     UNUSED(deviceId);
     UNUSED(sqIdGroup);
@@ -1353,8 +1358,8 @@ rtError_t NpuDriver::SqRestore(const uint32_t deviceId, uint32_t *sqIdGroup, con
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::QuerySq(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId,
-		             const uint32_t queryType, uint32_t &status)
+rtError_t NpuDriver::QuerySq(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, const uint32_t queryType, uint32_t& status)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1364,7 +1369,8 @@ rtError_t NpuDriver::QuerySq(const uint32_t deviceId, const uint32_t tsId, const
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetSqHead(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t &head, bool needLog)
+rtError_t NpuDriver::GetSqHead(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t& head, bool needLog)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1374,7 +1380,7 @@ rtError_t NpuDriver::GetSqHead(const uint32_t deviceId, const uint32_t tsId, con
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetSqTail(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t &tail)
+rtError_t NpuDriver::GetSqTail(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t& tail)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1383,7 +1389,7 @@ rtError_t NpuDriver::GetSqTail(const uint32_t deviceId, const uint32_t tsId, con
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetSqEnable(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool &enable)
+rtError_t NpuDriver::GetSqEnable(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool& enable)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1392,7 +1398,7 @@ rtError_t NpuDriver::GetSqEnable(const uint32_t deviceId, const uint32_t tsId, c
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool &status)
+rtError_t NpuDriver::GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, bool& status)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1401,7 +1407,7 @@ rtError_t NpuDriver::GetCqeStatus(const uint32_t deviceId, const uint32_t tsId, 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetCtrlSqHead(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t &head)
+rtError_t NpuDriver::GetCtrlSqHead(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint16_t& head)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1410,8 +1416,7 @@ rtError_t NpuDriver::GetCtrlSqHead(const uint32_t deviceId, const uint32_t tsId,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SetSqHead(const uint32_t deviceId, const uint32_t tsId,
-                               const uint32_t sqId, const uint32_t head)
+rtError_t NpuDriver::SetSqHead(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, const uint32_t head)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1420,8 +1425,8 @@ rtError_t NpuDriver::SetSqHead(const uint32_t deviceId, const uint32_t tsId,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CleanSq(const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId,
-    const uint32_t streamFlag)
+rtError_t NpuDriver::CleanSq(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t sqId, const uint32_t streamFlag)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1430,9 +1435,9 @@ rtError_t NpuDriver::CleanSq(const uint32_t deviceId, const uint32_t tsId, const
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::StreamUnBindLogicCq(const uint32_t deviceId, const uint32_t tsId,
-                                         const uint32_t streamId, const uint32_t logicCqId,
-                                         const uint32_t drvFlag)
+rtError_t NpuDriver::StreamUnBindLogicCq(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t streamId, const uint32_t logicCqId,
+    const uint32_t drvFlag)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1442,9 +1447,9 @@ rtError_t NpuDriver::StreamUnBindLogicCq(const uint32_t deviceId, const uint32_t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::StreamBindLogicCq(const uint32_t deviceId, const uint32_t tsId,
-                                       const uint32_t streamId, const uint32_t logicCqId,
-                                       const uint32_t drvFlag)
+rtError_t NpuDriver::StreamBindLogicCq(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t streamId, const uint32_t logicCqId,
+    const uint32_t drvFlag)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1454,9 +1459,8 @@ rtError_t NpuDriver::StreamBindLogicCq(const uint32_t deviceId, const uint32_t t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::StreamEnableStmSyncEsched(const uint32_t deviceId, const uint32_t tsId,
-                                               const uint32_t streamId, const uint32_t grpId,
-                                               const uint32_t eventId)
+rtError_t NpuDriver::StreamEnableStmSyncEsched(
+    const uint32_t deviceId, const uint32_t tsId, const uint32_t streamId, const uint32_t grpId, const uint32_t eventId)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1478,8 +1482,8 @@ rtError_t NpuDriver::BindHostPid(rtBindHostpidInfo info)
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SqSwitchStreamBatch(const uint32_t deviceId, struct sq_switch_stream_info *switchInfo,
-    const uint32_t num)
+rtError_t NpuDriver::SqSwitchStreamBatch(
+    const uint32_t deviceId, struct sq_switch_stream_info* switchInfo, const uint32_t num)
 {
     UNUSED(deviceId);
     UNUSED(switchInfo);
@@ -1487,8 +1491,8 @@ rtError_t NpuDriver::SqSwitchStreamBatch(const uint32_t deviceId, struct sq_swit
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::QueryProcessHostPid(int32_t pid, uint32_t *chipId, uint32_t *vfId, uint32_t *hostPid,
-    uint32_t *cpType)
+rtError_t NpuDriver::QueryProcessHostPid(
+    int32_t pid, uint32_t* chipId, uint32_t* vfId, uint32_t* hostPid, uint32_t* cpType)
 {
     UNUSED(pid);
     UNUSED(chipId);
@@ -1498,7 +1502,7 @@ rtError_t NpuDriver::QueryProcessHostPid(int32_t pid, uint32_t *chipId, uint32_t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ShmemSetPodPid(const char *name, uint32_t sdid, int32_t pid[], int32_t num)
+rtError_t NpuDriver::ShmemSetPodPid(const char* name, uint32_t sdid, int32_t pid[], int32_t num)
 {
     UNUSED(name);
     UNUSED(sdid);
@@ -1507,7 +1511,7 @@ rtError_t NpuDriver::ShmemSetPodPid(const char *name, uint32_t sdid, int32_t pid
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ShrIdSetPodPid(const char *name, uint32_t sdid, int32_t pid)
+rtError_t NpuDriver::ShrIdSetPodPid(const char* name, uint32_t sdid, int32_t pid)
 {
     UNUSED(name);
     UNUSED(sdid);
@@ -1515,7 +1519,7 @@ rtError_t NpuDriver::ShrIdSetPodPid(const char *name, uint32_t sdid, int32_t pid
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ParseSDID(const uint32_t sdid, uint32_t *srvId, uint32_t *chipId, uint32_t *dieId, uint32_t *pyhId)
+rtError_t NpuDriver::ParseSDID(const uint32_t sdid, uint32_t* srvId, uint32_t* chipId, uint32_t* dieId, uint32_t* pyhId)
 {
     UNUSED(sdid);
     UNUSED(srvId);
@@ -1525,8 +1529,8 @@ rtError_t NpuDriver::ParseSDID(const uint32_t sdid, uint32_t *srvId, uint32_t *c
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetSqRegVirtualAddrBySqid(const int32_t deviceId, const uint32_t tsId, const uint32_t sqId,
-                                               uint64_t * const addr, uint32_t * const len)
+rtError_t NpuDriver::GetSqRegVirtualAddrBySqid(
+    const int32_t deviceId, const uint32_t tsId, const uint32_t sqId, uint64_t* const addr, uint32_t* const len)
 {
     UNUSED(deviceId);
     UNUSED(tsId);
@@ -1536,8 +1540,8 @@ rtError_t NpuDriver::GetSqRegVirtualAddrBySqid(const int32_t deviceId, const uin
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::HostMemAlloc(void ** const dptr, const uint64_t size, const uint32_t deviceId,
-    const uint16_t moduleId, const uint32_t vaFlag)
+rtError_t NpuDriver::HostMemAlloc(
+    void** const dptr, const uint64_t size, const uint32_t deviceId, const uint16_t moduleId, const uint32_t vaFlag)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1547,25 +1551,14 @@ rtError_t NpuDriver::HostMemAlloc(void ** const dptr, const uint64_t size, const
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::HostMemFree(void * const dptr)
+rtError_t NpuDriver::HostMemFree(void* const dptr)
 {
     UNUSED(dptr);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ManagedMemAlloc(void ** const dptr, const uint64_t size, const ManagedMemFlag flag,
-                                     const uint32_t deviceId, const uint16_t moduleId)
-{
-    UNUSED(dptr);
-    UNUSED(size);
-    UNUSED(deviceId);
-    UNUSED(moduleId);
-    UNUSED(flag);
-    return RT_ERROR_NONE;
-}
-
-rtError_t NpuDriver::ManagedMemAllocInner(void ** const dptr, const uint64_t size, const ManagedMemFlag flag,
-                                          const uint32_t deviceId, const uint16_t moduleId) const
+rtError_t NpuDriver::ManagedMemAlloc(
+    void** const dptr, const uint64_t size, const ManagedMemFlag flag, const uint32_t deviceId, const uint16_t moduleId)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1575,15 +1568,27 @@ rtError_t NpuDriver::ManagedMemAllocInner(void ** const dptr, const uint64_t siz
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::ManagedMemFree(const void * const dptr)
+rtError_t NpuDriver::ManagedMemAllocInner(
+    void** const dptr, const uint64_t size, const ManagedMemFlag flag, const uint32_t deviceId,
+    const uint16_t moduleId) const
+{
+    UNUSED(dptr);
+    UNUSED(size);
+    UNUSED(deviceId);
+    UNUSED(moduleId);
+    UNUSED(flag);
+    return RT_ERROR_NONE;
+}
+
+rtError_t NpuDriver::ManagedMemFree(const void* const dptr)
 {
     UNUSED(dptr);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevMemAllocHugePageManaged(void ** const dptr, const uint64_t size, const rtMemType_t type,
-    const uint32_t deviceId, const uint16_t moduleId, const bool isLogError, const bool readOnlyFlag,
-    const bool cpOnlyFlag)
+rtError_t NpuDriver::DevMemAllocHugePageManaged(
+    void** const dptr, const uint64_t size, const rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId,
+    const bool isLogError, const bool readOnlyFlag, const bool cpOnlyFlag)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1596,8 +1601,9 @@ rtError_t NpuDriver::DevMemAllocHugePageManaged(void ** const dptr, const uint64
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevMemAlloc1GHugePage(void ** const dptr, const uint64_t size, const rtMemType_t type,
-    const uint32_t memPolicy, const uint32_t deviceId, const uint16_t moduleId, const bool isLogError)
+rtError_t NpuDriver::DevMemAlloc1GHugePage(
+    void** const dptr, const uint64_t size, const rtMemType_t type, const uint32_t memPolicy, const uint32_t deviceId,
+    const uint16_t moduleId, const bool isLogError)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1609,9 +1615,9 @@ rtError_t NpuDriver::DevMemAlloc1GHugePage(void ** const dptr, const uint64_t si
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevMemAllocManaged(void ** const dptr, const uint64_t size, const rtMemType_t type,
-    const uint32_t deviceId, const uint16_t moduleId, const bool isLogError, const bool readOnlyFlag,
-    const bool starsTillingFlag, const bool cpOnlyFlag) const
+rtError_t NpuDriver::DevMemAllocManaged(
+    void** const dptr, const uint64_t size, const rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId,
+    const bool isLogError, const bool readOnlyFlag, const bool starsTillingFlag, const bool cpOnlyFlag) const
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1625,59 +1631,9 @@ rtError_t NpuDriver::DevMemAllocManaged(void ** const dptr, const uint64_t size,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevMemAllocOnline(void ** const dptr, const uint64_t size, rtMemType_t type,
-    const uint32_t deviceId, const uint16_t moduleId, const bool isLogError, const bool readOnlyFlag,
-    const bool starsTillingFlag, const bool isNewApi, const bool cpOnlyFlag)
-{
-    UNUSED(dptr);
-    UNUSED(size);
-    UNUSED(deviceId);
-    UNUSED(moduleId);
-    UNUSED(type);
-    UNUSED(isLogError);
-    UNUSED(readOnlyFlag);
-    UNUSED(starsTillingFlag);
-    UNUSED(cpOnlyFlag);
-    UNUSED(isNewApi);
-    return RT_ERROR_NONE;
-}
-
-rtError_t NpuDriver::MemAllocHugePolicyPageOffline(void ** const dptr, const uint64_t size,
-    const rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId) const
-{
-    UNUSED(dptr);
-    UNUSED(size);
-    UNUSED(deviceId);
-    UNUSED(moduleId);
-    UNUSED(type);
-    return RT_ERROR_NONE;
-}
-
-rtError_t NpuDriver::MemAllocPolicyOffline(void ** const dptr, const uint64_t size, const uint32_t memPolicy,
-    const rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId) const
-{
-    UNUSED(dptr);
-    UNUSED(size);
-    UNUSED(deviceId);
-    UNUSED(moduleId);
-    UNUSED(type);
-    UNUSED(memPolicy);
-    return RT_ERROR_NONE;
-}
-
-rtError_t NpuDriver::DevMemAllocOffline(void **dptr, const uint64_t size,
-    rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId) const
-{
-    UNUSED(dptr);
-    UNUSED(size);
-    UNUSED(deviceId);
-    UNUSED(moduleId);
-    UNUSED(type);
-    return RT_ERROR_NONE;
-}
-
-rtError_t NpuDriver::DevMemAlloc(void ** const dptr, const uint64_t size, const rtMemType_t type,const uint32_t deviceId,
-    const uint16_t moduleId, const bool isLogError, const bool readOnlyFlag, const bool starsTillingFlag, const bool isNewApi,
+rtError_t NpuDriver::DevMemAllocOnline(
+    void** const dptr, const uint64_t size, rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId,
+    const bool isLogError, const bool readOnlyFlag, const bool starsTillingFlag, const bool isNewApi,
     const bool cpOnlyFlag)
 {
     UNUSED(dptr);
@@ -1693,8 +1649,62 @@ rtError_t NpuDriver::DevMemAlloc(void ** const dptr, const uint64_t size, const 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevMemAllocConPhy(void ** const dptr, const uint64_t size,
-                                       const rtMemType_t type, const uint32_t deviceId)
+rtError_t NpuDriver::MemAllocHugePolicyPageOffline(
+    void** const dptr, const uint64_t size, const rtMemType_t type, const uint32_t deviceId,
+    const uint16_t moduleId) const
+{
+    UNUSED(dptr);
+    UNUSED(size);
+    UNUSED(deviceId);
+    UNUSED(moduleId);
+    UNUSED(type);
+    return RT_ERROR_NONE;
+}
+
+rtError_t NpuDriver::MemAllocPolicyOffline(
+    void** const dptr, const uint64_t size, const uint32_t memPolicy, const rtMemType_t type, const uint32_t deviceId,
+    const uint16_t moduleId) const
+{
+    UNUSED(dptr);
+    UNUSED(size);
+    UNUSED(deviceId);
+    UNUSED(moduleId);
+    UNUSED(type);
+    UNUSED(memPolicy);
+    return RT_ERROR_NONE;
+}
+
+rtError_t NpuDriver::DevMemAllocOffline(
+    void** dptr, const uint64_t size, rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId) const
+{
+    UNUSED(dptr);
+    UNUSED(size);
+    UNUSED(deviceId);
+    UNUSED(moduleId);
+    UNUSED(type);
+    return RT_ERROR_NONE;
+}
+
+rtError_t NpuDriver::DevMemAlloc(
+    void** const dptr, const uint64_t size, const rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId,
+    const bool isLogError, const bool readOnlyFlag, const bool starsTillingFlag, const bool isNewApi,
+    const bool cpOnlyFlag)
+{
+    UNUSED(dptr);
+    UNUSED(size);
+    UNUSED(deviceId);
+    UNUSED(moduleId);
+    UNUSED(type);
+    UNUSED(isLogError);
+    UNUSED(readOnlyFlag);
+    UNUSED(starsTillingFlag);
+    UNUSED(cpOnlyFlag);
+    UNUSED(isNewApi);
+    return RT_ERROR_NONE;
+}
+
+rtError_t NpuDriver::DevMemAllocConPhy(
+    void** const dptr, const uint64_t size, const rtMemType_t type, const uint32_t deviceId)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1703,15 +1713,15 @@ rtError_t NpuDriver::DevMemAllocConPhy(void ** const dptr, const uint64_t size,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevMemConPhyFree(void * const dptr, const uint32_t deviceId)
+rtError_t NpuDriver::DevMemConPhyFree(void* const dptr, const uint32_t deviceId)
 {
     UNUSED(dptr);
     UNUSED(deviceId);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevDvppMemAlloc(void ** const dptr, const uint64_t size, const uint32_t deviceId,
-    const uint32_t flag, const uint16_t moduleId)
+rtError_t NpuDriver::DevDvppMemAlloc(
+    void** const dptr, const uint64_t size, const uint32_t deviceId, const uint32_t flag, const uint16_t moduleId)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1722,7 +1732,7 @@ rtError_t NpuDriver::DevDvppMemAlloc(void ** const dptr, const uint64_t size, co
 }
 
 // malloc device mem for dvpp cmdlist, read-only, huge page first, milan only
-rtError_t NpuDriver::DvppCmdListMemAlloc(void ** const dptr, const uint64_t size, const uint32_t deviceId)
+rtError_t NpuDriver::DvppCmdListMemAlloc(void** const dptr, const uint64_t size, const uint32_t deviceId)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1730,7 +1740,7 @@ rtError_t NpuDriver::DvppCmdListMemAlloc(void ** const dptr, const uint64_t size
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevContinuousMemAlloc(void ** const dptr, const uint64_t size, const uint32_t deviceId)
+rtError_t NpuDriver::DevContinuousMemAlloc(void** const dptr, const uint64_t size, const uint32_t deviceId)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1738,14 +1748,14 @@ rtError_t NpuDriver::DevContinuousMemAlloc(void ** const dptr, const uint64_t si
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevContinuousMemFree(void * const dptr, const uint32_t deviceId)
+rtError_t NpuDriver::DevContinuousMemFree(void* const dptr, const uint32_t deviceId)
 {
     UNUSED(dptr);
     UNUSED(deviceId);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevMemAllocForPctrace(void ** const dptr, const uint64_t size, const uint32_t deviceId)
+rtError_t NpuDriver::DevMemAllocForPctrace(void** const dptr, const uint64_t size, const uint32_t deviceId)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1753,14 +1763,14 @@ rtError_t NpuDriver::DevMemAllocForPctrace(void ** const dptr, const uint64_t si
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevMemFreeForPctrace(const void * const dst)
+rtError_t NpuDriver::DevMemFreeForPctrace(const void* const dst)
 {
     UNUSED(dst);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevMemAllocCached(void ** const dptr, const uint64_t size,
-    const rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId)
+rtError_t NpuDriver::DevMemAllocCached(
+    void** const dptr, const uint64_t size, const rtMemType_t type, const uint32_t deviceId, const uint16_t moduleId)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1770,7 +1780,7 @@ rtError_t NpuDriver::DevMemAllocCached(void ** const dptr, const uint64_t size,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemAllocEx(void ** const dptr, const uint64_t size, const rtMemType_t memType)
+rtError_t NpuDriver::MemAllocEx(void** const dptr, const uint64_t size, const rtMemType_t memType)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1778,28 +1788,28 @@ rtError_t NpuDriver::MemAllocEx(void ** const dptr, const uint64_t size, const r
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemFreeEx(void * const dptr)
+rtError_t NpuDriver::MemFreeEx(void* const dptr)
 {
     UNUSED(dptr);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::DevMemFree(void * const dptr, const uint32_t deviceId)
-{
-    UNUSED(dptr);
-    UNUSED(deviceId);
-    return RT_ERROR_NONE;
-}
-
-rtError_t NpuDriver::DevSCMemFree(void * const dptr, const uint32_t deviceId)
+rtError_t NpuDriver::DevMemFree(void* const dptr, const uint32_t deviceId)
 {
     UNUSED(dptr);
     UNUSED(deviceId);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::AllocFastRingBufferAndDispatch(void ** const dptr, const uint64_t size, const uint32_t deviceId,
-    const uint16_t moduleId)
+rtError_t NpuDriver::DevSCMemFree(void* const dptr, const uint32_t deviceId)
+{
+    UNUSED(dptr);
+    UNUSED(deviceId);
+    return RT_ERROR_NONE;
+}
+
+rtError_t NpuDriver::AllocFastRingBufferAndDispatch(
+    void** const dptr, const uint64_t size, const uint32_t deviceId, const uint16_t moduleId)
 {
     UNUSED(dptr);
     UNUSED(size);
@@ -1808,7 +1818,7 @@ rtError_t NpuDriver::AllocFastRingBufferAndDispatch(void ** const dptr, const ui
     return RT_ERROR_NONE;
 }
 
-void NpuDriver::FreeFastRingBuffer(void * const ptr, const uint64_t size, const uint32_t deviceId)
+void NpuDriver::FreeFastRingBuffer(void* const ptr, const uint64_t size, const uint32_t deviceId)
 {
     UNUSED(ptr);
     UNUSED(size);
@@ -1816,15 +1826,15 @@ void NpuDriver::FreeFastRingBuffer(void * const ptr, const uint64_t size, const 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::SetMemSharing(void *ptr, const uint64_t size, const uint32_t deviceId)
+rtError_t NpuDriver::SetMemSharing(void* ptr, const uint64_t size, const uint32_t deviceId)
 {
     UNUSED(ptr);
     UNUSED(size);
     UNUSED(deviceId);
-    return RT_ERROR_NONE; 
+    return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemAddressTranslate(const int32_t deviceId, const uint64_t vptr, uint64_t * const pptr)
+rtError_t NpuDriver::MemAddressTranslate(const int32_t deviceId, const uint64_t vptr, uint64_t* const pptr)
 {
     UNUSED(vptr);
     UNUSED(pptr);
@@ -1832,7 +1842,8 @@ rtError_t NpuDriver::MemAddressTranslate(const int32_t deviceId, const uint64_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemGetInfo(const uint32_t deviceId, bool isHugeOnly, size_t * const freeSize, size_t * const totalSize)
+rtError_t NpuDriver::MemGetInfo(
+    const uint32_t deviceId, bool isHugeOnly, size_t* const freeSize, size_t* const totalSize)
 {
     UNUSED(isHugeOnly);
     UNUSED(freeSize);
@@ -1841,7 +1852,7 @@ rtError_t NpuDriver::MemGetInfo(const uint32_t deviceId, bool isHugeOnly, size_t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemGetInfoByType(const uint32_t deviceId, const rtMemType_t type, rtMemInfo_t * const info)
+rtError_t NpuDriver::MemGetInfoByType(const uint32_t deviceId, const rtMemType_t type, rtMemInfo_t* const info)
 {
     UNUSED(type);
     UNUSED(freeSize);
@@ -1849,7 +1860,8 @@ rtError_t NpuDriver::MemGetInfoByType(const uint32_t deviceId, const rtMemType_t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CheckMemType(void **addrs, uint32_t size, uint32_t memType, uint32_t *checkResult, uint32_t deviceId)
+rtError_t NpuDriver::CheckMemType(
+    void** addrs, uint32_t size, uint32_t memType, uint32_t* checkResult, uint32_t deviceId)
 {
     UNUSED(addrs);
     UNUSED(size);
@@ -1859,8 +1871,8 @@ rtError_t NpuDriver::CheckMemType(void **addrs, uint32_t size, uint32_t memType,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetMemUsageInfo(const uint32_t deviceId, rtMemUsageInfo_t * const memUsageInfo,
-                                     const size_t inputNum, size_t * const outputNum)
+rtError_t NpuDriver::GetMemUsageInfo(
+    const uint32_t deviceId, rtMemUsageInfo_t* const memUsageInfo, const size_t inputNum, size_t* const outputNum)
 {
     UNUSED(deviceId);
     UNUSED(memUsageInfo);
@@ -1869,8 +1881,8 @@ rtError_t NpuDriver::GetMemUsageInfo(const uint32_t deviceId, rtMemUsageInfo_t *
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemGetInfoEx(const uint32_t deviceId, const rtMemInfoType_t memInfoType,
-                                  size_t * const freeSize, size_t * const totalSize)
+rtError_t NpuDriver::MemGetInfoEx(
+    const uint32_t deviceId, const rtMemInfoType_t memInfoType, size_t* const freeSize, size_t* const totalSize)
 {
     UNUSED(deviceId);
     UNUSED(memInfoType);
@@ -1879,21 +1891,22 @@ rtError_t NpuDriver::MemGetInfoEx(const uint32_t deviceId, const rtMemInfoType_t
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::PointerGetAttributes(rtPointerAttributes_t * const attributes, const void * const ptr)
+rtError_t NpuDriver::PointerGetAttributes(rtPointerAttributes_t* const attributes, const void* const ptr)
 {
     UNUSED(attributes);
     UNUSED(ptr);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::PtrGetAttributes(const void * const ptr, rtPtrAttributes_t * const attributes)
+rtError_t NpuDriver::PtrGetAttributes(const void* const ptr, rtPtrAttributes_t* const attributes)
 {
     UNUSED(attributes);
     UNUSED(ptr);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::PtrGetRealLocation(const void * const ptr, rtMemLocationType &location, rtMemLocationType &realLocation)
+rtError_t NpuDriver::PtrGetRealLocation(
+    const void* const ptr, rtMemLocationType& location, rtMemLocationType& realLocation)
 {
     UNUSED(location);
     UNUSED(realLocation);
@@ -1901,7 +1914,7 @@ rtError_t NpuDriver::PtrGetRealLocation(const void * const ptr, rtMemLocationTyp
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::PcieHostRegister(void * const addr, const uint64_t size, const uint32_t deviceId, void *&outAddr)
+rtError_t NpuDriver::PcieHostRegister(void* const addr, const uint64_t size, const uint32_t deviceId, void*& outAddr)
 {
     UNUSED(addr);
     UNUSED(size);
@@ -1910,15 +1923,16 @@ rtError_t NpuDriver::PcieHostRegister(void * const addr, const uint64_t size, co
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::PcieHostUnRegister(void * const addr, const uint32_t deviceId)
+rtError_t NpuDriver::PcieHostUnRegister(void* const addr, const uint32_t deviceId)
 {
     UNUSED(addr);
     UNUSED(deviceId);
     return RT_ERROR_NONE;
 }
 
-drvError_t NpuDriver::MemCopySyncAdapter(void * const dst, const uint64_t destMax, const void * const src,
-    const uint64_t size, const rtMemcpyKind_t kind, const uint32_t devId)
+drvError_t NpuDriver::MemCopySyncAdapter(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t size, const rtMemcpyKind_t kind,
+    const uint32_t devId)
 {
     UNUSED(dst);
     UNUSED(destMax);
@@ -1929,8 +1943,9 @@ drvError_t NpuDriver::MemCopySyncAdapter(void * const dst, const uint64_t destMa
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemCopySync(void * const dst, const uint64_t destMax, const void * const src,
-                                 const uint64_t size, const rtMemcpyKind_t kind, bool errShow, uint32_t devId)
+rtError_t NpuDriver::MemCopySync(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t size, const rtMemcpyKind_t kind,
+    bool errShow, uint32_t devId)
 {
     UNUSED(dst);
     UNUSED(destMax);
@@ -1942,8 +1957,9 @@ rtError_t NpuDriver::MemCopySync(void * const dst, const uint64_t destMax, const
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemCopyAsync(void * const dst, const uint64_t destMax, const void * const src,
-                                  const uint64_t size, const rtMemcpyKind_t kind, volatile uint64_t &copyFd)
+rtError_t NpuDriver::MemCopyAsync(
+    void* const dst, const uint64_t destMax, const void* const src, const uint64_t size, const rtMemcpyKind_t kind,
+    volatile uint64_t& copyFd)
 {
     UNUSED(dst);
     UNUSED(destMax);
@@ -1960,21 +1976,21 @@ rtError_t NpuDriver::MemCopyAsyncWaitFinish(const uint64_t copyFd)
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemCopyAsyncWaitFinishEx(struct DMA_ADDR *dmaHandle)
+rtError_t NpuDriver::MemCopyAsyncWaitFinishEx(struct DMA_ADDR* dmaHandle)
 {
     UNUSED(dmaHandle);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemCopyAsyncEx(struct DMA_ADDR *dmaHandle)
+rtError_t NpuDriver::MemCopyAsyncEx(struct DMA_ADDR* dmaHandle)
 {
     UNUSED(dmaHandle);
     return RT_ERROR_NONE;
 }
-rtError_t NpuDriver::MemCopy2D(void * const dst, const uint64_t dstPitch, const void * const src,
-                               const uint64_t srcPitch, const uint64_t width, const uint64_t height,
-                               const uint32_t kind, const uint32_t type, const uint64_t fixedSize,
-                               struct DMA_ADDR * const dmaAddress)
+rtError_t NpuDriver::MemCopy2D(
+    void* const dst, const uint64_t dstPitch, const void* const src, const uint64_t srcPitch, const uint64_t width,
+    const uint64_t height, const uint32_t kind, const uint32_t type, const uint64_t fixedSize,
+    struct DMA_ADDR* const dmaAddress)
 {
     UNUSED(dst);
     UNUSED(dstPitch);
@@ -1998,7 +2014,7 @@ rtError_t NpuDriver::MemcpyBatch(uint64_t dsts[], uint64_t srcs[], size_t sizes[
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemPrefetchToDevice(const void * const devPtr, const uint64_t len, const int32_t deviceId)
+rtError_t NpuDriver::MemPrefetchToDevice(const void* const devPtr, const uint64_t len, const int32_t deviceId)
 {
     UNUSED(devPtr);
     UNUSED(len);
@@ -2006,8 +2022,8 @@ rtError_t NpuDriver::MemPrefetchToDevice(const void * const devPtr, const uint64
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemSetSync(const void * const devPtr, const uint64_t destMax,
-                                const uint32_t val, const uint64_t cnt)
+rtError_t NpuDriver::MemSetSync(
+    const void* const devPtr, const uint64_t destMax, const uint32_t val, const uint64_t cnt)
 {
     UNUSED(devPtr);
     UNUSED(destMax);
@@ -2016,7 +2032,7 @@ rtError_t NpuDriver::MemSetSync(const void * const devPtr, const uint64_t destMa
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::MemAdvise(void * const devPtr, const uint64_t cnt, const uint32_t advise, const uint32_t devid)
+rtError_t NpuDriver::MemAdvise(void* const devPtr, const uint64_t cnt, const uint32_t advise, const uint32_t devid)
 {
     UNUSED(devPtr);
     UNUSED(advise);
@@ -2025,40 +2041,28 @@ rtError_t NpuDriver::MemAdvise(void * const devPtr, const uint64_t cnt, const ui
     return RT_ERROR_NONE;
 }
 
-void NpuDriver::SetAllocNumaTsSupported()
-{
-    return;
-}
+void NpuDriver::SetAllocNumaTsSupported() { return; }
 
-rtError_t NpuDriver::Support1GHugePageCtrl()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t NpuDriver::Support1GHugePageCtrl() { return RT_ERROR_NONE; }
 
-rtError_t NpuDriver::SupportNumaTsMemCtrl(int64_t &val)
+rtError_t NpuDriver::SupportNumaTsMemCtrl(int64_t& val)
 {
     UNUSED(val);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CheckIfSupport1GHugePage()
-{
-    return RT_ERROR_NONE;
-}
+rtError_t NpuDriver::CheckIfSupport1GHugePage() { return RT_ERROR_NONE; }
 
-bool NpuDriver::CheckIfSupportNumaTs()
-{
-    return false;
-}
+bool NpuDriver::CheckIfSupportNumaTs() { return false; }
 
-rtError_t NpuDriver::GetL2CacheOffset(uint32_t deviceId, uint64_t *offset)
+rtError_t NpuDriver::GetL2CacheOffset(uint32_t deviceId, uint64_t* offset)
 {
     UNUSED(deviceId);
     UNUSED(offset);
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetC2cCtrlAddr(const int32_t deviceId, uint64_t * const addr, uint32_t * const len)
+rtError_t NpuDriver::GetC2cCtrlAddr(const int32_t deviceId, uint64_t* const addr, uint32_t* const len)
 {
     UNUSED(deviceId);
     UNUSED(addr);
@@ -2066,7 +2070,7 @@ rtError_t NpuDriver::GetC2cCtrlAddr(const int32_t deviceId, uint64_t * const add
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::CheckSupportPcieBarCopy(const uint32_t deviceId, uint32_t &val, const bool need4KAsync)
+rtError_t NpuDriver::CheckSupportPcieBarCopy(const uint32_t deviceId, uint32_t& val, const bool need4KAsync)
 {
     UNUSED(deviceId);
     UNUSED(val);
@@ -2074,12 +2078,12 @@ rtError_t NpuDriver::CheckSupportPcieBarCopy(const uint32_t deviceId, uint32_t &
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuDriver::GetAddrModuleId(void *memcpyAddr, uint32_t *moduleId) const
+rtError_t NpuDriver::GetAddrModuleId(void* memcpyAddr, uint32_t* moduleId) const
 {
     UNUSED(memcpyAddr);
     UNUSED(moduleId);
     return RT_ERROR_NONE;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

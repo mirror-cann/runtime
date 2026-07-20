@@ -22,13 +22,13 @@ constexpr uint32_t RT_MAX_DEV_NUM = 64U;
 constexpr uint32_t RT_MAX_TS_NUM = 2U;
 constexpr uint32_t RT_FAST_MEM_PAGE_SIZE = 128U * 1024U;
 constexpr uint32_t RT_PROGRAM_FAST_MEM_OFFSET = (61U * RT_FAST_MEM_PAGE_SIZE); // 0-53 pages for cce data
-constexpr uint32_t RT_PROGRAM_FAST_MEM_INSTR = (3U * RT_FAST_MEM_PAGE_SIZE); // 10 pages left for cce binary
+constexpr uint32_t RT_PROGRAM_FAST_MEM_INSTR = (3U * RT_FAST_MEM_PAGE_SIZE);   // 10 pages left for cce binary
 
-#ifdef TEMP_PERFORMANCE  // for ut
-constexpr int32_t RT_ABORT_STREAM_TIMEOUT = 100;  // ms
-constexpr int32_t RT_ABORT_MODEL_TIMEOUT = 100;  // ms
+#ifdef TEMP_PERFORMANCE                                                        // for ut
+constexpr int32_t RT_ABORT_STREAM_TIMEOUT = 100;                               // ms
+constexpr int32_t RT_ABORT_MODEL_TIMEOUT = 100;                                // ms
 #else
-constexpr int32_t RT_ABORT_STREAM_TIMEOUT = 10000;  // ms
+constexpr int32_t RT_ABORT_STREAM_TIMEOUT = 10000; // ms
 constexpr int32_t RT_ABORT_MODEL_TIMEOUT = 10000;  // ms
 #endif
 
@@ -41,8 +41,8 @@ constexpr int32_t RT_REPORT_MDC_TIMEOUT_TIME = 1000;
 constexpr int32_t RT_REPORT_AS31XM1_TIMEOUT_TIME = 150;
 constexpr int32_t RT_GET_SQ_STATUS_TIMEOUT_TIME = 300000;
 constexpr int32_t RT_REPORT_WITHOUT_TIMEOUT = 0;
-constexpr int32_t RT_QUERY_SIMT_STACK_TIMEOUT = 1000;   //ms
-constexpr int32_t RT_DEVICE_SYNCHRONIZE_TIMEOUT = 10000;   //ms
+constexpr int32_t RT_QUERY_SIMT_STACK_TIMEOUT = 1000;    // ms
+constexpr int32_t RT_DEVICE_SYNCHRONIZE_TIMEOUT = 10000; // ms
 constexpr uint32_t MAX_UINT32_NUM = 0xFFFFFFFFU;
 constexpr uint32_t MAX_UINT16_NUM = 0xFFFFU;
 constexpr int32_t MAX_INT32_NUM = 0x7FFFFFFF;
@@ -56,7 +56,7 @@ constexpr uint32_t STUB_DEVICE_ID = RT_MAX_DEV_NUM;
 
 constexpr uint32_t RT_AICORE_NUM_30 = 30U;
 constexpr uint32_t RT_AICORE_PG_NUM_31 = 31U;
-constexpr uint32_t RT_AICORE_FREQ_900 = 900U;  // MHz
+constexpr uint32_t RT_AICORE_FREQ_900 = 900U; // MHz
 
 constexpr uint32_t RT_AICORE_NUM_32 = 32U;
 constexpr uint32_t RT_AICORE_NUM_10 = 10U;
@@ -65,21 +65,18 @@ constexpr uint32_t RT_AICORE_NUM_25 = 25U;
 constexpr uint32_t RT_AIVECTOR_NUM_50 = 50U;
 
 // 32K * num   Ascend C Expand Stack Size 16K->32K
-constexpr uint32_t RT_SCALAR_BUFFER_SIZE_32K_75 =
-    (32U * 1024U * (RT_AIVECTOR_NUM_50 + RT_AICORE_NUM_25));
+constexpr uint32_t RT_SCALAR_BUFFER_SIZE_32K_75 = (32U * 1024U * (RT_AIVECTOR_NUM_50 + RT_AICORE_NUM_25));
 constexpr uint32_t RT_TINY_SCALAR_BUFFER_SIZE = (16U * 1024U * 1U);
-constexpr uint32_t RT_SCALAR_BUFFER_SIZE_16K_75 =
-    (16U * 1024U * (RT_AIVECTOR_NUM_50 + RT_AICORE_NUM_25));
+constexpr uint32_t RT_SCALAR_BUFFER_SIZE_16K_75 = (16U * 1024U * (RT_AIVECTOR_NUM_50 + RT_AICORE_NUM_25));
 constexpr uint32_t RT_SMMU_STREAM_ID_1FU = 0x1FU;
 constexpr uint64_t RT_STARS_BASE_ADDR = 0x06A0000000ULL;
 constexpr uint64_t RT_STARS_SQ_SWAP_BUFFER_BASE_ADDR = 0x101B200000ULL;
 
-constexpr uint32_t RT_AICORE_NUM_1  = 1U;
+constexpr uint32_t RT_AICORE_NUM_1 = 1U;
 constexpr uint32_t RT_AIVECTOR_NUM_1 = 1U;
 
 // 32K * num  Ascend C Expand Stack Size 16K->32K
-constexpr uint32_t RT_SCALAR_BUFFER_SIZE_32K_2 =
-    (32U * 1024U * (RT_AIVECTOR_NUM_1 + RT_AICORE_NUM_1));
+constexpr uint32_t RT_SCALAR_BUFFER_SIZE_32K_2 = (32U * 1024U * (RT_AIVECTOR_NUM_1 + RT_AICORE_NUM_1));
 
 constexpr uint64_t RT_STARS_BASE_ADDR_520000000 = 0x520000000ULL;
 constexpr uint64_t RT_STARS_SQ_SWAP_BUFFER_BASE_ADDR_C000000 = 0xC000000ULL;
@@ -108,7 +105,7 @@ constexpr uint32_t STARS_NOTIFY_NUM_OF_SINGLE_TABLE = 512U;
 constexpr uint64_t STARS_NOTIFY_TABLE_OFFSET = 0x10000ULL;
 
 constexpr uint64_t STARS_SIMPLE_SQ_OFFSET = 0x10000ULL;
-constexpr uint64_t STARS_SIMPLE_SQ_OFFSET_4K = 0x1000ULL; //1910b is 4k model
+constexpr uint64_t STARS_SIMPLE_SQ_OFFSET_4K = 0x1000ULL; // 1910b is 4k model
 constexpr uint64_t STARS_SIMPLE_SQ0_STARS_P0_SQ_DB_0_REG = 0x08000008ULL;
 constexpr uint64_t STARS_SIMPLE_SQ0_STARS_P0_SQ_CFG4_0_REG = 0x08000010ULL;
 constexpr uint64_t STARS_SIMPLE_SQ0_STARS_P0_SQ_CFG5_0_REG = 0x08000014ULL;
@@ -124,22 +121,22 @@ constexpr uint64_t RT_SIMPLE_SQ0_STARS_P0_SQ_CFG5_0_REG = 0x00080014ULL;
 
 constexpr uint32_t RT_STARS_DIE_NUM_PER_CHIP = 2U;
 
-constexpr uint64_t RT_CHIP_BASE_ADDR        =  0x200000000000ULL;
+constexpr uint64_t RT_CHIP_BASE_ADDR = 0x200000000000ULL;
 
 // 注释里的值是备用方案
-constexpr uint64_t RT_CROSS_NODE_BASE_ADDR_48T   =  0x300000000000ULL; // 48T
-constexpr uint64_t RT_SERVER_ADDR_OFFSET_1T     =  0x10000000000ULL; // 1T
-constexpr uint64_t RT_CHIP_ADDR_OFFSET_128G       =  0x2000000000ULL;  // 128G
-constexpr uint64_t RT_DIE_ADDR_OFFSET_64G        =  0x1000000000ULL; // 64G
-constexpr uint64_t RT_NOTIFY_ADDR_OFFSET_PER_DIE_1100000  =  0x1100000ULL;
+constexpr uint64_t RT_CROSS_NODE_BASE_ADDR_48T = 0x300000000000ULL; // 48T
+constexpr uint64_t RT_SERVER_ADDR_OFFSET_1T = 0x10000000000ULL;     // 1T
+constexpr uint64_t RT_CHIP_ADDR_OFFSET_128G = 0x2000000000ULL;      // 128G
+constexpr uint64_t RT_DIE_ADDR_OFFSET_64G = 0x1000000000ULL;        // 64G
+constexpr uint64_t RT_NOTIFY_ADDR_OFFSET_PER_DIE_1100000 = 0x1100000ULL;
 
-constexpr uint64_t RT_CHIP_ADDR_OFFSET_8T =  0x80000000000ULL;
-constexpr uint64_t RT_HCCS_CHIP_ADDR_OFFSET_2T =  0x20000000000ULL;
+constexpr uint64_t RT_CHIP_ADDR_OFFSET_8T = 0x80000000000ULL;
+constexpr uint64_t RT_HCCS_CHIP_ADDR_OFFSET_2T = 0x20000000000ULL;
 
-constexpr uint64_t RT_DIE_ADDR_OFFSET_1T =   0x10000000000ULL;
-constexpr uint64_t RT_ROCEE_BASE_ADDR_128G  =   0x2000000000ULL;
-constexpr uint64_t RT_ROCEE_VF_ADDR_OFFSET_100000 =   0x100000ULL;
-constexpr uint64_t RT_ROCEE_VF_DB_CFG0_REG_230 =    0x230ULL;
+constexpr uint64_t RT_DIE_ADDR_OFFSET_1T = 0x10000000000ULL;
+constexpr uint64_t RT_ROCEE_BASE_ADDR_128G = 0x2000000000ULL;
+constexpr uint64_t RT_ROCEE_VF_ADDR_OFFSET_100000 = 0x100000ULL;
+constexpr uint64_t RT_ROCEE_VF_DB_CFG0_REG_230 = 0x230ULL;
 constexpr uint8_t RT_SET_DEVICE_STR_MAX_LEN = 128U;
 constexpr uint8_t SOCINDEX_910B4 = 24U;
 
@@ -174,60 +171,57 @@ constexpr uint64_t MEM_CTRL_TWO_M_GRANULARITY = 2U * 1024U * 1024U;
 
 constexpr uint32_t RT_MILAN_TASK_ID_MAX = 65535U;
 constexpr uint32_t RT_MILAN_MAX_QUERY_CQE_NUM = 32U;
-constexpr uint16_t RT_MILAN_POSITION_NUM_MAX_MINIV3 = 2047U;   // RTSQ max positon
-constexpr uint32_t RT_MAX_OP_TIMEOUT_FOR_MS = 1000000U;  // 1000s
-enum TschId : uint8_t {
-    RT_TSC_ID = 0U,
-    RT_TSV_ID = 1U
-};
+constexpr uint16_t RT_MILAN_POSITION_NUM_MAX_MINIV3 = 2047U; // RTSQ max positon
+constexpr uint32_t RT_MAX_OP_TIMEOUT_FOR_MS = 1000000U;      // 1000s
+enum TschId : uint8_t { RT_TSC_ID = 0U, RT_TSV_ID = 1U };
 
 enum rtPGVersion_t : uint8_t {
-    RT_VER_NA    = 0U,   /* Ascend910B4 */	
-    RT_VER_BIN1  = 1U,   /* Ascend910B1 */	
-    RT_VER_BIN2  = 2U,   /* Ascend910B2 */	
-    RT_VER_BIN3  = 3U,   /* Ascend910B3 */	
-    RT_VER_BIN4  = 4U,   /* reserved is same as driver */	
-    RT_VER_BIN8  = 8U,   /* Ascend910B2C */	
-    RT_VER_BIN10 = 10U,  /* Ascend910B4_1 */  
+    RT_VER_NA = 0U,     /* Ascend910B4 */
+    RT_VER_BIN1 = 1U,   /* Ascend910B1 */
+    RT_VER_BIN2 = 2U,   /* Ascend910B2 */
+    RT_VER_BIN3 = 3U,   /* Ascend910B3 */
+    RT_VER_BIN4 = 4U,   /* reserved is same as driver */
+    RT_VER_BIN8 = 8U,   /* Ascend910B2C */
+    RT_VER_BIN10 = 10U, /* Ascend910B4_1 */
     RT_VER_END = 11U
 };
 
 enum RtPGVersion : uint8_t {
-    PG_VER_BIN0 = 0U,   /* Ascend950PR_9599 */	
- 	PG_VER_BIN1 = 1U,   /* Ascend950PR_9589/Ascend910_9391/Ascend910_9392 */	
- 	PG_VER_BIN2 = 2U,   /* Ascend950PR_958a/Ascend910_9381/Ascend910_9382 */	
- 	PG_VER_BIN3 = 3U,   /* Ascend950PR_958b/Ascend910_9372 */	
- 	PG_VER_BIN4 = 4U,   /* Ascend950PR_957b */	
- 	PG_VER_BIN5 = 5U,   /* Ascend950PR_957d */	
- 	PG_VER_BIN6 = 6U,   /* Ascend950PR_950z */	
- 	PG_VER_BIN7 = 7U,   /* Ascend950PR_9579 */	
- 	PG_VER_BIN10 = 10U, /* Ascend910_9362 */	
- 	PG_VER_BIN11 = 11U, /* Ascend950DT_9591 */	
- 	PG_VER_BIN12 = 12U, /* Ascend950DT_9592 */	
- 	PG_VER_BIN13 = 13U, /* Ascend950DT_9581 */	
- 	PG_VER_BIN14 = 14U, /* Ascend950DT_9582 */	
- 	PG_VER_BIN15 = 15U, /* Ascend950DT_9584 */	
- 	PG_VER_BIN16 = 16U, /* Ascend950DT_9587 */	
- 	PG_VER_BIN17 = 17U, /* Ascend950DT_9588 */	
- 	PG_VER_BIN18 = 18U, /* Ascend950DT_9572 */	
- 	PG_VER_BIN19 = 19U, /* Ascend950DT_9575 */	
- 	PG_VER_BIN20 = 20U, /* Ascend950DT_9576 */	
- 	PG_VER_BIN21 = 21U, /* Ascend950DT_9574 */	
- 	PG_VER_BIN22 = 22U, /* Ascend950DT_9577 */	
- 	PG_VER_BIN23 = 23U, /* Ascend950DT_9578 */	
- 	PG_VER_BIN24 = 24U, /* Ascend950PR_957c */	
- 	PG_VER_BIN25 = 25U, /* Ascend950DT_95A1 */	
- 	PG_VER_BIN26 = 26U, /* Ascend950DT_95A2 */	
- 	PG_VER_BIN27 = 27U, /* Ascend950DT_9595 */	
- 	PG_VER_BIN28 = 28U, /* Ascend950DT_9596 */	
- 	PG_VER_BIN29 = 29U, /* Ascend950DT_9585 */	
- 	PG_VER_BIN30 = 30U, /* Ascend950DT_9586 */	
- 	PG_VER_BIN31 = 31U, /* Ascend950DT_9583 */	
- 	PG_VER_BIN32 = 32U, /* Ascend950DT_9571 */	
- 	PG_VER_BIN33 = 33U, /* Ascend950DT_9573 */
- 	PG_VER_BIN34 = 34U, /* Ascend950DT_950x */
- 	PG_VER_BIN35 = 35U, /* Ascend950DT_950y */
- 	PG_VER_END = 36U
+    PG_VER_BIN0 = 0U,   /* Ascend950PR_9599 */
+    PG_VER_BIN1 = 1U,   /* Ascend950PR_9589/Ascend910_9391/Ascend910_9392 */
+    PG_VER_BIN2 = 2U,   /* Ascend950PR_958a/Ascend910_9381/Ascend910_9382 */
+    PG_VER_BIN3 = 3U,   /* Ascend950PR_958b/Ascend910_9372 */
+    PG_VER_BIN4 = 4U,   /* Ascend950PR_957b */
+    PG_VER_BIN5 = 5U,   /* Ascend950PR_957d */
+    PG_VER_BIN6 = 6U,   /* Ascend950PR_950z */
+    PG_VER_BIN7 = 7U,   /* Ascend950PR_9579 */
+    PG_VER_BIN10 = 10U, /* Ascend910_9362 */
+    PG_VER_BIN11 = 11U, /* Ascend950DT_9591 */
+    PG_VER_BIN12 = 12U, /* Ascend950DT_9592 */
+    PG_VER_BIN13 = 13U, /* Ascend950DT_9581 */
+    PG_VER_BIN14 = 14U, /* Ascend950DT_9582 */
+    PG_VER_BIN15 = 15U, /* Ascend950DT_9584 */
+    PG_VER_BIN16 = 16U, /* Ascend950DT_9587 */
+    PG_VER_BIN17 = 17U, /* Ascend950DT_9588 */
+    PG_VER_BIN18 = 18U, /* Ascend950DT_9572 */
+    PG_VER_BIN19 = 19U, /* Ascend950DT_9575 */
+    PG_VER_BIN20 = 20U, /* Ascend950DT_9576 */
+    PG_VER_BIN21 = 21U, /* Ascend950DT_9574 */
+    PG_VER_BIN22 = 22U, /* Ascend950DT_9577 */
+    PG_VER_BIN23 = 23U, /* Ascend950DT_9578 */
+    PG_VER_BIN24 = 24U, /* Ascend950PR_957c */
+    PG_VER_BIN25 = 25U, /* Ascend950DT_95A1 */
+    PG_VER_BIN26 = 26U, /* Ascend950DT_95A2 */
+    PG_VER_BIN27 = 27U, /* Ascend950DT_9595 */
+    PG_VER_BIN28 = 28U, /* Ascend950DT_9596 */
+    PG_VER_BIN29 = 29U, /* Ascend950DT_9585 */
+    PG_VER_BIN30 = 30U, /* Ascend950DT_9586 */
+    PG_VER_BIN31 = 31U, /* Ascend950DT_9583 */
+    PG_VER_BIN32 = 32U, /* Ascend950DT_9571 */
+    PG_VER_BIN33 = 33U, /* Ascend950DT_9573 */
+    PG_VER_BIN34 = 34U, /* Ascend950DT_950x */
+    PG_VER_BIN35 = 35U, /* Ascend950DT_950y */
+    PG_VER_END = 36U
 };
 
 enum RtSetVisDevicesErrorType : uint8_t {
@@ -272,15 +266,15 @@ struct rtStarsTransParm_t {
     /* event record/event wait/rdma/sdma opcode */
     uint32_t opcode;
     uint32_t wrCqeFlag;
-    void *transParms;
+    void* transParms;
     uint32_t parmsLen;
 };
 
 struct rtLaunchArgs_t {
     rtArgsEx_t argsInfo;
-    uint16_t argsAddrOffset; //args Addr current Offset
-    const uint16_t argsDataOffset; //args Addr end Offset
-    const uint16_t hostInfoMaxNum; //Maximum number of hostInfoMaxNum
+    uint16_t argsAddrOffset;       // args Addr current Offset
+    const uint16_t argsDataOffset; // args Addr end Offset
+    const uint16_t hostInfoMaxNum; // Maximum number of hostInfoMaxNum
     uint16_t argsHostInputOffset;
     rtInnerObject handle_;
 };
@@ -306,36 +300,33 @@ struct rtKpEventIdType_t {
 uint32_t GetRuntimeStreamNum();
 #define RT_MAX_STREAM_ID GetRuntimeStreamNum()
 
-static constexpr const char_t *RT_INNER_ERROR = "EE9999";
-static constexpr const char_t *RT_INNER_WARNING = "WE9999";
-static constexpr const char_t *RT_NPU_COMMON_INNER_ERROR = "EZ9999";
-static constexpr const char_t *RT_FE_INNER_ERROR = "E29999";
-static constexpr const char_t *RT_AICPU_INNER_ERROR = "E39999";
-static constexpr const char_t *RT_DRV_INNER_ERROR = "EL9999";
-static constexpr const char_t *RT_HCCL_INNER_ERROR = "EI9999";
-static constexpr const char_t *RT_GE_INNER_ERROR = "EE8888";
-static constexpr const char_t *RT_PROFILE_INNER_ERROR = "EK9999";
-static constexpr const char_t *RT_STREAM_SYNC_TIMEOUT_INNER_ERROR = "EE1002";
-static constexpr const char_t *RT_TBE_INNER_ERROR = "EZ9999";
-static constexpr const char_t *RT_SYSTEM_INNER_ERROR = "EE9999";
-static constexpr const char_t *RT_INVALID_ARGUMENT_ERROR = "EE1001";
-static constexpr const char_t *RT_AICPU_TIMEOUT_ERROR = "E30008";
-static constexpr const char_t *RT_TSD_SUBPROCESS_NUM_EXCEED_THE_LIMIT_ERROR = "E30003";
-static constexpr const char_t *RT_TSD_SUBPROCESS_BINARY_FILE_DAMAGED = "E30004";
-static constexpr const char_t *RT_TSD_DEVICE_DISCONNECTED = "E30005";
-static constexpr const char_t *RT_TSD_DRV_HDC_SEND_FILE_FAILED_ERROR = "E30006";
-static constexpr const char_t *RT_TSD_ADD_AICPUSD_TO_CGROUP_FAILED = "E30007";
+static constexpr const char_t* RT_INNER_ERROR = "EE9999";
+static constexpr const char_t* RT_INNER_WARNING = "WE9999";
+static constexpr const char_t* RT_NPU_COMMON_INNER_ERROR = "EZ9999";
+static constexpr const char_t* RT_FE_INNER_ERROR = "E29999";
+static constexpr const char_t* RT_AICPU_INNER_ERROR = "E39999";
+static constexpr const char_t* RT_DRV_INNER_ERROR = "EL9999";
+static constexpr const char_t* RT_HCCL_INNER_ERROR = "EI9999";
+static constexpr const char_t* RT_GE_INNER_ERROR = "EE8888";
+static constexpr const char_t* RT_PROFILE_INNER_ERROR = "EK9999";
+static constexpr const char_t* RT_STREAM_SYNC_TIMEOUT_INNER_ERROR = "EE1002";
+static constexpr const char_t* RT_TBE_INNER_ERROR = "EZ9999";
+static constexpr const char_t* RT_SYSTEM_INNER_ERROR = "EE9999";
+static constexpr const char_t* RT_INVALID_ARGUMENT_ERROR = "EE1001";
+static constexpr const char_t* RT_AICPU_TIMEOUT_ERROR = "E30008";
+static constexpr const char_t* RT_TSD_SUBPROCESS_NUM_EXCEED_THE_LIMIT_ERROR = "E30003";
+static constexpr const char_t* RT_TSD_SUBPROCESS_BINARY_FILE_DAMAGED = "E30004";
+static constexpr const char_t* RT_TSD_DEVICE_DISCONNECTED = "E30005";
+static constexpr const char_t* RT_TSD_DRV_HDC_SEND_FILE_FAILED_ERROR = "E30006";
+static constexpr const char_t* RT_TSD_ADD_AICPUSD_TO_CGROUP_FAILED = "E30007";
 
 #if defined(__cplusplus)
 template <>
 struct RtInnerHandleAccessor<rtLaunchArgs_t> {
-    static rtInnerObject *Get(rtLaunchArgs_t *realObj)
-    {
-        return &realObj->handle_;
-    }
+    static rtInnerObject* Get(rtLaunchArgs_t* realObj) { return &realObj->handle_; }
 };
 #endif
 
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // __CCE_RUNTIME_BASE_INFO_HPP__

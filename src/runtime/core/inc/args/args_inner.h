@@ -24,8 +24,8 @@ extern "C" {
 
 typedef struct {
     rtEngineType engineType; // only use for CHIP_DC kernel launch [vector enable]
-    uint64_t timeout; // unit: us
-    bool blockTaskPrefetch; // only use for kernel launch [tiling key sink]
+    uint64_t timeout;        // unit: us
+    bool blockTaskPrefetch;  // only use for kernel launch [tiling key sink]
     uint8_t rsv[5];
 } rtTaskCfgExInfo_t;
 
@@ -53,12 +53,12 @@ struct CpuKernelSysArgsInfo {
 };
 
 struct RtArgsHandle {
-    void *buffer;
+    void* buffer;
     size_t bufferSize; // buffer总大小
     size_t sysParamSize;
     size_t argsSize; // 当前实际args占用大小，即将来要进行H2D搬运的大小 = args table + place holder指向的数据区大小
     CpuKernelSysArgsInfo cpuKernelSysArgsInfo; // user for cpu kernel launch
-    void *funcHandle;
+    void* funcHandle;
     bool isGotPhBuff;
     bool isProcessedOverflow;
     uint8_t placeHolderNum;
@@ -75,16 +75,16 @@ struct RtArgsHandle {
 struct SimtArgsArray {
     rtDim3 gridDim;
     rtDim3 blockDim;
-    void **argsArrayInfo;
+    void** argsArrayInfo;
     size_t dynUbufSize;
 };
 
 struct SimtArgsHost {
     rtDim3 gridDim;
     rtDim3 blockDim;
-    void *hostArgs;
+    void* hostArgs;
     uint32_t argsSize;
-    rtPlaceHolderInfo_t *placeHolderArray;
+    rtPlaceHolderInfo_t* placeHolderArray;
     uint32_t placeHolderNum;
     size_t dynUbufSize;
 };
@@ -102,12 +102,12 @@ enum ArgsType : int32_t {
 struct RtArgsWithType {
     ArgsType type;
     union {
-        rtArgsEx_t *nonCpuArgsInfo;
-        rtCpuKernelArgs_t *cpuArgsInfo;
-        RtArgsHandle *argHandle;
-        void **argsArrayInfo;
-        SimtArgsArray *simtArgsArray;
-        SimtArgsHost *simtArgsHost;
+        rtArgsEx_t* nonCpuArgsInfo;
+        rtCpuKernelArgs_t* cpuArgsInfo;
+        RtArgsHandle* argHandle;
+        void** argsArrayInfo;
+        SimtArgsArray* simtArgsArray;
+        SimtArgsHost* simtArgsHost;
     } args;
 };
 
@@ -119,18 +119,12 @@ namespace runtime {
 
 template <>
 struct RtInnerHandleAccessor<::ParaDetail> {
-    static rtInnerObject *Get(::ParaDetail *realObj)
-    {
-        return &realObj->handle_;
-    }
+    static rtInnerObject* Get(::ParaDetail* realObj) { return &realObj->handle_; }
 };
 
 template <>
 struct RtInnerHandleAccessor<::RtArgsHandle> {
-    static rtInnerObject *Get(::RtArgsHandle *realObj)
-    {
-        return &realObj->handle_;
-    }
+    static rtInnerObject* Get(::RtArgsHandle* realObj) { return &realObj->handle_; }
 };
 
 } // namespace runtime

@@ -11,13 +11,9 @@
 #include "api_impl_creator.hpp"
 #include "api_impl_david.hpp"
 
-
 namespace cce {
 namespace runtime {
 
-Api *CreateImplAndGet()
-{
-    return new (std::nothrow) ApiImplDavid();
-}
-}  // namespace runtime
-}  // namespace cce
+Api* CreateImplAndGet() { return new (std::nothrow) ApiImplDavid(); }
+} // namespace runtime
+} // namespace cce

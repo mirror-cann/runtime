@@ -23,8 +23,12 @@ static inline std::string StreamPriorityToString(const uint32_t priority)
 {
     std::string desc;
     switch (priority) {
-        case RT_STREAM_PRIORITY_DEFAULT: desc = "STREAM_PRIORITY_DEFAULT(0)"; break;
-        default: desc = RtFmtMsg("UNKNOWN(%u)", static_cast<uint64_t>(priority)); break;
+        case RT_STREAM_PRIORITY_DEFAULT:
+            desc = "STREAM_PRIORITY_DEFAULT(0)";
+            break;
+        default:
+            desc = RtFmtMsg("UNKNOWN(%u)", static_cast<uint64_t>(priority));
+            break;
     }
     return desc;
 }

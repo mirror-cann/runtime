@@ -15,11 +15,12 @@
 namespace cce {
 namespace runtime {
 
-rtError_t ReadAICoreDebugInfo(const rtDebugMemoryParam_t * const param);
-rtError_t GetStackBufferInfo(const rtBinHandle binHandle, uint32_t deviceId, const uint32_t stackType, const uint32_t coreType, const uint32_t coreId,
-    const void **stack, uint32_t *stackSize);
+rtError_t ReadAICoreDebugInfo(const rtDebugMemoryParam_t* const param);
+rtError_t GetStackBufferInfo(
+    const rtBinHandle binHandle, uint32_t deviceId, const uint32_t stackType, const uint32_t coreType,
+    const uint32_t coreId, const void** stack, uint32_t* stackSize);
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_COREDUMP_C_HPP__

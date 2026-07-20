@@ -11,7 +11,7 @@
 #ifndef CCE_RUNTIME_CTRL_MSG_HPP
 #define CCE_RUNTIME_CTRL_MSG_HPP
 #include "stream.hpp"
- 
+
 namespace cce {
 namespace runtime {
 enum class RtCtrlMsgType : std::uint32_t {
@@ -48,8 +48,8 @@ struct RtMaintainceParam {
 
 struct RtModelMaintainceParam {
     MmtType mType;
-    Model *modelPtr;
-    Stream *opStreamPtr; 
+    Model* modelPtr;
+    Stream* opStreamPtr;
     rtModelStreamType_t modelStreamType;
     uint32_t firstTaskIndex;
 };
@@ -62,18 +62,18 @@ struct RtAicpuModelParam {
 };
 
 struct RtDataDumpLoadInfoParam {
-    const void *dumpInfo;
+    const void* dumpInfo;
     uint32_t length;
     uint16_t kernelType;
 };
 
 struct RtAicpuInfoLoadParam {
-    const void *aicpuInfo;
+    const void* aicpuInfo;
     uint32_t length;
 };
 
 struct RtDebugRegisterParam {
-    const void *addr;
+    const void* addr;
     uint32_t modelId;
     uint32_t flag;
 };
@@ -83,19 +83,19 @@ struct RtDebugUnRegisterParam {
 };
 
 struct RtOverflowSwitchSetParam {
-    Stream *targetStm;
+    Stream* targetStm;
     uint32_t switchFlag;
 };
 
 struct RtSetStreamTagParam {
-    Stream *targetStm;
+    Stream* targetStm;
     uint32_t geOpTag;
 };
 
 struct RtNotifyResetParam {
     uint32_t notifyIndex;
-    const SingleBitNotifyRecordInfo *singleInfo;
-    void *notify;
+    const SingleBitNotifyRecordInfo* singleInfo;
+    void* notify;
 };
 
 struct RtCtrlMsgSendParam {
@@ -128,29 +128,29 @@ struct RtCtrlMsg {
     uint8_t version;
 };
 
-rtError_t CtrlMsgStreamClearInit(TaskInfo *const taskInfo, const RtCtrlMsgParam &param);
+rtError_t CtrlMsgStreamClearInit(TaskInfo* const taskInfo, const RtCtrlMsgParam& param);
 
-rtError_t CtrlMsgStreamRecycleInit(TaskInfo *taskInfo, const RtCtrlMsgParam &param);
+rtError_t CtrlMsgStreamRecycleInit(TaskInfo* taskInfo, const RtCtrlMsgParam& param);
 
-rtError_t CtrlMsgNotifyResetInit(TaskInfo *const taskInfo, const RtCtrlMsgParam &param);
+rtError_t CtrlMsgNotifyResetInit(TaskInfo* const taskInfo, const RtCtrlMsgParam& param);
 
-rtError_t CtrlMsgNotifyResetV200Init(TaskInfo *const taskInfo, const RtCtrlMsgParam &param);
+rtError_t CtrlMsgNotifyResetV200Init(TaskInfo* const taskInfo, const RtCtrlMsgParam& param);
 
-rtError_t CtrlMsgModelTaskInit(TaskInfo * const taskInfo, const RtCtrlMsgParam &param);
+rtError_t CtrlMsgModelTaskInit(TaskInfo* const taskInfo, const RtCtrlMsgParam& param);
 
-rtError_t CtrlMsgAicpuModelInit(TaskInfo *taskInfo, const RtCtrlMsgParam &param);
+rtError_t CtrlMsgAicpuModelInit(TaskInfo* taskInfo, const RtCtrlMsgParam& param);
 
-rtError_t CtrlMsgDumpLoadInfoInit(TaskInfo *taskInfo, const RtCtrlMsgParam &param);
+rtError_t CtrlMsgDumpLoadInfoInit(TaskInfo* taskInfo, const RtCtrlMsgParam& param);
 
-rtError_t CtrlMsgAicpuInfoLoadInit(TaskInfo *taskInfo, const RtCtrlMsgParam &param);
+rtError_t CtrlMsgAicpuInfoLoadInit(TaskInfo* taskInfo, const RtCtrlMsgParam& param);
 
-rtError_t CtrlMsgDebugRegisteInit(TaskInfo *taskInfo, const RtCtrlMsgParam &param);
+rtError_t CtrlMsgDebugRegisteInit(TaskInfo* taskInfo, const RtCtrlMsgParam& param);
 
-rtError_t CtrlMsgDebugUnRegisteInit(TaskInfo *taskInfo, const RtCtrlMsgParam &param);
+rtError_t CtrlMsgDebugUnRegisteInit(TaskInfo* taskInfo, const RtCtrlMsgParam& param);
 
-rtError_t CtrlMsgOverflowSwitchSetInit(TaskInfo *taskInfo, const RtCtrlMsgParam &param);
+rtError_t CtrlMsgOverflowSwitchSetInit(TaskInfo* taskInfo, const RtCtrlMsgParam& param);
 
-rtError_t CtrlMsgSetStreamTagInit(TaskInfo *const taskInfo, const RtCtrlMsgParam &param);
-}  // namespace runtime
-}  // namespace cce
+rtError_t CtrlMsgSetStreamTagInit(TaskInfo* const taskInfo, const RtCtrlMsgParam& param);
+} // namespace runtime
+} // namespace cce
 #endif

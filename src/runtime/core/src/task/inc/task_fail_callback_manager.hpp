@@ -17,26 +17,25 @@
 #include "task_fail_callback_data_manager.h"
 #include "xpu_task_fail_callback_data_manager.h"
 
-
 namespace cce {
 namespace runtime {
 
-void CheckKernelMemoryCorruption(Program *program, const Device *device, 
-    uint32_t deviceId, rtExceptionArgsInfo_t *kernelInfo);
+void CheckKernelMemoryCorruption(
+    Program* program, const Device* device, uint32_t deviceId, rtExceptionArgsInfo_t* kernelInfo);
 
-void TriggerMemoryCorruptionCheck(rtExceptionInfo_t *const exceptionInfo, const Device *dev, uint32_t realDeviceId,
-    rtBinHandle binHandle = nullptr, rtExceptionArgsInfo_t *kernelInfo = nullptr);
+void TriggerMemoryCorruptionCheck(
+    rtExceptionInfo_t* const exceptionInfo, const Device* dev, uint32_t realDeviceId, rtBinHandle binHandle = nullptr,
+    rtExceptionArgsInfo_t* kernelInfo = nullptr);
 
-void TaskFailCallBackNotify(rtExceptionInfo_t *const exceptionInfo);
-rtError_t TaskFailCallBackReg(const char_t *regName, void *callback, void *args,
-    TaskFailCallbackType type);
+void TaskFailCallBackNotify(rtExceptionInfo_t* const exceptionInfo);
+rtError_t TaskFailCallBackReg(const char_t* regName, void* callback, void* args, TaskFailCallbackType type);
 
-void OpTaskFailCallbackNotify(rtExceptionInfo_t *const exceptionInfo);
-rtError_t OpTaskFailCallbackReg(Program *binHandle, void *callback, void *userData);
+void OpTaskFailCallbackNotify(rtExceptionInfo_t* const exceptionInfo);
+rtError_t OpTaskFailCallbackReg(Program* binHandle, void* callback, void* userData);
 
-rtError_t XpuTaskFailCallbackReg(const char_t *regName, void *callback);
+rtError_t XpuTaskFailCallbackReg(const char_t* regName, void* callback);
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_RUNTIME_TASK_FAIL_CALLBACK_MANAGER_HPP

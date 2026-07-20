@@ -16,68 +16,45 @@
 
 namespace cce {
 namespace runtime {
-using PhaseValueToStr = rtError_t (*)(uint16_t, const void *, std::string &);
+using PhaseValueToStr = rtError_t (*)(uint16_t, const void*, std::string&);
 
 // defined for words
 class TTLVWordDecoder {
 public:
-    TTLVWordDecoder():tag_(MAX_UINT16_NUM), msgLen_(MAX_UINT16_NUM), type_(MAX_UINT16_NUM), buffer_(nullptr) {}
-    TTLVWordDecoder(uint16_t tag, uint16_t type, uint16_t msgLen, const void *val) : tag_(tag), msgLen_(msgLen),
-        type_(type), buffer_(val) {}
+    TTLVWordDecoder() : tag_(MAX_UINT16_NUM), msgLen_(MAX_UINT16_NUM), type_(MAX_UINT16_NUM), buffer_(nullptr) {}
+    TTLVWordDecoder(uint16_t tag, uint16_t type, uint16_t msgLen, const void* val)
+        : tag_(tag), msgLen_(msgLen), type_(type), buffer_(val)
+    {}
     virtual ~TTLVWordDecoder() = default;
     rtError_t DecodeUnknownData();
-    rtError_t DecoderBasicType(uint64_t &res) const;
+    rtError_t DecoderBasicType(uint64_t& res) const;
     rtError_t DecoderString();
     rtError_t DecodeWord();
 
-    uint16_t GetTag() const
-    {
-        return tag_;
-    }
+    uint16_t GetTag() const { return tag_; }
 
-    uint16_t GetMsgLen() const
-    {
-        return msgLen_;
-    }
+    uint16_t GetMsgLen() const { return msgLen_; }
 
-    uint16_t GetType() const
-    {
-        return type_;
-    }
+    uint16_t GetType() const { return type_; }
 
-    void SetTag(uint16_t tag)
-    {
-        tag_ = tag;
-    }
+    void SetTag(uint16_t tag) { tag_ = tag; }
 
-    void SetMsgLen(uint16_t msgLen)
-    {
-        msgLen_ = msgLen;
-    }
+    void SetMsgLen(uint16_t msgLen) { msgLen_ = msgLen; }
 
-    void SetType(uint16_t type)
-    {
-        type_ = type;
-    }
+    void SetType(uint16_t type) { type_ = type; }
 
-    void SetVal(const void *val)
-    {
-        buffer_ = val;
-    }
+    void SetVal(const void* val) { buffer_ = val; }
 
-    const std::string &GetOutputStr() const
-    {
-        return outputStr_;
-    }
+    const std::string& GetOutputStr() const { return outputStr_; }
 
 private:
     uint16_t tag_;
     uint16_t msgLen_;
     uint16_t type_;
-    const void *buffer_;
+    const void* buffer_;
     std::string outputStr_;
     static const std::map<const uint16_t, std::pair<const std::string, PhaseValueToStr>> word2DataString;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // RT_RUNTIME_TTLV_WORD_DECODER_HPP

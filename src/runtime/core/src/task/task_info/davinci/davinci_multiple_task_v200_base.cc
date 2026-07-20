@@ -21,31 +21,32 @@ namespace runtime {
 #if F_DESC("DavinciMultipleTask")
 void StarsV2DavinciMultipleTaskUnInit(TaskInfo* taskInfo)
 {
-    DavinciMultiTaskInfo *davMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
-    Stream * const stm = taskInfo->stream;
+    DavinciMultiTaskInfo* davMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    Stream* const stm = taskInfo->stream;
     davMultiTaskInfo->multipleTaskInfo = nullptr;
-    static_cast<DavidStream *>(stm)->ArgReleaseMultipleTask(taskInfo);
+    static_cast<DavidStream*>(stm)->ArgReleaseMultipleTask(taskInfo);
     ResetCmdList(taskInfo);
 }
 
-static void ConstructDavidDvppSqe(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint32_t idx,
-    uint64_t sqBaseAddr)
+static void ConstructDavidDvppSqe(
+    TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe, uint32_t idx, uint64_t sqBaseAddr)
 {
-    DavinciMultiTaskInfo * const davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
-    Stream * const stream = taskInfo->stream;
-    rtMultipleTaskInfo_t * const multipleTaskInfo =
-        RtPtrToPtr<rtMultipleTaskInfo_t *>(RtPtrToUnConstPtr<void *>(davinciMultiTaskInfo->multipleTaskInfo));
+    DavinciMultiTaskInfo* const davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    Stream* const stream = taskInfo->stream;
+    rtMultipleTaskInfo_t* const multipleTaskInfo =
+        RtPtrToPtr<rtMultipleTaskInfo_t*>(RtPtrToUnConstPtr<void*>(davinciMultiTaskInfo->multipleTaskInfo));
     rtDvppTaskDesc_t dvppTask = multipleTaskInfo->taskDesc[idx].u.dvppTaskDesc;
-    rtDavidSqe_t *sqeAddr = &davidSqe[idx];
+    rtDavidSqe_t* sqeAddr = &davidSqe[idx];
     if (sqBaseAddr != 0ULL) {
         const uint32_t pos = taskInfo->id + idx;
         sqeAddr = GetSqPosAddr(sqBaseAddr, pos);
     }
-    RtDavidStarsDvppSqe *const dvppSqe = &(sqeAddr->dvppSqe);
+    RtDavidStarsDvppSqe* const dvppSqe = &(sqeAddr->dvppSqe);
     const errno_t error = memcpy_s(dvppSqe, sizeof(RtDavidStarsDvppSqe), &(dvppTask.sqe), sizeof(dvppTask.sqe));
     if (error != EOK) {
         dvppSqe->header.type = RT_DAVID_SQE_TYPE_INVALID;
-        RT_LOG_INNER_MSG(RT_LOG_ERROR,
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR,
             "Failed to call memcpy_s to copy dvppTask.sqe, src=%p, dest=%p, dest_max=%u, count=%u, retCode=%#x.",
             &(dvppTask.sqe), dvppSqe, static_cast<uint32_t>(sizeof(RtDavidStarsDvppSqe)),
             static_cast<uint32_t>(sizeof(dvppTask.sqe)), static_cast<uint32_t>(error));
@@ -69,33 +70,35 @@ static void ConstructDavidDvppSqe(TaskInfo * const taskInfo, rtDavidSqe_t * cons
     const uint64_t cmdListAddrLow = dvppTask.sqe.commandCustom[STARS_DVPP_SQE_CMDLIST_ADDR_LOW_IDX];
     const uint64_t cmdListAddrHigh = dvppTask.sqe.commandCustom[STARS_DVPP_SQE_CMDLIST_ADDR_HIGH_IDX];
     // the dvpp has malloced the cmdlist memory.
-    void *cmdList = RtValueToPtr<void *>(((cmdListAddrHigh << UINT32_BIT_NUM) & 0xFFFFFFFF00000000ULL) |
-        (cmdListAddrLow & 0x00000000FFFFFFFFULL));
+    void* cmdList = RtValueToPtr<void*>(
+        ((cmdListAddrHigh << UINT32_BIT_NUM) & 0xFFFFFFFF00000000ULL) | (cmdListAddrLow & 0x00000000FFFFFFFFULL));
     if (cmdList == nullptr) {
         RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to get cmdList address, it is null.");
         return;
     }
     davinciMultiTaskInfo->cmdListVec->push_back(cmdList);
     PrintDavidSqe(sqeAddr, "DavinciMultipleTask-DVPP");
-    RT_LOG(RT_LOG_INFO, "DavinciMultipleTask Dvpp, device_id=%u, stream_id=%d, task_id=%hu.",
+    RT_LOG(
+        RT_LOG_INFO, "DavinciMultipleTask Dvpp, device_id=%u, stream_id=%d, task_id=%hu.",
         taskInfo->stream->Device_()->Id_(), stream->Id_(), taskInfo->id);
 }
 
-static void CommonConstructDavidAICpuSqe(TaskInfo* const taskInfo, rtDavidSqe_t *const command,
-                                        uint64_t sqBaseAddr, const rtUncommonAicpuParams_t *const params)
+static void CommonConstructDavidAICpuSqe(
+    TaskInfo* const taskInfo, rtDavidSqe_t* const command, uint64_t sqBaseAddr,
+    const rtUncommonAicpuParams_t* const params)
 {
-    DavinciMultiTaskInfo *davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
-    Stream * const stm = taskInfo->stream;
-    rtDavidSqe_t *sqeAddr = command + params->idx;
+    DavinciMultiTaskInfo* davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    Stream* const stm = taskInfo->stream;
+    rtDavidSqe_t* sqeAddr = command + params->idx;
     if (sqBaseAddr != 0ULL) {
         const uint32_t pos = taskInfo->id + params->idx;
         sqeAddr = GetSqPosAddr(sqBaseAddr, pos);
     }
     ConstructDavidSqeForHeadCommon(taskInfo, sqeAddr);
-    RtDavidStarsAicpuKernelSqe *const sqe = &(sqeAddr->aicpuSqe);
+    RtDavidStarsAicpuKernelSqe* const sqe = &(sqeAddr->aicpuSqe);
 
     StarsArgLoaderResult result = {nullptr, nullptr, nullptr, UINT32_MAX, nullptr, nullptr};
-    rtError_t error = static_cast<DavidStream *>(stm)->LoadArgsInfo(&(params->argsInfo), false, &result);
+    rtError_t error = static_cast<DavidStream*>(stm)->LoadArgsInfo(&(params->argsInfo), false, &result);
     if (error != RT_ERROR_NONE) {
         sqe->header.type = RT_DAVID_SQE_TYPE_INVALID;
         RT_LOG(RT_LOG_ERROR, "Failed to load CPU Kernel args, retCode=%#x", static_cast<uint32_t>(error));
@@ -107,8 +110,8 @@ static void CommonConstructDavidAICpuSqe(TaskInfo* const taskInfo, rtDavidSqe_t 
     davinciMultiTaskInfo->hasUnderstudyTask = isUnderstudyOp;
 
     /* word0-1 */
-    sqe->header.type = (isUnderstudyOp) ?
-        static_cast<uint8_t>(RT_DAVID_SQE_TYPE_PLACE_HOLDER) : static_cast<uint8_t>(RT_DAVID_SQE_TYPE_AICPU_D);
+    sqe->header.type = (isUnderstudyOp) ? static_cast<uint8_t>(RT_DAVID_SQE_TYPE_PLACE_HOLDER) :
+                                          static_cast<uint8_t>(RT_DAVID_SQE_TYPE_AICPU_D);
     sqe->header.wrCqe = 1U;
     sqe->header.blockDim = params->blockDim;
 
@@ -154,12 +157,12 @@ static void CommonConstructDavidAICpuSqe(TaskInfo* const taskInfo, rtDavidSqe_t 
     sqe->res7 = 0U;
 
     /* word12-13 */
-    sqe->extraFieldLow = taskInfo->taskSn;  // send task id info to aicpu
+    sqe->extraFieldLow = taskInfo->taskSn; // send task id info to aicpu
     sqe->extraFieldHigh = 0U;
 
     /* word14 */
     sqe->subTopicId = 0U;
-    sqe->topicId = 3U; // EVENT_TS_HWTS_KERNEL
+    sqe->topicId = 3U;     // EVENT_TS_HWTS_KERNEL
     sqe->groupId = 0U;
     sqe->usrDataLen = 40U; /* size: word4-13 */
 
@@ -171,32 +174,32 @@ static void CommonConstructDavidAICpuSqe(TaskInfo* const taskInfo, rtDavidSqe_t 
     RT_LOG(RT_LOG_INFO, "DavinciMultipleTask Aicpu stream_id=%d, task_id=%hu", stm->Id_(), taskInfo->id);
 }
 
-static void ConstructDavidAICpuSqeForDavinciMultipleTask(TaskInfo * const taskInfo, rtDavidSqe_t *const command,
-    uint32_t idx, uint64_t sqBaseAddr)
+static void ConstructDavidAICpuSqeForDavinciMultipleTask(
+    TaskInfo* const taskInfo, rtDavidSqe_t* const command, uint32_t idx, uint64_t sqBaseAddr)
 {
-    DavinciMultiTaskInfo *davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
-    Stream * const stm = taskInfo->stream;
-    rtMultipleTaskInfo_t *multipleTaskInfo =
-        RtPtrToPtr<rtMultipleTaskInfo_t *>(RtPtrToUnConstPtr<void *>(davinciMultiTaskInfo->multipleTaskInfo));
+    DavinciMultiTaskInfo* davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    Stream* const stm = taskInfo->stream;
+    rtMultipleTaskInfo_t* multipleTaskInfo =
+        RtPtrToPtr<rtMultipleTaskInfo_t*>(RtPtrToUnConstPtr<void*>(davinciMultiTaskInfo->multipleTaskInfo));
     rtAicpuTaskDesc_t aicpuTask = multipleTaskInfo->taskDesc[idx].u.aicpuTaskDesc;
     rtUncommonAicpuParams_t params;
 
-    rtDavidSqe_t *sqeAddr = command + idx;
+    rtDavidSqe_t* sqeAddr = command + idx;
     if (sqBaseAddr != 0ULL) {
         const uint32_t pos = taskInfo->id + idx;
         sqeAddr = GetSqPosAddr(sqBaseAddr, pos);
     }
     ConstructDavidSqeForHeadCommon(taskInfo, sqeAddr);
-    RtDavidStarsAicpuKernelSqe *const sqe = &(sqeAddr->aicpuSqe);
+    RtDavidStarsAicpuKernelSqe* const sqe = &(sqeAddr->aicpuSqe);
 
-    void *soNameAddr = nullptr;
-    void *kernelNameAddr = nullptr;
+    void* soNameAddr = nullptr;
+    void* kernelNameAddr = nullptr;
     ArgLoader* const devArgLdr = stm->Device_()->ArgLoader_();
     rtError_t error = RT_ERROR_NONE;
 
     if (aicpuTask.kernelLaunchNames.soName != nullptr) {
-        error = devArgLdr->GetKernelInfoDevAddr(static_cast<const char_t *>(aicpuTask.kernelLaunchNames.soName),
-                                                KernelInfoType::SO_NAME, &soNameAddr);
+        error = devArgLdr->GetKernelInfoDevAddr(
+            static_cast<const char_t*>(aicpuTask.kernelLaunchNames.soName), KernelInfoType::SO_NAME, &soNameAddr);
         if (error != RT_ERROR_NONE) {
             sqe->header.type = RT_DAVID_SQE_TYPE_INVALID;
             RT_LOG(RT_LOG_ERROR, "Failed to get SO address by name, retCode=%#x", static_cast<uint32_t>(error));
@@ -204,8 +207,9 @@ static void ConstructDavidAICpuSqeForDavinciMultipleTask(TaskInfo * const taskIn
         }
     }
     if (aicpuTask.kernelLaunchNames.kernelName != nullptr) {
-        error = devArgLdr->GetKernelInfoDevAddr(static_cast<const char_t *>(aicpuTask.kernelLaunchNames.kernelName),
-                                                KernelInfoType::KERNEL_NAME, &kernelNameAddr);
+        error = devArgLdr->GetKernelInfoDevAddr(
+            static_cast<const char_t*>(aicpuTask.kernelLaunchNames.kernelName), KernelInfoType::KERNEL_NAME,
+            &kernelNameAddr);
         if (error != RT_ERROR_NONE) {
             sqe->header.type = RT_DAVID_SQE_TYPE_INVALID;
             RT_LOG(RT_LOG_ERROR, "Failed to get kernel address by name, retCode=%#x", static_cast<uint32_t>(error));
@@ -224,17 +228,17 @@ static void ConstructDavidAICpuSqeForDavinciMultipleTask(TaskInfo * const taskIn
     CommonConstructDavidAICpuSqe(taskInfo, command, sqBaseAddr, &params);
 }
 
-static void ConstructDavidAICpuSqeByHandleForDavinciMultipleTask(TaskInfo * const taskInfo, rtDavidSqe_t *const command,
-    uint32_t idx, uint64_t sqBaseAddr)
+static void ConstructDavidAICpuSqeByHandleForDavinciMultipleTask(
+    TaskInfo* const taskInfo, rtDavidSqe_t* const command, uint32_t idx, uint64_t sqBaseAddr)
 {
-    DavinciMultiTaskInfo *davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
-    rtMultipleTaskInfo_t *multipleTaskInfo =
-        RtPtrToPtr<rtMultipleTaskInfo_t *>(RtPtrToUnConstPtr<void *>(davinciMultiTaskInfo->multipleTaskInfo));
+    DavinciMultiTaskInfo* davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    rtMultipleTaskInfo_t* multipleTaskInfo =
+        RtPtrToPtr<rtMultipleTaskInfo_t*>(RtPtrToUnConstPtr<void*>(davinciMultiTaskInfo->multipleTaskInfo));
     rtAicpuTaskDescByHandle_t aicpuTaskByHandle = multipleTaskInfo->taskDesc[idx].u.aicpuTaskDescByHandle;
-    Kernel *hdl = RtPtrToPtr<Kernel *>(aicpuTaskByHandle.funcHdl);
+    Kernel* hdl = RtPtrToPtr<Kernel*>(aicpuTaskByHandle.funcHdl);
     rtUncommonAicpuParams_t params;
-    void *soNameAddr = hdl->GetSoNameDevAddr(taskInfo->stream->Device_()->Id_());
-    void *kernelNameAddr = hdl->GetFuncNameDevAddr(taskInfo->stream->Device_()->Id_());
+    void* soNameAddr = hdl->GetSoNameDevAddr(taskInfo->stream->Device_()->Id_());
+    void* kernelNameAddr = hdl->GetFuncNameDevAddr(taskInfo->stream->Device_()->Id_());
 
     params.idx = idx;
     params.soNameAddr = soNameAddr;
@@ -247,14 +251,13 @@ static void ConstructDavidAICpuSqeByHandleForDavinciMultipleTask(TaskInfo * cons
     CommonConstructDavidAICpuSqe(taskInfo, command, sqBaseAddr, &params);
 }
 
-void ConstructDavidSqeForDavinciMultipleTask(TaskInfo * const taskInfo, void *const sqe,
-    const TaskSqeInfo& sqeInfo)
+void ConstructDavidSqeForDavinciMultipleTask(TaskInfo* const taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     uint64_t sqBaseAddr = sqeInfo.sqBaseAddr;
-    DavinciMultiTaskInfo * const davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
-    rtMultipleTaskInfo_t * const multipleTaskInfo =
-        RtPtrToPtr<rtMultipleTaskInfo_t *>(RtPtrToUnConstPtr<void *>(davinciMultiTaskInfo->multipleTaskInfo));
+    DavinciMultiTaskInfo* const davinciMultiTaskInfo = &(taskInfo->u.davinciMultiTaskInfo);
+    rtMultipleTaskInfo_t* const multipleTaskInfo =
+        RtPtrToPtr<rtMultipleTaskInfo_t*>(RtPtrToUnConstPtr<void*>(davinciMultiTaskInfo->multipleTaskInfo));
     for (uint32_t idx = 0U; idx < multipleTaskInfo->taskNum; idx++) {
         if (multipleTaskInfo->taskDesc[idx].type == RT_MULTIPLE_TASK_TYPE_AICPU) {
             ConstructDavidAICpuSqeForDavinciMultipleTask(taskInfo, davidSqe, idx, sqBaseAddr);
@@ -293,5 +296,5 @@ static bool g_davinciMultipleTaskRegister = DavinciMultipleTaskRegister();
 
 #endif
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

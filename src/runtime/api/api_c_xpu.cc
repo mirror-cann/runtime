@@ -16,7 +16,7 @@ using namespace cce::runtime;
 extern "C" {
 #endif // __cplusplus
 VISIBILITY_DEFAULT
-rtError_t rtGetXpuDevCount(const rtXpuDevType devType, uint32_t *devCount)
+rtError_t rtGetXpuDevCount(const rtXpuDevType devType, uint32_t* devCount)
 {
     Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
@@ -29,7 +29,7 @@ rtError_t rtGetXpuDevCount(const rtXpuDevType devType, uint32_t *devCount)
 VISIBILITY_DEFAULT
 rtError_t rtSetXpuDevice(rtXpuDevType devType, const uint32_t devId)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->SetXpuDevice(devType, devId);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -39,7 +39,7 @@ rtError_t rtSetXpuDevice(rtXpuDevType devType, const uint32_t devId)
 VISIBILITY_DEFAULT
 rtError_t rtResetXpuDevice(rtXpuDevType devType, const uint32_t devId)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->ResetXpuDevice(devType, devId);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -47,11 +47,11 @@ rtError_t rtResetXpuDevice(rtXpuDevType devType, const uint32_t devId)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtXpuSetTaskFailCallback(rtXpuDevType devType, const char_t *moduleName, rtTaskFailCallback callback)
+rtError_t rtXpuSetTaskFailCallback(rtXpuDevType devType, const char_t* moduleName, rtTaskFailCallback callback)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
-    const rtError_t error = apiInstance->XpuSetTaskFailCallback(devType, moduleName, RtPtrToPtr<void *>(callback));
+    const rtError_t error = apiInstance->XpuSetTaskFailCallback(devType, moduleName, RtPtrToPtr<void*>(callback));
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }

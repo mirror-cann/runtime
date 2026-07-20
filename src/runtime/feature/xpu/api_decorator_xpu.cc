@@ -21,19 +21,19 @@ rtError_t ApiDecorator::ResetXpuDevice(const rtXpuDevType devType, const uint32_
     return impl_->ResetXpuDevice(devType, devId);
 }
 
-rtError_t ApiDecorator::GetXpuDevCount(const rtXpuDevType devType, uint32_t *devCount)
+rtError_t ApiDecorator::GetXpuDevCount(const rtXpuDevType devType, uint32_t* devCount)
 {
     return impl_->GetXpuDevCount(devType, devCount);
 }
 
-rtError_t ApiDecorator::XpuSetTaskFailCallback(const rtXpuDevType devType, const char_t *moduleName, void *callback)
+rtError_t ApiDecorator::XpuSetTaskFailCallback(const rtXpuDevType devType, const char_t* moduleName, void* callback)
 {
     return impl_->XpuSetTaskFailCallback(devType, moduleName, callback);
 }
 
-rtError_t ApiDecorator::XpuProfilingCommandHandle(uint32_t type, void *data, uint32_t len)
+rtError_t ApiDecorator::XpuProfilingCommandHandle(uint32_t type, void* data, uint32_t len)
 {
     return impl_->XpuProfilingCommandHandle(type, data, len);
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

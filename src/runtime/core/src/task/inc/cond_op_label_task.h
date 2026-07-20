@@ -15,17 +15,17 @@
 
 namespace cce {
 namespace runtime {
-rtError_t LabelSetTaskInit(TaskInfo* taskInfo, const uint16_t labelIndex, void * const devDestAddr);
-rtError_t LabelSwitchTaskInit(TaskInfo* taskInfo, const void *const ptr, const rtCondition_t cond,
-    const uint32_t val, const uint16_t labelId);
+rtError_t LabelSetTaskInit(TaskInfo* taskInfo, const uint16_t labelIndex, void* const devDestAddr);
+rtError_t LabelSwitchTaskInit(
+    TaskInfo* taskInfo, const void* const ptr, const rtCondition_t cond, const uint32_t val, const uint16_t labelId);
 rtError_t LabelGotoTaskInit(TaskInfo* taskInfo, const uint16_t lblId);
 
-void ToCommandBodyForLabelSetTask(TaskInfo* taskInfo, rtCommand_t * const command);
-void ToCommandBodyForLabelSwitchTask(TaskInfo* taskInfo, rtCommand_t *const command);
-void ToCommandBodyForLabelGotoTask(TaskInfo* taskInfo, rtCommand_t *const command);
+void ToCommandBodyForLabelSetTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void ToCommandBodyForLabelSwitchTask(TaskInfo* taskInfo, rtCommand_t* const command);
+void ToCommandBodyForLabelGotoTask(TaskInfo* taskInfo, rtCommand_t* const command);
 
 void SetLabelInfoForLabelSetTask(TaskInfo* taskInfo, const uint32_t pos);
 
-}  // namespace runtime
-}  // namespace cce
-#endif  // RUNTIME_COND_OP_LABEL_TASK_H
+} // namespace runtime
+} // namespace cce
+#endif // RUNTIME_COND_OP_LABEL_TASK_H

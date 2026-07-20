@@ -38,7 +38,7 @@ static bool RdmaTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
 
-    const auto &chips = GetDavidChips();
+    const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_RDMA_SEND, rdmaSendFuncs);
         RegTaskFunc(chip, TS_TASK_TYPE_RDMA_DB_SEND, rdmaDbSendFuncs);
@@ -51,5 +51,5 @@ static bool RdmaTaskRegister()
 
 static bool g_rdmaTaskRegister = RdmaTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

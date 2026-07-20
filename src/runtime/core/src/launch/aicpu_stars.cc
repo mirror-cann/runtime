@@ -29,8 +29,9 @@ namespace runtime {
 TIMESTAMP_EXTERN(rtKernelLaunch_CpuArgLoad);
 
 namespace {
-rtError_t InternalLaunchWithKernelAndArgs(const Kernel* const kernel, const uint32_t coreDim,
-    const rtCpuKernelArgs_t* const cpuKernelArgs, const TaskCfg& taskCfg, Stream* const stm, const uint32_t flag)
+rtError_t InternalLaunchWithKernelAndArgs(
+    const Kernel* const kernel, const uint32_t coreDim, const rtCpuKernelArgs_t* const cpuKernelArgs,
+    const TaskCfg& taskCfg, Stream* const stm, const uint32_t flag)
 {
     rtError_t error = RT_ERROR_NONE;
     TaskInfo submitTask = {};
@@ -48,7 +49,8 @@ rtError_t InternalLaunchWithKernelAndArgs(const Kernel* const kernel, const uint
     kernelTask->u.aicpuTaskInfo.kernelInnerHandle = kernel->GetInnerHandle();
 
     /* 默认使用kernel注册时的devAddr */
-    SetNameArgs(kernelTask, kernel->GetSoNameDevAddr(curCtx->Device_()->Id_()),
+    SetNameArgs(
+        kernelTask, kernel->GetSoNameDevAddr(curCtx->Device_()->Id_()),
         kernel->GetFuncNameDevAddr(curCtx->Device_()->Id_()));
     if (argsInfo->argsSize > RTS_LITE_PCIE_BAR_COPY_SIZE || (!stm->isHasPcieBar_) || IsCapturedTask(stm, kernelTask)) {
         StarsArgLoaderResult result = {};
@@ -62,10 +64,12 @@ rtError_t InternalLaunchWithKernelAndArgs(const Kernel* const kernel, const uint
          * 否则，使用kernel注册时的devAddr（见StoreKernelLiteralNameToDevice调用的地方）
          * 注：部分场景的cpuLaunch没有kernel注册过程 */
         if ((argsInfo->soNameAddrOffset != 0) || (argsInfo->kernelNameAddrOffset != 0)) {
-            SetNameArgs(kernelTask, (RtPtrToPtr<char_t*, void*>(result.kerArgs) + argsInfo->soNameAddrOffset),
+            SetNameArgs(
+                kernelTask, (RtPtrToPtr<char_t*, void*>(result.kerArgs) + argsInfo->soNameAddrOffset),
                 (RtPtrToPtr<char_t*, void*>(result.kerArgs) + argsInfo->kernelNameAddrOffset));
         }
-        RT_LOG(RT_LOG_INFO, "Force cpy args device_id=%u, stream_id=%d, task_id=%u.", curCtx->Device_()->Id_(), stm->Id_(),
+        RT_LOG(
+            RT_LOG_INFO, "Force cpy args device_id=%u, stream_id=%d, task_id=%u.", curCtx->Device_()->Id_(), stm->Id_(),
             kernelTask->id);
     } else {
         kernelTask->u.aicpuTaskInfo.aicpuArgsInfo = const_cast<rtAicpuArgsEx_t*>(argsInfo);
@@ -74,11 +78,13 @@ rtError_t InternalLaunchWithKernelAndArgs(const Kernel* const kernel, const uint
     kernelTask->u.aicpuTaskInfo.aicpuFlags = flag;
     kernelTask->u.aicpuTaskInfo.aicpuKernelType = static_cast<uint8_t>(kernelType);
     kernelTask->u.aicpuTaskInfo.timeout = ConvertAicpuTimeout(argsInfo, &taskCfg, flag);
-    RT_LOG(RT_LOG_INFO, "device_id=%u, stream_id=%d, task_id=%u, model_num=%u, NonSupportModelCompile=%u, "
-        "isNoNeedH2DCopy=%u, cpuParamHeadOffset=%zu, kernel_type=%u, flag=0x%x, timeout=%" PRIu64
-        "us, blkdim=%u.", curCtx->Device_()->Id_(), stm->Id_(), kernelTask->id, stm->GetModelNum(),
-        stm->NonSupportModelCompile(), argsInfo->isNoNeedH2DCopy, cpuParamHeadOffset, kernelType, flag,
-        kernelTask->u.aicpuTaskInfo.timeout, kernelTask->u.aicpuTaskInfo.comm.dim);
+    RT_LOG(
+        RT_LOG_INFO,
+        "device_id=%u, stream_id=%d, task_id=%u, model_num=%u, NonSupportModelCompile=%u, "
+        "isNoNeedH2DCopy=%u, cpuParamHeadOffset=%zu, kernel_type=%u, flag=0x%x, timeout=%" PRIu64 "us, blkdim=%u.",
+        curCtx->Device_()->Id_(), stm->Id_(), kernelTask->id, stm->GetModelNum(), stm->NonSupportModelCompile(),
+        argsInfo->isNoNeedH2DCopy, cpuParamHeadOffset, kernelType, flag, kernelTask->u.aicpuTaskInfo.timeout,
+        kernelTask->u.aicpuTaskInfo.comm.dim);
     error = curCtx->Device_()->SubmitTask(kernelTask, curCtx->TaskGenCallback_());
 
     ERROR_GOTO_MSG_INNER(error, ERROR_FREE, "Failed to submit kernel task, retCode=%#x", error);
@@ -89,8 +95,9 @@ ERROR_FREE:
     return error;
 }
 
-rtError_t InternalLaunchWithArgs(const uint32_t coreDim, const rtAicpuArgsEx_t* const argsInfo, Stream* const stm,
-    const uint32_t flag, const uint32_t kernelType)
+rtError_t InternalLaunchWithArgs(
+    const uint32_t coreDim, const rtAicpuArgsEx_t* const argsInfo, Stream* const stm, const uint32_t flag,
+    const uint32_t kernelType)
 {
     rtError_t error = RT_ERROR_NONE;
     TaskInfo submitTask = {};
@@ -102,8 +109,8 @@ rtError_t InternalLaunchWithArgs(const uint32_t coreDim, const rtAicpuArgsEx_t* 
     const int32_t streamId = stm->Id_();
     // Init task
     AicpuTaskInit(kernelTask, static_cast<uint16_t>(coreDim), flag);
-    if ((argsInfo->argsSize > RTS_LITE_PCIE_BAR_COPY_SIZE) ||
-        (!stm->isHasPcieBar_) || IsCapturedTask(stm, kernelTask)) {
+    if ((argsInfo->argsSize > RTS_LITE_PCIE_BAR_COPY_SIZE) || (!stm->isHasPcieBar_) ||
+        IsCapturedTask(stm, kernelTask)) {
         StarsArgLoaderResult result{};
         TIMESTAMP_BEGIN(rtKernelLaunch_CpuArgLoad);
         error = stm->LoadArgsInfo(argsInfo, false, &result, LoadPolicy::LP_CPU_KRN_EX);
@@ -112,10 +119,11 @@ rtError_t InternalLaunchWithArgs(const uint32_t coreDim, const rtAicpuArgsEx_t* 
         ERROR_GOTO(error, ERROR_FREE, "Failed to load cpu Kernel args , retCode=%#x", error);
         SetAicpuArgs(kernelTask, result.kerArgs, argsInfo->argsSize, result.handle);
         // Set soName and kernelName for task
-        const void* kernelSoName = argsInfo->soNameAddrOffset == MAX_UINT32_NUM ? nullptr :
+        const void* kernelSoName =
+            argsInfo->soNameAddrOffset == MAX_UINT32_NUM ?
+                nullptr :
                 RtPtrToPtr<const void*>(RtPtrToPtr<char_t*>(result.kerArgs) + argsInfo->soNameAddrOffset);
-        SetNameArgs(kernelTask, kernelSoName,
-            (RtPtrToPtr<char_t*>(result.kerArgs) + argsInfo->kernelNameAddrOffset));
+        SetNameArgs(kernelTask, kernelSoName, (RtPtrToPtr<char_t*>(result.kerArgs) + argsInfo->kernelNameAddrOffset));
     } else {
         kernelTask->u.aicpuTaskInfo.aicpuArgsInfo = const_cast<rtAicpuArgsEx_t*>(argsInfo);
     }
@@ -123,7 +131,9 @@ rtError_t InternalLaunchWithArgs(const uint32_t coreDim, const rtAicpuArgsEx_t* 
     kernelTask->u.aicpuTaskInfo.aicpuFlags = flag;
     kernelTask->u.aicpuTaskInfo.aicpuKernelType = static_cast<uint8_t>(kernelType);
     kernelTask->u.aicpuTaskInfo.timeout = ConvertAicpuTimeout(argsInfo, nullptr, flag);
-    RT_LOG(RT_LOG_INFO, "Force flag device_id=%u, stream_id=%d, task_id=%u, model_num=%u, NonSupportModelCompile=%u "
+    RT_LOG(
+        RT_LOG_INFO,
+        "Force flag device_id=%u, stream_id=%d, task_id=%u, model_num=%u, NonSupportModelCompile=%u "
         "isNoNeedH2DCopy=%u, kernl_type=%u, flag=0x%x, timeout=%" PRIu64 "us, kernelFlag=0x%x, blkdim=%u",
         curCtx->Device_()->Id_(), streamId, kernelTask->id, stm->GetModelNum(), stm->NonSupportModelCompile(),
         argsInfo->isNoNeedH2DCopy, kernelType, flag, kernelTask->u.aicpuTaskInfo.timeout,
@@ -149,7 +159,8 @@ rtError_t StreamLaunchKernelEx(const void* const args, const uint32_t argsSize, 
     NULL_PTR_RETURN_MSG(kernelTask, errorReason);
 
     AicpuTaskInit(kernelTask, 1U, flags);
-    RT_LOG(RT_LOG_INFO, "kernelFlag=0x%x, blkdim=%u.", kernelTask->u.aicpuTaskInfo.comm.kernelFlag,
+    RT_LOG(
+        RT_LOG_INFO, "kernelFlag=0x%x, blkdim=%u.", kernelTask->u.aicpuTaskInfo.comm.kernelFlag,
         kernelTask->u.aicpuTaskInfo.comm.dim);
 
     SetAicpuArgs(kernelTask, args, argsSize, nullptr);
@@ -166,8 +177,9 @@ ERROR_RECYCLE:
     return error;
 }
 
-rtError_t StreamLaunchCpuKernel(const rtKernelLaunchNames_t* const launchNames, const uint32_t coreDim,
-    const rtArgsEx_t* const argsInfo, Stream* const stm, const uint32_t flag, const uint64_t timeout)
+rtError_t StreamLaunchCpuKernel(
+    const rtKernelLaunchNames_t* const launchNames, const uint32_t coreDim, const rtArgsEx_t* const argsInfo,
+    Stream* const stm, const uint32_t flag, const uint64_t timeout)
 {
     UNUSED(timeout);
     rtError_t error = RT_ERROR_NONE;
@@ -202,13 +214,14 @@ rtError_t StreamLaunchCpuKernel(const rtKernelLaunchNames_t* const launchNames, 
         void* kernelNameAddr = nullptr;
         if (launchSoName != nullptr) {
             error = devArgLdr->GetKernelInfoDevAddr(launchSoName, SO_NAME, &soNameAddr);
-            ERROR_GOTO_MSG_INNER(error, ERROR_FREE,
-                "Failed to obtain the SO address based on the SO name, so_name=%s, retCode=%#x.",
+            ERROR_GOTO_MSG_INNER(
+                error, ERROR_FREE, "Failed to obtain the SO address based on the SO name, so_name=%s, retCode=%#x.",
                 launchSoName, error);
         }
         if (kernelName != nullptr) {
             error = devArgLdr->GetKernelInfoDevAddr(kernelName, KERNEL_NAME, &kernelNameAddr);
-            ERROR_GOTO_MSG_INNER(error, ERROR_FREE,
+            ERROR_GOTO_MSG_INNER(
+                error, ERROR_FREE,
                 "Failed to obtain the kernel address based on the kernel name, kernel_name=%s, retCode=%#x.",
                 kernelName, error);
         }
@@ -216,9 +229,12 @@ rtError_t StreamLaunchCpuKernel(const rtKernelLaunchNames_t* const launchNames, 
     }
 
     aicpuTaskInfo = &(kernTask->u.aicpuTaskInfo);
-    RT_LOG( RT_LOG_INFO, "device_id=%lu, stream_id=%d, task_id=%hu, flag=%u, kernelFlag=0x%x, blkdim=%u, soName=%s, "
-        "kernel_name=%s.", curCtx->Device_()->Id_(), stm->Id_(), kernTask->id, flag, aicpuTaskInfo->comm.kernelFlag,
-        aicpuTaskInfo->comm.dim,  launchSoName != nullptr ? launchSoName : "null",
+    RT_LOG(
+        RT_LOG_INFO,
+        "device_id=%lu, stream_id=%d, task_id=%hu, flag=%u, kernelFlag=0x%x, blkdim=%u, soName=%s, "
+        "kernel_name=%s.",
+        curCtx->Device_()->Id_(), stm->Id_(), kernTask->id, flag, aicpuTaskInfo->comm.kernelFlag,
+        aicpuTaskInfo->comm.dim, launchSoName != nullptr ? launchSoName : "null",
         kernelName != nullptr ? kernelName : "null");
 
     // Set kernel type and flags
@@ -237,9 +253,9 @@ ERROR_FREE:
     return error;
 }
 
-rtError_t StreamLaunchCpuKernelExWithArgs(const uint32_t coreDim, const rtAicpuArgsEx_t* const argsInfo,
-    const TaskCfg* const taskCfg, Stream* const stm, const uint32_t flag, const uint32_t kernelType,
-    const Kernel* const kernel, const size_t cpuParamHeadOffset)
+rtError_t StreamLaunchCpuKernelExWithArgs(
+    const uint32_t coreDim, const rtAicpuArgsEx_t* const argsInfo, const TaskCfg* const taskCfg, Stream* const stm,
+    const uint32_t flag, const uint32_t kernelType, const Kernel* const kernel, const size_t cpuParamHeadOffset)
 {
     if (kernel == nullptr) {
         return InternalLaunchWithArgs(coreDim, argsInfo, stm, flag, kernelType);

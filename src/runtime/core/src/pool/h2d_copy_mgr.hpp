@@ -43,8 +43,8 @@ struct CpyAddrMgr {
 struct CpyDmaInfo {
     uint32_t cpyCount;
     uint32_t cpyItemSize;
-    Device *device;
-    mmRWLock_t *mapLock;
+    Device* device;
+    mmRWLock_t* mapLock;
     std::unordered_map<uint64_t, CpyAddrMgr> cpyDmaMap;
 };
 
@@ -63,53 +63,52 @@ struct memTsegInfo {
 struct CpyUbInfo {
     uint32_t cpyCount;
     uint32_t cpyItemSize;
-    Device *device;
-    mmRWLock_t *mapLock;
+    Device* device;
+    mmRWLock_t* mapLock;
     std::unordered_map<uint64_t, CpyAddrUbMgr> cpyUbMap;
     uint32_t poolIndex;
-    std::unordered_map<uint32_t, struct memTsegInfo *> memTsegInfoMap;
+    std::unordered_map<uint32_t, struct memTsegInfo*> memTsegInfoMap;
 };
 
 struct CpyHandle {
     volatile uint64_t copyStatus;
-    void *devAddr;
-    struct DMA_ADDR *dmaHandle;
+    void* devAddr;
+    struct DMA_ADDR* dmaHandle;
     bool isDmaPool;
 };
 
 class H2DCopyMgr : public NoCopy {
 public:
-    H2DCopyMgr(Device * const dev, const uint32_t size, const uint32_t initCnt,
-        const uint32_t maxCnt, const BufferAllocator::Strategy stg, H2DCopyPolicy policy);
-    H2DCopyMgr(Device * const dev, H2DCopyPolicy policy);
+    H2DCopyMgr(
+        Device* const dev, const uint32_t size, const uint32_t initCnt, const uint32_t maxCnt,
+        const BufferAllocator::Strategy stg, H2DCopyPolicy policy);
+    H2DCopyMgr(Device* const dev, H2DCopyPolicy policy);
     ~H2DCopyMgr() override;
 
-    void Init(Device * const dev, const uint32_t size);
-    void *AllocDevMem(const bool isLogError = true);
-    void *AllocDevMem(const uint32_t size);
-    void FreeDevMem(void *item);
-    rtError_t H2DMemCopy(void *dst, const void * const src, const uint64_t size);
-    rtError_t H2DMemCopyWaitFinish(void *devAddr);
-    void *GetDevAddr(void *item) const;
+    void Init(Device* const dev, const uint32_t size);
+    void* AllocDevMem(const bool isLogError = true);
+    void* AllocDevMem(const uint32_t size);
+    void FreeDevMem(void* item);
+    rtError_t H2DMemCopy(void* dst, const void* const src, const uint64_t size);
+    rtError_t H2DMemCopyWaitFinish(void* devAddr);
+    void* GetDevAddr(void* item) const;
     rtError_t ArgsPoolConvertAddr(void);
     rtError_t UbArgsPoolConvertAddr(void);
 
-    H2DCopyPolicy GetPolicy(void) const
-    {
-        return policy_;
-    }
-    uint64_t GetUbHostAddr(const uint64_t devAddr, void **devTsegInfo, void **hostTsegInfo);
-    static void *MallocUbBuffer(const size_t size, void * const para);
-    static void FreeUbBuffer(void * const addr, void * const para);
+    H2DCopyPolicy GetPolicy(void) const { return policy_; }
+    uint64_t GetUbHostAddr(const uint64_t devAddr, void** devTsegInfo, void** hostTsegInfo);
+    static void* MallocUbBuffer(const size_t size, void* const para);
+    static void FreeUbBuffer(void* const addr, void* const para);
+
 private:
-    static void *MallocBuffer(const size_t size, void * const para);
-    static void FreeBuffer(void * const addr, void * const para);
-    static void *MallocPcieBarBuffer(size_t size, void *para);
-    static void FreePcieBarBuffer(void *addr, void *para);
-    BufferAllocator *devAllocator_;
-    BufferAllocator *handleAllocator_;
-    Driver *drv_;
-    Device *device_;
+    static void* MallocBuffer(const size_t size, void* const para);
+    static void FreeBuffer(void* const addr, void* const para);
+    static void* MallocPcieBarBuffer(size_t size, void* para);
+    static void FreePcieBarBuffer(void* addr, void* para);
+    BufferAllocator* devAllocator_;
+    BufferAllocator* handleAllocator_;
+    Driver* drv_;
+    Device* device_;
     bool isPiecBarSupport_;
     H2DCopyPolicy policy_;
     CpyDmaInfo cpyInfoDmaMap_;
@@ -117,9 +116,10 @@ private:
     mmRWLock_t mapLock_;
 };
 
-rtError_t GetMemTsegInfo(const Device *const dev, void *devAddr, void *hostAddr, uint64_t size,
-    struct halTsegInfo *devTsegInfo, struct halTsegInfo *hostTsegInfo);
-}
-}
+rtError_t GetMemTsegInfo(
+    const Device* const dev, void* devAddr, void* hostAddr, uint64_t size, struct halTsegInfo* devTsegInfo,
+    struct halTsegInfo* hostTsegInfo);
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_H2D_COPY_MGR_HPP
+#endif // CCE_RUNTIME_H2D_COPY_MGR_HPP

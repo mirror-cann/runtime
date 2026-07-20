@@ -28,9 +28,7 @@ namespace runtime {
 // Runtime engine for STARS task processing, including sending command and receiving report for stars remove thread.
 class StarsEngine : public Engine {
 public:
-    explicit StarsEngine(Device * const dev,
-                         Thread * const monitor = nullptr,
-                         Thread * const recycle = nullptr);
+    explicit StarsEngine(Device* const dev, Thread* const monitor = nullptr, Thread* const recycle = nullptr);
     ~StarsEngine() noexcept override;
 
     rtError_t Init() override;
@@ -40,98 +38,100 @@ public:
     rtError_t Stop() override;
 
     // create monitor thread and recycle thread
-    void Run(const void * const param) override;
+    void Run(const void* const param) override;
 
-    rtError_t SyncTask(Stream * const stm, const uint32_t taskId, const bool isStreamSync,
-        int32_t timeout = -1, bool isForce = false) override;
+    rtError_t SyncTask(
+        Stream* const stm, const uint32_t taskId, const bool isStreamSync, int32_t timeout = -1,
+        bool isForce = false) override;
 
-    void ProcReport(const uint32_t taskId, const bool isStreamSync, const uint32_t cnt,
-        rtLogicCqReport_t * const logicReport, bool &isFinished, uint32_t cqId);
+    void ProcReport(
+        const uint32_t taskId, const bool isStreamSync, const uint32_t cnt, rtLogicCqReport_t* const logicReport,
+        bool& isFinished, uint32_t cqId);
 
-    void ProcLogicCqReport(const rtLogicCqReport_t &logicCq, const bool isStreamSync, TaskInfo *reportTask);
-    void ClearMulTaskCqeNum(const uint8_t mulTaskCqeNum, TaskInfo * const repTask) const;
+    void ProcLogicCqReport(const rtLogicCqReport_t& logicCq, const bool isStreamSync, TaskInfo* reportTask);
+    void ClearMulTaskCqeNum(const uint8_t mulTaskCqeNum, TaskInfo* const repTask) const;
 
-    rtError_t DvppWaitGroup(DvppGrp *grp, rtDvppGrpCallback callBackFunc,
-        int32_t timeout = RT_REPORT_TIMEOUT_TIME) override;
+    rtError_t DvppWaitGroup(
+        DvppGrp* grp, rtDvppGrpCallback callBackFunc, int32_t timeout = RT_REPORT_TIMEOUT_TIME) override;
 
-    rtError_t TaskReclaim(const uint32_t streamId, const bool limited, uint32_t &taskId) override;
-    rtError_t TaskReclaimByStm(Stream * const stm, const bool limited, uint32_t &taskId) override;
-    rtError_t TaskReclaimAllForNoRes(const bool limited, uint32_t &taskId) override;
-    rtError_t ProcLogicCqUntilEmpty(const Stream * const stm, uint32_t &taskId);
-    rtError_t TaskReclaimForSeparatedStm(Stream * const stm);
-    void IsSyncTaskFinish(Stream * const stm, const uint32_t taskId) const;
+    rtError_t TaskReclaim(const uint32_t streamId, const bool limited, uint32_t& taskId) override;
+    rtError_t TaskReclaimByStm(Stream* const stm, const bool limited, uint32_t& taskId) override;
+    rtError_t TaskReclaimAllForNoRes(const bool limited, uint32_t& taskId) override;
+    rtError_t ProcLogicCqUntilEmpty(const Stream* const stm, uint32_t& taskId);
+    rtError_t TaskReclaimForSeparatedStm(Stream* const stm);
+    void IsSyncTaskFinish(Stream* const stm, const uint32_t taskId) const;
 
-    rtError_t TryRecycleTask(Stream * const stm) override;
+    rtError_t TryRecycleTask(Stream* const stm) override;
 
-    void SendingWaitProc(Stream * const stm);
+    void SendingWaitProc(Stream* const stm);
 
-    rtError_t AddTaskToStream(TaskInfo * const workTask, const uint32_t sendSqeNum);
+    rtError_t AddTaskToStream(TaskInfo* const workTask, const uint32_t sendSqeNum);
 
     rtError_t CreateMonitorThread(void);
 
-    void SyncTaskCheckResult(const rtError_t error, const Stream * const stm, const uint16_t taskId) const;
+    void SyncTaskCheckResult(const rtError_t error, const Stream* const stm, const uint16_t taskId) const;
     bool CheckMonitorThreadAlive() override;
     void WakeUpRecycleThread(void) override;
     void RecycleThreadDo(void) override;
-    rtError_t RecycleSeparatedStmByFinishedId(Stream * const stm, const uint16_t endTaskId, bool isCqeProcess=false) override;
-    void RecycleTaskProcessForSeparatedStm(TaskInfo * const recycleTask, const uint32_t devId);
+    rtError_t RecycleSeparatedStmByFinishedId(
+        Stream* const stm, const uint16_t endTaskId, bool isCqeProcess = false) override;
+    void RecycleTaskProcessForSeparatedStm(TaskInfo* const recycleTask, const uint32_t devId);
 
 private:
-    void GetRecycleHead(const uint16_t taskHead, const uint16_t sqHead,
-        uint32_t const rtsqDepth, uint16_t &recycleHead) const;
+    void GetRecycleHead(
+        const uint16_t taskHead, const uint16_t sqHead, uint32_t const rtsqDepth, uint16_t& recycleHead) const;
 
-    rtError_t FinishedTaskReclaim(Stream * const stm, const bool limited, uint16_t taskHead,
-                                  uint16_t sqHead, uint32_t &taskId);
+    rtError_t FinishedTaskReclaim(
+        Stream* const stm, const bool limited, uint16_t taskHead, uint16_t sqHead, uint32_t& taskId);
 
     rtError_t MonitorTaskReclaim(uint16_t errorStreamId);
 
-    void MonitorForWatchDog(Device * const dev);
+    void MonitorForWatchDog(Device* const dev);
 
-    void MonitorEndGraphNotify(Device * const dev) const;
+    void MonitorEndGraphNotify(Device* const dev) const;
 
-    rtError_t AdjustRecycleTaskID(Stream * const stm, uint32_t &endTaskId, uint16_t pos) const;
+    rtError_t AdjustRecycleTaskID(Stream* const stm, uint32_t& endTaskId, uint16_t pos) const;
 
-    rtError_t TaskReclaimByStreamId(const uint32_t streamId, const bool limited, uint32_t &taskId);
+    rtError_t TaskReclaimByStreamId(const uint32_t streamId, const bool limited, uint32_t& taskId);
 
     rtError_t ProcessHeadTaskByStreamId(const uint16_t streamId);
 
-    rtError_t SendingProcReport(Stream * const stm, const bool limited, uint16_t sqHead, uint32_t &taskId);
+    rtError_t SendingProcReport(Stream* const stm, const bool limited, uint16_t sqHead, uint32_t& taskId);
 
-    rtError_t RecycleTaskBySqHead(Stream * const stm, uint32_t &finishTaskId);
-    rtError_t TaskReclaimBySqHeadForSeparatedStm(Stream * const stm);
-    rtError_t TaskReclaimByCqeForSeparatedStm(Stream * const stm);
+    rtError_t RecycleTaskBySqHead(Stream* const stm, uint32_t& finishTaskId);
+    rtError_t TaskReclaimBySqHeadForSeparatedStm(Stream* const stm);
+    rtError_t TaskReclaimByCqeForSeparatedStm(Stream* const stm);
 
-    rtError_t SendTask(TaskInfo * const workTask, uint16_t &taskId, uint32_t * const flipTaskId = nullptr) override;
+    rtError_t SendTask(TaskInfo* const workTask, uint16_t& taskId, uint32_t* const flipTaskId = nullptr) override;
 
-    rtError_t SubmitSend(TaskInfo * const workTask, uint32_t * const flipTaskId) override;
+    rtError_t SubmitSend(TaskInfo* const workTask, uint32_t* const flipTaskId) override;
 
-    rtError_t StarsResumeRtsq(const rtLogicCqReport_t &logicCq,
-        const uint16_t taskType, Stream * const failStm) const;
+    rtError_t StarsResumeRtsq(const rtLogicCqReport_t& logicCq, const uint16_t taskType, Stream* const failStm) const;
 
-    void StarsCqeReceive(const rtLogicCqReport_t &logicCq, TaskInfo * const runTask) const;
+    void StarsCqeReceive(const rtLogicCqReport_t& logicCq, TaskInfo* const runTask) const;
 
     bool ProcReportIsVpcErrorAndRetry(const rtLogicCqReport_t& report);
 
-    bool ProcReportIsException(const rtLogicCqReport_t &logicCq, TaskInfo *reportTask = nullptr) const;
+    bool ProcReportIsException(const rtLogicCqReport_t& logicCq, TaskInfo* reportTask = nullptr) const;
 
-    rtError_t MultipleTaskReportLogicCq(TaskInfo * const workTask, const rtLogicCqReport_t& report,
-                                        rtDvppGrpCallback callBackFunc);
+    rtError_t MultipleTaskReportLogicCq(
+        TaskInfo* const workTask, const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc);
 
-    rtError_t CommonTaskReportLogicCq(const rtLogicCqReport_t &report, rtDvppGrpCallback callBackFunc);
+    rtError_t CommonTaskReportLogicCq(const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc);
 
     rtError_t ReportLogicCq(const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc);
 
-    void StarsReportLogicCq(const rtLogicCqReport_t &report, rtDvppGrpCallback callBackFunc);
+    void StarsReportLogicCq(const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc);
 
-    void StarsReportLogicCq(const rtLogicCqReport_t &report, rtDvppGrpCallback callBackFunc,
-                            uint8_t sqeType, uint8_t cqeErrorCode);
+    void StarsReportLogicCq(
+        const rtLogicCqReport_t& report, rtDvppGrpCallback callBackFunc, uint8_t sqeType, uint8_t cqeErrorCode);
 
-    void ProcCommonLogicCqReport(const rtLogicCqReport_t &report, const uint32_t taskId,
-                                 const bool isStreamSync, bool &isFinished);
+    void ProcCommonLogicCqReport(
+        const rtLogicCqReport_t& report, const uint32_t taskId, const bool isStreamSync, bool& isFinished);
 
-    bool CompleteProcMultipleTaskReport(TaskInfo * const workTask, const rtLogicCqReport_t &report) const;
-    bool ProcMultipleTaskLogicCqReport(TaskInfo * const workTask, const rtLogicCqReport_t &report,
-                                       const bool isStreamSync);
+    bool CompleteProcMultipleTaskReport(TaskInfo* const workTask, const rtLogicCqReport_t& report) const;
+    bool ProcMultipleTaskLogicCqReport(
+        TaskInfo* const workTask, const rtLogicCqReport_t& report, const bool isStreamSync);
     static const std::vector<std::string> StarsCqeErrorDesc_;
 
     void MonitoringRun();
@@ -139,10 +139,10 @@ private:
     void RecycleThreadRun(void);
     void DestroyRecycleThread(void);
 
-    Thread *monitorThread_;
-    Thread *recycleThread_;
+    Thread* monitorThread_;
+    Thread* recycleThread_;
     std::string recycleThreadName_;
-    
+
     std::atomic<bool> recycleThreadAlive_{false};
     std::atomic<int32_t> inFlightWakeUps_{0};
     volatile bool monitorThreadRunFlag_ = false;
@@ -153,7 +153,7 @@ private:
     error_message::Context errorContext_ = {0UL, "", "", ""};
 #endif
 };
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_STARS_ENGINE_HPP__
+#endif // __CCE_RUNTIME_STARS_ENGINE_HPP__

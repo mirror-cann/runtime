@@ -36,13 +36,13 @@ TIMESTAMP_EXTERN(ObserverLaunched);
 TIMESTAMP_EXTERN(CommandSend);
 TIMESTAMP_EXTERN(ReportReceive);
 
-AsyncHwtsEngine::AsyncHwtsEngine(Device * const dev)
+AsyncHwtsEngine::AsyncHwtsEngine(Device* const dev)
     : HwtsEngine(dev),
       wflag_(false),
-      notifier_(static_cast<Notifier *>(nullptr)),
+      notifier_(static_cast<Notifier*>(nullptr)),
       scheduler_(nullptr),
-      sendThread_(static_cast<Thread *>(nullptr)),
-      receiveThread_(static_cast<Thread *>(nullptr)),
+      sendThread_(static_cast<Thread*>(nullptr)),
+      receiveThread_(static_cast<Thread*>(nullptr)),
       sendRunFlag_(false),
       receiveRunFlag_(false)
 {
@@ -51,9 +51,9 @@ AsyncHwtsEngine::AsyncHwtsEngine(Device * const dev)
 
 AsyncHwtsEngine::~AsyncHwtsEngine()
 {
-    notifier_      = nullptr;
+    notifier_ = nullptr;
     receiveThread_ = nullptr;
-    sendThread_    = nullptr;
+    sendThread_ = nullptr;
     DELETE_O(scheduler_);
     RT_LOG(RT_LOG_EVENT, "Destructor.");
 }
@@ -62,8 +62,8 @@ rtError_t AsyncHwtsEngine::Init()
 {
     if (scheduler_ == nullptr) {
         scheduler_ = new (std::nothrow) FifoScheduler();
-        COND_RETURN_AND_MSG_OUTER(scheduler_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
-            sizeof(FifoScheduler), "new");
+        COND_RETURN_AND_MSG_OUTER(
+            scheduler_ == nullptr, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(FifoScheduler), "new");
         RT_LOG(RT_LOG_INFO, "new FifoScheduler ok,Runtime_alloc_size %zu.", sizeof(FifoScheduler));
     }
     return RT_ERROR_NONE;
@@ -71,36 +71,40 @@ rtError_t AsyncHwtsEngine::Init()
 
 rtError_t AsyncHwtsEngine::Start()
 {
-    COND_RETURN_ERROR_MSG_INNER((notifier_ != nullptr), RT_ERROR_ENGINE_THREAD,
-                                "Failed to start engine. Reason: engine has already been started, notifier_ is not nullptr.");
+    COND_RETURN_ERROR_MSG_INNER(
+        (notifier_ != nullptr), RT_ERROR_ENGINE_THREAD,
+        "Failed to start engine. Reason: engine has already been started, notifier_ is not nullptr.");
 
     rtError_t error;
     int32_t err = EN_OK;
-    void *send = nullptr;
-    void *recv = nullptr;
+    void* send = nullptr;
+    void* recv = nullptr;
     notifier_ = OsalFactory::CreateNotifier();
-    COND_GOTO_MSG_OUTER(notifier_ == nullptr, ERROR_RETURN, error, RT_ERROR_MEMORY_ALLOCATION, 
-        ErrorCode::EE1013, sizeof(Notifier), "new");
+    COND_GOTO_MSG_OUTER(
+        notifier_ == nullptr, ERROR_RETURN, error, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013, sizeof(Notifier),
+        "new");
 
-    send = RtValueToPtr<void *>(THREAD_SENDING);
+    send = RtValueToPtr<void*>(THREAD_SENDING);
     sendThread_ = OsalFactory::CreateThread("RT_SEND", this, send);
-    COND_GOTO_MSG_OUTER(sendThread_ == nullptr, ERROR_RETURN, error, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()), "new");
+    COND_GOTO_MSG_OUTER(
+        sendThread_ == nullptr, ERROR_RETURN, error, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+        std::to_string(OsalFactory::GetThreadObjectSize()), "new");
 
-    recv = RtValueToPtr<void *>(THREAD_RECVING);
+    recv = RtValueToPtr<void*>(THREAD_RECVING);
     receiveThread_ = OsalFactory::CreateThread("RT_RECV", this, recv);
-    COND_GOTO_MSG_OUTER(receiveThread_ == nullptr, ERROR_RETURN, error, RT_ERROR_MEMORY_ALLOCATION,
-        ErrorCode::EE1013, std::to_string(OsalFactory::GetThreadObjectSize()), "new");
+    COND_GOTO_MSG_OUTER(
+        receiveThread_ == nullptr, ERROR_RETURN, error, RT_ERROR_MEMORY_ALLOCATION, ErrorCode::EE1013,
+        std::to_string(OsalFactory::GetThreadObjectSize()), "new");
 
     sendRunFlag_ = true;
     receiveRunFlag_ = true;
     err = sendThread_->Start();
-    COND_PROC_GOTO_MSG_INNER(err != EN_OK, ERROR_RETURN, error = RT_ERROR_MEMORY_ALLOCATION;,
-         "Failed to start send thread.");
+    COND_PROC_GOTO_MSG_INNER(err != EN_OK, ERROR_RETURN, error = RT_ERROR_MEMORY_ALLOCATION;
+                             , "Failed to start send thread.");
 
     err = receiveThread_->Start();
-    COND_PROC_GOTO_MSG_INNER(err != EN_OK, ERROR_RETURN, error = RT_ERROR_MEMORY_ALLOCATION;,
-         "Failed to start receive thread.");
+    COND_PROC_GOTO_MSG_INNER(err != EN_OK, ERROR_RETURN, error = RT_ERROR_MEMORY_ALLOCATION;
+                             , "Failed to start receive thread.");
 
     return RT_ERROR_NONE;
 
@@ -117,7 +121,7 @@ rtError_t AsyncHwtsEngine::Stop()
 {
     if (sendThread_ != nullptr) {
         DisableSendRunFlag();
-        const Runtime * const rt = Runtime::Instance();
+        const Runtime* const rt = Runtime::Instance();
         if (Runtime::IsProcessExiting(rt)) {
             // Direct exit skips device-side stop tasks. A null task wakes PopTask();
             // Run() ignores it and exits because sendRunFlag_ is already false.
@@ -142,7 +146,7 @@ rtError_t AsyncHwtsEngine::Stop()
     return RT_ERROR_NONE;
 }
 
-void AsyncHwtsEngine::Run(const void * const param)
+void AsyncHwtsEngine::Run(const void* const param)
 {
     switch (static_cast<ThreadType>(RtPtrToValue(param))) {
         case THREAD_SENDING: {
@@ -169,18 +173,17 @@ void AsyncHwtsEngine::SendingRun(void)
     uint32_t sqId;
     uint32_t cqId;
     uint32_t sendSqeNum;
-    Stream *stm = nullptr;
-    TaskInfo *runTask = nullptr;
-    rtTsCmdSqBuf_t *command = nullptr;
-    Driver * const devDrv = device_->Driver_();
+    Stream* stm = nullptr;
+    TaskInfo* runTask = nullptr;
+    rtTsCmdSqBuf_t* command = nullptr;
+    Driver* const devDrv = device_->Driver_();
     const uint32_t tsId = device_->DevGetTsId();
     const uint32_t devId = device_->Id_();
 
     const bool starsFlag = device_->IsStarsPlatform();
-    cmdLocal.cmdType = (starsFlag) ?
-                        RT_TASK_COMMAND_TYPE_STARS_SQE : RT_TASK_COMMAND_TYPE_TS_COMMAND;
+    cmdLocal.cmdType = (starsFlag) ? RT_TASK_COMMAND_TYPE_STARS_SQE : RT_TASK_COMMAND_TYPE_TS_COMMAND;
 
-    const Profiler * const profilerObj = Runtime::Instance()->Profiler_();
+    const Profiler* const profilerObj = Runtime::Instance()->Profiler_();
 
     while (sendRunFlag_) {
         runTask = scheduler_->PopTask();
@@ -199,8 +202,7 @@ void AsyncHwtsEngine::SendingRun(void)
             command = nullptr;
             uint32_t pos = 0U;
             const rtError_t error = devDrv->CommandOccupy(sqId, &command, sendSqeNum, devId, tsId, &pos);
-            RT_LOG(RT_LOG_INFO, "CommandOccupy. sqId=%u, cqId=%u, deviceId=%u, retCode=%#x.", sqId,
-                cqId, devId, error);
+            RT_LOG(RT_LOG_INFO, "CommandOccupy. sqId=%u, cqId=%u, deviceId=%u, retCode=%#x.", sqId, cqId, devId, error);
 
             if (unlikely((error != RT_ERROR_NONE) || (command == nullptr))) {
                 SendingWait(stm, failCount);
@@ -237,8 +239,8 @@ void AsyncHwtsEngine::SendingRun(void)
         TIMESTAMP_END(ObserverLaunched);
 
         TIMESTAMP_BEGIN(CommandSend);
-        (void)devDrv->CommandSend(sqId, command, GetReportCount(runTask->pkgStat, profileEnable),
-                                  devId, tsId, sendSqeNum);
+        (void)devDrv->CommandSend(
+            sqId, command, GetReportCount(runTask->pkgStat, profileEnable), devId, tsId, sendSqeNum);
         TIMESTAMP_END(CommandSend);
 
         if (unlikely(terminal)) {
@@ -249,9 +251,9 @@ void AsyncHwtsEngine::SendingRun(void)
 
 void AsyncHwtsEngine::ReceivingRun(void)
 {
-    void *reportAddr = nullptr;
+    void* reportAddr = nullptr;
     rtTsReport_t tsReport;
-    Driver * const devDrv = device_->Driver_();
+    Driver* const devDrv = device_->Driver_();
     const uint32_t deviceId = device_->Id_();
     const uint32_t tsId = device_->DevGetTsId();
     uint32_t cqId = 0U;
@@ -259,8 +261,8 @@ void AsyncHwtsEngine::ReceivingRun(void)
     int32_t cnt = 0;
 
     const bool starsFlag = device_->IsStarsPlatform();
-    tsReport.msgType = (starsFlag) ?
-                       tsReportType_t::TS_REPORT_MSG_TYPE_STARS_CQE : tsReportType_t::TS_REPORT_MSG_TYPE_TS_REPORT;
+    tsReport.msgType =
+        (starsFlag) ? tsReportType_t::TS_REPORT_MSG_TYPE_STARS_CQE : tsReportType_t::TS_REPORT_MSG_TYPE_TS_REPORT;
     device_->GetStreamSqCqManage()->GetDefaultCqId(&cqId);
 
     COND_RETURN_VOID(devDrv == nullptr, "Failed to find device driver.");
@@ -275,8 +277,9 @@ void AsyncHwtsEngine::ReceivingRun(void)
 
         ReportTimeoutProc(error, rptTimeoutCount);
 
-        if (unlikely(((error != RT_ERROR_NONE) && (error != RT_ERROR_SOCKET_CLOSE)) ||
-                    (reportAddr == nullptr) || (cnt == 0))) {
+        if (unlikely(
+                ((error != RT_ERROR_NONE) && (error != RT_ERROR_SOCKET_CLOSE)) || (reportAddr == nullptr) ||
+                (cnt == 0))) {
             continue;
         }
 
@@ -293,8 +296,9 @@ void AsyncHwtsEngine::ReceivingRun(void)
                     ProcessErrorReport(tsReport);
                     break;
                 default:
-                    RT_LOG(RT_LOG_WARNING, "invalid package type, idx=%d, packageType=%d.",
-                           idx, static_cast<int32_t>(packageType));
+                    RT_LOG(
+                        RT_LOG_WARNING, "invalid package type, idx=%d, packageType=%d.", idx,
+                        static_cast<int32_t>(packageType));
                     break;
             }
             // when receiveRunFlag_ is false cq is released, no need release report
@@ -321,7 +325,7 @@ bool AsyncHwtsEngine::CheckReceiveThreadAlive()
     return false;
 }
 
-void AsyncHwtsEngine::ProcessTaskReport(const rtTsReport_t &taskReport)
+void AsyncHwtsEngine::ProcessTaskReport(const rtTsReport_t& taskReport)
 {
     uint16_t taskId = 0U;
     uint16_t streamId = 0U;
@@ -330,21 +334,25 @@ void AsyncHwtsEngine::ProcessTaskReport(const rtTsReport_t &taskReport)
     uint16_t errorBit = 0U;
 
     GetReportCommonInfo(taskReport, streamId, taskId, sqId, sqHead, errorBit);
-    TaskInfo * const reportTask = device_->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), taskId);
+    TaskInfo* const reportTask = device_->GetTaskFactory()->GetTask(static_cast<int32_t>(streamId), taskId);
 
     reportCount_++;
     if (unlikely(reportTask == nullptr)) {
-        RT_LOG(RT_LOG_WARNING, "task or task stream is null, stream_id=%hu, sq_id=%hu, task_id=%hu,"
-               "report_count=%" PRIu64 ", parse_task_count=%" PRIu64,
-               streamId, sqId, taskId, reportCount_, parseTaskCount_);
+        RT_LOG(
+            RT_LOG_WARNING,
+            "task or task stream is null, stream_id=%hu, sq_id=%hu, task_id=%hu,"
+            "report_count=%" PRIu64 ", parse_task_count=%" PRIu64,
+            streamId, sqId, taskId, reportCount_, parseTaskCount_);
         return;
     }
 
     if (!CheckReportSimuFlag(taskReport)) {
-        RT_LOG(RT_LOG_INFO, "RTS_DRIVER: report receive, stream_id=%hu, sq_id=%hu, task_id=%hu, sq_head=%hu, "
-               "task_type=%d (%s), bind=%d.", streamId, sqId, taskId, sqHead,
-               static_cast<int32_t>(reportTask->type), reportTask->typeName,
-               static_cast<int32_t>(reportTask->bindFlag));
+        RT_LOG(
+            RT_LOG_INFO,
+            "RTS_DRIVER: report receive, stream_id=%hu, sq_id=%hu, task_id=%hu, sq_head=%hu, "
+            "task_type=%d (%s), bind=%d.",
+            streamId, sqId, taskId, sqHead, static_cast<int32_t>(reportTask->type), reportTask->typeName,
+            static_cast<int32_t>(reportTask->bindFlag));
         /* Real CQE of Stars sink stream does't need to be processed again, which was processed in simulate CQE */
         if (reportTask->bindFlag && (taskReport.msgType == tsReportType_t::TS_REPORT_MSG_TYPE_STARS_CQE)) {
             reportCount_--;
@@ -353,10 +361,12 @@ void AsyncHwtsEngine::ProcessTaskReport(const rtTsReport_t &taskReport)
     }
 
     parseTaskCount_++;
-    RT_LOG(RT_LOG_DEBUG, "RTS_DRIVER: report receive, sq_id=%hu, stream_id=%hu, task_id=%hu, "
+    RT_LOG(
+        RT_LOG_DEBUG,
+        "RTS_DRIVER: report receive, sq_id=%hu, stream_id=%hu, task_id=%hu, "
         "task_type=%hu (%s), report_count=%" PRIu64 ", parse_task_count=%." PRIu64,
-        sqId, streamId, taskId, static_cast<uint16_t>(reportTask->type),
-        reportTask->typeName, reportCount_, parseTaskCount_);
+        sqId, streamId, taskId, static_cast<uint16_t>(reportTask->type), reportTask->typeName, reportCount_,
+        parseTaskCount_);
 
     reportTask->error = 0U;
     TIMESTAMP_BEGIN(ReportReceive);
@@ -376,14 +386,14 @@ void AsyncHwtsEngine::ProcessTaskReport(const rtTsReport_t &taskReport)
     }
 }
 
-void AsyncHwtsEngine::ProcessErrorReport(const rtTsReport_t &errorReport) const
+void AsyncHwtsEngine::ProcessErrorReport(const rtTsReport_t& errorReport) const
 {
     if (errorReport.msgType == tsReportType_t::TS_REPORT_MSG_TYPE_STARS_CQE) {
         return;
     }
 
     // handle by error code.
-    rtTaskReport_t * const report = errorReport.msgBuf.tsReport;
+    rtTaskReport_t* const report = errorReport.msgBuf.tsReport;
     const uint32_t retCode = static_cast<uint32_t>(report->payLoad & 0xFFFU);
 
     if ((retCode == static_cast<uint32_t>(TS_ERROR_AICORE_OVERFLOW)) ||
@@ -393,7 +403,7 @@ void AsyncHwtsEngine::ProcessErrorReport(const rtTsReport_t &errorReport) const
     return;
 }
 
-rtError_t AsyncHwtsEngine::SubmitSend(TaskInfo * const workTask, uint32_t * const flipTaskId)
+rtError_t AsyncHwtsEngine::SubmitSend(TaskInfo* const workTask, uint32_t* const flipTaskId)
 {
     const rtError_t error = SubmitPush(workTask, flipTaskId);
     const uint16_t taskId = workTask->id;
@@ -402,13 +412,13 @@ rtError_t AsyncHwtsEngine::SubmitSend(TaskInfo * const workTask, uint32_t * cons
 }
 
 TIMESTAMP_EXTERN(PushTask);
-rtError_t AsyncHwtsEngine::SubmitPush(TaskInfo * const workTask, uint32_t * const flipTaskId)
+rtError_t AsyncHwtsEngine::SubmitPush(TaskInfo* const workTask, uint32_t* const flipTaskId)
 {
     const uint32_t deviceId = device_->Id_();
     rtError_t error = RT_ERROR_NONE;
     ReportProfData(workTask);
     TIMESTAMP_BEGIN(PushTask);
-    Stream * const stm = workTask->stream;
+    Stream* const stm = workTask->stream;
     if ((stm->Model_() != nullptr) && (workTask->type != TS_TASK_TYPE_MODEL_MAINTAINCE)) {
         stm->Model_()->SetKernelTaskId(static_cast<uint32_t>(workTask->id), static_cast<int32_t>(stm->Id_()));
     }
@@ -416,7 +426,8 @@ rtError_t AsyncHwtsEngine::SubmitPush(TaskInfo * const workTask, uint32_t * cons
     pendingNum_.Add(1U);
     if (unlikely((stm->AbortedStreamToFull() == TRUE) && (workTask->type != TS_TASK_TYPE_MAINTENANCE))) {
         error = RT_ERROR_STREAM_FULL;
-        RT_LOG(RT_LOG_WARNING, "SubmitTask fail for stream full in failure abort, stream_id=%d, pendingNum=%u.",
+        RT_LOG(
+            RT_LOG_WARNING, "SubmitTask fail for stream full in failure abort, stream_id=%d, pendingNum=%u.",
             stm->Id_(), stm->GetPendingNum());
     } else {
         error = scheduler_->PushTask(workTask);
@@ -424,7 +435,8 @@ rtError_t AsyncHwtsEngine::SubmitPush(TaskInfo * const workTask, uint32_t * cons
 
     TIMESTAMP_END(PushTask);
     if (error != RT_ERROR_NONE) {
-        RT_LOG_INNER_MSG(RT_LOG_ERROR, "Failed to push task, stream_id=%d, task_id=%hu, task_type=%d, task_name=%s, retCode=%#x.",
+        RT_LOG_INNER_MSG(
+            RT_LOG_ERROR, "Failed to push task, stream_id=%d, task_id=%hu, task_type=%d, task_name=%s, retCode=%#x.",
             workTask->stream->Id_(), workTask->id, static_cast<int32_t>(workTask->type), workTask->typeName,
             static_cast<uint32_t>(error));
         workTask->error = TASK_ERROR_SUBMIT_FAIL;
@@ -436,24 +448,27 @@ rtError_t AsyncHwtsEngine::SubmitPush(TaskInfo * const workTask, uint32_t * cons
     return RT_ERROR_NONE;
 }
 
-rtError_t AsyncHwtsEngine::PushFlipTask(const uint16_t preTaskId, Stream *stm)
+rtError_t AsyncHwtsEngine::PushFlipTask(const uint16_t preTaskId, Stream* stm)
 {
     if (!stm->IsNeedSendFlipTask(preTaskId)) {
         return RT_ERROR_NONE;
     }
 
     TaskInfo newTask = {};
-    TaskInfo *fliptask = &newTask;
+    TaskInfo* fliptask = &newTask;
 
     RT_LOG(RT_LOG_DEBUG, "PushFlipTask,dev_id=%u,stream_id=%d", device_->Id_(), stm->Id_());
     rtError_t error = stm->ProcFlipTask(fliptask, stm->GetTaskIdFlipNum());
     COND_RETURN_WITH_NOLOG((error != RT_ERROR_NONE), error);
 
     error = SubmitPush(fliptask);
-    RT_LOG(RT_LOG_INFO, "PushFlipTask dev_id=%u,stream_id=%d,task_id=%hu,flipNum=%hu",
-        device_->Id_(), stm->Id_(), fliptask->id, fliptask->u.flipTask.flipNumReport);
+    RT_LOG(
+        RT_LOG_INFO, "PushFlipTask dev_id=%u,stream_id=%d,task_id=%hu,flipNum=%hu", device_->Id_(), stm->Id_(),
+        fliptask->id, fliptask->u.flipTask.flipNumReport);
     if (unlikely(error != RT_ERROR_NONE)) {
-        RT_LOG(RT_LOG_ERROR, "Failed to push flip task, dev_id=%u, stream_id=%d, task_id=%hu, flipNumReport=%hu, retCode=%#x.",
+        RT_LOG(
+            RT_LOG_ERROR,
+            "Failed to push flip task, dev_id=%u, stream_id=%d, task_id=%hu, flipNumReport=%hu, retCode=%#x.",
             device_->Id_(), stm->Id_(), fliptask->id, fliptask->u.flipTask.flipNumReport, error);
         (void)device_->GetTaskFactory()->Recycle(fliptask);
         return error;
@@ -462,8 +477,9 @@ rtError_t AsyncHwtsEngine::PushFlipTask(const uint16_t preTaskId, Stream *stm)
     return RT_ERROR_NONE;
 }
 
-void AsyncHwtsEngine::GetReportCommonInfo(const rtTsReport_t &tsReport, uint16_t &streamId,
-    uint16_t &taskId, uint16_t &sqId, uint16_t &sqHead, uint16_t &errorBit) const
+void AsyncHwtsEngine::GetReportCommonInfo(
+    const rtTsReport_t& tsReport, uint16_t& streamId, uint16_t& taskId, uint16_t& sqId, uint16_t& sqHead,
+    uint16_t& errorBit) const
 {
     if (tsReport.msgType == tsReportType_t::TS_REPORT_MSG_TYPE_STARS_CQE) {
         streamId = tsReport.msgBuf.starsCqe->streamID;
@@ -472,38 +488,43 @@ void AsyncHwtsEngine::GetReportCommonInfo(const rtTsReport_t &tsReport, uint16_t
         sqHead = tsReport.msgBuf.starsCqe->SQ_head;
         errorBit = tsReport.msgBuf.starsCqe->error_bit;
 
-        RT_LOG(RT_LOG_INFO, "cqe stream_id=%u, taskId=%u, SQ_head=%u, sqId=%u, phase=%u, errorBit=%u, warn=%u, evt=%u",
-            streamId, taskId, sqHead, sqId, tsReport.msgBuf.starsCqe->phase, errorBit,
-            tsReport.msgBuf.starsCqe->warn, tsReport.msgBuf.starsCqe->evt);
+        RT_LOG(
+            RT_LOG_INFO, "cqe stream_id=%u, taskId=%u, SQ_head=%u, sqId=%u, phase=%u, errorBit=%u, warn=%u, evt=%u",
+            streamId, taskId, sqHead, sqId, tsReport.msgBuf.starsCqe->phase, errorBit, tsReport.msgBuf.starsCqe->warn,
+            tsReport.msgBuf.starsCqe->evt);
     } else {
-        streamId = static_cast<uint16_t>(static_cast<uint32_t>(tsReport.msgBuf.tsReport->streamID) |
-                   (static_cast<uint32_t>(tsReport.msgBuf.tsReport->streamIDEx) <<
-                       static_cast<uint32_t>(RT_STREAM_ID_OFFSET)));
+        streamId = static_cast<uint16_t>(
+            static_cast<uint32_t>(tsReport.msgBuf.tsReport->streamID) |
+            (static_cast<uint32_t>(tsReport.msgBuf.tsReport->streamIDEx)
+             << static_cast<uint32_t>(RT_STREAM_ID_OFFSET)));
         taskId = tsReport.msgBuf.tsReport->taskID;
         sqId = tsReport.msgBuf.tsReport->SQ_id;
         sqHead = tsReport.msgBuf.tsReport->SQ_head;
     }
 }
 
-void AsyncHwtsEngine::TaskToCommand(TaskInfo * const runTask, rtTsCommand_t &cmdLocal, rtTsCmdSqBuf_t * const command) const
+void AsyncHwtsEngine::TaskToCommand(
+    TaskInfo* const runTask, rtTsCommand_t& cmdLocal, rtTsCmdSqBuf_t* const command) const
 {
     if (cmdLocal.cmdType == RT_TASK_COMMAND_TYPE_STARS_SQE) {
         const errno_t ret = memset_s(&cmdLocal.cmdBuf, sizeof(rtTsCommandBuf_t), 0, sizeof(rtTsCommandBuf_t));
-        COND_RETURN_VOID(ret != EOK, "stars sqe memset_s failed, destMax=%zu, count=%zu, retCode=%d.",
-                         sizeof(rtTsCommandBuf_t), sizeof(rtTsCommandBuf_t), ret);
+        COND_RETURN_VOID(
+            ret != EOK, "stars sqe memset_s failed, destMax=%zu, count=%zu, retCode=%d.", sizeof(rtTsCommandBuf_t),
+            sizeof(rtTsCommandBuf_t), ret);
         // command of hi1980C is host memory, use itself directly
         ToConstructSqe(runTask, &command->starsSqe);
     } else {
         const errno_t ret = memset_s(&cmdLocal.cmdBuf.cmd, sizeof(rtCommand_t), 0, sizeof(rtCommand_t));
-        COND_RETURN_VOID(ret != EOK, "cmd memset_s failed, destMax=%zu, count=%zu, retCode=%d.",
-                         sizeof(rtCommand_t), sizeof(rtCommand_t), ret);
+        COND_RETURN_VOID(
+            ret != EOK, "cmd memset_s failed, destMax=%zu, count=%zu, retCode=%d.", sizeof(rtCommand_t),
+            sizeof(rtCommand_t), ret);
         ToCommand(runTask, &cmdLocal.cmdBuf.cmd);
         command->cmd = cmdLocal.cmdBuf.cmd;
     }
     return;
 }
 
-void AsyncHwtsEngine::SendingWait(Stream * const stm, uint8_t &failCount)
+void AsyncHwtsEngine::SendingWait(Stream* const stm, uint8_t& failCount)
 {
     UNUSED(stm);
     ++failCount;
@@ -525,7 +546,7 @@ void AsyncHwtsEngine::SendingNotify()
     }
 }
 
-uint16_t AsyncHwtsEngine::GetPackageType(const rtTsReport_t &report) const
+uint16_t AsyncHwtsEngine::GetPackageType(const rtTsReport_t& report) const
 {
     uint16_t pkgType = static_cast<uint16_t>(RT_PACKAGE_TYPE_TASK_REPORT);
 
@@ -536,13 +557,13 @@ uint16_t AsyncHwtsEngine::GetPackageType(const rtTsReport_t &report) const
     return pkgType;
 }
 
-void AsyncHwtsEngine::GetTsReportByIdx(void * const reportAddr, int32_t const idx, rtTsReport_t &tsReport) const
+void AsyncHwtsEngine::GetTsReportByIdx(void* const reportAddr, int32_t const idx, rtTsReport_t& tsReport) const
 {
     if (tsReport.msgType == tsReportType_t::TS_REPORT_MSG_TYPE_STARS_CQE) {
-        tsReport.msgBuf.starsCqe = RtPtrToPtr<rtStarsCqe_t *>(reportAddr) + idx;
+        tsReport.msgBuf.starsCqe = RtPtrToPtr<rtStarsCqe_t*>(reportAddr) + idx;
     } else {
-        tsReport.msgBuf.tsReport = RtPtrToPtr<rtTaskReport_t *>(reportAddr) + idx;
+        tsReport.msgBuf.tsReport = RtPtrToPtr<rtTaskReport_t*>(reportAddr) + idx;
     }
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

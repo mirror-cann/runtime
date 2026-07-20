@@ -16,8 +16,8 @@
 
 namespace cce {
 namespace runtime {
-Stream *CreateStreamAndGet(Device * const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp * const dvppGrp);
-}  // namespace runtime
-}  // namespace cce
+Stream* CreateStreamAndGet(Device* const dev, const uint32_t prio, const uint32_t stmFlags, DvppGrp* const dvppGrp);
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_STREAM_CREATOR_C_HPP__

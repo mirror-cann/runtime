@@ -14,25 +14,24 @@
 namespace cce {
 namespace runtime {
 
-BinaryLoader::BinaryLoader(const char_t * const binPath, const rtLoadBinaryConfig_t * const optionalCfg) :
-                           loadOptions_(optionalCfg)
+BinaryLoader::BinaryLoader(const char_t* const binPath, const rtLoadBinaryConfig_t* const optionalCfg)
+    : loadOptions_(optionalCfg)
 {
     UNUSED(binPath);
 }
 
-BinaryLoader::BinaryLoader(const void * const data, const uint64_t length,
-                           const rtLoadBinaryConfig_t * const optionalCfg) :
-                           loadOptions_(optionalCfg)
+BinaryLoader::BinaryLoader(const void* const data, const uint64_t length, const rtLoadBinaryConfig_t* const optionalCfg)
+    : loadOptions_(optionalCfg)
 {
     UNUSED(data);
     UNUSED(length);
 }
 
-rtError_t BinaryLoader::Load(Program ** prog)
+rtError_t BinaryLoader::Load(Program** prog)
 {
     UNUSED(prog);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-} // runtime
-} // cce
+} // namespace runtime
+} // namespace cce

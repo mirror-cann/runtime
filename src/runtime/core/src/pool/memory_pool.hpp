@@ -22,16 +22,16 @@ namespace runtime {
 constexpr size_t POOL_SIZE_2M = 2097152U;
 class MemoryPool : public NoCopy {
 public:
-    explicit MemoryPool(Device *dev, const bool isReadOnly);
+    explicit MemoryPool(Device* dev, const bool isReadOnly);
     ~MemoryPool() noexcept override;
 
     rtError_t Init();
-    
+
     // 申请device内存
-    void *AllocDevMem(const uint32_t size) const;
-    
+    void* AllocDevMem(const uint32_t size) const;
+
     // 分配内存
-    void *Allocate(size_t size);
+    void* Allocate(size_t size);
 
     // 释放内存
     void Release(void* address, size_t size);
@@ -42,25 +42,26 @@ public:
     size_t GetUsedSize() const;
 
     bool GetReadOnlyFlag() const;
- 
-    const void *GetAddr() const;
 
-    std::mutex *GetMemoryPoolAdviseMutex();
+    const void* GetAddr() const;
+
+    std::mutex* GetMemoryPoolAdviseMutex();
+
 private:
     // 内存块链表
     MemoryList* memoryList_ = nullptr;
 
     // 内存池起始地址
-    void *addr_ = nullptr;
+    void* addr_ = nullptr;
 
-    Device *device_ = nullptr;
-    Driver *driver_ = nullptr;
+    Device* device_ = nullptr;
+    Driver* driver_ = nullptr;
     // 已使用的内存大小
     size_t usedSize_ = 0U;
     bool isReadOnly_ = false;
 
     std::mutex mutexAdviseMem_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // CCE_RUNTIME_MEMORY_POOL_HPP

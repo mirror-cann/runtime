@@ -18,8 +18,8 @@ namespace cce {
 namespace runtime {
 
 struct rtGetDevMsgCtrlInfo_t {
-    uint32_t magic;  // used to judge whether the buffer is valid
-    uint32_t pid;    // host pid, used to check message valid
+    uint32_t magic; // used to judge whether the buffer is valid
+    uint32_t pid;   // host pid, used to check message valid
     uint32_t bufferLen;
     uint32_t reserved;
 };
@@ -39,7 +39,7 @@ class DeviceMsgHandler {
 public:
     static constexpr uint32_t DEVICE_GET_MSG_MAGIC = 0xA55A2021;
 
-    DeviceMsgHandler(Device * const devInfo, const rtGetMsgCallback msgCallback);
+    DeviceMsgHandler(Device* const devInfo, const rtGetMsgCallback msgCallback);
 
     virtual ~DeviceMsgHandler() noexcept;
 
@@ -51,34 +51,28 @@ public:
      */
     rtError_t HandleMsg();
 
-    const void *GetDevMemAddr() const
-    {
-        return devMemAddr_;
-    }
+    const void* GetDevMemAddr() const { return devMemAddr_; }
 
-    uint32_t GetDevMemSize() const
-    {
-        return devMemSize_;
-    }
+    uint32_t GetDevMemSize() const { return devMemSize_; }
 
 protected:
-    virtual rtError_t HandleMsgInHostBuf(const char_t * const msgBuff, const uint32_t msgBuffSize) = 0;
+    virtual rtError_t HandleMsgInHostBuf(const char_t* const msgBuff, const uint32_t msgBuffSize) = 0;
 
-    void MsgNotify(const char_t * const msg, const uint32_t len) const;
+    void MsgNotify(const char_t* const msg, const uint32_t len) const;
 
 private:
     rtError_t AllocDevMem();
 
     void FreeDevMem();
 
-    rtError_t CheckGetDevMsgCtrlValid(const rtGetDevMsgCtrlInfo_t * const ctrlInfo) const;
+    rtError_t CheckGetDevMsgCtrlValid(const rtGetDevMsgCtrlInfo_t* const ctrlInfo) const;
 
 protected:
-    Device *dev_;
+    Device* dev_;
 
 private:
     rtGetMsgCallback callback_;
-    void *devMemAddr_ = nullptr;
+    void* devMemAddr_ = nullptr;
     const uint32_t devMemSize_;
 };
 
@@ -89,7 +83,7 @@ public:
     ~DeviceErrMsgHandler() override = default;
 
 protected:
-    rtError_t HandleMsgInHostBuf(const char_t * const msgBuff, const uint32_t msgBuffSize) override;
+    rtError_t HandleMsgInHostBuf(const char_t* const msgBuff, const uint32_t msgBuffSize) override;
 };
 
 class DeviceStreamSnapshotHandler : public DeviceMsgHandler {
@@ -99,13 +93,13 @@ public:
     ~DeviceStreamSnapshotHandler() override = default;
 
 protected:
-    rtError_t HandleMsgInHostBuf(const char_t * const msgBuff, const uint32_t msgBuffSize) override;
+    rtError_t HandleMsgInHostBuf(const char_t* const msgBuff, const uint32_t msgBuffSize) override;
 
 private:
-    std::string GetActiveStreamSnapshot(const rtStreamSnapshot_t * const streamSnapshots, const uint32_t cnt) const;
+    std::string GetActiveStreamSnapshot(const rtStreamSnapshot_t* const streamSnapshots, const uint32_t cnt) const;
 };
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // CCE_DEVICE_MSG_HANDLER_HPP

@@ -6,7 +6,7 @@
  * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
-*/
+ */
 #include "api_c.h"
 #include "api.hpp"
 #include "rt.h"
@@ -19,20 +19,20 @@ extern "C" {
 #endif // __cplusplus
 
 VISIBILITY_DEFAULT
-RTS_API rtError_t rtTaskGetType(rtTask_t task, rtTaskType *type)
+RTS_API rtError_t rtTaskGetType(rtTask_t task, rtTaskType* type)
 {
-    const Runtime * const rtInstance = Runtime::Instance();
+    const Runtime* const rtInstance = Runtime::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(rtInstance);
-    
-    static const bool isSupportAclGraph = IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(),
-        RtOptionalFeatureType::RT_FEATURE_MODEL_ACL_GRAPH);
+
+    static const bool isSupportAclGraph =
+        IS_SUPPORT_CHIP_FEATURE(rtInstance->GetChipType(), RtOptionalFeatureType::RT_FEATURE_MODEL_ACL_GRAPH);
     if (!isSupportAclGraph) {
-        RT_LOG(RT_LOG_WARNING, "chip type(%d) does not support, return.",
-            static_cast<int32_t>(rtInstance->GetChipType()));
+        RT_LOG(
+            RT_LOG_WARNING, "chip type(%d) does not support, return.", static_cast<int32_t>(rtInstance->GetChipType()));
         return GetRtExtErrCodeAndSetGlobalErr(RT_ERROR_FEATURE_NOT_SUPPORT);
     }
-    
-    Api * const apiInstance = Api::Instance();
+
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->TaskGetType(task, type);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
@@ -40,9 +40,9 @@ RTS_API rtError_t rtTaskGetType(rtTask_t task, rtTaskType *type)
 }
 
 VISIBILITY_DEFAULT
-RTS_API rtError_t rtTaskGetSeqId(rtTask_t task, uint32_t *id)
+RTS_API rtError_t rtTaskGetSeqId(rtTask_t task, uint32_t* id)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->TaskGetSeqId(task, id);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_FEATURE_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -76,7 +76,8 @@ RTS_API rtError_t rtModelTaskSetParams(rtTask_t task, rtTaskParams* params)
 }
 
 VISIBILITY_DEFAULT
-RTS_API rtError_t rtModelKernelTaskGetAttribute(rtTask_t task, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t *attrValue)
+RTS_API rtError_t
+rtModelKernelTaskGetAttribute(rtTask_t task, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t* attrValue)
 {
     Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
@@ -91,7 +92,7 @@ VISIBILITY_DEFAULT
 rtError_t rtModelTaskDisable(rtTask_t task)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->ModelTaskDisable(task);
     COND_RETURN_WITH_NOLOG(

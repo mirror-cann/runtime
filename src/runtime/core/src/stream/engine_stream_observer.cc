@@ -12,10 +12,10 @@
 
 namespace cce {
 namespace runtime {
-void EngineStreamObserver::TaskSubmited(Device * const dev, TaskInfo * const tsk)
+void EngineStreamObserver::TaskSubmited(Device* const dev, TaskInfo* const tsk)
 {
     UNUSED(dev);
-    Stream * const stm = tsk->stream;
+    Stream* const stm = tsk->stream;
 
     if (!stm->IsCtrlStream()) {
         stm->pendingNum_.Add(1U);
@@ -27,10 +27,10 @@ void EngineStreamObserver::TaskSubmited(Device * const dev, TaskInfo * const tsk
     }
 }
 
-void EngineStreamObserver::TaskFinished(const uint32_t devId, const TaskInfo * const tsk)
+void EngineStreamObserver::TaskFinished(const uint32_t devId, const TaskInfo* const tsk)
 {
     UNUSED(devId);
-    Stream * const stm = tsk->stream;
+    Stream* const stm = tsk->stream;
     if (stm != nullptr) {
         if (!stm->IsCtrlStream()) {
             stm->pendingNum_.Sub(1U);
@@ -38,5 +38,5 @@ void EngineStreamObserver::TaskFinished(const uint32_t devId, const TaskInfo * c
     }
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

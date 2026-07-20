@@ -18,15 +18,14 @@
 namespace cce {
 namespace runtime {
 #if F_DESC("TaskTimeoutSetTask")
-static void ConstructDavidSqeForTimeoutSetTask(TaskInfo *taskInfo, void *const sqe,
-    const TaskSqeInfo& sqeInfo)
+static void ConstructDavidSqeForTimeoutSetTask(TaskInfo* taskInfo, void* const sqe, const TaskSqeInfo& sqeInfo)
 {
-    rtDavidSqe_t *davidSqe = static_cast<rtDavidSqe_t *>(sqe);
+    rtDavidSqe_t* davidSqe = static_cast<rtDavidSqe_t*>(sqe);
     UNUSED(sqeInfo);
-    TimeoutSetTaskInfo * const timeoutSetTask = &(taskInfo->u.timeoutSetTask);
-    Stream * const stm = taskInfo->stream;
+    TimeoutSetTaskInfo* const timeoutSetTask = &(taskInfo->u.timeoutSetTask);
+    Stream* const stm = taskInfo->stream;
     ConstructDavidSqeForHeadCommon(taskInfo, davidSqe);
-    RtDavidStarsAicpuControlSqe *const aicpuCtrlSqe = &(davidSqe->aicpuControlSqe);
+    RtDavidStarsAicpuControlSqe* const aicpuCtrlSqe = &(davidSqe->aicpuControlSqe);
     aicpuCtrlSqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
     aicpuCtrlSqe->header.blockDim = 1U;
 
@@ -62,8 +61,11 @@ static void ConstructDavidSqeForTimeoutSetTask(TaskInfo *taskInfo, void *const s
 
     aicpuCtrlSqe->destPid = 0U;
     PrintDavidSqe(davidSqe, "TaskTimeoutSetTask");
-    RT_LOG(RT_LOG_INFO, "TaskTimeoutSetTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, "
-        "topicType=%u, cmdType=%u.", stm->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn,
+    RT_LOG(
+        RT_LOG_INFO,
+        "TaskTimeoutSetTask, device_id=%u, stream_id=%d, task_id=%hu, task_sn=%u, "
+        "topicType=%u, cmdType=%u.",
+        stm->Device_()->Id_(), stm->Id_(), taskInfo->id, taskInfo->taskSn,
         static_cast<uint32_t>(aicpuCtrlSqe->topicType), aicpuCtrlSqe->usrData.cmdType);
 }
 #endif
@@ -81,7 +83,7 @@ static bool TimeoutSetTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
 
-    const auto &chips = GetDavidChips();
+    const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_TASK_TIMEOUT_SET, funcs);
     }
@@ -92,5 +94,5 @@ static bool TimeoutSetTaskRegister()
 
 static bool g_timeoutSetTaskRegister = TimeoutSetTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

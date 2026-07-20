@@ -12,9 +12,6 @@
 
 namespace cce {
 namespace runtime {
-void RegisterCaptureExternalTaskFuncForV100(rtChipType_t chip)
-{
-    UNUSED(chip);
-}
+void RegisterCaptureExternalTaskFuncForV100(rtChipType_t chip) { UNUSED(chip); }
 } // namespace runtime
 } // namespace cce

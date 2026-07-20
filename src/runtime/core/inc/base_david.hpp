@@ -15,14 +15,14 @@
 #define RT_MAX_THREAD_NUM_PER_WARP (32U)
 #define RT_MAX_WARP_NUM_PER_VECTOR_CORE (64U)
 #define RT_MAX_THREAD_PER_VECTOR_CORE (RT_MAX_THREAD_NUM_PER_WARP * RT_MAX_WARP_NUM_PER_VECTOR_CORE)
-#define RT_SIMT_DEFAULT_STACK_SIZE_THREAD (1152U)   /* 1024 + 128 */
+#define RT_SIMT_DEFAULT_STACK_SIZE_THREAD (1152U)                                                  /* 1024 + 128 */
 #define RT_KIS_SIMT_WARP_STK_SIZE (RT_MAX_THREAD_NUM_PER_WARP * RT_SIMT_DEFAULT_STACK_SIZE_THREAD) // 0x2000B
-#define RT_KIS_SIMT_DVG_WARP_STK_SIZE (1024U)            // 1024B
-#define RT_SIMT_UB_SIZE (256U * 1024U)                  // UBSize 256K
-#define RT_SIMT_STL_UB_SIZE (200U * 1024U)              // STL UBSize 200K
-#define RT_SIMT_DCACHE_MIN_SIZE (32U * 1024U)           // SIMTDCacheMinSize 32K
+#define RT_KIS_SIMT_DVG_WARP_STK_SIZE (1024U)                                                      // 1024B
+#define RT_SIMT_UB_SIZE (256U * 1024U)                                                             // UBSize 256K
+#define RT_SIMT_STL_UB_SIZE (200U * 1024U)                                                         // STL UBSize 200K
+#define RT_SIMT_DCACHE_MIN_SIZE (32U * 1024U)  // SIMTDCacheMinSize 32K
 #define RT_SIMT_REMAIN_UB_SIZE (RT_SIMT_UB_SIZE - RT_SIMT_DCACHE_MIN_SIZE)
-#define RT_SIMT_COMPILER_AUX_SIZE (8U * 1024U)          // BiSheng aux scalar stack + ASC: 8K
+#define RT_SIMT_COMPILER_AUX_SIZE (8U * 1024U) // BiSheng aux scalar stack + ASC: 8K
 #define RT_SIMT_AVAILBALE_UB_SIZE (RT_SIMT_UB_SIZE - RT_SIMT_DCACHE_MIN_SIZE - RT_SIMT_COMPILER_AUX_SIZE)
 
 namespace cce {
@@ -37,7 +37,7 @@ constexpr uint32_t RT_DAVID_AIVECTOR_NUM_PER_DIE = 36U;
 constexpr uint32_t RT_DAVID_DIE_MAX_NUM = 2U;
 
 constexpr uint32_t RT_SIMT_SHARE_MEM_ALIGN_LEN = 128U;
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif // __CCE_RUNTIME_BASE_DAVID_HPP__

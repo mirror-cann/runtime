@@ -15,7 +15,7 @@ using namespace cce::runtime;
 extern "C" {
 #endif // __cplusplus
 VISIBILITY_DEFAULT
-rtError_t rtCntNotifyCreate(const int32_t deviceId, rtCntNotify_t * const cntNotify)
+rtError_t rtCntNotifyCreate(const int32_t deviceId, rtCntNotify_t* const cntNotify)
 {
     UNUSED(deviceId);
     UNUSED(cntNotify);
@@ -23,7 +23,7 @@ rtError_t rtCntNotifyCreate(const int32_t deviceId, rtCntNotify_t * const cntNot
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCntNotifyCreateWithFlag(const int32_t deviceId, rtCntNotify_t * const cntNotify, const uint32_t flags)
+rtError_t rtCntNotifyCreateWithFlag(const int32_t deviceId, rtCntNotify_t* const cntNotify, const uint32_t flags)
 {
     UNUSED(deviceId);
     UNUSED(cntNotify);
@@ -39,8 +39,9 @@ rtError_t rtsPersistentTaskClean(rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemcpyAsyncWithOffset(void **dst, uint64_t dstMax, uint64_t dstDataOffset, const void **src,
-    uint64_t cnt, uint64_t srcDataOffset, rtMemcpyKind kind, rtStream_t stm)
+rtError_t rtMemcpyAsyncWithOffset(
+    void** dst, uint64_t dstMax, uint64_t dstDataOffset, const void** src, uint64_t cnt, uint64_t srcDataOffset,
+    rtMemcpyKind kind, rtStream_t stm)
 {
     UNUSED(dst);
     UNUSED(dstMax);
@@ -84,7 +85,7 @@ rtError_t rtMemAdvise(void* devPtr, uint64_t count, uint32_t advise)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemManagedAdvise(const void *const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
+rtError_t rtMemManagedAdvise(const void* const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
 {
     UNUSED(ptr);
     UNUSED(size);
@@ -94,7 +95,8 @@ rtError_t rtMemManagedAdvise(const void *const ptr, uint64_t size, uint16_t advi
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemManagedGetAttr(rtMemManagedRangeAttribute attribute, const void *ptr, size_t size, void *data, size_t dataSize)
+rtError_t rtMemManagedGetAttr(
+    rtMemManagedRangeAttribute attribute, const void* ptr, size_t size, void* data, size_t dataSize)
 {
     UNUSED(attribute);
     UNUSED(ptr);
@@ -105,8 +107,9 @@ rtError_t rtMemManagedGetAttr(rtMemManagedRangeAttribute attribute, const void *
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemManagedGetAttrs(rtMemManagedRangeAttribute *attributes, size_t numAttributes, const void *ptr, 
-                                size_t size, void **data, size_t *dataSizes)
+rtError_t rtMemManagedGetAttrs(
+    rtMemManagedRangeAttribute* attributes, size_t numAttributes, const void* ptr, size_t size, void** data,
+    size_t* dataSizes)
 {
     UNUSED(attributes);
     UNUSED(numAttributes);
@@ -118,7 +121,7 @@ rtError_t rtMemManagedGetAttrs(rtMemManagedRangeAttribute *attributes, size_t nu
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsCntNotifyRecord(rtCntNotify_t cntNotify, rtStream_t stm, rtCntNotifyRecordInfo_t *info)
+rtError_t rtsCntNotifyRecord(rtCntNotify_t cntNotify, rtStream_t stm, rtCntNotifyRecordInfo_t* info)
 {
     UNUSED(cntNotify);
     UNUSED(stm);
@@ -127,7 +130,7 @@ rtError_t rtsCntNotifyRecord(rtCntNotify_t cntNotify, rtStream_t stm, rtCntNotif
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtNotifyGetPhyInfo(rtNotify_t notify, uint32_t *phyDevId, uint32_t *tsId)
+rtError_t rtNotifyGetPhyInfo(rtNotify_t notify, uint32_t* phyDevId, uint32_t* tsId)
 {
     UNUSED(notify);
     UNUSED(phyDevId);
@@ -136,7 +139,7 @@ rtError_t rtNotifyGetPhyInfo(rtNotify_t notify, uint32_t *phyDevId, uint32_t *ts
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtSetIpcNotifyPid(const char_t *name, int32_t pid[], int32_t num)
+rtError_t rtSetIpcNotifyPid(const char_t* name, int32_t pid[], int32_t num)
 {
     UNUSED(name);
     UNUSED(pid);
@@ -145,7 +148,7 @@ rtError_t rtSetIpcNotifyPid(const char_t *name, int32_t pid[], int32_t num)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtSetIpcMemPid(const char_t *name, int32_t pid[], int32_t num)
+rtError_t rtSetIpcMemPid(const char_t* name, int32_t pid[], int32_t num)
 {
     UNUSED(name);
     UNUSED(pid);
@@ -153,7 +156,7 @@ rtError_t rtSetIpcMemPid(const char_t *name, int32_t pid[], int32_t num)
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t rtNpuGetFloatStatus(void * outputAddrPtr, uint64_t outputSize, uint32_t checkMode, rtStream_t stm)
+rtError_t rtNpuGetFloatStatus(void* outputAddrPtr, uint64_t outputSize, uint32_t checkMode, rtStream_t stm)
 {
     UNUSED(outputAddrPtr);
     UNUSED(outputSize);
@@ -163,7 +166,7 @@ rtError_t rtNpuGetFloatStatus(void * outputAddrPtr, uint64_t outputSize, uint32_
 }
 
 VISIBILITY_DEFAULT
-RTS_API rtError_t rtGetDevArgsAddr(rtStream_t stm, rtArgsEx_t *argsInfo, void **devArgsAddr, void **argsHandle)
+RTS_API rtError_t rtGetDevArgsAddr(rtStream_t stm, rtArgsEx_t* argsInfo, void** devArgsAddr, void** argsHandle)
 {
     UNUSED(stm);
     UNUSED(argsInfo);
@@ -173,7 +176,7 @@ RTS_API rtError_t rtGetDevArgsAddr(rtStream_t stm, rtArgsEx_t *argsInfo, void **
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtSetIpcNotifySuperPodPid(const char *name, uint32_t sdid, int32_t pid)
+rtError_t rtSetIpcNotifySuperPodPid(const char* name, uint32_t sdid, int32_t pid)
 {
     UNUSED(name);
     UNUSED(sdid);
@@ -212,15 +215,15 @@ rtError_t rtsStreamBeginTaskGrp(rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtThreadExchangeCaptureMode(rtStreamCaptureMode *mode)
+rtError_t rtThreadExchangeCaptureMode(rtStreamCaptureMode* mode)
 {
     UNUSED(mode);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemcpyD2DAddrAsync(void *dst, uint64_t dstMax, uint64_t dstOffset, const void *src,
-    uint64_t cnt, uint64_t srcOffset, rtStream_t stm)
+rtError_t rtMemcpyD2DAddrAsync(
+    void* dst, uint64_t dstMax, uint64_t dstOffset, const void* src, uint64_t cnt, uint64_t srcOffset, rtStream_t stm)
 {
     UNUSED(dst);
     UNUSED(dstMax);
@@ -233,7 +236,7 @@ rtError_t rtMemcpyD2DAddrAsync(void *dst, uint64_t dstMax, uint64_t dstOffset, c
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStartADCProfiler(void **addr, uint32_t length)
+rtError_t rtStartADCProfiler(void** addr, uint32_t length)
 {
     UNUSED(addr);
     UNUSED(length);
@@ -241,14 +244,14 @@ rtError_t rtStartADCProfiler(void **addr, uint32_t length)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStopADCProfiler(void *addr)
+rtError_t rtStopADCProfiler(void* addr)
 {
     UNUSED(addr);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsCntNotifyWaitWithTimeout(rtCntNotify_t cntNotify, rtStream_t stm, rtCntNotifyWaitInfo_t *info)
+rtError_t rtsCntNotifyWaitWithTimeout(rtCntNotify_t cntNotify, rtStream_t stm, rtCntNotifyWaitInfo_t* info)
 {
     UNUSED(cntNotify);
     UNUSED(stm);
@@ -265,7 +268,7 @@ rtError_t rtsCntNotifyReset(rtCntNotify_t cntNotify, rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtIpcMemImportPidInterServer(const char *key, const rtServerPid *serverPids, size_t num)
+rtError_t rtIpcMemImportPidInterServer(const char* key, const rtServerPid* serverPids, size_t num)
 {
     UNUSED(key);
     UNUSED(serverPids);
@@ -284,7 +287,7 @@ rtError_t rtGetSocSpec(const char* label, const char* key, char* val, const uint
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtNotifySetImportPidInterServer(rtNotify_t notify, const rtServerPid *serverPids, size_t num)
+rtError_t rtNotifySetImportPidInterServer(rtNotify_t notify, const rtServerPid* serverPids, size_t num)
 {
     UNUSED(notify);
     UNUSED(serverPids);
@@ -293,7 +296,7 @@ rtError_t rtNotifySetImportPidInterServer(rtNotify_t notify, const rtServerPid *
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCntNotifyCreateServer(rtCntNotify_t * const cntNotify, uint64_t flags)
+rtError_t rtCntNotifyCreateServer(rtCntNotify_t* const cntNotify, uint64_t flags)
 {
     UNUSED(cntNotify);
     UNUSED(flags);
@@ -301,8 +304,8 @@ rtError_t rtCntNotifyCreateServer(rtCntNotify_t * const cntNotify, uint64_t flag
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCntNotifyRecord(rtCntNotify_t const inCntNotify, rtStream_t const stm,
-                            const rtCntNtyRecordInfo_t * const info)
+rtError_t rtCntNotifyRecord(
+    rtCntNotify_t const inCntNotify, rtStream_t const stm, const rtCntNtyRecordInfo_t* const info)
 {
     UNUSED(inCntNotify);
     UNUSED(stm);
@@ -311,7 +314,7 @@ rtError_t rtCntNotifyRecord(rtCntNotify_t const inCntNotify, rtStream_t const st
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsCntNotifyGetId(rtCntNotify_t cntNotify, uint32_t *notifyId)
+rtError_t rtsCntNotifyGetId(rtCntNotify_t cntNotify, uint32_t* notifyId)
 {
     UNUSED(cntNotify);
     UNUSED(notifyId);
@@ -319,8 +322,8 @@ rtError_t rtsCntNotifyGetId(rtCntNotify_t cntNotify, uint32_t *notifyId)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCntNotifyWaitWithTimeout(rtCntNotify_t const inCntNotify, rtStream_t const stm,
-                                     const rtCntNtyWaitInfo_t * const info)
+rtError_t rtCntNotifyWaitWithTimeout(
+    rtCntNotify_t const inCntNotify, rtStream_t const stm, const rtCntNtyWaitInfo_t* const info)
 {
     UNUSED(inCntNotify);
     UNUSED(stm);
@@ -344,8 +347,8 @@ rtError_t rtCntNotifyDestroy(rtCntNotify_t const inCntNotify)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetCntNotifyAddress(rtCntNotify_t const inCntNotify, uint64_t * const cntNotifyAddress,
-                                rtNotifyType_t const regType)
+rtError_t rtGetCntNotifyAddress(
+    rtCntNotify_t const inCntNotify, uint64_t* const cntNotifyAddress, rtNotifyType_t const regType)
 {
     UNUSED(inCntNotify);
     UNUSED(cntNotifyAddress);
@@ -354,7 +357,7 @@ rtError_t rtGetCntNotifyAddress(rtCntNotify_t const inCntNotify, uint64_t * cons
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetCntNotifyId(rtCntNotify_t inCntNotify, uint32_t * const notifyId)
+rtError_t rtGetCntNotifyId(rtCntNotify_t inCntNotify, uint32_t* const notifyId)
 {
     UNUSED(inCntNotify);
     UNUSED(notifyId);
@@ -362,7 +365,7 @@ rtError_t rtGetCntNotifyId(rtCntNotify_t inCntNotify, uint32_t * const notifyId)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtWriteValue(rtWriteValueInfo_t * const info, rtStream_t const stm)
+rtError_t rtWriteValue(rtWriteValueInfo_t* const info, rtStream_t const stm)
 {
     UNUSED(info);
     UNUSED(stm);
@@ -370,7 +373,7 @@ rtError_t rtWriteValue(rtWriteValueInfo_t * const info, rtStream_t const stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCCULaunch(rtCcuTaskInfo_t *taskInfo,  rtStream_t const stm)
+rtError_t rtCCULaunch(rtCcuTaskInfo_t* taskInfo, rtStream_t const stm)
 {
     UNUSED(taskInfo);
     UNUSED(stm);
@@ -378,7 +381,7 @@ rtError_t rtCCULaunch(rtCcuTaskInfo_t *taskInfo,  rtStream_t const stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtUbDevQueryInfo(rtUbDevQueryCmd cmd, void * devInfo)
+rtError_t rtUbDevQueryInfo(rtUbDevQueryCmd cmd, void* devInfo)
 {
     UNUSED(cmd);
     UNUSED(devInfo);
@@ -386,7 +389,7 @@ rtError_t rtUbDevQueryInfo(rtUbDevQueryCmd cmd, void * devInfo)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetDevResAddress(rtDevResInfo * const resInfo, rtDevResAddrInfo * const addrInfo)
+rtError_t rtGetDevResAddress(rtDevResInfo* const resInfo, rtDevResAddrInfo* const addrInfo)
 {
     UNUSED(resInfo);
     UNUSED(addrInfo);
@@ -394,14 +397,14 @@ rtError_t rtGetDevResAddress(rtDevResInfo * const resInfo, rtDevResAddrInfo * co
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtReleaseDevResAddress(rtDevResInfo * const resInfo)
+rtError_t rtReleaseDevResAddress(rtDevResInfo* const resInfo)
 {
     UNUSED(resInfo);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtWriteValuePtr(void * const writeValueInfo, rtStream_t const stm, void * const pointedAddr)
+rtError_t rtWriteValuePtr(void* const writeValueInfo, rtStream_t const stm, void* const pointedAddr)
 {
     UNUSED(writeValueInfo);
     UNUSED(stm);
@@ -410,7 +413,7 @@ rtError_t rtWriteValuePtr(void * const writeValueInfo, rtStream_t const stm, voi
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtUbDbSend(rtUbDbInfo_t *dbInfo,  rtStream_t stm)
+rtError_t rtUbDbSend(rtUbDbInfo_t* dbInfo, rtStream_t stm)
 {
     UNUSED(dbInfo);
     UNUSED(stm);
@@ -418,7 +421,7 @@ rtError_t rtUbDbSend(rtUbDbInfo_t *dbInfo,  rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtUbDirectSend(rtUbWqeInfo_t *wqeInfo, rtStream_t stm)
+rtError_t rtUbDirectSend(rtUbWqeInfo_t* wqeInfo, rtStream_t stm)
 {
     UNUSED(wqeInfo);
     UNUSED(stm);
@@ -426,7 +429,7 @@ rtError_t rtUbDirectSend(rtUbWqeInfo_t *wqeInfo, rtStream_t stm)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtFusionLaunch(void * const fusionInfo, rtStream_t const stm, rtFusionArgsEx_t *argsInfo)
+rtError_t rtFusionLaunch(void* const fusionInfo, rtStream_t const stm, rtFusionArgsEx_t* argsInfo)
 {
     UNUSED(fusionInfo);
     UNUSED(stm);
@@ -440,14 +443,14 @@ rtError_t rtStreamTaskAbort(rtStream_t stm)
     UNUSED(stm);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
- 
+
 VISIBILITY_DEFAULT
 rtError_t rtStreamRecover(rtStream_t stm)
 {
     UNUSED(stm);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
- 
+
 VISIBILITY_DEFAULT
 rtError_t rtStreamTaskClean(rtStream_t stm)
 {
@@ -463,21 +466,21 @@ rtError_t rtDeviceResourceClean(const int32_t devId)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetBinaryDeviceBaseAddr(void *handle, void **deviceBase)
+rtError_t rtGetBinaryDeviceBaseAddr(void* handle, void** deviceBase)
 {
     UNUSED(handle);
     UNUSED(deviceBase);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t rtFftsPlusTaskLaunch(rtFftsPlusTaskInfo_t *fftsPlusTaskInfo, rtStream_t stm)
+rtError_t rtFftsPlusTaskLaunch(rtFftsPlusTaskInfo_t* fftsPlusTaskInfo, rtStream_t stm)
 {
     UNUSED(fftsPlusTaskInfo);
     UNUSED(stm);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t rtFftsPlusTaskLaunchWithFlag(rtFftsPlusTaskInfo_t *fftsPlusTaskInfo, rtStream_t stm, uint32_t flag)
+rtError_t rtFftsPlusTaskLaunchWithFlag(rtFftsPlusTaskInfo_t* fftsPlusTaskInfo, rtStream_t stm, uint32_t flag)
 {
     UNUSED(fftsPlusTaskInfo);
     UNUSED(stm);
@@ -503,9 +506,8 @@ rtError_t rtRDMADBSend(uint32_t dbIndex, uint64_t dbInfo, rtStream_t stm)
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
-
 VISIBILITY_DEFAULT
-rtError_t rtIpcSetMemoryName(const void *ptr, uint64_t byteCount, char_t *name, uint32_t len)
+rtError_t rtIpcSetMemoryName(const void* ptr, uint64_t byteCount, char_t* name, uint32_t len)
 {
     UNUSED(ptr);
     UNUSED(byteCount);
@@ -515,7 +517,7 @@ rtError_t rtIpcSetMemoryName(const void *ptr, uint64_t byteCount, char_t *name, 
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtIpcSetMemoryAttr(const char *name, uint32_t type, uint64_t attr)
+rtError_t rtIpcSetMemoryAttr(const char* name, uint32_t type, uint64_t attr)
 {
     UNUSED(name);
     UNUSED(type);
@@ -524,14 +526,14 @@ rtError_t rtIpcSetMemoryAttr(const char *name, uint32_t type, uint64_t attr)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtIpcDestroyMemoryName(const char_t *name)
+rtError_t rtIpcDestroyMemoryName(const char_t* name)
 {
     UNUSED(name);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtIpcOpenMemory(void **ptr, const char_t *name)
+rtError_t rtIpcOpenMemory(void** ptr, const char_t* name)
 {
     UNUSED(ptr);
     UNUSED(name);
@@ -539,7 +541,7 @@ rtError_t rtIpcOpenMemory(void **ptr, const char_t *name)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtIpcCloseMemory(const void *ptr)
+rtError_t rtIpcCloseMemory(const void* ptr)
 {
     UNUSED(ptr);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
@@ -555,7 +557,7 @@ rtError_t rtIpcSetNotifyName(rtNotify_t notify, char_t* name, uint32_t len)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtIpcOpenNotify(rtNotify_t *notify, const char_t *name)
+rtError_t rtIpcOpenNotify(rtNotify_t* notify, const char_t* name)
 {
     UNUSED(notify);
     UNUSED(name);
@@ -563,7 +565,7 @@ rtError_t rtIpcOpenNotify(rtNotify_t *notify, const char_t *name)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtIpcOpenNotifyWithFlag(rtNotify_t *notify, const char_t *name, uint32_t flag)
+rtError_t rtIpcOpenNotifyWithFlag(rtNotify_t* notify, const char_t* name, uint32_t flag)
 {
     UNUSED(notify);
     UNUSED(name);
@@ -572,8 +574,7 @@ rtError_t rtIpcOpenNotifyWithFlag(rtNotify_t *notify, const char_t *name, uint32
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtLaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void *src, uint64_t cnt,
-                                rtStream_t stm)
+rtError_t rtLaunchSqeUpdateTask(uint32_t streamId, uint32_t taskId, void* src, uint64_t cnt, rtStream_t stm)
 {
     UNUSED(streamId);
     UNUSED(taskId);
@@ -599,7 +600,7 @@ rtError_t rtUnRegKernelLaunchFillFunc(const char* symbol)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsLaunchReduceAsyncTask(const rtReduceInfo_t *reduceInfo, const rtStream_t stm, const void *reserve)
+rtError_t rtsLaunchReduceAsyncTask(const rtReduceInfo_t* reduceInfo, const rtStream_t stm, const void* reserve)
 {
     UNUSED(reduceInfo);
     UNUSED(stm);
@@ -608,7 +609,7 @@ rtError_t rtsLaunchReduceAsyncTask(const rtReduceInfo_t *reduceInfo, const rtStr
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsLaunchUpdateTask(rtStream_t destStm, uint32_t destTaskId, rtStream_t stm, rtTaskUpdateCfg_t *cfg)
+rtError_t rtsLaunchUpdateTask(rtStream_t destStm, uint32_t destTaskId, rtStream_t stm, rtTaskUpdateCfg_t* cfg)
 {
     UNUSED(destStm);
     UNUSED(destTaskId);
@@ -618,14 +619,14 @@ rtError_t rtsLaunchUpdateTask(rtStream_t destStm, uint32_t destTaskId, rtStream_
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsGetCmoDescSize(size_t *size)
+rtError_t rtsGetCmoDescSize(size_t* size)
 {
     UNUSED(size);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsSetCmoDesc(rtCmoDesc_t cmoDesc, void *srcAddr, size_t srcLen)
+rtError_t rtsSetCmoDesc(rtCmoDesc_t cmoDesc, void* srcAddr, size_t srcLen)
 {
     UNUSED(cmoDesc);
     UNUSED(srcAddr);
@@ -634,7 +635,7 @@ rtError_t rtsSetCmoDesc(rtCmoDesc_t cmoDesc, void *srcAddr, size_t srcLen)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtsLaunchCmoAddrTask(rtCmoDesc_t cmoDesc, rtStream_t stm, rtCmoOpCode cmoOpCode, const void *reserve)
+rtError_t rtsLaunchCmoAddrTask(rtCmoDesc_t cmoDesc, rtStream_t stm, rtCmoOpCode cmoOpCode, const void* reserve)
 {
     UNUSED(cmoDesc);
     UNUSED(stm);
@@ -644,8 +645,8 @@ rtError_t rtsLaunchCmoAddrTask(rtCmoDesc_t cmoDesc, rtStream_t stm, rtCmoOpCode 
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCmoAddrTaskLaunch(void *cmoAddrInfo, uint64_t destMax, rtCmoOpCode_t cmoOpCode,
-    rtStream_t stm, uint32_t flag)
+rtError_t rtCmoAddrTaskLaunch(
+    void* cmoAddrInfo, uint64_t destMax, rtCmoOpCode_t cmoOpCode, rtStream_t stm, uint32_t flag)
 {
     UNUSED(cmoAddrInfo);
     UNUSED(destMax);
@@ -657,8 +658,7 @@ rtError_t rtCmoAddrTaskLaunch(void *cmoAddrInfo, uint64_t destMax, rtCmoOpCode_t
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtModelTaskUpdate(rtStream_t desStm, uint32_t desTaskId, rtStream_t sinkStm,
-                            rtMdlTaskUpdateInfo_t *para)
+rtError_t rtModelTaskUpdate(rtStream_t desStm, uint32_t desTaskId, rtStream_t sinkStm, rtMdlTaskUpdateInfo_t* para)
 {
     UNUSED(desStm);
     UNUSED(desTaskId);
@@ -668,8 +668,9 @@ rtError_t rtModelTaskUpdate(rtStream_t desStm, uint32_t desTaskId, rtStream_t si
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtReduceAsyncV2(void *dst, uint64_t destMax, const void *src, uint64_t cnt, rtRecudeKind_t kind,
-                          rtDataType_t type, rtStream_t stm, void *overflowAddr)
+rtError_t rtReduceAsyncV2(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtRecudeKind_t kind, rtDataType_t type, rtStream_t stm,
+    void* overflowAddr)
 {
     UNUSED(dst);
     UNUSED(destMax);
@@ -683,7 +684,7 @@ rtError_t rtReduceAsyncV2(void *dst, uint64_t destMax, const void *src, uint64_t
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamCreateWithFlagsExternal(rtStream_t *stm, int32_t priority, uint32_t flags)
+rtError_t rtStreamCreateWithFlagsExternal(rtStream_t* stm, int32_t priority, uint32_t flags)
 {
     UNUSED(stm);
     UNUSED(priority);
@@ -692,7 +693,7 @@ rtError_t rtStreamCreateWithFlagsExternal(rtStream_t *stm, int32_t priority, uin
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtModelGetNodes(rtModel_t mdl, uint32_t * const num)
+rtError_t rtModelGetNodes(rtModel_t mdl, uint32_t* const num)
 {
     UNUSED(mdl);
     UNUSED(num);
@@ -716,7 +717,7 @@ rtError_t rtModelDebugJsonPrint(rtModel_t mdl, const char* path, uint32_t flags)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtModelDestroyRegisterCallback(rtModel_t const mdl, rtCallback_t fn, void *ptr)
+rtError_t rtModelDestroyRegisterCallback(rtModel_t const mdl, rtCallback_t fn, void* ptr)
 {
     UNUSED(mdl);
     UNUSED(fn);
@@ -740,7 +741,6 @@ rtError_t rtStreamAddToModel(rtStream_t stm, rtModel_t captureMdl)
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
-
 VISIBILITY_DEFAULT
 rtError_t rtStreamBeginCapture(rtStream_t stm, const rtStreamCaptureMode mode)
 {
@@ -750,7 +750,7 @@ rtError_t rtStreamBeginCapture(rtStream_t stm, const rtStreamCaptureMode mode)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamEndCapture(rtStream_t stm, rtModel_t *captureMdl)
+rtError_t rtStreamEndCapture(rtStream_t stm, rtModel_t* captureMdl)
 {
     UNUSED(stm);
     UNUSED(captureMdl);
@@ -758,8 +758,7 @@ rtError_t rtStreamEndCapture(rtStream_t stm, rtModel_t *captureMdl)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamGetCaptureInfo(rtStream_t stm, rtStreamCaptureStatus * const status,
-                                 rtModel_t *captureMdl)
+rtError_t rtStreamGetCaptureInfo(rtStream_t stm, rtStreamCaptureStatus* const status, rtModel_t* captureMdl)
 {
     UNUSED(stm);
     UNUSED(status);
@@ -768,8 +767,8 @@ rtError_t rtStreamGetCaptureInfo(rtStream_t stm, rtStreamCaptureStatus * const s
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtModelCondHandleCreate(rtModel_t mdl, uint32_t defaultLaunchValue,
-    rtCondHandleFlag_t flag, rtCondHandle_t *handle)
+rtError_t rtModelCondHandleCreate(
+    rtModel_t mdl, uint32_t defaultLaunchValue, rtCondHandleFlag_t flag, rtCondHandle_t* handle)
 {
     (void)mdl;
     (void)defaultLaunchValue;
@@ -779,7 +778,7 @@ rtError_t rtModelCondHandleCreate(rtModel_t mdl, uint32_t defaultLaunchValue,
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtModelCondHandleGetCondPtr(rtCondHandle_t handle, uint64_t **devPtr)
+rtError_t rtModelCondHandleGetCondPtr(rtCondHandle_t handle, uint64_t** devPtr)
 {
     (void)handle;
     (void)devPtr;
@@ -805,7 +804,7 @@ rtError_t rtStreamBeginCaptureToModel(rtStream_t stm, rtModel_t mdl, const rtStr
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetTaskBufferLen(const rtTaskBuffType_t type, uint32_t * const bufferLen)
+rtError_t rtGetTaskBufferLen(const rtTaskBuffType_t type, uint32_t* const bufferLen)
 {
     UNUSED(type);
     UNUSED(bufferLen);
@@ -813,7 +812,7 @@ rtError_t rtGetTaskBufferLen(const rtTaskBuffType_t type, uint32_t * const buffe
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtTaskBuild(const rtTaskInput_t * const taskInput, uint32_t* taskLen)
+rtError_t rtTaskBuild(const rtTaskInput_t* const taskInput, uint32_t* taskLen)
 {
     UNUSED(taskInput);
     UNUSED(taskLen);
@@ -821,7 +820,7 @@ rtError_t rtTaskBuild(const rtTaskInput_t * const taskInput, uint32_t* taskLen)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetElfOffset(void * const elfData, const uint32_t elfLen, uint32_t* offset)
+rtError_t rtGetElfOffset(void* const elfData, const uint32_t elfLen, uint32_t* offset)
 {
     UNUSED(elfData);
     UNUSED(elfLen);
@@ -830,7 +829,7 @@ rtError_t rtGetElfOffset(void * const elfData, const uint32_t elfLen, uint32_t* 
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetKernelBin(const char_t *const binFileName, char_t **const buffer, uint32_t *length)
+rtError_t rtGetKernelBin(const char_t* const binFileName, char_t** const buffer, uint32_t* length)
 {
     UNUSED(binFileName);
     UNUSED(buffer);
@@ -839,14 +838,14 @@ rtError_t rtGetKernelBin(const char_t *const binFileName, char_t **const buffer,
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtFreeKernelBin(char_t * const buffer)
+rtError_t rtFreeKernelBin(char_t* const buffer)
 {
     UNUSED(buffer);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCmoAsync(void *srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmoType, rtStream_t stm)
+rtError_t rtCmoAsync(void* srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmoType, rtStream_t stm)
 {
     UNUSED(srcAddrPtr);
     UNUSED(srcLen);
@@ -855,9 +854,8 @@ rtError_t rtCmoAsync(void *srcAddrPtr, size_t srcLen, rtCmoOpCode_t cmoType, rtS
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
-
 VISIBILITY_DEFAULT
-rtError_t rtCmoTaskLaunch(rtCmoTaskInfo_t *taskInfo, rtStream_t stm, uint32_t flag)
+rtError_t rtCmoTaskLaunch(rtCmoTaskInfo_t* taskInfo, rtStream_t stm, uint32_t flag)
 {
     UNUSED(taskInfo);
     UNUSED(stm);
@@ -866,8 +864,8 @@ rtError_t rtCmoTaskLaunch(rtCmoTaskInfo_t *taskInfo, rtStream_t stm, uint32_t fl
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtReduceAsync(void *dst, uint64_t destMax, const void *src, uint64_t cnt, rtRecudeKind_t kind,
-                        rtDataType_t type, rtStream_t stm)
+rtError_t rtReduceAsync(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtRecudeKind_t kind, rtDataType_t type, rtStream_t stm)
 {
     UNUSED(dst);
     UNUSED(destMax);
@@ -880,8 +878,9 @@ rtError_t rtReduceAsync(void *dst, uint64_t destMax, const void *src, uint64_t c
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtReduceAsyncWithCfg(void *dst, uint64_t destMax, const void *src, uint64_t cnt, rtRecudeKind_t kind,
-    rtDataType_t type, rtStream_t stm, uint32_t qosCfg)
+rtError_t rtReduceAsyncWithCfg(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtRecudeKind_t kind, rtDataType_t type, rtStream_t stm,
+    uint32_t qosCfg)
 {
     UNUSED(dst);
     UNUSED(destMax);
@@ -895,8 +894,9 @@ rtError_t rtReduceAsyncWithCfg(void *dst, uint64_t destMax, const void *src, uin
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtReduceAsyncWithCfgV2(void *dst, uint64_t destMax, const void *src, uint64_t cnt, rtRecudeKind_t kind,
-    rtDataType_t type, rtStream_t stm, const rtTaskCfgInfo_t *cfgInfo)
+rtError_t rtReduceAsyncWithCfgV2(
+    void* dst, uint64_t destMax, const void* src, uint64_t cnt, rtRecudeKind_t kind, rtDataType_t type, rtStream_t stm,
+    const rtTaskCfgInfo_t* cfgInfo)
 {
     UNUSED(dst);
     UNUSED(destMax);
@@ -910,38 +910,26 @@ rtError_t rtReduceAsyncWithCfgV2(void *dst, uint64_t destMax, const void *src, u
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtSnapShotProcessLock()
-{
-    return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
-}
+rtError_t rtSnapShotProcessLock() { return ACL_ERROR_RT_FEATURE_NOT_SUPPORT; }
 
 VISIBILITY_DEFAULT
-rtError_t rtSnapShotProcessUnlock()
-{
-    return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
-}
+rtError_t rtSnapShotProcessUnlock() { return ACL_ERROR_RT_FEATURE_NOT_SUPPORT; }
 
 VISIBILITY_DEFAULT
-rtError_t rtSnapShotProcessGetState(rtProcessState *state)
+rtError_t rtSnapShotProcessGetState(rtProcessState* state)
 {
     UNUSED(state);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtSnapShotProcessBackup()
-{
-    return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
-}
+rtError_t rtSnapShotProcessBackup() { return ACL_ERROR_RT_FEATURE_NOT_SUPPORT; }
 
 VISIBILITY_DEFAULT
-rtError_t rtSnapShotProcessRestore()
-{
-    return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
-}
+rtError_t rtSnapShotProcessRestore() { return ACL_ERROR_RT_FEATURE_NOT_SUPPORT; }
 
 VISIBILITY_DEFAULT
-rtError_t rtSnapShotCallbackRegister(rtSnapShotStage stage, rtSnapShotCallBack callback, void *args)
+rtError_t rtSnapShotCallbackRegister(rtSnapShotStage stage, rtSnapShotCallBack callback, void* args)
 {
     UNUSED(stage);
     UNUSED(callback);
@@ -958,7 +946,7 @@ RTS_API rtError_t rtSnapShotCallbackUnregister(rtSnapShotStage stage, rtSnapShot
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtCacheLastTaskOpInfo(const void * const infoPtr, const size_t infoSize)
+rtError_t rtCacheLastTaskOpInfo(const void* const infoPtr, const size_t infoSize)
 {
     UNUSED(infoPtr);
     UNUSED(infoSize);
@@ -996,14 +984,14 @@ rtError_t rtEventWorkModeSet(uint8_t mode)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtEventWorkModeGet(uint8_t *mode)
+rtError_t rtEventWorkModeGet(uint8_t* mode)
 {
     UNUSED(mode);
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtIpcGetEventHandle(rtEvent_t event, rtIpcEventHandle_t *handle)
+rtError_t rtIpcGetEventHandle(rtEvent_t event, rtIpcEventHandle_t* handle)
 {
     UNUSED(event);
     UNUSED(handle);
@@ -1011,7 +999,7 @@ rtError_t rtIpcGetEventHandle(rtEvent_t event, rtIpcEventHandle_t *handle)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtIpcOpenEventHandle(rtIpcEventHandle_t handle, rtEvent_t *event)
+rtError_t rtIpcOpenEventHandle(rtIpcEventHandle_t handle, rtEvent_t* event)
 {
     UNUSED(event);
     UNUSED(handle);
@@ -1019,7 +1007,7 @@ rtError_t rtIpcOpenEventHandle(rtIpcEventHandle_t handle, rtEvent_t *event)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetXpuDevCount(const rtXpuDevType devType, uint32_t *devCount)
+rtError_t rtGetXpuDevCount(const rtXpuDevType devType, uint32_t* devCount)
 {
     UNUSED(devType);
     UNUSED(devCount);
@@ -1027,7 +1015,7 @@ rtError_t rtGetXpuDevCount(const rtXpuDevType devType, uint32_t *devCount)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtFunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrType, int64_t *attrValue)
+rtError_t rtFunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrType, int64_t* attrValue)
 {
     UNUSED(funcHandle);
     UNUSED(attrType);
@@ -1036,7 +1024,7 @@ rtError_t rtFunctionGetAttribute(rtFuncHandle funcHandle, rtFuncAttribute attrTy
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtFunctionGetBinary(const rtFuncHandle funcHandle, rtBinHandle *binHandle)
+rtError_t rtFunctionGetBinary(const rtFuncHandle funcHandle, rtBinHandle* binHandle)
 {
     UNUSED(funcHandle);
     UNUSED(binHandle);
@@ -1044,7 +1032,7 @@ rtError_t rtFunctionGetBinary(const rtFuncHandle funcHandle, rtBinHandle *binHan
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtGetFuncBySymbol(const void *symbol, rtFuncHandle *funcHandle)
+rtError_t rtGetFuncBySymbol(const void* symbol, rtFuncHandle* funcHandle)
 {
     UNUSED(symbol);
     UNUSED(funcHandle);
@@ -1052,8 +1040,7 @@ rtError_t rtGetFuncBySymbol(const void *symbol, rtFuncHandle *funcHandle)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtRegisterFuncSymbol(void *binHandle, const void *symbol, const char *kernelName,
-                               void *reserve)
+rtError_t rtRegisterFuncSymbol(void* binHandle, const void* symbol, const char* kernelName, void* reserve)
 {
     UNUSED(binHandle);
     UNUSED(symbol);
@@ -1063,7 +1050,7 @@ rtError_t rtRegisterFuncSymbol(void *binHandle, const void *symbol, const char *
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtFunctionGetParamCount(const void *func, size_t *paramCount)
+rtError_t rtFunctionGetParamCount(const void* func, size_t* paramCount)
 {
     UNUSED(func);
     UNUSED(paramCount);
@@ -1071,8 +1058,7 @@ rtError_t rtFunctionGetParamCount(const void *func, size_t *paramCount)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtFunctionGetParamInfo(const void *func, size_t paramIndex,
-                                 size_t *paramOffset, size_t *paramSize)
+rtError_t rtFunctionGetParamInfo(const void* func, size_t paramIndex, size_t* paramOffset, size_t* paramSize)
 {
     UNUSED(func);
     UNUSED(paramIndex);
@@ -1082,7 +1068,7 @@ rtError_t rtFunctionGetParamInfo(const void *func, size_t paramIndex,
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags, size_t *dynamicUbufSize)
+rtError_t rtFunctionGetAvailDynUbufPerBlock(void* func, uint32_t flags, size_t* dynamicUbufSize)
 {
     UNUSED(func);
     UNUSED(flags);
@@ -1091,8 +1077,8 @@ rtError_t rtFunctionGetAvailDynUbufPerBlock(void *func, uint32_t flags, size_t *
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtLaunchKernelWithArgsArray(void *func, uint32_t numBlocks, rtStream_t stm,
-                                      rtKernelLaunchCfg_t *cfg, void **args)
+rtError_t rtLaunchKernelWithArgsArray(
+    void* func, uint32_t numBlocks, rtStream_t stm, rtKernelLaunchCfg_t* cfg, void** args)
 {
     UNUSED(func);
     UNUSED(numBlocks);
@@ -1119,7 +1105,7 @@ rtError_t rtModelTaskSetParams(rtTask_t task, rtTaskParams* params)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtModelKernelTaskGetAttribute(rtTask_t task, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t *attrValue)
+rtError_t rtModelKernelTaskGetAttribute(rtTask_t task, rtLaunchKernelAttrId attrId, rtLaunchKernelAttrVal_t* attrValue)
 {
     UNUSED(task);
     UNUSED(attrId);
@@ -1142,7 +1128,7 @@ rtError_t rtModelTaskDisable(rtTask_t task)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtFuncGetSize(const rtFuncHandle funcHandle, size_t *aicSize, size_t *aivSize)
+rtError_t rtFuncGetSize(const rtFuncHandle funcHandle, size_t* aicSize, size_t* aivSize)
 {
     UNUSED(funcHandle);
     UNUSED(aicSize);
@@ -1168,7 +1154,7 @@ rtError_t rtsNotifySetImportPid(rtNotify_t notify, int32_t pid[], int num)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProps *poolProps)
+rtError_t rtMemPoolCreate(rtMemPool_t* memPool, const rtMemPoolProps* poolProps)
 {
     UNUSED(memPool);
     UNUSED(poolProps);
@@ -1183,7 +1169,7 @@ rtError_t rtMemPoolDestroy(const rtMemPool_t memPool)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
+rtError_t rtMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value)
 {
     UNUSED(memPool);
     UNUSED(attr);
@@ -1192,7 +1178,7 @@ rtError_t rtMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
+rtError_t rtMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value)
 {
     UNUSED(memPool);
     UNUSED(attr);
@@ -1201,8 +1187,7 @@ rtError_t rtMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemPoolMallocAsync(void **ptr, const uint64_t size, const rtMemPool_t memPoolId,
-                                const rtStream_t stm)
+rtError_t rtMemPoolMallocAsync(void** ptr, const uint64_t size, const rtMemPool_t memPoolId, const rtStream_t stm)
 {
     UNUSED(ptr);
     UNUSED(size);
@@ -1212,7 +1197,7 @@ rtError_t rtMemPoolMallocAsync(void **ptr, const uint64_t size, const rtMemPool_
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemPoolFreeAsync(void *ptr, rtStream_t stm)
+rtError_t rtMemPoolFreeAsync(void* ptr, rtStream_t stm)
 {
     UNUSED(ptr);
     UNUSED(stm);
@@ -1228,7 +1213,7 @@ rtError_t rtMemPoolTrimTo(rtMemPool_t memPool, uint64_t minBytesToKeep)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtModelGetStreams(rtModel_t const mdl, rtStream_t *streams, uint32_t *numStreams)
+rtError_t rtModelGetStreams(rtModel_t const mdl, rtStream_t* streams, uint32_t* numStreams)
 {
     UNUSED(mdl);
     UNUSED(streams);
@@ -1237,7 +1222,7 @@ rtError_t rtModelGetStreams(rtModel_t const mdl, rtStream_t *streams, uint32_t *
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtStreamGetTasks(rtStream_t const stm, rtTask_t *tasks, uint32_t *numTasks)
+rtError_t rtStreamGetTasks(rtStream_t const stm, rtTask_t* tasks, uint32_t* numTasks)
 {
     UNUSED(stm);
     UNUSED(tasks);
@@ -1246,7 +1231,7 @@ rtError_t rtStreamGetTasks(rtStream_t const stm, rtTask_t *tasks, uint32_t *numT
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtTaskGetType(rtTask_t task, rtTaskType *type)
+rtError_t rtTaskGetType(rtTask_t task, rtTaskType* type)
 {
     UNUSED(task);
     UNUSED(type);
@@ -1254,7 +1239,7 @@ rtError_t rtTaskGetType(rtTask_t task, rtTaskType *type)
 }
 
 VISIBILITY_DEFAULT
-RTS_API rtError_t rtTaskGetSeqId(rtTask_t task, uint32_t *id)
+RTS_API rtError_t rtTaskGetSeqId(rtTask_t task, uint32_t* id)
 {
     UNUSED(task);
     UNUSED(id);
@@ -1262,7 +1247,7 @@ RTS_API rtError_t rtTaskGetSeqId(rtTask_t task, uint32_t *id)
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtBinaryGetMetaNum(const rtBinHandle binHandle, const rtBinaryMetaType type, size_t *numOfMeta)
+rtError_t rtBinaryGetMetaNum(const rtBinHandle binHandle, const rtBinaryMetaType type, size_t* numOfMeta)
 {
     UNUSED(binHandle);
     UNUSED(type);
@@ -1271,8 +1256,9 @@ rtError_t rtBinaryGetMetaNum(const rtBinHandle binHandle, const rtBinaryMetaType
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtBinaryGetMetaInfo(const rtBinHandle binHandle, const rtBinaryMetaType type, const size_t numOfMeta,
-    void **data, const size_t *dataSize)
+rtError_t rtBinaryGetMetaInfo(
+    const rtBinHandle binHandle, const rtBinaryMetaType type, const size_t numOfMeta, void** data,
+    const size_t* dataSize)
 {
     UNUSED(binHandle);
     UNUSED(type);
@@ -1283,8 +1269,8 @@ rtError_t rtBinaryGetMetaInfo(const rtBinHandle binHandle, const rtBinaryMetaTyp
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemManagedPrefetchAsync(const void* ptr, size_t size, rtMemManagedLocation location,
-    uint32_t flags, rtStream_t stream)
+rtError_t rtMemManagedPrefetchAsync(
+    const void* ptr, size_t size, rtMemManagedLocation location, uint32_t flags, rtStream_t stream)
 {
     UNUSED(ptr);
     UNUSED(size);
@@ -1295,9 +1281,9 @@ rtError_t rtMemManagedPrefetchAsync(const void* ptr, size_t size, rtMemManagedLo
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemManagedPrefetchBatchAsync(const void** ptrs, size_t* sizes, size_t count,
-    rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs, size_t numPrefetchLocs, uint64_t flags,
-    rtStream_t stream)
+rtError_t rtMemManagedPrefetchBatchAsync(
+    const void** ptrs, size_t* sizes, size_t count, rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs,
+    size_t numPrefetchLocs, uint64_t flags, rtStream_t stream)
 {
     UNUSED(ptrs);
     UNUSED(sizes);
@@ -1311,8 +1297,8 @@ rtError_t rtMemManagedPrefetchBatchAsync(const void** ptrs, size_t* sizes, size_
 }
 
 VISIBILITY_DEFAULT
-void rtRegisterVariable(void *binHandle, const void *hostVar, const char *deviceVarName,
-                        size_t size, uint32_t flags, void *reserve)
+void rtRegisterVariable(
+    void* binHandle, const void* hostVar, const char* deviceVarName, size_t size, uint32_t flags, void* reserve)
 {
     UNUSED(binHandle);
     UNUSED(hostVar);
@@ -1323,7 +1309,7 @@ void rtRegisterVariable(void *binHandle, const void *hostVar, const char *device
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtSymbolLookup(const void *hostVar, void **devPtr, size_t *size)
+rtError_t rtSymbolLookup(const void* hostVar, void** devPtr, size_t* size)
 {
     UNUSED(hostVar);
     UNUSED(devPtr);
@@ -1331,9 +1317,8 @@ rtError_t rtSymbolLookup(const void *hostVar, void **devPtr, size_t *size)
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
-
 VISIBILITY_DEFAULT
-rtError_t rtBinaryGetGlobal(const rtBinHandle binHandle, const char *name, void **dptr, size_t *size)
+rtError_t rtBinaryGetGlobal(const rtBinHandle binHandle, const char* name, void** dptr, size_t* size)
 {
     UNUSED(binHandle);
     UNUSED(name);
@@ -1343,8 +1328,9 @@ rtError_t rtBinaryGetGlobal(const rtBinHandle binHandle, const char *name, void 
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtLaunchSIMTKernelWithArgsArray(void *func, rtDim3 gridDim,rtDim3 blockDim,
-    size_t dynUbufSize, rtStream_t stm, rtKernelLaunchCfg_t *cfg, void **args)
+rtError_t rtLaunchSIMTKernelWithArgsArray(
+    void* func, rtDim3 gridDim, rtDim3 blockDim, size_t dynUbufSize, rtStream_t stm, rtKernelLaunchCfg_t* cfg,
+    void** args)
 {
     UNUSED(func);
     UNUSED(gridDim);
@@ -1370,7 +1356,7 @@ rtError_t rtSetOpExecuteTimeOut(uint32_t timeout)
     return ACL_ERROR_RT_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t rtBarrierTaskLaunch(rtBarrierTaskInfo_t *taskInfo, rtStream_t stm, uint32_t flag)
+rtError_t rtBarrierTaskLaunch(rtBarrierTaskInfo_t* taskInfo, rtStream_t stm, uint32_t flag)
 {
     UNUSED(taskInfo);
     UNUSED(stm);
@@ -1379,7 +1365,7 @@ rtError_t rtBarrierTaskLaunch(rtBarrierTaskInfo_t *taskInfo, rtStream_t stm, uin
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtBinaryLoadWithoutTilingKey(const void *data, const uint64_t length, rtBinHandle *binHandle)
+rtError_t rtBinaryLoadWithoutTilingKey(const void* data, const uint64_t length, rtBinHandle* binHandle)
 {
     UNUSED(data);
     UNUSED(length);
@@ -1388,9 +1374,9 @@ rtError_t rtBinaryLoadWithoutTilingKey(const void *data, const uint64_t length, 
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtLaunchSIMTKernelWithHostArgs(void *func, rtDim3 gridDim, rtDim3 blockDim,
-    size_t dynUbufSize, rtStream_t stm, rtKernelLaunchCfg_t *cfg, void *hostArgs,
-    uint32_t argsSize, rtPlaceHolderInfo_t *placeHolderArray, uint32_t placeHolderNum)
+rtError_t rtLaunchSIMTKernelWithHostArgs(
+    void* func, rtDim3 gridDim, rtDim3 blockDim, size_t dynUbufSize, rtStream_t stm, rtKernelLaunchCfg_t* cfg,
+    void* hostArgs, uint32_t argsSize, rtPlaceHolderInfo_t* placeHolderArray, uint32_t placeHolderNum)
 {
     UNUSED(func);
     UNUSED(gridDim);

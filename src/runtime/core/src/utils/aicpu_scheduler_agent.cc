@@ -14,14 +14,11 @@
 namespace {
 // aicpu success ret.
 constexpr int32_t AICPU_SCHEDULE_RET_SUCCESS = 0;
-}
+} // namespace
 
 namespace cce {
 namespace runtime {
-AicpuSchedulerAgent::~AicpuSchedulerAgent()
-{
-    Destroy();
-}
+AicpuSchedulerAgent::~AicpuSchedulerAgent() { Destroy(); }
 
 rtError_t AicpuSchedulerAgent::Init()
 {
@@ -34,34 +31,32 @@ rtError_t AicpuSchedulerAgent::Init()
         return RT_ERROR_DRV_OPEN_AICPU;
     }
 
-    constexpr const char_t *modelLoadFuncName = "AICPUModelLoad";
+    constexpr const char_t* modelLoadFuncName = "AICPUModelLoad";
     loadModelFunc_ = RtPtrToPtr<FUNC_AICPU_MODEL_LOAD>(mmDlsym(aicpuSchedulerHandle_, modelLoadFuncName));
     if (loadModelFunc_ == nullptr) {
         RT_LOG_CALL_MSG(ERR_MODULE_AICPU, "Failed to find AI CPU scheduler function, function=%s.", modelLoadFuncName);
         return RT_ERROR_DRV_SYM_AICPU;
     }
 
-    constexpr const char_t *modelExecuteFuncName = "AICPUModelExecute";
-    modelExecuteFunc_ = RtPtrToPtr<FUNC_AICPU_MODEL_OPERATE>(mmDlsym(aicpuSchedulerHandle_,
-        modelExecuteFuncName));
+    constexpr const char_t* modelExecuteFuncName = "AICPUModelExecute";
+    modelExecuteFunc_ = RtPtrToPtr<FUNC_AICPU_MODEL_OPERATE>(mmDlsym(aicpuSchedulerHandle_, modelExecuteFuncName));
     if (modelExecuteFunc_ == nullptr) {
         RT_LOG_CALL_MSG(
             ERR_MODULE_AICPU, "Failed to find AI CPU scheduler function, function=%s.", modelExecuteFuncName);
         return RT_ERROR_DRV_SYM_AICPU;
     }
 
-    constexpr const char_t *modelDestroyFuncName = "AICPUModelDestroy";
-    modelDestroyFunc_ = RtPtrToPtr<FUNC_AICPU_MODEL_OPERATE>(mmDlsym(aicpuSchedulerHandle_,
-        modelDestroyFuncName));
+    constexpr const char_t* modelDestroyFuncName = "AICPUModelDestroy";
+    modelDestroyFunc_ = RtPtrToPtr<FUNC_AICPU_MODEL_OPERATE>(mmDlsym(aicpuSchedulerHandle_, modelDestroyFuncName));
     if (modelDestroyFunc_ == nullptr) {
         RT_LOG_CALL_MSG(
             ERR_MODULE_AICPU, "Failed to find AI CPU scheduler function, function=%s.", modelDestroyFuncName);
         return RT_ERROR_DRV_SYM_AICPU;
     }
 
-    constexpr const char_t *loadOpMappingInfoFuncName = "LoadOpMappingInfo";
-    loadOpMappingInfoFunc_ = RtPtrToPtr<FUNC_AICPU_LOAD_OP_MAPPING_INFO>(mmDlsym(aicpuSchedulerHandle_,
-        loadOpMappingInfoFuncName));
+    constexpr const char_t* loadOpMappingInfoFuncName = "LoadOpMappingInfo";
+    loadOpMappingInfoFunc_ =
+        RtPtrToPtr<FUNC_AICPU_LOAD_OP_MAPPING_INFO>(mmDlsym(aicpuSchedulerHandle_, loadOpMappingInfoFuncName));
     if (loadOpMappingInfoFunc_ == nullptr) {
         RT_LOG_CALL_MSG(
             ERR_MODULE_AICPU, "Failed to find AI CPU scheduler function, function=%s.", loadOpMappingInfoFuncName);
@@ -83,7 +78,7 @@ void AicpuSchedulerAgent::Destroy() noexcept
     loadOpMappingInfoFunc_ = nullptr;
 }
 
-rtError_t AicpuSchedulerAgent::AicpuModelLoad(void * const funcArg) const
+rtError_t AicpuSchedulerAgent::AicpuModelLoad(void* const funcArg) const
 {
     if (loadModelFunc_ == nullptr) {
         RT_LOG_CALL_MSG(ERR_MODULE_AICPU, "AICPUModelLoad func is null.");
@@ -128,7 +123,7 @@ rtError_t AicpuSchedulerAgent::AicpuModelExecute(const uint32_t modelId) const
     return RT_ERROR_NONE;
 }
 
-rtError_t AicpuSchedulerAgent::DatadumpInfoLoad(const void * const dumpInfo, const uint32_t length) const
+rtError_t AicpuSchedulerAgent::DatadumpInfoLoad(const void* const dumpInfo, const uint32_t length) const
 {
     if (loadOpMappingInfoFunc_ == nullptr) {
         RT_LOG_CALL_MSG(ERR_MODULE_AICPU, "LoadOpMappingInfo is null.");
@@ -142,5 +137,5 @@ rtError_t AicpuSchedulerAgent::DatadumpInfoLoad(const void * const dumpInfo, con
     }
     return RT_ERROR_NONE;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

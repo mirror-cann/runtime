@@ -14,16 +14,16 @@
 
 namespace cce {
 namespace runtime {
-    rtError_t DavidDeviceTaskAbort(const int32_t devId, const uint32_t time);
-    rtError_t DeviceTaskSendResume(const int32_t devId, const uint64_t timeRemain);
-    rtError_t DavidDeviceQuery(const int32_t devId, const uint32_t op, const uint64_t timeRemain);
-    rtError_t DavidDeviceKill(const int32_t devId, const uint32_t op, const uint64_t timeRemain);
-    rtError_t DeviceTaskSendStop(const int32_t devId, const uint64_t timeRemain);
-    rtError_t CtxStreamTaskClean(Context *const ctx);
-    rtError_t GetMemUceInfoProc(const uint32_t deviceId, rtErrorInfo * const errorInfo);
-    rtError_t MemUceErrorResume(Device * const dev, const uint32_t deviceId, const rtErrorInfo * const errorInfo);
+rtError_t DavidDeviceTaskAbort(const int32_t devId, const uint32_t time);
+rtError_t DeviceTaskSendResume(const int32_t devId, const uint64_t timeRemain);
+rtError_t DavidDeviceQuery(const int32_t devId, const uint32_t op, const uint64_t timeRemain);
+rtError_t DavidDeviceKill(const int32_t devId, const uint32_t op, const uint64_t timeRemain);
+rtError_t DeviceTaskSendStop(const int32_t devId, const uint64_t timeRemain);
+rtError_t CtxStreamTaskClean(Context* const ctx);
+rtError_t GetMemUceInfoProc(const uint32_t deviceId, rtErrorInfo* const errorInfo);
+rtError_t MemUceErrorResume(Device* const dev, const uint32_t deviceId, const rtErrorInfo* const errorInfo);
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
 #endif

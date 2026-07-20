@@ -18,29 +18,29 @@
 
 namespace cce {
 namespace runtime {
-bool IsEventCapturing(const Event * const evt, const Stream * const stm);
-void TerminateCapture(const Event * const evt, const Stream * const stm);
-bool IsCrossCaptureModel(const Event * const evt, const Stream * const stm);
-bool IsCapturedTask(const Stream * const launchStm, const TaskInfo *submitTask);
-rtError_t GetCaptureStream(Context * const ctx, Stream * const stm, const Event * const evt, Stream ** const captureStm);
-rtError_t CheckCaptureStreamThreadIsMatch(const Stream * const stm);
-rtError_t CheckCaptureModelSupportExternalEvent(const Device * const dev, const bool isRecord);
+bool IsEventCapturing(const Event* const evt, const Stream* const stm);
+void TerminateCapture(const Event* const evt, const Stream* const stm);
+bool IsCrossCaptureModel(const Event* const evt, const Stream* const stm);
+bool IsCapturedTask(const Stream* const launchStm, const TaskInfo* submitTask);
+rtError_t GetCaptureStream(Context* const ctx, Stream* const stm, const Event* const evt, Stream** const captureStm);
+rtError_t CheckCaptureStreamThreadIsMatch(const Stream* const stm);
+rtError_t CheckCaptureModelSupportExternalEvent(const Device* const dev, const bool isRecord);
 rtError_t CheckCaptureModelSupportSoftwareSq(const Device* const dev);
-rtError_t CheckCaptureModelSupportCondOp(Device * const dev);
+rtError_t CheckCaptureModelSupportCondOp(Device* const dev);
 rtError_t CheckCaptureModelForUpdate(const Stream* stm);
-bool IsSoftwareSqCaptureModel(const Model * const mdl);
+bool IsSoftwareSqCaptureModel(const Model* const mdl);
 bool CheckCaptureModeSupport(const Context* ctx, const char* funcName);
-bool NeedReBuildSqe(const TaskInfo *const task);
-bool IsUseHardwareEvent(Device * const dev);
-rtError_t AllocNotifyIdForSubModel(Model * const mdl, Notify *notify);
-rtError_t ReleaseNotify(Model * const mdl, Notify *notify);
-uint32_t FindStreamIdInSubModels(CaptureModel * const parentModel, const uint16_t sqId);
-bool IsStreamBindWithSubModel(const Stream * const stream);
-bool IsTaskBelongToSubCaptureMdl(const TaskInfo * const task);
-bool IsUbDmaWithSubModel(const Stream *const stm, const uint32_t kind, const void *const srcAddr,
-    const void *const desAddr);
+bool NeedReBuildSqe(const TaskInfo* const task);
+bool IsUseHardwareEvent(Device* const dev);
+rtError_t AllocNotifyIdForSubModel(Model* const mdl, Notify* notify);
+rtError_t ReleaseNotify(Model* const mdl, Notify* notify);
+uint32_t FindStreamIdInSubModels(CaptureModel* const parentModel, const uint16_t sqId);
+bool IsStreamBindWithSubModel(const Stream* const stream);
+bool IsTaskBelongToSubCaptureMdl(const TaskInfo* const task);
+bool IsUbDmaWithSubModel(
+    const Stream* const stm, const uint32_t kind, const void* const srcAddr, const void* const desAddr);
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #endif

@@ -19,12 +19,13 @@ public:
     explicit NpuDriverRecord(const uint16_t opType);
     ~NpuDriverRecord() = default;
     void SaveRecord();
+
 private:
-    void PrintRecord(const rtProfileRecordSyncDrv_t &recordSyncDrv) const;
+    void PrintRecord(const rtProfileRecordSyncDrv_t& recordSyncDrv) const;
     bool needSave_;
     rtProfileRecordSyncDrv_t record_{};
 };
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_NPU_DRIVER_RECORD_HPP
+#endif // CCE_RUNTIME_NPU_DRIVER_RECORD_HPP

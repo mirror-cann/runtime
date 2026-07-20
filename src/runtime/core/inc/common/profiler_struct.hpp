@@ -12,19 +12,19 @@
 #include "base.hpp"
 #include "toolchain/prof_api.h"
 
-#define M_PROF_DIRSTR_LEN       (128)
-#define M_PROF_FMTSTR_LEN       (64)
-#define M_PROF_FMTSTR_NUM       (64)
-#define M_PROF_CFGLNE_LEN       (256)
-#define M_PROF_EVEID_NUM        (8)
-#define M_PROF_EVEARR_LEN       (64)
-#define M_PROF_DEVID_NUM        (3)
-#define M_PROF_MIN_EVEID        (0)
-#define M_PROF_MAX_EVEID        (135)
-#define M_PROF_PACKAGE_LEN      (128)
+#define M_PROF_DIRSTR_LEN (128)
+#define M_PROF_FMTSTR_LEN (64)
+#define M_PROF_FMTSTR_NUM (64)
+#define M_PROF_CFGLNE_LEN (256)
+#define M_PROF_EVEID_NUM (8)
+#define M_PROF_EVEARR_LEN (64)
+#define M_PROF_DEVID_NUM (3)
+#define M_PROF_MIN_EVEID (0)
+#define M_PROF_MAX_EVEID (135)
+#define M_PROF_PACKAGE_LEN (128)
 #define M_PROF_KERNEL_TASK_NAME_LEN (255)
-#define M_PROF_STREAM_NAME_LEN  (16)
-#define M_PROF_EVENT_NAME_LEN   (16)
+#define M_PROF_STREAM_NAME_LEN (16)
+#define M_PROF_EVENT_NAME_LEN (16)
 #define RUNTIME_TASK_TRACK_BUFF_NUM (5U)
 
 #define StreamArgTag   \
@@ -43,8 +43,8 @@ enum rtProfTag {
     RT_PROF_TAG_COMMAND,
     RT_PROF_TAG_REPORT,
     RT_PROF_TAG_TIMELINE,
-    RT_PROF_TAG_TASK_BASE_AICORE,    // task base aicore data
-    RT_PROF_TAG_SAMPLE_BASE_AICORE,  // sample base aicore data
+    RT_PROF_TAG_TASK_BASE_AICORE,   // task base aicore data
+    RT_PROF_TAG_SAMPLE_BASE_AICORE, // sample base aicore data
     RT_PROF_TAG_TASK_TRACK,
     RT_PROF_TAG_TS_CPU_USAGE,
     RT_PROF_TAG_AICORE_STATUS,
@@ -74,13 +74,13 @@ enum rtProfApiType_t : uint32_t {
     RT_PROF_API_MANAGEDMEM_FREE = 19,
     RT_PROF_API_MEM_CPY = 20,
     RT_PROF_API_MEM_ASYNC = 21,
-    RT_PROF_API_SET_DEVICE = 22,          // refer default stream
-    RT_PROF_API_DEVICE_RESET = 23,        // refer default stream
-    RT_PROF_API_DEVICE_SYNCHRONIZE = 24,  // refer default stream
+    RT_PROF_API_SET_DEVICE = 22,         // refer default stream
+    RT_PROF_API_DEVICE_RESET = 23,       // refer default stream
+    RT_PROF_API_DEVICE_SYNCHRONIZE = 24, // refer default stream
     RT_PROF_API_CONTEXT_CREATE = 25,
     RT_PROF_API_CONTEXT_DESTROY = 26,
     RT_PROF_API_CONTEXT_SETCURRENT = 27,
-    RT_PROF_API_CONTEXT_SYNCHRONIZE = 28,  // refer default stream
+    RT_PROF_API_CONTEXT_SYNCHRONIZE = 28, // refer default stream
     RT_PROF_API_IPC_EVENT_CREATE = 29,
     RT_PROF_API_IPC_EVENT_OPEN = 30,
     RT_PROF_API_IPC_MEMORY_CREATE = 31,
@@ -92,7 +92,7 @@ enum rtProfApiType_t : uint32_t {
     RT_PROF_API_GET_FUNCTION_BY_NAME = 37,
     RT_PROF_API_MODEL_GET_TASKID = 38,
     RT_PROF_API_MODEL_EXECUTE = 39,
-    RT_PROF_API_MODEL_UNBIND_STREAM = 40,  // refer default stream
+    RT_PROF_API_MODEL_UNBIND_STREAM = 40, // refer default stream
     RT_PROF_API_MODEL_DESTROY = 41,
     RT_PROF_API_RDMASend = 42,
     RT_PROF_API_NotifyCreate = 43,
@@ -218,7 +218,7 @@ enum rtProfApiType_t : uint32_t {
     RT_PROF_API_UB_DIRECT_SEND = 170,
     RT_PROF_API_FUSION_KERNEL_LAUNCH = 171,
     RT_PROF_API_CCU_LAUNCH = 172,
-    RT_PROF_API_MEMCPY_BATCH = 173, 
+    RT_PROF_API_MEMCPY_BATCH = 173,
     RT_PROF_API_GET_CMO_DESC_SIZE = 174,
     RT_PROF_API_SET_CMO_DESC = 175,
     RT_PROF_API_MODEL_EXECUTE_SYNC = 176,
@@ -238,20 +238,20 @@ enum rtProfApiType_t : uint32_t {
 };
 
 enum rtProfDrvApiType : uint16_t {
-    RT_PROF_DRV_API_BASE            = static_cast<uint16_t>(RT_PROF_API_MAX) + 1U,
-    RT_PROF_DRV_API_DrvMemcpy       = RT_PROF_DRV_API_BASE + 1U,     // drvMemcpy
-    RT_PROF_DRV_API_DrvMemsetD8     = RT_PROF_DRV_API_BASE + 2U,     // drvMemsetD8
-    RT_PROF_DRV_API_HalMemAlloc     = RT_PROF_DRV_API_BASE + 3U,     // halMemAlloc
-    RT_PROF_DRV_API_DevMallocCached = RT_PROF_DRV_API_BASE + 4U,     // halMemAlloc
-    RT_PROF_DRV_API_DevFree         = RT_PROF_DRV_API_BASE + 5U,     // halMemFree
-    RT_PROF_DRV_API_DevDvppMalloc   = RT_PROF_DRV_API_BASE + 6U,     // halMemAlloc
-    RT_PROF_DRV_API_DevDvppFree     = RT_PROF_DRV_API_BASE + 7U,     // halMemFree
-    RT_PROF_DRV_API_HostMalloc      = RT_PROF_DRV_API_BASE + 8U,     // halMemAlloc
-    RT_PROF_DRV_API_HostFree        = RT_PROF_DRV_API_BASE + 9U,     // halMemFree
-    RT_PROF_DRV_API_MngMalloc       = RT_PROF_DRV_API_BASE + 10U,    // halMemAlloc
-    RT_PROF_DRV_API_MngFree         = RT_PROF_DRV_API_BASE + 11U,    // halMemFree
-    RT_PROF_DRV_API_HalMemcpy2D     = RT_PROF_DRV_API_BASE + 12U,    // halMemcpy2D
-    RT_PROF_DRV_API_MemcpyBatch     = RT_PROF_DRV_API_BASE + 13U     // halMemcpyBatch
+    RT_PROF_DRV_API_BASE = static_cast<uint16_t>(RT_PROF_API_MAX) + 1U,
+    RT_PROF_DRV_API_DrvMemcpy = RT_PROF_DRV_API_BASE + 1U,       // drvMemcpy
+    RT_PROF_DRV_API_DrvMemsetD8 = RT_PROF_DRV_API_BASE + 2U,     // drvMemsetD8
+    RT_PROF_DRV_API_HalMemAlloc = RT_PROF_DRV_API_BASE + 3U,     // halMemAlloc
+    RT_PROF_DRV_API_DevMallocCached = RT_PROF_DRV_API_BASE + 4U, // halMemAlloc
+    RT_PROF_DRV_API_DevFree = RT_PROF_DRV_API_BASE + 5U,         // halMemFree
+    RT_PROF_DRV_API_DevDvppMalloc = RT_PROF_DRV_API_BASE + 6U,   // halMemAlloc
+    RT_PROF_DRV_API_DevDvppFree = RT_PROF_DRV_API_BASE + 7U,     // halMemFree
+    RT_PROF_DRV_API_HostMalloc = RT_PROF_DRV_API_BASE + 8U,      // halMemAlloc
+    RT_PROF_DRV_API_HostFree = RT_PROF_DRV_API_BASE + 9U,        // halMemFree
+    RT_PROF_DRV_API_MngMalloc = RT_PROF_DRV_API_BASE + 10U,      // halMemAlloc
+    RT_PROF_DRV_API_MngFree = RT_PROF_DRV_API_BASE + 11U,        // halMemFree
+    RT_PROF_DRV_API_HalMemcpy2D = RT_PROF_DRV_API_BASE + 12U,    // halMemcpy2D
+    RT_PROF_DRV_API_MemcpyBatch = RT_PROF_DRV_API_BASE + 13U     // halMemcpyBatch
 };
 
 /*
@@ -266,24 +266,21 @@ before report date, need to register data type useing api MsprofRegTypeInfo
 enum rtProfileDataType_t : uint32_t {
     RT_PROFILE_TYPE_TASK_BEGIN = 0,
     RT_PROFILE_TYPE_TASK_END = 800,
-    RT_PROFILE_TYPE_MEMCPY_INFO = 801,      /* memcpy info */
-    RT_PROFILE_TYPE_TASK_TRACK = 802,      /* task track */
+    RT_PROFILE_TYPE_MEMCPY_INFO = 801, /* memcpy info */
+    RT_PROFILE_TYPE_TASK_TRACK = 802,  /* task track */
     RT_PROFILE_TYPE_CAPTURE_STREAM_INFO = 803,
     RT_PROFILE_TYPE_SOFTWARE_SQ_ENABLE = 804,
-    RT_PROFILE_TYPE_SHAPE_INFO = 805,       /* aclgraph cache & report shape info */
+    RT_PROFILE_TYPE_SHAPE_INFO = 805,     /* aclgraph cache & report shape info */
     RT_PROFILE_TYPE_DPU_INFO = 806,       /* dpu task track*/
-    RT_PROFILE_TYPE_STREAM_SQ_INFO = 807,  /* stream sq info */
-    RT_PROFILE_TYPE_API_BEGIN = 1000,       /* regist task type and task name for Parsing task info*/
+    RT_PROFILE_TYPE_STREAM_SQ_INFO = 807, /* stream sq info */
+    RT_PROFILE_TYPE_API_BEGIN = 1000,     /* regist task type and task name for Parsing task info*/
     RT_PROFILE_TYPE_API_END = 2000,
     RT_PROFILE_TYPE_MAX = 2001
 };
 
-enum StreamReportStatus : uint16_t {
-    STREAM_STATUS_CREATE = 0U,
-    STREAM_STATUS_DESTROY = 1U
-};
+enum StreamReportStatus : uint16_t { STREAM_STATUS_CREATE = 0U, STREAM_STATUS_DESTROY = 1U };
 
-struct RuntimeMemcpyInfo {  // for memcpy info
+struct RuntimeMemcpyInfo { // for memcpy info
     uint64_t dateSize;
     uint64_t maxSize;
     uint16_t direction;
@@ -315,7 +312,7 @@ struct RuntimeProfTrackData {
     uint32_t isModel;
     MsprofCompactInfo compactInfo;
 };
- 
+
 struct TaskTrackInfo {
     RuntimeProfTrackData trackBuff[RUNTIME_TASK_TRACK_BUFF_NUM];
     uint32_t taskNum = 0U;
@@ -352,20 +349,20 @@ typedef struct ProfileConfig {
  * @brief Profile Record Type
  */
 typedef enum tagProfileRecordType {
-    PROFILE_RECORD_TYPE_SRART            = 0,
+    PROFILE_RECORD_TYPE_SRART = 0,
 
     /* runtime */
-    PROFILE_RECORD_TYPE_RT_CALL_RT       = 1,
-    PROFILE_RECORD_TYPE_RT_CALL_DRV      = 2,
-    PROFILE_RECORD_TYPE_RT_ASYNC_INFO    = 3,
-    PROFILE_RECORD_TYPE_RT_ASYNC_SEND    = 4,
-    PROFILE_RECORD_TYPE_RT_ASYNC_RECV    = 5,
+    PROFILE_RECORD_TYPE_RT_CALL_RT = 1,
+    PROFILE_RECORD_TYPE_RT_CALL_DRV = 2,
+    PROFILE_RECORD_TYPE_RT_ASYNC_INFO = 3,
+    PROFILE_RECORD_TYPE_RT_ASYNC_SEND = 4,
+    PROFILE_RECORD_TYPE_RT_ASYNC_RECV = 5,
 
     /* TS */
-    PROFILE_RECORD_TYPE_TS_FORWARD       = 11,
-    PROFILE_RECORD_TYPE_TS_BACKWARD      = 12,
+    PROFILE_RECORD_TYPE_TS_FORWARD = 11,
+    PROFILE_RECORD_TYPE_TS_BACKWARD = 12,
 
-    PROFILE_RECORD_TYPE_END              = 13
+    PROFILE_RECORD_TYPE_END = 13
 } rtProfileRecordType_t;
 
 /**
@@ -437,7 +434,7 @@ typedef struct tagRtProfileRecordAsyncRecv {
     uint64_t recvStamp;
 } rtProfileRecordAsyncRecv_t;
 
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_PROFILER_STRUCT_HPP__
+#endif // __CCE_RUNTIME_PROFILER_STRUCT_HPP__

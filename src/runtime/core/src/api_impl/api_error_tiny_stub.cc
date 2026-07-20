@@ -12,8 +12,7 @@
 namespace cce {
 namespace runtime {
 
-rtError_t ApiErrorDecorator::WriteValuePtr(void * const writeValueInfo, Stream * const stm,
-    void * const pointedAddr)
+rtError_t ApiErrorDecorator::WriteValuePtr(void* const writeValueInfo, Stream* const stm, void* const pointedAddr)
 {
     UNUSED(writeValueInfo);
     UNUSED(stm);
@@ -21,8 +20,8 @@ rtError_t ApiErrorDecorator::WriteValuePtr(void * const writeValueInfo, Stream *
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::CntNotifyCreate(const int32_t deviceId, CountNotify ** const retCntNotify,
-                                             const uint32_t flag)
+rtError_t ApiErrorDecorator::CntNotifyCreate(
+    const int32_t deviceId, CountNotify** const retCntNotify, const uint32_t flag)
 {
     UNUSED(deviceId);
     UNUSED(retCntNotify);
@@ -30,23 +29,14 @@ rtError_t ApiErrorDecorator::CntNotifyCreate(const int32_t deviceId, CountNotify
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::CntNotifyDestroy(CountNotify * const inCntNotify)
+rtError_t ApiErrorDecorator::CntNotifyDestroy(CountNotify* const inCntNotify)
 {
     UNUSED(inCntNotify);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::CntNotifyRecord(CountNotify * const inCntNotify, Stream * const stm,
-                                             const rtCntNtyRecordInfo_t * const info)
-{
-    UNUSED(inCntNotify);
-    UNUSED(stm);
-    UNUSED(info);
-    return RT_ERROR_FEATURE_NOT_SUPPORT;
-}
-
-rtError_t ApiErrorDecorator::CntNotifyWaitWithTimeout(CountNotify * const inCntNotify, Stream * const stm,
-                                                      const rtCntNtyWaitInfo_t * const info)
+rtError_t ApiErrorDecorator::CntNotifyRecord(
+    CountNotify* const inCntNotify, Stream* const stm, const rtCntNtyRecordInfo_t* const info)
 {
     UNUSED(inCntNotify);
     UNUSED(stm);
@@ -54,15 +44,24 @@ rtError_t ApiErrorDecorator::CntNotifyWaitWithTimeout(CountNotify * const inCntN
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::CntNotifyReset(CountNotify * const inCntNotify, Stream * const stm)
+rtError_t ApiErrorDecorator::CntNotifyWaitWithTimeout(
+    CountNotify* const inCntNotify, Stream* const stm, const rtCntNtyWaitInfo_t* const info)
+{
+    UNUSED(inCntNotify);
+    UNUSED(stm);
+    UNUSED(info);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t ApiErrorDecorator::CntNotifyReset(CountNotify* const inCntNotify, Stream* const stm)
 {
     UNUSED(inCntNotify);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::GetCntNotifyAddress(CountNotify *const inCntNotify, uint64_t * const cntNotifyAddress,
-                                                 rtNotifyType_t const regType)
+rtError_t ApiErrorDecorator::GetCntNotifyAddress(
+    CountNotify* const inCntNotify, uint64_t* const cntNotifyAddress, rtNotifyType_t const regType)
 {
     UNUSED(inCntNotify);
     UNUSED(cntNotifyAddress);
@@ -70,62 +69,62 @@ rtError_t ApiErrorDecorator::GetCntNotifyAddress(CountNotify *const inCntNotify,
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::GetCntNotifyId(CountNotify * const inCntNotify, uint32_t * const notifyId)
+rtError_t ApiErrorDecorator::GetCntNotifyId(CountNotify* const inCntNotify, uint32_t* const notifyId)
 {
     UNUSED(inCntNotify);
     UNUSED(notifyId);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::WriteValue(rtWriteValueInfo_t * const info, Stream * const stm)
+rtError_t ApiErrorDecorator::WriteValue(rtWriteValueInfo_t* const info, Stream* const stm)
 {
     UNUSED(info);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::CCULaunch(rtCcuTaskInfo_t *taskInfo,  Stream * const stm)
+rtError_t ApiErrorDecorator::CCULaunch(rtCcuTaskInfo_t* taskInfo, Stream* const stm)
 {
     UNUSED(taskInfo);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::UbDevQueryInfo(rtUbDevQueryCmd cmd, void * devInfo)
+rtError_t ApiErrorDecorator::UbDevQueryInfo(rtUbDevQueryCmd cmd, void* devInfo)
 {
     UNUSED(cmd);
     UNUSED(devInfo);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::GetDevResAddress(const rtDevResInfo * const resInfo, rtDevResAddrInfo * const addrInfo)
+rtError_t ApiErrorDecorator::GetDevResAddress(const rtDevResInfo* const resInfo, rtDevResAddrInfo* const addrInfo)
 {
     UNUSED(resInfo);
     UNUSED(addrInfo);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::ReleaseDevResAddress(rtDevResInfo * const resInfo)
+rtError_t ApiErrorDecorator::ReleaseDevResAddress(rtDevResInfo* const resInfo)
 {
     UNUSED(resInfo);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::UbDbSend(rtUbDbInfo_t *const dbInfo, Stream *const stm)
+rtError_t ApiErrorDecorator::UbDbSend(rtUbDbInfo_t* const dbInfo, Stream* const stm)
 {
     UNUSED(dbInfo);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::UbDirectSend(rtUbWqeInfo_t * const wqeInfo, Stream * const stm)
+rtError_t ApiErrorDecorator::UbDirectSend(rtUbWqeInfo_t* const wqeInfo, Stream* const stm)
 {
     UNUSED(wqeInfo);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::FusionLaunch(void * const fusionInfo, Stream * const stm, rtFusionArgsEx_t *argsInfo)
+rtError_t ApiErrorDecorator::FusionLaunch(void* const fusionInfo, Stream* const stm, rtFusionArgsEx_t* argsInfo)
 {
     UNUSED(fusionInfo);
     UNUSED(stm);
@@ -133,19 +132,19 @@ rtError_t ApiErrorDecorator::FusionLaunch(void * const fusionInfo, Stream * cons
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamTaskAbort(Stream * const stm)
+rtError_t ApiErrorDecorator::StreamTaskAbort(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamRecover(Stream * const stm)
+rtError_t ApiErrorDecorator::StreamRecover(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamTaskClean(Stream * const stm)
+rtError_t ApiErrorDecorator::StreamTaskClean(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
@@ -157,15 +156,15 @@ rtError_t ApiErrorDecorator::DeviceResourceClean(const int32_t devId)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::GetBinaryDeviceBaseAddr(const Program * const prog, void **deviceBase)
+rtError_t ApiErrorDecorator::GetBinaryDeviceBaseAddr(const Program* const prog, void** deviceBase)
 {
     UNUSED(prog);
     UNUSED(deviceBase);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::FftsPlusTaskLaunch(const rtFftsPlusTaskInfo_t * const fftsPlusTaskInfo,
-    Stream * const stm, const uint32_t flag)
+rtError_t ApiErrorDecorator::FftsPlusTaskLaunch(
+    const rtFftsPlusTaskInfo_t* const fftsPlusTaskInfo, Stream* const stm, const uint32_t flag)
 {
     UNUSED(fftsPlusTaskInfo);
     UNUSED(stm);
@@ -174,12 +173,12 @@ rtError_t ApiErrorDecorator::FftsPlusTaskLaunch(const rtFftsPlusTaskInfo_t * con
 }
 
 // dqs
-rtError_t ApiErrorDecorator::LaunchDqsTask(Stream * const stm, const rtDqsTaskCfg_t * const taskCfg)
+rtError_t ApiErrorDecorator::LaunchDqsTask(Stream* const stm, const rtDqsTaskCfg_t* const taskCfg)
 {
     UNUSED(stm);
     UNUSED(taskCfg);
 
-    return RT_ERROR_FEATURE_NOT_SUPPORT;    
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
 rtError_t ApiErrorDecorator::MemGetInfoByDeviceId(
@@ -192,8 +191,8 @@ rtError_t ApiErrorDecorator::MemGetInfoByDeviceId(
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::GetDeviceInfoFromPlatformInfo(const uint32_t deviceId, const std::string &label,
-    const std::string &key, int64_t * const value)
+rtError_t ApiErrorDecorator::GetDeviceInfoFromPlatformInfo(
+    const uint32_t deviceId, const std::string& label, const std::string& key, int64_t* const value)
 {
     UNUSED(deviceId);
     UNUSED(label);
@@ -202,8 +201,8 @@ rtError_t ApiErrorDecorator::GetDeviceInfoFromPlatformInfo(const uint32_t device
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::MemsetD32(void * const dst, const uint64_t destMax,
-                                           const uint32_t value, const uint64_t count)
+rtError_t ApiErrorDecorator::MemsetD32(
+    void* const dst, const uint64_t destMax, const uint32_t value, const uint64_t count)
 {
     (void)dst;
     (void)destMax;
@@ -212,9 +211,8 @@ rtError_t ApiErrorDecorator::MemsetD32(void * const dst, const uint64_t destMax,
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::MemsetD32Async(void * const dst, const uint64_t destMax,
-                                            const uint32_t value, const uint64_t count,
-                                            Stream * const stm)
+rtError_t ApiErrorDecorator::MemsetD32Async(
+    void* const dst, const uint64_t destMax, const uint32_t value, const uint64_t count, Stream* const stm)
 {
     (void)dst;
     (void)destMax;
@@ -244,32 +242,33 @@ rtError_t ApiErrorDecorator::EventWorkModeSet(uint8_t mode)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::EventWorkModeGet(uint8_t *mode)
+rtError_t ApiErrorDecorator::EventWorkModeGet(uint8_t* mode)
 {
     UNUSED(mode);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::IpcGetEventHandle(IpcEvent * const evt, rtIpcEventHandle_t *handle)
+rtError_t ApiErrorDecorator::IpcGetEventHandle(IpcEvent* const evt, rtIpcEventHandle_t* handle)
 {
     UNUSED(evt);
     UNUSED(handle);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::IpcOpenEventHandle(rtIpcEventHandle_t *handle, IpcEvent** const event)
+rtError_t ApiErrorDecorator::IpcOpenEventHandle(rtIpcEventHandle_t* handle, IpcEvent** const event)
 {
     UNUSED(event);
     UNUSED(handle);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
-rtError_t ApiErrorDecorator::GetXpuDevCount(const rtXpuDevType devType, uint32_t *devCount)
+rtError_t ApiErrorDecorator::GetXpuDevCount(const rtXpuDevType devType, uint32_t* devCount)
 {
     UNUSED(devType);
     UNUSED(devCount);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
-rtError_t ApiErrorDecorator::XpuSetTaskFailCallback(const rtXpuDevType devType, const char_t *moduleName, void *callback)
+rtError_t ApiErrorDecorator::XpuSetTaskFailCallback(
+    const rtXpuDevType devType, const char_t* moduleName, void* callback)
 {
     UNUSED(devType);
     UNUSED(moduleName);
@@ -277,7 +276,7 @@ rtError_t ApiErrorDecorator::XpuSetTaskFailCallback(const rtXpuDevType devType, 
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::XpuProfilingCommandHandle(uint32_t type, void *data, uint32_t len)
+rtError_t ApiErrorDecorator::XpuProfilingCommandHandle(uint32_t type, void* data, uint32_t len)
 {
     UNUSED(type);
     UNUSED(data);
@@ -285,7 +284,8 @@ rtError_t ApiErrorDecorator::XpuProfilingCommandHandle(uint32_t type, void *data
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::MemManagedAdvise(const void *const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
+rtError_t ApiErrorDecorator::MemManagedAdvise(
+    const void* const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
 {
     UNUSED(ptr);
     UNUSED(size);
@@ -294,7 +294,8 @@ rtError_t ApiErrorDecorator::MemManagedAdvise(const void *const ptr, uint64_t si
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::MemManagedGetAttr(rtMemManagedRangeAttribute attribute, const void *ptr, size_t size, void *data, size_t dataSize)
+rtError_t ApiErrorDecorator::MemManagedGetAttr(
+    rtMemManagedRangeAttribute attribute, const void* ptr, size_t size, void* data, size_t dataSize)
 {
     UNUSED(attribute);
     UNUSED(ptr);
@@ -304,8 +305,9 @@ rtError_t ApiErrorDecorator::MemManagedGetAttr(rtMemManagedRangeAttribute attrib
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::MemManagedGetAttrs(rtMemManagedRangeAttribute *attributes, size_t numAttributes, const void *ptr, 
-                                size_t size, void **data, size_t *dataSizes)
+rtError_t ApiErrorDecorator::MemManagedGetAttrs(
+    rtMemManagedRangeAttribute* attributes, size_t numAttributes, const void* ptr, size_t size, void** data,
+    size_t* dataSizes)
 {
     UNUSED(attributes);
     UNUSED(numAttributes);
@@ -316,8 +318,8 @@ rtError_t ApiErrorDecorator::MemManagedGetAttrs(rtMemManagedRangeAttribute *attr
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::MemManagedPrefetchAsync(const void* ptr, size_t size, rtMemManagedLocation location,
-    uint32_t flags, Stream* const stream)
+rtError_t ApiErrorDecorator::MemManagedPrefetchAsync(
+    const void* ptr, size_t size, rtMemManagedLocation location, uint32_t flags, Stream* const stream)
 {
     UNUSED(location);
     UNUSED(flags);
@@ -327,9 +329,9 @@ rtError_t ApiErrorDecorator::MemManagedPrefetchAsync(const void* ptr, size_t siz
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::MemManagedPrefetchBatchAsync(const void** ptrs, size_t* sizes, size_t count,
-    rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs, size_t numPrefetchLocs, uint64_t flags,
-    Stream* const stream)
+rtError_t ApiErrorDecorator::MemManagedPrefetchBatchAsync(
+    const void** ptrs, size_t* sizes, size_t count, rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs,
+    size_t numPrefetchLocs, uint64_t flags, Stream* const stream)
 {
     UNUSED(sizes);
     UNUSED(ptrs);
@@ -342,7 +344,7 @@ rtError_t ApiErrorDecorator::MemManagedPrefetchBatchAsync(const void** ptrs, siz
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamBeginCapture(Stream * const stm, const rtStreamCaptureMode mode, Model * const mdl)
+rtError_t ApiErrorDecorator::StreamBeginCapture(Stream* const stm, const rtStreamCaptureMode mode, Model* const mdl)
 {
     UNUSED(stm);
     UNUSED(mode);
@@ -350,15 +352,15 @@ rtError_t ApiErrorDecorator::StreamBeginCapture(Stream * const stm, const rtStre
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamEndCapture(Stream * const stm, Model ** const captureMdl)
+rtError_t ApiErrorDecorator::StreamEndCapture(Stream* const stm, Model** const captureMdl)
 {
     UNUSED(stm);
     UNUSED(captureMdl);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamGetCaptureInfo(const Stream * const stm, rtStreamCaptureStatus * const status,
-    Model ** const captureMdl)
+rtError_t ApiErrorDecorator::StreamGetCaptureInfo(
+    const Stream* const stm, rtStreamCaptureStatus* const status, Model** const captureMdl)
 {
     UNUSED(stm);
     UNUSED(status);
@@ -366,33 +368,33 @@ rtError_t ApiErrorDecorator::StreamGetCaptureInfo(const Stream * const stm, rtSt
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamBeginTaskUpdate(Stream * const stm, TaskGroup * handle)
+rtError_t ApiErrorDecorator::StreamBeginTaskUpdate(Stream* const stm, TaskGroup* handle)
 {
     UNUSED(stm);
     UNUSED(handle);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamEndTaskUpdate(Stream * const stm)
+rtError_t ApiErrorDecorator::StreamEndTaskUpdate(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::ModelGetNodes(const Model * const mdl, uint32_t * const num)
+rtError_t ApiErrorDecorator::ModelGetNodes(const Model* const mdl, uint32_t* const num)
 {
     UNUSED(mdl);
     UNUSED(num);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::ModelDebugDotPrint(const Model * const mdl)
+rtError_t ApiErrorDecorator::ModelDebugDotPrint(const Model* const mdl)
 {
     UNUSED(mdl);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::ModelDebugJsonPrint(const Model * const mdl, const char* path, const uint32_t flags)
+rtError_t ApiErrorDecorator::ModelDebugJsonPrint(const Model* const mdl, const char* path, const uint32_t flags)
 {
     UNUSED(mdl);
     UNUSED(path);
@@ -400,34 +402,34 @@ rtError_t ApiErrorDecorator::ModelDebugJsonPrint(const Model * const mdl, const 
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamAddToModel(Stream * const stm, Model * const captureMdl)
+rtError_t ApiErrorDecorator::StreamAddToModel(Stream* const stm, Model* const captureMdl)
 {
     UNUSED(stm);
     UNUSED(captureMdl);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::ThreadExchangeCaptureMode(rtStreamCaptureMode * const mode)
+rtError_t ApiErrorDecorator::ThreadExchangeCaptureMode(rtStreamCaptureMode* const mode)
 {
     UNUSED(mode);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamBeginTaskGrp(Stream * const stm)
+rtError_t ApiErrorDecorator::StreamBeginTaskGrp(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamEndTaskGrp(Stream * const stm, TaskGroup ** const handle)
+rtError_t ApiErrorDecorator::StreamEndTaskGrp(Stream* const stm, TaskGroup** const handle)
 {
     UNUSED(stm);
     UNUSED(handle);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::ModelCondHandleCreate(Model * const mdl, uint32_t defaultValue,
-    rtCondHandleFlag_t flag, CondHandle ** const handle)
+rtError_t ApiErrorDecorator::ModelCondHandleCreate(
+    Model* const mdl, uint32_t defaultValue, rtCondHandleFlag_t flag, CondHandle** const handle)
 {
     UNUSED(mdl);
     UNUSED(defaultValue);
@@ -436,14 +438,14 @@ rtError_t ApiErrorDecorator::ModelCondHandleCreate(Model * const mdl, uint32_t d
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::ModelCondHandleGetCondPtr(CondHandle * const handle, uint64_t ** const devPtr)
+rtError_t ApiErrorDecorator::ModelCondHandleGetCondPtr(CondHandle* const handle, uint64_t** const devPtr)
 {
     UNUSED(handle);
     UNUSED(devPtr);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiErrorDecorator::StreamAddCondTask(rtCondTaskParams params, Stream * const stm, uint32_t flags)
+rtError_t ApiErrorDecorator::StreamAddCondTask(rtCondTaskParams params, Stream* const stm, uint32_t flags)
 {
     UNUSED(params);
     UNUSED(stm);
@@ -451,5 +453,5 @@ rtError_t ApiErrorDecorator::StreamAddCondTask(rtCondTaskParams params, Stream *
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

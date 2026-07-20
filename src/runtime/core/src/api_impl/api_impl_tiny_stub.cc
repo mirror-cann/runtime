@@ -13,7 +13,7 @@
 namespace cce {
 namespace runtime {
 
-rtError_t ApiImpl::CntNotifyCreate(const int32_t deviceId, CountNotify ** const retCntNotify, const uint32_t flag)
+rtError_t ApiImpl::CntNotifyCreate(const int32_t deviceId, CountNotify** const retCntNotify, const uint32_t flag)
 {
     UNUSED(deviceId);
     UNUSED(retCntNotify);
@@ -21,30 +21,14 @@ rtError_t ApiImpl::CntNotifyCreate(const int32_t deviceId, CountNotify ** const 
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::CntNotifyDestroy(CountNotify * const inCntNotify)
+rtError_t ApiImpl::CntNotifyDestroy(CountNotify* const inCntNotify)
 {
     UNUSED(inCntNotify);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::CntNotifyRecord(CountNotify * const inCntNotify, Stream * const stm,
-                                   const rtCntNtyRecordInfo_t * const info)
-{
-    UNUSED(inCntNotify);
-    UNUSED(stm);
-    UNUSED(info);
-    return RT_ERROR_FEATURE_NOT_SUPPORT;
-}
-
-rtError_t ApiImpl::CntNotifyReset(CountNotify * const inCntNotify, Stream * const stm)
-{
-    UNUSED(inCntNotify);
-    UNUSED(stm);
-    return RT_ERROR_FEATURE_NOT_SUPPORT;
-}
-
-rtError_t ApiImpl::CntNotifyWaitWithTimeout(CountNotify * const inCntNotify, Stream * const stm,
-                                            const rtCntNtyWaitInfo_t * const info)
+rtError_t ApiImpl::CntNotifyRecord(
+    CountNotify* const inCntNotify, Stream* const stm, const rtCntNtyRecordInfo_t* const info)
 {
     UNUSED(inCntNotify);
     UNUSED(stm);
@@ -52,15 +36,31 @@ rtError_t ApiImpl::CntNotifyWaitWithTimeout(CountNotify * const inCntNotify, Str
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetCntNotifyId(CountNotify * const inCntNotify, uint32_t * const notifyId)
+rtError_t ApiImpl::CntNotifyReset(CountNotify* const inCntNotify, Stream* const stm)
+{
+    UNUSED(inCntNotify);
+    UNUSED(stm);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t ApiImpl::CntNotifyWaitWithTimeout(
+    CountNotify* const inCntNotify, Stream* const stm, const rtCntNtyWaitInfo_t* const info)
+{
+    UNUSED(inCntNotify);
+    UNUSED(stm);
+    UNUSED(info);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t ApiImpl::GetCntNotifyId(CountNotify* const inCntNotify, uint32_t* const notifyId)
 {
     UNUSED(inCntNotify);
     UNUSED(notifyId);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetCntNotifyAddress(CountNotify *const inCntNotify, uint64_t * const cntNotifyAddress,
-                                       rtNotifyType_t const regType)
+rtError_t ApiImpl::GetCntNotifyAddress(
+    CountNotify* const inCntNotify, uint64_t* const cntNotifyAddress, rtNotifyType_t const regType)
 {
     UNUSED(inCntNotify);
     UNUSED(cntNotifyAddress);
@@ -68,42 +68,41 @@ rtError_t ApiImpl::GetCntNotifyAddress(CountNotify *const inCntNotify, uint64_t 
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::WriteValue(rtWriteValueInfo_t * const info, Stream * const stm)
+rtError_t ApiImpl::WriteValue(rtWriteValueInfo_t* const info, Stream* const stm)
 {
     UNUSED(info);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::CCULaunch(rtCcuTaskInfo_t *taskInfo,  Stream * const stm)
+rtError_t ApiImpl::CCULaunch(rtCcuTaskInfo_t* taskInfo, Stream* const stm)
 {
     UNUSED(taskInfo);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::UbDevQueryInfo(rtUbDevQueryCmd cmd, void * devInfo)
+rtError_t ApiImpl::UbDevQueryInfo(rtUbDevQueryCmd cmd, void* devInfo)
 {
     UNUSED(cmd);
     UNUSED(devInfo);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetDevResAddress(const rtDevResInfo * const resInfo, rtDevResAddrInfo * const addrInfo)
+rtError_t ApiImpl::GetDevResAddress(const rtDevResInfo* const resInfo, rtDevResAddrInfo* const addrInfo)
 {
     UNUSED(resInfo);
     UNUSED(addrInfo);
-    return RT_ERROR_FEATURE_NOT_SUPPORT;    
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::ReleaseDevResAddress(rtDevResInfo * const resInfo)
+rtError_t ApiImpl::ReleaseDevResAddress(rtDevResInfo* const resInfo)
 {
     UNUSED(resInfo);
-    return RT_ERROR_FEATURE_NOT_SUPPORT; 
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::WriteValuePtr(void * const writeValueInfo, Stream * const stm,
-    void * const pointedAddr)
+rtError_t ApiImpl::WriteValuePtr(void* const writeValueInfo, Stream* const stm, void* const pointedAddr)
 {
     UNUSED(writeValueInfo);
     UNUSED(stm);
@@ -111,21 +110,21 @@ rtError_t ApiImpl::WriteValuePtr(void * const writeValueInfo, Stream * const stm
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::UbDbSend(rtUbDbInfo_t * const dbInfo, Stream * const stm)
+rtError_t ApiImpl::UbDbSend(rtUbDbInfo_t* const dbInfo, Stream* const stm)
 {
     UNUSED(dbInfo);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::UbDirectSend(rtUbWqeInfo_t * const wqeInfo, Stream * const stm)
+rtError_t ApiImpl::UbDirectSend(rtUbWqeInfo_t* const wqeInfo, Stream* const stm)
 {
     UNUSED(wqeInfo);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::FusionLaunch(void * const fusionInfo, Stream * const stm, rtFusionArgsEx_t *argsInfo)
+rtError_t ApiImpl::FusionLaunch(void* const fusionInfo, Stream* const stm, rtFusionArgsEx_t* argsInfo)
 {
     UNUSED(fusionInfo);
     UNUSED(stm);
@@ -133,19 +132,19 @@ rtError_t ApiImpl::FusionLaunch(void * const fusionInfo, Stream * const stm, rtF
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamTaskAbort(Stream * const stm)
+rtError_t ApiImpl::StreamTaskAbort(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamRecover(Stream * const stm)
+rtError_t ApiImpl::StreamRecover(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamTaskClean(Stream * const stm)
+rtError_t ApiImpl::StreamTaskClean(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
@@ -157,15 +156,15 @@ rtError_t ApiImpl::DeviceResourceClean(int32_t devId)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetBinaryDeviceBaseAddr(const Program * const prog, void **deviceBase)
+rtError_t ApiImpl::GetBinaryDeviceBaseAddr(const Program* const prog, void** deviceBase)
 {
     UNUSED(prog);
     UNUSED(deviceBase);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::FftsPlusTaskLaunch(const rtFftsPlusTaskInfo_t * const fftsPlusTaskInfo, Stream * const stm,
-    const uint32_t flag)
+rtError_t ApiImpl::FftsPlusTaskLaunch(
+    const rtFftsPlusTaskInfo_t* const fftsPlusTaskInfo, Stream* const stm, const uint32_t flag)
 {
     UNUSED(fftsPlusTaskInfo);
     UNUSED(stm);
@@ -173,7 +172,7 @@ rtError_t ApiImpl::FftsPlusTaskLaunch(const rtFftsPlusTaskInfo_t * const fftsPlu
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::RDMASend(const uint32_t sqIndex, const uint32_t wqeIndex, Stream * const stm)
+rtError_t ApiImpl::RDMASend(const uint32_t sqIndex, const uint32_t wqeIndex, Stream* const stm)
 {
     UNUSED(sqIndex);
     UNUSED(wqeIndex);
@@ -181,7 +180,7 @@ rtError_t ApiImpl::RDMASend(const uint32_t sqIndex, const uint32_t wqeIndex, Str
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Stream * const stm)
+rtError_t ApiImpl::RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Stream* const stm)
 {
     UNUSED(dbIndex);
     UNUSED(dbInfo);
@@ -190,28 +189,29 @@ rtError_t ApiImpl::RdmaDbSend(const uint32_t dbIndex, const uint64_t dbInfo, Str
 }
 
 // dqs
-rtError_t ApiImpl::LaunchDqsTask(Stream * const stm, const rtDqsTaskCfg_t * const taskCfg)
+rtError_t ApiImpl::LaunchDqsTask(Stream* const stm, const rtDqsTaskCfg_t* const taskCfg)
 {
     UNUSED(stm);
     UNUSED(taskCfg);
-    return RT_ERROR_FEATURE_NOT_SUPPORT;    
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetDeviceVirtualInfo(uint32_t deviceId, int64_t *val) const
+rtError_t ApiImpl::GetDeviceVirtualInfo(uint32_t deviceId, int64_t* val) const
 {
     UNUSED(deviceId);
     UNUSED(val);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetDeviceNpuArch(uint32_t deviceId, int64_t *val) const
+rtError_t ApiImpl::GetDeviceNpuArch(uint32_t deviceId, int64_t* val) const
 {
     UNUSED(deviceId);
     UNUSED(val);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::MemGetInfoByDeviceId(uint32_t deviceId, bool isHugeOnly, size_t* const freeSize, size_t* const totalSize)
+rtError_t ApiImpl::MemGetInfoByDeviceId(
+    uint32_t deviceId, bool isHugeOnly, size_t* const freeSize, size_t* const totalSize)
 {
     UNUSED(deviceId);
     UNUSED(isHugeOnly);
@@ -220,8 +220,8 @@ rtError_t ApiImpl::MemGetInfoByDeviceId(uint32_t deviceId, bool isHugeOnly, size
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetDeviceInfoFromPlatformInfo(const uint32_t deviceId, const std::string &label,
-    const std::string &key, int64_t * const value)
+rtError_t ApiImpl::GetDeviceInfoFromPlatformInfo(
+    const uint32_t deviceId, const std::string& label, const std::string& key, int64_t* const value)
 {
     UNUSED(deviceId);
     UNUSED(label);
@@ -236,27 +236,27 @@ rtError_t ApiImpl::EventWorkModeSet(uint8_t mode)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::EventWorkModeGet(uint8_t *mode)
+rtError_t ApiImpl::EventWorkModeGet(uint8_t* mode)
 {
     UNUSED(mode);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::IpcGetEventHandle(IpcEvent * const evt, rtIpcEventHandle_t *handle)
+rtError_t ApiImpl::IpcGetEventHandle(IpcEvent* const evt, rtIpcEventHandle_t* handle)
 {
     UNUSED(evt);
     UNUSED(handle);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::IpcOpenEventHandle(rtIpcEventHandle_t *handle, IpcEvent** const event)
+rtError_t ApiImpl::IpcOpenEventHandle(rtIpcEventHandle_t* handle, IpcEvent** const event)
 {
     UNUSED(event);
     UNUSED(handle);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImplSoma::StreamMemPoolCreate(rtMemPool_t *memPool, const rtMemPoolProps *poolProps)
+rtError_t ApiImplSoma::StreamMemPoolCreate(rtMemPool_t* memPool, const rtMemPoolProps* poolProps)
 {
     UNUSED(memPool);
     UNUSED(poolProps);
@@ -269,7 +269,7 @@ rtError_t ApiImplSoma::StreamMemPoolDestroy(rtMemPool_t const memPool)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImplSoma::StreamMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
+rtError_t ApiImplSoma::StreamMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value)
 {
     UNUSED(memPool);
     UNUSED(attr);
@@ -277,7 +277,7 @@ rtError_t ApiImplSoma::StreamMemPoolSetAttr(rtMemPool_t memPool, rtMemPoolAttr a
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImplSoma::StreamMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void *value)
+rtError_t ApiImplSoma::StreamMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr attr, void* value)
 {
     UNUSED(memPool);
     UNUSED(attr);
@@ -285,8 +285,8 @@ rtError_t ApiImplSoma::StreamMemPoolGetAttr(rtMemPool_t memPool, rtMemPoolAttr a
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImplSoma::MemPoolMallocAsync(void ** const devPtr, const uint64_t size, const rtMemPool_t memPoolId,
-                                      Stream * const stm)
+rtError_t ApiImplSoma::MemPoolMallocAsync(
+    void** const devPtr, const uint64_t size, const rtMemPool_t memPoolId, Stream* const stm)
 {
     UNUSED(devPtr);
     UNUSED(size);
@@ -294,15 +294,16 @@ rtError_t ApiImplSoma::MemPoolMallocAsync(void ** const devPtr, const uint64_t s
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
- 
-rtError_t ApiImplSoma::MemPoolFreeAsync(void * const ptr, Stream * const stm)
+
+rtError_t ApiImplSoma::MemPoolFreeAsync(void* const ptr, Stream* const stm)
 {
     UNUSED(ptr);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::MemManagedAdvise(const void *const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
+rtError_t ApiImpl::MemManagedAdvise(
+    const void* const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
 {
     UNUSED(ptr);
     UNUSED(size);
@@ -311,7 +312,8 @@ rtError_t ApiImpl::MemManagedAdvise(const void *const ptr, uint64_t size, uint16
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::MemManagedGetAttr(rtMemManagedRangeAttribute attribute, const void *ptr, size_t size, void *data, size_t dataSize)
+rtError_t ApiImpl::MemManagedGetAttr(
+    rtMemManagedRangeAttribute attribute, const void* ptr, size_t size, void* data, size_t dataSize)
 {
     UNUSED(attribute);
     UNUSED(ptr);
@@ -321,7 +323,9 @@ rtError_t ApiImpl::MemManagedGetAttr(rtMemManagedRangeAttribute attribute, const
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::MemManagedGetAttrs(rtMemManagedRangeAttribute *attributes, size_t numAttributes, const void *ptr, size_t size, void **data, size_t *dataSizes)
+rtError_t ApiImpl::MemManagedGetAttrs(
+    rtMemManagedRangeAttribute* attributes, size_t numAttributes, const void* ptr, size_t size, void** data,
+    size_t* dataSizes)
 {
     UNUSED(attributes);
     UNUSED(ptr);
@@ -344,7 +348,7 @@ rtError_t ApiImplSoma::MemPoolTrimImplicit(bool includeGraphPool)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-bool ApiImplSoma::InMemPoolRegion(void * const ptr)
+bool ApiImplSoma::InMemPoolRegion(void* const ptr)
 {
     UNUSED(ptr);
     return false;
@@ -356,8 +360,8 @@ rtError_t ApiImplSoma::MemPoolFreeSync(void* const ptr)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::MemManagedPrefetchAsync(const void* ptr, size_t size, rtMemManagedLocation location,
-    uint32_t flags, Stream* const stream)
+rtError_t ApiImpl::MemManagedPrefetchAsync(
+    const void* ptr, size_t size, rtMemManagedLocation location, uint32_t flags, Stream* const stream)
 {
     UNUSED(ptr);
     UNUSED(size);
@@ -367,9 +371,9 @@ rtError_t ApiImpl::MemManagedPrefetchAsync(const void* ptr, size_t size, rtMemMa
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::MemManagedPrefetchBatchAsync(const void** ptrs, size_t* sizes, size_t count,
-    rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs, size_t numPrefetchLocs, uint64_t flags,
-    Stream* const stream)
+rtError_t ApiImpl::MemManagedPrefetchBatchAsync(
+    const void** ptrs, size_t* sizes, size_t count, rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs,
+    size_t numPrefetchLocs, uint64_t flags, Stream* const stream)
 {
     UNUSED(ptrs);
     UNUSED(sizes);
@@ -382,7 +386,7 @@ rtError_t ApiImpl::MemManagedPrefetchBatchAsync(const void** ptrs, size_t* sizes
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::MemsetD32(void * const dst, const uint64_t destMax, const uint32_t value, const uint64_t count)
+rtError_t ApiImpl::MemsetD32(void* const dst, const uint64_t destMax, const uint32_t value, const uint64_t count)
 {
     (void)dst;
     (void)destMax;
@@ -391,8 +395,8 @@ rtError_t ApiImpl::MemsetD32(void * const dst, const uint64_t destMax, const uin
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::MemsetD32Async(void* const dst, const uint64_t destMax,
-        const uint32_t value, const uint64_t count, Stream* const stm)
+rtError_t ApiImpl::MemsetD32Async(
+    void* const dst, const uint64_t destMax, const uint32_t value, const uint64_t count, Stream* const stm)
 {
     (void)dst;
     (void)destMax;
@@ -402,8 +406,8 @@ rtError_t ApiImpl::MemsetD32Async(void* const dst, const uint64_t destMax,
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetCaptureEvent(const Stream * const stm, Event * const evt, Event ** const captureEvt,
-    const bool isNewEvt)
+rtError_t ApiImpl::GetCaptureEvent(
+    const Stream* const stm, Event* const evt, Event** const captureEvt, const bool isNewEvt)
 {
     UNUSED(stm);
     UNUSED(evt);
@@ -412,7 +416,7 @@ rtError_t ApiImpl::GetCaptureEvent(const Stream * const stm, Event * const evt, 
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::CaptureEventRecord(Context * const ctx, Event * const evt, Stream * const stm)
+rtError_t ApiImpl::CaptureEventRecord(Context* const ctx, Event* const evt, Stream* const stm)
 {
     UNUSED(ctx);
     UNUSED(evt);
@@ -420,7 +424,7 @@ rtError_t ApiImpl::CaptureEventRecord(Context * const ctx, Event * const evt, St
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::CaptureEventWait(Context * const ctx, Stream * const stm, Event * const evt, const uint32_t timeout)
+rtError_t ApiImpl::CaptureEventWait(Context* const ctx, Stream* const stm, Event* const evt, const uint32_t timeout)
 {
     UNUSED(ctx);
     UNUSED(stm);
@@ -443,14 +447,14 @@ rtError_t ApiImpl::CaptureExternalEventWait(Event* const evt, Stream* const stm)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::CaptureEventReset(const Event * const evt, Stream * const stm)
+rtError_t ApiImpl::CaptureEventReset(const Event* const evt, Stream* const stm)
 {
     UNUSED(evt);
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamBeginCapture(Stream * const stm, const rtStreamCaptureMode mode, Model * const mdl)
+rtError_t ApiImpl::StreamBeginCapture(Stream* const stm, const rtStreamCaptureMode mode, Model* const mdl)
 {
     UNUSED(stm);
     UNUSED(mode);
@@ -458,15 +462,15 @@ rtError_t ApiImpl::StreamBeginCapture(Stream * const stm, const rtStreamCaptureM
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamEndCapture(Stream * const stm, Model ** const captureMdl)
+rtError_t ApiImpl::StreamEndCapture(Stream* const stm, Model** const captureMdl)
 {
     UNUSED(stm);
     UNUSED(captureMdl);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamGetCaptureInfo(const Stream * const stm, rtStreamCaptureStatus * const status,
-    Model ** const captureMdl)
+rtError_t ApiImpl::StreamGetCaptureInfo(
+    const Stream* const stm, rtStreamCaptureStatus* const status, Model** const captureMdl)
 {
     UNUSED(stm);
     UNUSED(status);
@@ -474,52 +478,52 @@ rtError_t ApiImpl::StreamGetCaptureInfo(const Stream * const stm, rtStreamCaptur
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::ThreadExchangeCaptureMode(rtStreamCaptureMode * const mode)
+rtError_t ApiImpl::ThreadExchangeCaptureMode(rtStreamCaptureMode* const mode)
 {
     UNUSED(mode);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamBeginTaskGrp(Stream * const stm)
+rtError_t ApiImpl::StreamBeginTaskGrp(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamEndTaskGrp(Stream * const stm, TaskGroup ** const handle)
-{
-    UNUSED(stm);
-    UNUSED(handle);
-    return RT_ERROR_FEATURE_NOT_SUPPORT;
-}
-
-rtError_t ApiImpl::StreamBeginTaskUpdate(Stream * const stm, TaskGroup * handle)
+rtError_t ApiImpl::StreamEndTaskGrp(Stream* const stm, TaskGroup** const handle)
 {
     UNUSED(stm);
     UNUSED(handle);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamEndTaskUpdate(Stream * const stm)
+rtError_t ApiImpl::StreamBeginTaskUpdate(Stream* const stm, TaskGroup* handle)
+{
+    UNUSED(stm);
+    UNUSED(handle);
+    return RT_ERROR_FEATURE_NOT_SUPPORT;
+}
+
+rtError_t ApiImpl::StreamEndTaskUpdate(Stream* const stm)
 {
     UNUSED(stm);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::ModelGetNodes(const Model * const mdl, uint32_t * const num)
+rtError_t ApiImpl::ModelGetNodes(const Model* const mdl, uint32_t* const num)
 {
     UNUSED(mdl);
     UNUSED(num);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::ModelDebugDotPrint(const Model * const mdl)
+rtError_t ApiImpl::ModelDebugDotPrint(const Model* const mdl)
 {
     UNUSED(mdl);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::ModelDebugJsonPrint(const Model * const mdl, const char* path, const uint32_t flags)
+rtError_t ApiImpl::ModelDebugJsonPrint(const Model* const mdl, const char* path, const uint32_t flags)
 {
     UNUSED(mdl);
     UNUSED(path);
@@ -527,15 +531,15 @@ rtError_t ApiImpl::ModelDebugJsonPrint(const Model * const mdl, const char* path
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamAddToModel(Stream * const stm, Model * const captureMdl)
+rtError_t ApiImpl::StreamAddToModel(Stream* const stm, Model* const captureMdl)
 {
     UNUSED(stm);
     UNUSED(captureMdl);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::ModelCondHandleCreate(Model * const mdl, uint32_t defaultValue,
-    rtCondHandleFlag_t flag, CondHandle ** const handle)
+rtError_t ApiImpl::ModelCondHandleCreate(
+    Model* const mdl, uint32_t defaultValue, rtCondHandleFlag_t flag, CondHandle** const handle)
 {
     UNUSED(mdl);
     UNUSED(defaultValue);
@@ -544,14 +548,14 @@ rtError_t ApiImpl::ModelCondHandleCreate(Model * const mdl, uint32_t defaultValu
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::ModelCondHandleGetCondPtr(CondHandle * const handle, uint64_t ** const devPtr)
+rtError_t ApiImpl::ModelCondHandleGetCondPtr(CondHandle* const handle, uint64_t** const devPtr)
 {
     UNUSED(handle);
     UNUSED(devPtr);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamAddCondTaskParasCheck(rtCondTaskParams params, Stream * const stm, CondHandle **handle)
+rtError_t ApiImpl::StreamAddCondTaskParasCheck(rtCondTaskParams params, Stream* const stm, CondHandle** handle)
 {
     UNUSED(params);
     UNUSED(stm);
@@ -559,7 +563,7 @@ rtError_t ApiImpl::StreamAddCondTaskParasCheck(rtCondTaskParams params, Stream *
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::StreamAddCondTask(rtCondTaskParams params, Stream * const stm, uint32_t flags)
+rtError_t ApiImpl::StreamAddCondTask(rtCondTaskParams params, Stream* const stm, uint32_t flags)
 {
     UNUSED(params);
     UNUSED(stm);
@@ -573,7 +577,7 @@ rtError_t ApiImpl::SetGroup(const int32_t groupId)
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetGroupCount(uint32_t * const cnt)
+rtError_t ApiImpl::GetGroupCount(uint32_t* const cnt)
 {
     UNUSED(cnt);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
@@ -592,7 +596,7 @@ rtError_t ApiImpl::GetDevRunningStreamSnapshotMsg(const rtGetMsgCallback callbac
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::GetGroupInfo(const int32_t groupId, rtGroupInfo_t * const groupInfo, const uint32_t cnt)
+rtError_t ApiImpl::GetGroupInfo(const int32_t groupId, rtGroupInfo_t* const groupInfo, const uint32_t cnt)
 {
     UNUSED(groupId);
     UNUSED(groupInfo);
@@ -601,7 +605,7 @@ rtError_t ApiImpl::GetGroupInfo(const int32_t groupId, rtGroupInfo_t * const gro
 }
 
 rtError_t ApiImpl::IpcSetMemoryName(
-    const void *const ptr, const uint64_t byteCount, char_t *const name, const uint32_t len, const uint64_t flags)
+    const void* const ptr, const uint64_t byteCount, char_t* const name, const uint32_t len, const uint64_t flags)
 {
     UNUSED(ptr);
     UNUSED(byteCount);
@@ -611,12 +615,12 @@ rtError_t ApiImpl::IpcSetMemoryName(
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
 
-rtError_t ApiImpl::IpcOpenMemory(void ** const ptr, const char_t * const name, const uint64_t flags)
+rtError_t ApiImpl::IpcOpenMemory(void** const ptr, const char_t* const name, const uint64_t flags)
 {
     UNUSED(ptr);
     UNUSED(name);
     UNUSED(flags);
     return RT_ERROR_FEATURE_NOT_SUPPORT;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

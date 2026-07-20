@@ -9,17 +9,17 @@
  */
 #ifndef CCE_RUNTIME_COPROCESSOR_STREAM_HPP
 #define CCE_RUNTIME_COPROCESSOR_STREAM_HPP
- 
+
 #include "stream.hpp"
- 
+
 namespace cce {
 namespace runtime {
 class CoprocessorStream : public Stream {
 public:
-    CoprocessorStream(Device * const dev, const uint32_t prio, const uint32_t stmFlags);
+    CoprocessorStream(Device* const dev, const uint32_t prio, const uint32_t stmFlags);
     rtError_t Setup() override;
 };
-}  // namespace runtime
-}  // namespace cce
- 
-#endif  // CCE_RUNTIME_COPROCESSOR_STREAM_HPP
+} // namespace runtime
+} // namespace cce
+
+#endif // CCE_RUNTIME_COPROCESSOR_STREAM_HPP

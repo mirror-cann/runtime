@@ -14,15 +14,14 @@
 namespace cce {
 namespace runtime {
 
-rtError_t NpuGetFloatStaTaskInit(TaskInfo *taskInfo, void * const outputAddrPtr,
-                                 const uint64_t outputSize, const uint32_t checkMode,
-                                 bool debugFlag)
+rtError_t NpuGetFloatStaTaskInit(
+    TaskInfo* taskInfo, void* const outputAddrPtr, const uint64_t outputSize, const uint32_t checkMode, bool debugFlag)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->typeName = "NPU_GET_FLOAT_STATUS";
     taskInfo->type = TS_TASK_TYPE_NPU_GET_FLOAT_STATUS;
 
-    NpuGetFloatStatusTaskInfo *npuGetFloatSta = &taskInfo->u.npuGetFloatStatusTask;
+    NpuGetFloatStatusTaskInfo* npuGetFloatSta = &taskInfo->u.npuGetFloatStatusTask;
 
     npuGetFloatSta->outputAddrPtr = outputAddrPtr;
     npuGetFloatSta->outputSize = outputSize;
@@ -31,7 +30,7 @@ rtError_t NpuGetFloatStaTaskInit(TaskInfo *taskInfo, void * const outputAddrPtr,
     return RT_ERROR_NONE;
 }
 
-rtError_t NpuClrFloatStaTaskInit(TaskInfo *taskInfo, const uint32_t checkMode, bool debugFlag)
+rtError_t NpuClrFloatStaTaskInit(TaskInfo* taskInfo, const uint32_t checkMode, bool debugFlag)
 {
     TaskCommonInfoInit(taskInfo);
     taskInfo->typeName = "NPU_CLEAR_FLOAT_STATUS";

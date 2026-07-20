@@ -29,10 +29,10 @@ struct TsKernelTask {
     uint32_t literalSize;
     uint16_t blockDim;
     uint8_t L2_size;
-    uint8_t schemMode; // only CHIP_CLOUD or CHIP_DC aicore task use for batchmode.
+    uint8_t schemMode;              // only CHIP_CLOUD or CHIP_DC aicore task use for batchmode.
     uint32_t priority : 3;
     uint32_t l2PreloadVirAddr : 26; // preserve the offset of l2_preload_ctrl's phy addr, not greater than 50M now
-    uint32_t isConvertAddr : 3; // 1:TS_KERNEL_CONVERT, 2:TS_KERNEL_DUMPFLAG, 4:FUSION_KERNEL_DUMPFLAG
+    uint32_t isConvertAddr : 3;     // 1:TS_KERNEL_CONVERT, 2:TS_KERNEL_DUMPFLAG, 4:FUSION_KERNEL_DUMPFLAG
 };
 
 /**
@@ -40,16 +40,16 @@ struct TsKernelTask {
  * @brief the struct define of event record type task
  */
 struct TsEventRecordTask {
-    uint16_t eventID;       // offset 8, MAX means not set.
+    uint16_t eventID;      // offset 8, MAX means not set.
     uint8_t reserved0[6];
-    uint64_t timelineBase;  // valid when flag bit 0 set, otherwise set to MAX.
-    uint32_t offset;        // offset of timeline
+    uint64_t timelineBase; // valid when flag bit 0 set, otherwise set to MAX.
+    uint32_t offset;       // offset of timeline
     uint32_t threadId;
     uint32_t virAddr;
-    uint8_t flag;           // bit0: timeline / bit1: H2D Sync / bit2: Stream Sync
+    uint8_t flag; // bit0: timeline / bit1: H2D Sync / bit2: Stream Sync
     uint8_t waitCqflag;
     uint16_t waitCqId;
-    uint8_t reserved[16];   // reserved 16 bytes
+    uint8_t reserved[16]; // reserved 16 bytes
 };
 
 /**
@@ -87,7 +87,7 @@ struct TsStreamWaitEventTask {
  * @brief the struct define of fusion type task
  */
 typedef struct tagTsFusionTask {
-    uint16_t flag; /* offset 8 */
+    uint16_t flag;        /* offset 8 */
     uint8_t reserved[46]; // reserved 46 bytes
 } TsFusionTask;
 
@@ -101,11 +101,11 @@ struct TsMemcpyTask {
     uint8_t copyDataType;
     uint8_t d2dOffsetFlag : 1;
     uint8_t reserved1 : 7;
-    uint8_t reserved2[2]; // reserved 3 bytes
+    uint8_t reserved2[2];                          // reserved 3 bytes
     union {
-        struct DMA_OFFSET_ADDR dmaOffsetAddr; // call MemConvertAddr
+        struct DMA_OFFSET_ADDR dmaOffsetAddr;      // call MemConvertAddr
         struct NO_DMA_OFFSET_ADDR noDmaOffsetAddr; // call MemAddressTranslate
-        struct D2D_ADDR_OFFSET d2dAddrOffset;       // for d2d addr memcpy with offset
+        struct D2D_ADDR_OFFSET d2dAddrOffset;      // for d2d addr memcpy with offset
     };
 };
 
@@ -120,7 +120,7 @@ struct TsMaintenanceTask {
     uint8_t reserved0;
     uint16_t waitCqId;
     uint32_t threadId;
-    uint8_t flag; /* when goal is recycle task take effect */
+    uint8_t flag;         /* when goal is recycle task take effect */
     uint8_t reserved[35]; // reserved 36 bytes
 };
 
@@ -147,9 +147,9 @@ struct TsCreateStream {
 struct TsCreateL2Addr {
     uint64_t l2BaseVaddrForsdma; /* * for sysDMA get dst VA */
     uint64_t ptePA;
-    uint64_t pid; /* *profiling for process CreateStream and L2 mistiming */
+    uint64_t pid;                /* *profiling for process CreateStream and L2 mistiming */
     uint32_t virAddr;
-    uint8_t reserved[20]; // reserved 20 bytes
+    uint8_t reserved[20];        // reserved 20 bytes
 };
 
 /**
@@ -215,7 +215,7 @@ struct RtModelExecute {
     uint16_t model_id;
     uint16_t first_task_id;
     int16_t sch_group_id;
-    uint8_t reserved0[2];  // 64 bits align, reserved 2 bytes
+    uint8_t reserved0[2]; // 64 bits align, reserved 2 bytes
     /* send sink stream SMMU config to TS by model execute */
     uint64_t asid_baddr;
     uint64_t tcr;
@@ -245,7 +245,6 @@ struct TsNotifyWaitTask {
     uint32_t timeout;
     uint8_t reserved[40]; // reserved 40 bytes
 };
-
 
 struct TsNotifyRecordTask {
     uint16_t deviceId;
@@ -318,7 +317,7 @@ struct TsProfilerTraceTask {
     uint64_t profilerTraceId;
     uint8_t notify;
     uint8_t reserved[39]; // reserved 39 bytes
-} ;
+};
 
 /**
  * @ingroup
@@ -332,69 +331,69 @@ struct TsProfilerTraceExTask {
 };
 
 /**
-* @ingroup
-* @brief the struct define of event reset type task
-*/
+ * @ingroup
+ * @brief the struct define of event reset type task
+ */
 struct TsEventResetTask {
-    uint16_t eventID;       /* offset 8 */
-    uint16_t isNotify;      /* event to notify */
-    uint8_t reserved[44];   // reserved 44 bytes
+    uint16_t eventID;     /* offset 8 */
+    uint16_t isNotify;    /* event to notify */
+    uint8_t reserved[44]; // reserved 44 bytes
 };
 
 /**
-* @ingroup
-* @brief the struct define of model end graph task
-*/
+ * @ingroup
+ * @brief the struct define of model end graph task
+ */
 struct TsModelEndGraphTask {
     uint64_t endGraphNamePtr;
     uint64_t argptr;
     uint32_t modelId;
     uint32_t executorFlag;
-    uint8_t  priority;
+    uint8_t priority;
     uint8_t flag;
-    uint8_t  reserved[22]; // reserved 22 bytes
+    uint8_t reserved[22]; // reserved 22 bytes
 };
 
 /**
-* @ingroup
-* @brief the struct define of model end graph task
-*/
+ * @ingroup
+ * @brief the struct define of model end graph task
+ */
 struct TsModelExitTask {
     uint32_t modelId;
     uint32_t streamId;
-    uint8_t  reserved[40]; // reserved 40 bytes
+    uint8_t reserved[40]; // reserved 40 bytes
 };
 
 /**
-* @ingroup
-* @brief the struct define of model info to aicpu task
-*/
+ * @ingroup
+ * @brief the struct define of model info to aicpu task
+ */
 struct TsModelToAicpuTask {
     uint64_t modelArgPtr;
     uint32_t modelId;
     uint32_t cmdType;
     uint32_t executorFlag;
-    uint8_t  reserved[28]; // reserved 28 bytes
+    uint8_t reserved[28]; // reserved 28 bytes
 };
 
 /**
-* @ingroup
-* @brief the struct define of data dump load info task
-*/
+ * @ingroup
+ * @brief the struct define of data dump load info task
+ */
 typedef struct tagDataDumpLoadInfoTask {
     uint64_t dumpInfoPtr;
     uint32_t length;
-    uint8_t  reserved[36]; // reserved 36 bytes
+    uint8_t reserved[36]; // reserved 36 bytes
 } TsDataDumpLoadInfoTask;
 
 /**
-* @ingroup
-* @brief the struct define of data dump load info task
-*/
+ * @ingroup
+ * @brief the struct define of data dump load info task
+ */
 struct TsAicpuInfoLoadTask {
     uint64_t aicpuInfoPtr;
     uint32_t length;
-    uint8_t  reserved[36]; // reserved 36 bytes
+    uint8_t reserved[36]; // reserved 36 bytes
 };
 
 /**
@@ -469,29 +468,29 @@ struct TsStreamLabelGotoTask {
 };
 
 /**
-* @ingroup
-* @brief the struct define of debug register task
-*/
+ * @ingroup
+ * @brief the struct define of debug register task
+ */
 struct TsDebugRegisterTask {
     uint64_t addr;
     uint32_t modelId;
     uint32_t flag;
-    uint8_t  reserved[32]; // reserved 32 bytes
+    uint8_t reserved[32]; // reserved 32 bytes
 };
 
 /**
-* @ingroup
-* @brief the struct define of debug unregister task
-*/
+ * @ingroup
+ * @brief the struct define of debug unregister task
+ */
 struct TsDebugUnRegisterTask {
     uint32_t modelId;
-    uint8_t  reserved[44]; // reserved 44 bytes
+    uint8_t reserved[44]; // reserved 44 bytes
 };
 
 /**
-* @ingroup
-* @brief the struct define of fusion dump addr set task
-*/
+ * @ingroup
+ * @brief the struct define of fusion dump addr set task
+ */
 struct TsFusionDumpAddrSetTask {
     uint64_t dumpAddrPtr;
     uint32_t dumpSize;
@@ -519,30 +518,30 @@ struct TsRingBufferPassToDeviceTask {
     uint64_t ringBufferPhyAddr;
     uint64_t pid;
     uint32_t totalLen;
-    uint8_t  ringBufferDelFlag; // 0:create 1:delete
-    uint8_t  reserved[3];
+    uint8_t ringBufferDelFlag; // 0:create 1:delete
+    uint8_t reserved[3];
     uint32_t elementSize;
-    uint8_t  reserved1[12];
+    uint8_t reserved1[12];
 };
 
 /**
-* @ingroup
-* @brief the struct define of debug register task for stream
-*/
+ * @ingroup
+ * @brief the struct define of debug register task for stream
+ */
 typedef struct tagDebugRegisterForStreamTask {
     uint64_t addr;
     uint32_t streamId;
     uint32_t flag;
-    uint8_t  reserved[32]; // reserved 32 bytes
+    uint8_t reserved[32]; // reserved 32 bytes
 } TsDebugRegisterForStreamTask;
 
 /**
-* @ingroup
-* @brief the struct define of debug unregister task for stream
-*/
+ * @ingroup
+ * @brief the struct define of debug unregister task for stream
+ */
 struct TsDebugUnRegisterForStreamTask {
     uint32_t streamId;
-    uint8_t  reserved[44]; // reserved 44 bytes
+    uint8_t reserved[44]; // reserved 44 bytes
 };
 
 /**
@@ -614,13 +613,13 @@ struct TsModelUpdateTask {
     uint16_t desStreamId;
     uint16_t destaskId;
     uint16_t exeStreamId;
-    uint8_t  reserved[8];
+    uint8_t reserved[8];
 };
 
- /**
-* @ingroup
-* @brief the struct define of update task
-*/
+/**
+ * @ingroup
+ * @brief the struct define of update task
+ */
 struct TsSqeUpdateTask {
     uint64_t funcPtr;
     uint64_t funcDesc;
@@ -644,7 +643,7 @@ typedef struct tagTsCommand {
     uint16_t type;          /* offset 6 */
     uint16_t nextStreamIdx; /* offset 8 */
     uint16_t taskState;     /* 10 */
-    uint8_t taskProfEn : 7;     /* offset 12 */
+    uint8_t taskProfEn : 7; /* offset 12 */
     uint8_t isctrl : 1;
     uint8_t taskInfoFlag;   /* bit 0: is need send cq, bit 2: endgraph dump, bit 3: sink flag */
     uint8_t reserved[2];
@@ -674,16 +673,16 @@ typedef struct tagTsCommand {
         TsLabelGotoTask labelGotoTask;
         TsProfilerTraceTask profilertraceTask;
         TsProfilerTraceExTask profilerTraceExTask;
-        TsModelEndGraphTask   modelEndGraphTask;
+        TsModelEndGraphTask modelEndGraphTask;
         TsEventResetTask eventResetTask;
-        TsModelExitTask   modelExitTask;
-        TsModelToAicpuTask    modelToAicpuTask;
+        TsModelExitTask modelExitTask;
+        TsModelToAicpuTask modelToAicpuTask;
         TsKernelTask activeAicpuStreamTask;
         TsDataDumpLoadInfoTask dataDumpLoadInfoTask;
         TsStreamSwitchNTask streamSwitchNTask;
         TsHostFuncCBTask hostFuncCBTask;
         TsOnlineProfStartTask onlineProfStartTask;
-        TsOnlineProfStopTask  onlineProfStopTask;
+        TsOnlineProfStopTask onlineProfStopTask;
         TsStreamLabelSwitchByIndexTask streamLabelSwitchIndexTask;
         TsStreamLabelGotoTask streamLabelGotoTask;
         TsDebugRegisterTask debugRegisterTask;
@@ -704,8 +703,8 @@ typedef struct tagTsCommand {
     } u;
 } rtCommand_t;
 
-void ToCommand(TaskInfo *taskInfo, rtCommand_t *const command);
+void ToCommand(TaskInfo* taskInfo, rtCommand_t* const command);
 
-}  // namespace runtime
-}  // namespace cce
-#endif  // __CCE_RUNTIME_HWTS_HPP__
+} // namespace runtime
+} // namespace cce
+#endif // __CCE_RUNTIME_HWTS_HPP__

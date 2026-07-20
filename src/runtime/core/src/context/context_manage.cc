@@ -15,10 +15,10 @@
 namespace cce {
 namespace runtime {
 static std::mutex g_ctxManLock;
-static ContextDataManage &g_ctxMan = ContextDataManage::Instance();
+static ContextDataManage& g_ctxMan = ContextDataManage::Instance();
 
 namespace {
-bool IsCurrentThreadBinding(Context *const ctx)
+bool IsCurrentThreadBinding(Context* const ctx)
 {
     if (ctx == nullptr) {
         return false;
@@ -26,11 +26,11 @@ bool IsCurrentThreadBinding(Context *const ctx)
     if (InnerThreadLocalContainer::GetCurCtx() == ctx) {
         return true;
     }
-    RefObject<Context *> *const curRef = InnerThreadLocalContainer::GetCurRef();
+    RefObject<Context*>* const curRef = InnerThreadLocalContainer::GetCurRef();
     return (curRef != nullptr) && (curRef->GetVal(false) == ctx);
 }
 
-void DetachInvalidContextFromThread(Context *const ctx)
+void DetachInvalidContextFromThread(Context* const ctx)
 {
     if (!IsCurrentThreadBinding(ctx)) {
         return;
@@ -39,13 +39,13 @@ void DetachInvalidContextFromThread(Context *const ctx)
         InnerThreadLocalContainer::SetCurCtx(nullptr);
         return;
     }
-    RefObject<Context *> *const curRef = InnerThreadLocalContainer::GetCurRef();
+    RefObject<Context*>* const curRef = InnerThreadLocalContainer::GetCurRef();
     if ((curRef != nullptr) && (curRef->GetVal(false) == ctx)) {
         InnerThreadLocalContainer::SetCurRef(nullptr);
     }
 }
 
-ContextAccessMode ResolveAccessMode(Context *const ctx, const ContextAccessMode accessMode)
+ContextAccessMode ResolveAccessMode(Context* const ctx, const ContextAccessMode accessMode)
 {
     if (accessMode == ContextAccessMode::INTERNAL) {
         return accessMode;
@@ -56,19 +56,18 @@ ContextAccessMode ResolveAccessMode(Context *const ctx, const ContextAccessMode 
     return ContextAccessMode::USER;
 }
 
-bool IsContextAccessAllowed(Context *const ctx, const ContextAccessMode accessMode, const bool isTracked)
+bool IsContextAccessAllowed(Context* const ctx, const ContextAccessMode accessMode, const bool isTracked)
 {
     if (isTracked) {
         return ctx->IsStateAccessible(accessMode);
     }
     return (accessMode == ContextAccessMode::INTERNAL) && IsCurrentThreadBinding(ctx) &&
-        ctx->IsStateAccessible(accessMode);
+           ctx->IsStateAccessible(accessMode);
 }
 
-}
+} // namespace
 
-bool ContextManage::CheckContextIsValid(Context *const curCtx,
-    ContextAccessMode accessMode, rtError_t *errorCode)
+bool ContextManage::CheckContextIsValid(Context* const curCtx, ContextAccessMode accessMode, rtError_t* errorCode)
 {
     bool needDetach = false;
     bool needDetachUserBinding = false;
@@ -102,7 +101,7 @@ bool ContextManage::CheckContextIsValid(Context *const curCtx,
     return false;
 }
 
-void ContextManage::InsertContext(Context *const insertCtx)
+void ContextManage::InsertContext(Context* const insertCtx)
 {
     if (unlikely(insertCtx == nullptr)) {
         return;
@@ -111,7 +110,7 @@ void ContextManage::InsertContext(Context *const insertCtx)
     return;
 }
 
-rtError_t ContextManage::MarkContextForDelete(Context *const eraseCtx)
+rtError_t ContextManage::MarkContextForDelete(Context* const eraseCtx)
 {
     if (eraseCtx == nullptr) {
         return RT_ERROR_CONTEXT_NULL;
@@ -120,7 +119,7 @@ rtError_t ContextManage::MarkContextForDelete(Context *const eraseCtx)
     return RT_ERROR_NONE;
 }
 
-rtError_t ContextManage::RemoveContextFromSet(Context *const eraseCtx)
+rtError_t ContextManage::RemoveContextFromSet(Context* const eraseCtx)
 {
     if (!g_ctxMan.EraseSetValueWithLock(eraseCtx)) {
         return RT_ERROR_CONTEXT_NULL;
@@ -128,7 +127,7 @@ rtError_t ContextManage::RemoveContextFromSet(Context *const eraseCtx)
     return RT_ERROR_NONE;
 }
 
-bool ContextManage::IsContextTracked(Context *const ctx)
+bool ContextManage::IsContextTracked(Context* const ctx)
 {
     if (ctx == nullptr) {
         return false;
@@ -137,22 +136,16 @@ bool ContextManage::IsContextTracked(Context *const ctx)
     return g_ctxMan.ExistsSetValueWithoutLock(ctx);
 }
 
-bool ContextManage::IsActiveContext(Context *const ctx)
+bool ContextManage::IsActiveContext(Context* const ctx)
 {
     return (ctx != nullptr) && (ctx->GetState() == ContextState::CTX_STATE_ACTIVE);
 }
 
-bool ContextManage::HasAttachedDevice(Context *const ctx)
-{
-    return (ctx != nullptr) && (ctx->Device_() != nullptr);
-}
+bool ContextManage::HasAttachedDevice(Context* const ctx) { return (ctx != nullptr) && (ctx->Device_() != nullptr); }
 
-bool ContextManage::HasActiveDevice(Context *const ctx)
-{
-    return GetActiveContextDevice(ctx) != nullptr;
-}
+bool ContextManage::HasActiveDevice(Context* const ctx) { return GetActiveContextDevice(ctx) != nullptr; }
 
-Device *ContextManage::GetActiveContextDevice(Context *const ctx)
+Device* ContextManage::GetActiveContextDevice(Context* const ctx)
 {
     if (!IsActiveContext(ctx)) {
         return nullptr;
@@ -160,7 +153,7 @@ Device *ContextManage::GetActiveContextDevice(Context *const ctx)
     return ctx->Device_();
 }
 
-bool ContextManage::IsContextOnDevice(Context *const ctx, const int32_t devId)
+bool ContextManage::IsContextOnDevice(Context* const ctx, const int32_t devId)
 {
     if (!HasAttachedDevice(ctx) || (devId < 0)) {
         return false;
@@ -168,16 +161,16 @@ bool ContextManage::IsContextOnDevice(Context *const ctx, const int32_t devId)
     return ctx->Device_()->Id_() == static_cast<uint32_t>(devId);
 }
 
-bool ContextManage::IsActiveContextOnDevice(Context *const ctx, const int32_t devId)
+bool ContextManage::IsActiveContextOnDevice(Context* const ctx, const int32_t devId)
 {
-    Device *const dev = GetActiveContextDevice(ctx);
+    Device* const dev = GetActiveContextDevice(ctx);
     if ((dev == nullptr) || (devId < 0)) {
         return false;
     }
     return dev->Id_() == static_cast<uint32_t>(devId);
 }
 
-bool ContextManage::AcquireInactiveContextForDestroy(Context *const ctx, rtError_t *errorCode)
+bool ContextManage::AcquireInactiveContextForDestroy(Context* const ctx, rtError_t* errorCode)
 {
     // This only allows an inactive explicit context to enter destroy flow.
     // The final object deletion is still guarded by Context::TryDeleteIfNeeded().
@@ -213,7 +206,7 @@ bool ContextManage::AcquireInactiveContextForDestroy(Context *const ctx, rtError
 bool ContextManage::IsSupportDeviceAbort(const int32_t devId)
 {
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
-    for (Context *const ctx : g_ctxMan.GetSetObj()) {
+    for (Context* const ctx : g_ctxMan.GetSetObj()) {
         COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         if (!ctx->Device_()->CheckFeatureSupport(TS_FEATURE_TASK_ABORT)) {
             RT_LOG(RT_LOG_WARNING, "feature not support because tsch version too low");
@@ -228,7 +221,7 @@ rtError_t ContextManage::DeviceAbort(const int32_t devId)
     RT_LOG(RT_LOG_INFO, "DeviceAbort[%d] start", devId);
     rtError_t error = RT_ERROR_CONTEXT_NULL;
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
-    for (Context *const ctx : g_ctxMan.GetSetObj()) {
+    for (Context* const ctx : g_ctxMan.GetSetObj()) {
         COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         ctx->Device_()->SetDeviceStatus(RT_ERROR_DEVICE_TASK_ABORT);
         ctx->SetFailureError(RT_ERROR_DEVICE_TASK_ABORT);
@@ -245,7 +238,7 @@ rtError_t ContextManage::Devicekill(const int32_t devId)
     RT_LOG(RT_LOG_INFO, "Devicekill start");
     rtError_t error = RT_ERROR_CONTEXT_NULL;
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
-    for (Context *const ctx : g_ctxMan.GetSetObj()) {
+    for (Context* const ctx : g_ctxMan.GetSetObj()) {
         COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         error = ctx->StreamsKill();
         ERROR_RETURN(error, "Failed to kill streams, retCode=%#x.", error);
@@ -261,7 +254,8 @@ rtError_t ContextManage::DeviceQuery(const int32_t devId, const uint32_t step, c
     RT_LOG(RT_LOG_INFO, "DeviceQuery[%d] start", devId);
     mmTimeval startTv = {};
     mmGetTimeOfDay(&startTv, nullptr);
-    const uint64_t startTime = (static_cast<uint64_t>(startTv.tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(startTv.tv_usec) / RT_US_TO_MS);
+    const uint64_t startTime =
+        (static_cast<uint64_t>(startTv.tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(startTv.tv_usec) / RT_US_TO_MS);
     rtError_t error = RT_ERROR_CONTEXT_NULL;
     const ReadProtect rp(&g_ctxMan.GetSetRwLock());
     COND_RETURN_WITH_NOLOG(g_ctxMan.GetSetObj().empty(), RT_ERROR_NONE);
@@ -269,7 +263,7 @@ rtError_t ContextManage::DeviceQuery(const int32_t devId, const uint32_t step, c
     while (flag) {
         uint32_t status;
         mmTimeval endTv = {};
-        for (Context *const ctx : g_ctxMan.GetSetObj()) {
+        for (Context* const ctx : g_ctxMan.GetSetObj()) {
             COND_PROC(!IsContextOnDevice(ctx, devId), continue);
             error = ctx->StreamsQuery(status);
             ERROR_RETURN(error, "Failed to query streams, retCode=%#x.", error);
@@ -279,7 +273,8 @@ rtError_t ContextManage::DeviceQuery(const int32_t devId, const uint32_t step, c
             }
 
             mmGetTimeOfDay(&endTv, nullptr);
-            const uint64_t endTime = (static_cast<uint64_t>(endTv.tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(endTv.tv_usec) / RT_US_TO_MS);
+            const uint64_t endTime = (static_cast<uint64_t>(endTv.tv_sec) * RT_MS_PER_S) +
+                                     (static_cast<uint64_t>(endTv.tv_usec) / RT_US_TO_MS);
             COND_RETURN_ERROR(
                 ((timeout != 0U) && ((endTime - startTime) > timeout)), RT_ERROR_WAIT_TIMEOUT, "kill query timeout");
             (void)mmSleep(5U);
@@ -289,14 +284,14 @@ rtError_t ContextManage::DeviceQuery(const int32_t devId, const uint32_t step, c
     return error;
 }
 
-void ContextManage::QueryContextInUse(const int32_t devId, bool &isInUse)
+void ContextManage::QueryContextInUse(const int32_t devId, bool& isInUse)
 {
     uint32_t cnt = 0U;
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
-    for (Context *const ctx : g_ctxMan.GetSetObj()) {
+    for (Context* const ctx : g_ctxMan.GetSetObj()) {
         COND_PROC(!IsActiveContextOnDevice(ctx, devId), continue);
         cnt++;
-        break;  // 只统计一个即可
+        break; // 只统计一个即可
     }
     RT_LOG(RT_LOG_INFO, "QueryContextInUse[%d], cnt=%u", devId, cnt);
     isInUse = (cnt != 0U);
@@ -307,9 +302,9 @@ rtError_t ContextManage::DeviceClean(const int32_t devId)
 {
     RT_LOG(RT_LOG_INFO, "DeviceClean[%u] start", devId);
     rtError_t error = RT_ERROR_CONTEXT_NULL;
-    Device *dev = nullptr;
+    Device* dev = nullptr;
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
-    for (Context *const ctx : g_ctxMan.GetSetObj()) {
+    for (Context* const ctx : g_ctxMan.GetSetObj()) {
         COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         dev = ctx->Device_();
         error = ctx->StreamsTaskClean();
@@ -330,7 +325,7 @@ rtError_t ContextManage::DeviceClean(const int32_t devId)
         (void)Runtime::Instance()->SetWatchDogDevStatus(dev, RT_DEVICE_STATUS_NORMAL);
     }
 
-    for (Context *const ctx : ContextDataManage::Instance().GetSetObj()) {
+    for (Context* const ctx : ContextDataManage::Instance().GetSetObj()) {
         COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         ctx->SetStreamsStatus(RT_ERROR_NONE);
         ctx->SetFailureError(RT_ERROR_NONE);
@@ -347,10 +342,11 @@ rtError_t ContextManage::DeviceTaskAbort(const int32_t devId, const uint32_t tim
     uint64_t timeCost;
     uint64_t startTime;
     uint64_t currentTime;
-    Runtime *const rtInstance = Runtime::Instance();
-    Device *dev = rtInstance->GetDevice(static_cast<uint32_t>(devId), 0U);
+    Runtime* const rtInstance = Runtime::Instance();
+    Device* dev = rtInstance->GetDevice(static_cast<uint32_t>(devId), 0U);
     mmGetTimeOfDay(&tv[index], nullptr);
-    startTime = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS);
+    startTime = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) +
+                (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS);
 
     std::unique_lock<std::mutex> taskLock(g_ctxManLock);
     const bool isSupport = IsSupportDeviceAbort(devId);
@@ -360,7 +356,8 @@ rtError_t ContextManage::DeviceTaskAbort(const int32_t devId, const uint32_t tim
     mmGetTimeOfDay(&tv[++index], nullptr);
     ERROR_GOTO_MSG_INNER(error, TIMEINFO, "Failed to abort device, retCode=%#x.", static_cast<uint32_t>(error));
 
-    timeCost = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS) - startTime;
+    timeCost = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) +
+               (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS) - startTime;
     COND_GOTO_ERROR(((timeout != 0U) && (timeCost > timeout)), TIMEINFO, error, RT_ERROR_WAIT_TIMEOUT, "timeout.");
     error = rtInstance->TaskAbortCallBack(devId, RT_DEVICE_ABORT_PRE, (timeout != 0U) ? (timeout - timeCost) : timeout);
     mmGetTimeOfDay(&tv[++index], nullptr);
@@ -370,19 +367,23 @@ rtError_t ContextManage::DeviceTaskAbort(const int32_t devId, const uint32_t tim
     mmGetTimeOfDay(&tv[++index], nullptr);
     ERROR_GOTO_MSG_INNER(error, TIMEINFO, "Failed to kill device, retCode=%#x.", static_cast<uint32_t>(error));
 
-    timeCost = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS) - startTime;
+    timeCost = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) +
+               (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS) - startTime;
     COND_GOTO_ERROR(((timeout != 0U) && (timeCost > timeout)), TIMEINFO, error, RT_ERROR_WAIT_TIMEOUT, "timeout.");
     error = DeviceQuery(devId, APP_ABORT_KILL_FINISH, (timeout != 0U) ? (timeout - timeCost) : timeout);
     mmGetTimeOfDay(&tv[++index], nullptr);
     ERROR_GOTO_MSG_INNER(error, TIMEINFO, "Failed to query device status, retCode=%#x.", static_cast<uint32_t>(error));
 
-    timeCost = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS) - startTime;
+    timeCost = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) +
+               (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS) - startTime;
     COND_GOTO_ERROR(((timeout != 0U) && (timeCost > timeout)), TIMEINFO, error, RT_ERROR_WAIT_TIMEOUT, "timeout.");
-    error = rtInstance->TaskAbortCallBack(devId, RT_DEVICE_ABORT_POST, (timeout != 0U) ? (timeout - timeCost) : timeout);
+    error =
+        rtInstance->TaskAbortCallBack(devId, RT_DEVICE_ABORT_POST, (timeout != 0U) ? (timeout - timeCost) : timeout);
     mmGetTimeOfDay(&tv[++index], nullptr);
     ERROR_GOTO_MSG_INNER(error, TIMEINFO, "Failed to abort post callback, retCode=%#x.", static_cast<uint32_t>(error));
 
-    timeCost = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS) - startTime;
+    timeCost = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) +
+               (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS) - startTime;
     COND_GOTO_ERROR(((timeout != 0U) && (timeCost > timeout)), TIMEINFO, error, RT_ERROR_WAIT_TIMEOUT, "timeout.");
 
     error = DeviceQuery(devId, APP_ABORT_TERMINATE_FINISH, (timeout != 0U) ? (timeout - timeCost) : timeout);
@@ -395,7 +396,8 @@ rtError_t ContextManage::DeviceTaskAbort(const int32_t devId, const uint32_t tim
     ERROR_GOTO_MSG_INNER(
         error, TIMEINFO, "Failed to clean device after abort, retCode=%#x.", static_cast<uint32_t>(error));
 
-    currentTime = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) + (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS);
+    currentTime = (static_cast<uint64_t>(tv[index].tv_sec) * RT_MS_PER_S) +
+                  (static_cast<uint64_t>(tv[index].tv_usec) / RT_US_TO_MS);
     if (dev != nullptr) {
         uint32_t value = 0;
         (void)NpuDriver::GetPageFaultCount(static_cast<uint32_t>(devId), &value);
@@ -416,9 +418,10 @@ TIMEINFO:
             "DeviceQuery terminate finish: Query task execution status",
             "DeviceClean: Notify clean",
             "DeviceClean finish: Runtime-related resource cleanup completed",
-        };  
+        };
         const char* desc = (i < sizeof(stepDesc) / sizeof(stepDesc[0])) ? stepDesc[i] : "Unknown step";
-        RT_LOG(RT_LOG_EVENT, "device %d, step %u: %s, time cost: %llu us", devId, i, desc,
+        RT_LOG(
+            RT_LOG_EVENT, "device %d, step %u: %s, time cost: %llu us", devId, i, desc,
             (tv[i].tv_sec - tv[i - 1U].tv_sec) * RT_MS_PER_S * RT_US_TO_MS + tv[i].tv_usec - tv[i - 1U].tv_usec);
     }
 
@@ -429,7 +432,7 @@ void ContextManage::TryToRecycleCtxMdlPool()
 {
     RT_LOG(RT_LOG_INFO, "start recycle ctx pool");
     const ReadProtect rp(&g_ctxMan.GetSetRwLock());
-    for (Context *const ctx : g_ctxMan.GetSetObj()) {
+    for (Context* const ctx : g_ctxMan.GetSetObj()) {
         COND_PROC(!ContextManage::HasAttachedDevice(ctx), continue);
         ctx->TryToRecycleModulePool();
     }
@@ -442,13 +445,13 @@ void ContextManage::SetGlobalErrToCtx(const rtError_t errCode)
     if (errCode == ACL_RT_SUCCESS) {
         return;
     }
-    Context *curCtx = InnerThreadLocalContainer::GetCurCtx();
+    Context* curCtx = InnerThreadLocalContainer::GetCurCtx();
     if (curCtx != nullptr) {
         if (ContextManage::CheckContextIsValid(curCtx)) {
             curCtx->SetContextLastErr(errCode);
         }
     }
-    RefObject<Context *> *curRef = InnerThreadLocalContainer::GetCurRef();
+    RefObject<Context*>* curRef = InnerThreadLocalContainer::GetCurRef();
     if ((curRef != nullptr) && (curRef->GetVal() != nullptr)) {
         if (ContextManage::CheckContextIsValid(curRef->GetVal())) {
             curRef->GetVal()->SetContextLastErr(errCode);
@@ -463,7 +466,7 @@ void ContextManage::SetGlobalFailureErr(const uint32_t devId, const rtError_t er
     }
     RT_LOG(RT_LOG_ERROR, "SetGlobalFailureErr start, device_id=%u, errcode=%#X", devId, errCode);
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
-    for (Context *const ctx : g_ctxMan.GetSetObj()) {
+    for (Context* const ctx : g_ctxMan.GetSetObj()) {
         COND_PROC(!IsContextOnDevice(ctx, static_cast<int32_t>(devId)), continue);
         COND_PROC(ctx->Device_()->GetDeviceStatus() == RT_ERROR_DEVICE_TASK_ABORT, continue);
         ctx->SetFailureError(errCode);
@@ -478,7 +481,7 @@ void ContextManage::DeviceSetFaultType(const uint32_t devId, DeviceFaultType dev
 {
     RT_LOG(RT_LOG_ERROR, "SetDeviceFaultType start, device_id=%u", devId);
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
-    for (Context *const ctx : g_ctxMan.GetSetObj()) {
+    for (Context* const ctx : g_ctxMan.GetSetObj()) {
         COND_PROC(!IsContextOnDevice(ctx, static_cast<int32_t>(devId)), continue);
         ctx->Device_()->SetDeviceFaultType(deviceFaultType);
     }
@@ -491,7 +494,7 @@ bool ContextManage::DeviceSetFaultTypeIfNoError(const uint32_t devId, DeviceFaul
     RT_LOG(RT_LOG_EVENT, "DeviceSetFaultTypeIfNoError start, device_id=%u", devId);
     const ReadProtect wp(&g_ctxMan.GetSetRwLock());
     bool setFaultFlag = false;
-    for (Context *const ctx : g_ctxMan.GetSetObj()) {
+    for (Context* const ctx : g_ctxMan.GetSetObj()) {
         COND_PROC(!IsContextOnDevice(ctx, static_cast<int32_t>(devId)), continue);
         if (ctx->Device_()->SetDeviceFaultTypeIfNoError(deviceFaultType)) {
             setFaultFlag = true;
@@ -500,11 +503,11 @@ bool ContextManage::DeviceSetFaultTypeIfNoError(const uint32_t devId, DeviceFaul
     return setFaultFlag;
 }
 
-bool ContextManage::CheckStreamPtrIsValid(Stream * const stm)
+bool ContextManage::CheckStreamPtrIsValid(Stream* const stm)
 {
     RT_LOG(RT_LOG_INFO, "start");
     const ReadProtect rp(&(g_ctxMan.GetSetRwLock()));
-    for (Context * const ctx : g_ctxMan.GetSetObj()) {
+    for (Context* const ctx : g_ctxMan.GetSetObj()) {
         if (ctx->IsStreamInContext(stm)) {
             return true;
         }
@@ -516,12 +519,12 @@ rtError_t ContextManage::DeviceResourceClean(int32_t devId)
 {
     rtError_t error = RT_ERROR_DEVICE_NULL;
     const ReadProtect rp(&(g_ctxMan.GetSetRwLock()));
-    for (Context * const ctx : g_ctxMan.GetSetObj()) {
+    for (Context* const ctx : g_ctxMan.GetSetObj()) {
         COND_PROC(!IsContextOnDevice(ctx, devId), continue);
         error = ctx->ResourceReset();
         break;
     }
     return error;
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

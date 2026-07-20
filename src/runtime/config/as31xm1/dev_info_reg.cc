@@ -60,20 +60,20 @@ static const std::unordered_set<RtOptionalFeatureType> CHIP_AS31XM1_FEATURE{
     RtOptionalFeatureType::RT_FEATURE_MODEL_ID_FOR_AICPU,
     RtOptionalFeatureType::RT_FEATURE_NOTIFY_WAIT,
     RtOptionalFeatureType::RT_FEATURE_PROFILING_ONLINE_DEVICE_MEM_CLEAR,
-    RtOptionalFeatureType::RT_FEATURE_DEVICE_MEM_COPY_DOT_D2D_ONLY
-};
+    RtOptionalFeatureType::RT_FEATURE_DEVICE_MEM_COPY_DOT_D2D_ONLY};
 
 REGISTER_CHIP_FEATURE_SET(CHIP_AS31XM1, CHIP_AS31XM1_FEATURE);
 
 static constexpr uint32_t CQE_DEPTH = 4096U;
 static constexpr uint32_t SQE_DEPTH = 4096U;
 static constexpr uint32_t RT_STARS_MAX_KERNEL_CREDIT_UINT32 = 254U; // STARS MAX KERNEL_CREDIT = 255.
-static constexpr uint32_t RT_STARS_AS31XM1X_DEFAULT_KERNEL_CREDIT_UINT32 = 3U; // The STARS AS31XM1X reference time is 100663.296 us.
+static constexpr uint32_t RT_STARS_AS31XM1X_DEFAULT_KERNEL_CREDIT_UINT32 =
+    3U; // The STARS AS31XM1X reference time is 100663.296 us.
 static constexpr double RT_STARS_AS31XM1X_TASK_KERNEL_CREDIT_SCALE_US = 33554.432; // 2^24 / 500M *1000*1000(us)
 static constexpr uint32_t AS31XM1X_MULTI_GRAPH_ARG_ENTRY_SIZE = 1024U;
 static constexpr uint32_t AS31XM1X_DEFAULT_INIT_CNT = 128U;
 static constexpr uint32_t DEVICE_RINGBUFFER_SIZE_MDC = 512U * 1024U;
-static constexpr uint64_t ENGINE_WAIT_COMPLETION_TIMEOUT = 2000UL; //2000ms
+static constexpr uint64_t ENGINE_WAIT_COMPLETION_TIMEOUT = 2000UL; // 2000ms
 
 static const DevProperties CHIP_AS31XM1_PROPERTIES = {
     .engineType = "STARS",
@@ -120,10 +120,9 @@ static const DevProperties CHIP_AS31XM1_PROPERTIES = {
     .starsDefaultKernelCredit = RT_STARS_AS31XM1X_DEFAULT_KERNEL_CREDIT,
     .KernelCreditScale = RT_STARS_AS31XM1X_TASK_KERNEL_CREDIT_SCALE_US,
     .isSupportInitFuncCallPara = true,
-    .rtsqVirtualAddr = {RT_STARS_BASE_ADDR_520000000 + STARS_SIMPLE_RTSQ_FSM_SEL_REG,
-        STARS_SIMPLE_SQ_ENABLE_OFFSET,
-        STARS_SIMPLE_SQ_TAIL_OFFSET,
-        STARS_SIMPLE_SQ_HEAD_OFFSET},
+    .rtsqVirtualAddr =
+        {RT_STARS_BASE_ADDR_520000000 + STARS_SIMPLE_RTSQ_FSM_SEL_REG, STARS_SIMPLE_SQ_ENABLE_OFFSET,
+         STARS_SIMPLE_SQ_TAIL_OFFSET, STARS_SIMPLE_SQ_HEAD_OFFSET},
     .rtsqFsmStateAddrCalMethod = RtsqFsmStateAddrCalMethod::FSM_ADDR_CALCULATE_STATIC,
     .starsBaseAddrMethod = StarsBaseAddrMethod::STARS_BASE_CALCULATE_STATIC,
     .rtSqEnableAddrCalMethod = RtSqEnableAddrCalMethod::RT_SQ_ENABLE_ADDR_CAL_STATIC,
@@ -216,5 +215,5 @@ static const DevProperties CHIP_AS31XM1_PROPERTIES = {
 };
 
 REGISTER_DEV_PROPERTIES(CHIP_AS31XM1, CHIP_AS31XM1_PROPERTIES);
-}
-}
+} // namespace runtime
+} // namespace cce

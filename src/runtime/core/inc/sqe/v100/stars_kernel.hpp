@@ -18,7 +18,7 @@ namespace cce {
 namespace runtime {
 
 #pragma pack(push)
-#pragma pack (1)
+#pragma pack(1)
 
 struct RtStarsKernelSqe {
     rtStarsSqeHeader_t header;
@@ -85,7 +85,7 @@ struct RtStarsAicpuKernelSqe {
     uint32_t res6 : 13;
 
     /* word12-13 */
-    uint32_t extraFieldLow;  // send task id info to aicpu
+    uint32_t extraFieldLow; // send task id info to aicpu
     uint32_t extra_field_high;
 
     /* word14 */
@@ -280,7 +280,7 @@ struct RtStarsHostfuncCallbackSqe {
     uint32_t fndata_high;
 
     /* word12-13 */
-    uint32_t res5;               // noly vf & topic AICPU & callback msg use for hostpid.
+    uint32_t res5; // noly vf & topic AICPU & callback msg use for hostpid.
     uint32_t res6;
 
     /* word14 */
@@ -299,8 +299,8 @@ struct RtStarsEventSqe {
     uint16_t res2;
 
     uint16_t res3;
-    uint8_t  kernelCredit;
-    uint8_t  res4;
+    uint8_t kernelCredit;
+    uint8_t res4;
     uint32_t exe_result;
     uint32_t timeout;
     uint32_t res5[10];
@@ -321,6 +321,6 @@ struct RtStarsNotifySqe {
 
 #pragma pack(pop)
 
-}  // namespace runtime
-}  // namespace cce
-#endif  // CCE_RUNTIME_STARS_KERNEL_HPP
+} // namespace runtime
+} // namespace cce
+#endif // CCE_RUNTIME_STARS_KERNEL_HPP

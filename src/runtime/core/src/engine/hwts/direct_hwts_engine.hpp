@@ -20,7 +20,7 @@ namespace cce {
 namespace runtime {
 class DirectHwtsEngine : public HwtsEngine {
 public:
-    explicit DirectHwtsEngine(Device * const dev);
+    explicit DirectHwtsEngine(Device* const dev);
     ~DirectHwtsEngine() override;
 
     rtError_t Init() override;
@@ -29,21 +29,19 @@ public:
     // Stop the engine process.
     rtError_t Stop() override;
     // create monitor thread and recycle thread
-    void Run(const void * const param) override;
+    void Run(const void* const param) override;
 
     rtError_t InitStreamRes(const uint32_t streamId) override;
-    rtError_t QueryLatestTaskId(const uint32_t streamId, uint32_t &taskId) override;
-    uint32_t GetShareLogicCqId() const override
-    {
-        return logicCqId_;
-    }
+    rtError_t QueryLatestTaskId(const uint32_t streamId, uint32_t& taskId) override;
+    uint32_t GetShareLogicCqId() const override { return logicCqId_; }
 
-    rtError_t SyncTask(Stream * const stm, const uint32_t taskId, const bool isStreamSync,
-        int32_t timeout = -1, bool isForce = false) override;
-    rtError_t TryRecycleTask(Stream * const stm) override;
-    void SendingWait(Stream * const stm, uint8_t &failCount) override;
-    rtError_t TaskReclaimAllForNoRes(const bool limited, uint32_t &taskId) override;
-    rtError_t TaskReclaim(const uint32_t streamId, const bool limited, uint32_t &taskId) override;
+    rtError_t SyncTask(
+        Stream* const stm, const uint32_t taskId, const bool isStreamSync, int32_t timeout = -1,
+        bool isForce = false) override;
+    rtError_t TryRecycleTask(Stream* const stm) override;
+    void SendingWait(Stream* const stm, uint8_t& failCount) override;
+    rtError_t TaskReclaimAllForNoRes(const bool limited, uint32_t& taskId) override;
+    rtError_t TaskReclaim(const uint32_t streamId, const bool limited, uint32_t& taskId) override;
     uint32_t GetTaskIdFromStreamShmTaskId(const uint32_t streamId) override;
 
     bool CheckMonitorThreadAlive() override;
@@ -52,50 +50,50 @@ public:
 protected:
     uint32_t GetShareSqId() const override;
 
-    rtError_t QueryShmInfo(const uint32_t streamId, const bool limited, uint32_t &taskId);
+    rtError_t QueryShmInfo(const uint32_t streamId, const bool limited, uint32_t& taskId);
     void SyncTaskQueryShm(const uint32_t streamId, const uint32_t taskId, const uint32_t cqId);
     void ProcessFastCqTask(const uint32_t streamId, const uint32_t taskId);
 
-    void IsSyncFinish(const uint32_t taskId, uint32_t cnt, const rtLogicReport_t *logicReport) const;
+    void IsSyncFinish(const uint32_t taskId, uint32_t cnt, const rtLogicReport_t* logicReport) const;
     bool UpdateTaskIdForTaskStatus(const uint32_t streamId, const uint16_t taskId);
 
     // task submit
-    rtError_t SubmitSend(TaskInfo * const workTask, uint32_t * const flipTaskId = nullptr) override;
+    rtError_t SubmitSend(TaskInfo* const workTask, uint32_t* const flipTaskId = nullptr) override;
 
 private:
     void MonitoringRun();
-    bool ProcLogicReport(const rtLogicReport_t &logic, const uint32_t drvErr, const bool isStreamSync);
-    void ProcAicpuErrMsgReport(const rtLogicReport_t &logic) const;
-    bool ProcessReport(const rtTaskReport_t * const report, const uint32_t drvErr, const bool isStreamSync);
+    bool ProcLogicReport(const rtLogicReport_t& logic, const uint32_t drvErr, const bool isStreamSync);
+    void ProcAicpuErrMsgReport(const rtLogicReport_t& logic) const;
+    bool ProcessReport(const rtTaskReport_t* const report, const uint32_t drvErr, const bool isStreamSync);
     std::string GetKernelNameForAiCoreorAiv(const uint32_t streamId, const uint32_t taskId) const;
-    bool PreProcessTask(TaskInfo *preTask, const uint32_t deviceId);
+    bool PreProcessTask(TaskInfo* preTask, const uint32_t deviceId);
 
     void RecycleThreadRun(void);
     rtError_t CreateRecycleThread(void);
     void DestroyRecycleThread(void);
 
-    rtShmQuery_t *TaskStatusAlloc(const uint32_t streamId);
+    rtShmQuery_t* TaskStatusAlloc(const uint32_t streamId);
     void EraseTaskStatus(const size_t streamId);
 
     // recycle task
-    void TaskReclaimEx(const uint32_t streamId, const bool limited, uint32_t &taskId, rtShmQuery_t &shareMemInfo);
-    bool HandleShmTask(const uint32_t streamId, const bool limited, rtShmQuery_t &shareMemInfo);
-    void ReportLastError(const uint32_t streamId, const uint32_t taskId,
-                         const uint32_t errorCode, const uint32_t errorDesc);
+    void TaskReclaimEx(const uint32_t streamId, const bool limited, uint32_t& taskId, rtShmQuery_t& shareMemInfo);
+    bool HandleShmTask(const uint32_t streamId, const bool limited, rtShmQuery_t& shareMemInfo);
+    void ReportLastError(
+        const uint32_t streamId, const uint32_t taskId, const uint32_t errorCode, const uint32_t errorDesc);
 
-    Thread *monitorThread_;
-    Thread *recycleThread_;
+    Thread* monitorThread_;
+    Thread* recycleThread_;
     std::atomic<bool> recycleThreadAlive_{false};
     std::atomic<int32_t> inFlightWakeUps_{0};
     volatile bool monitorThreadRunFlag_ = false;
     mmSem_t recycleThreadSem_;
     ShmCq shmCq_;
-    std::mutex statusMutex_;    // Guard for task recycle status.
-    std::vector<rtShmQuery_t *> vecTaskStatus_{std::vector<rtShmQuery_t *>(RT_MAX_STREAM_ID, nullptr)};
+    std::mutex statusMutex_; // Guard for task recycle status.
+    std::vector<rtShmQuery_t*> vecTaskStatus_{std::vector<rtShmQuery_t*>(RT_MAX_STREAM_ID, nullptr)};
 
     uint32_t logicCqId_{MAX_UINT32_NUM};
 }; // class DirectHwtsEngine
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_DIRECT_HWTS_ENGINE_HPP
+#endif // CCE_RUNTIME_DIRECT_HWTS_ENGINE_HPP

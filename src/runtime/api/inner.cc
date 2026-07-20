@@ -37,7 +37,7 @@ enum rtGeneralCtrlNum_t {
     RT_GNL_CTRL_NUM_SET_STREAM_TAG_TSK = 2U,
     RT_GNL_CTRL_NUM_MULTIPLE_TSK = 2U,
     RT_GNL_CTRL_NUM_INVALID = 0U,
-} ;
+};
 
 constexpr uint32_t GNL_CTRL_PARAM_0 = 0U;
 constexpr uint32_t GNL_CTRL_PARAM_1 = 1U;
@@ -48,127 +48,117 @@ constexpr uint32_t GNL_CTRL_PARAM_5 = 5U;
 constexpr uint32_t GNL_CTRL_PARAM_6 = 6U;
 constexpr uint32_t GNL_CTRL_PARAM_7 = 7U;
 
-rtError_t rtMemcpyAsyncWithCfgCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtMemcpyAsyncWithCfgCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtMemcpyAsyncWithCfg(RtPtrToPtr<void *>(ctl[GNL_CTRL_PARAM_0]),
-                                static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_1]),
-                                RtPtrToPtr<const void *>(ctl[GNL_CTRL_PARAM_2]),
-                                static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_3]),
-                                static_cast<rtMemcpyKind_t>(ctl[GNL_CTRL_PARAM_4]),
-                                RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_5]),
-                                static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_6]));
+    return rtMemcpyAsyncWithCfg(
+        RtPtrToPtr<void*>(ctl[GNL_CTRL_PARAM_0]), static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_1]),
+        RtPtrToPtr<const void*>(ctl[GNL_CTRL_PARAM_2]), static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_3]),
+        static_cast<rtMemcpyKind_t>(ctl[GNL_CTRL_PARAM_4]), RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_5]),
+        static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_6]));
 }
 
-rtError_t rtReduceAsyncWithCfgCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtReduceAsyncWithCfgCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtReduceAsyncWithCfg(RtPtrToPtr<void *>(ctl[GNL_CTRL_PARAM_0]),
-                                static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_1]),
-                                RtPtrToPtr<const void *>(ctl[GNL_CTRL_PARAM_2]),
-                                static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_3]),
-                                static_cast<rtRecudeKind_t>(ctl[GNL_CTRL_PARAM_4]),
-                                static_cast<rtDataType_t>(ctl[GNL_CTRL_PARAM_5]),
-                                RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_6]),
-                                static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_7]));
+    return rtReduceAsyncWithCfg(
+        RtPtrToPtr<void*>(ctl[GNL_CTRL_PARAM_0]), static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_1]),
+        RtPtrToPtr<const void*>(ctl[GNL_CTRL_PARAM_2]), static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_3]),
+        static_cast<rtRecudeKind_t>(ctl[GNL_CTRL_PARAM_4]), static_cast<rtDataType_t>(ctl[GNL_CTRL_PARAM_5]),
+        RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_6]), static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_7]));
 }
 
-rtError_t rtFftsPlusTaskLaunchWithFlagCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtFftsPlusTaskLaunchWithFlagCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtFftsPlusTaskLaunchWithFlag(RtPtrToPtr<rtFftsPlusTaskInfo_t *>(ctl[GNL_CTRL_PARAM_0]),
-                                        RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]),
-                                        static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_2]));
+    return rtFftsPlusTaskLaunchWithFlag(
+        RtPtrToPtr<rtFftsPlusTaskInfo_t*>(ctl[GNL_CTRL_PARAM_0]), RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]),
+        static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_2]));
 }
 
-rtError_t rtFftsPlusTaskLaunchCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtFftsPlusTaskLaunchCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtFftsPlusTaskLaunch(RtPtrToPtr<rtFftsPlusTaskInfo_t *>(ctl[GNL_CTRL_PARAM_0]),
-                                RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]));
+    return rtFftsPlusTaskLaunch(
+        RtPtrToPtr<rtFftsPlusTaskInfo_t*>(ctl[GNL_CTRL_PARAM_0]), RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]));
 }
 
-rtError_t rtNpuGetFloatStatusCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtNpuGetFloatStatusCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtNpuGetFloatStatus(RtPtrToPtr<void *>(ctl[GNL_CTRL_PARAM_0]),
-                               static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_1]),
-                               static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_2]),
-                               RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_3]));
+    return rtNpuGetFloatStatus(
+        RtPtrToPtr<void*>(ctl[GNL_CTRL_PARAM_0]), static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_1]),
+        static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_2]), RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_3]));
 }
 
-rtError_t rtNpuClearFloatStatusCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtNpuClearFloatStatusCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtNpuClearFloatStatus(static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_0]),
-                                 RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]));
+    return rtNpuClearFloatStatus(
+        static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_0]), RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]));
 }
 
-rtError_t rtNpuGetFloatDebugStatusCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtNpuGetFloatDebugStatusCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtNpuGetFloatDebugStatus(RtPtrToPtr<void *>(ctl[GNL_CTRL_PARAM_0]),
-                                    static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_1]),
-                                    static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_2]),
-                                    RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_3]));
+    return rtNpuGetFloatDebugStatus(
+        RtPtrToPtr<void*>(ctl[GNL_CTRL_PARAM_0]), static_cast<uint64_t>(ctl[GNL_CTRL_PARAM_1]),
+        static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_2]), RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_3]));
 }
 
-rtError_t rtNpuClearFloatDebugStatusCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtNpuClearFloatDebugStatusCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtNpuClearFloatDebugStatus(static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_0]),
-                                      RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]));
+    return rtNpuClearFloatDebugStatus(
+        static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_0]), RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]));
 }
 
-rtError_t rtStarsTaskLaunchCtrl(uintptr_t * const ctl, uint32_t const num)
+rtError_t rtStarsTaskLaunchCtrl(uintptr_t* const ctl, uint32_t const num)
 {
     UNUSED(num);
-    return rtStarsTaskLaunch(RtPtrToPtr<const void *>(ctl[GNL_CTRL_PARAM_0]),
-                             static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_1]),
-                             RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_2]));
+    return rtStarsTaskLaunch(
+        RtPtrToPtr<const void*>(ctl[GNL_CTRL_PARAM_0]), static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_1]),
+        RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_2]));
 }
 
-rtError_t rtCmoTaskLaunchCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtCmoTaskLaunchCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtCmoTaskLaunch(RtPtrToPtr<rtCmoTaskInfo_t *>(ctl[GNL_CTRL_PARAM_0]),
-                           RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]),
-                           static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_2]));
+    return rtCmoTaskLaunch(
+        RtPtrToPtr<rtCmoTaskInfo_t*>(ctl[GNL_CTRL_PARAM_0]), RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]),
+        static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_2]));
 }
 
-rtError_t rtBarrierTaskLaunchCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtBarrierTaskLaunchCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtBarrierTaskLaunch(RtPtrToPtr<rtBarrierTaskInfo_t *>(ctl[GNL_CTRL_PARAM_0]),
-                               RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]),
-                               static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_2]));
+    return rtBarrierTaskLaunch(
+        RtPtrToPtr<rtBarrierTaskInfo_t*>(ctl[GNL_CTRL_PARAM_0]), RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]),
+        static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_2]));
 }
 
-rtError_t rtStarsTaskLaunchWithFlagCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtStarsTaskLaunchWithFlagCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtStarsTaskLaunchWithFlag(RtPtrToPtr<const void *>(ctl[GNL_CTRL_PARAM_0]),
-                                     static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_1]),
-                                     RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_2]),
-                                     static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_3]));
+    return rtStarsTaskLaunchWithFlag(
+        RtPtrToPtr<const void*>(ctl[GNL_CTRL_PARAM_0]), static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_1]),
+        RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_2]), static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_3]));
 }
 
-rtError_t rtSetStreamTagCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtSetStreamTagCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtSetStreamTag(RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_0]),
-                          static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_1]));
+    return rtSetStreamTag(RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_0]), static_cast<uint32_t>(ctl[GNL_CTRL_PARAM_1]));
 }
 
-rtError_t rtMultipleTaskInfoLaunchCtrl(uintptr_t * const ctl, const uint32_t num)
+rtError_t rtMultipleTaskInfoLaunchCtrl(uintptr_t* const ctl, const uint32_t num)
 {
     UNUSED(num);
-    return rtMultipleTaskInfoLaunch(RtPtrToPtr<const void *>(ctl[GNL_CTRL_PARAM_0]),
-                                    RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]));
+    return rtMultipleTaskInfoLaunch(
+        RtPtrToPtr<const void*>(ctl[GNL_CTRL_PARAM_0]), RtPtrToPtr<rtStream_t>(ctl[GNL_CTRL_PARAM_1]));
 }
 
-typedef rtError_t (*rtGeneralCtrlFuncPtr)(uintptr_t *ctl, uint32_t num);
-
+typedef rtError_t (*rtGeneralCtrlFuncPtr)(uintptr_t* ctl, uint32_t num);
 
 typedef struct rtGeneralCtrlFuncInfo {
     rtGeneralCtrlFuncPtr funcCall;
@@ -194,20 +184,23 @@ static rtGeneralCtrlFunc g_genCtrPro[] = {
     {&rtNpuClearFloatDebugStatusCtrl, RT_GNL_CTRL_NUM_NPU_CLEAR_FLOAT_STATUS},
 };
 
-rtError_t rtGeneralCtrlInner(uintptr_t *ctl, uint32_t num, uint32_t type)
+rtError_t rtGeneralCtrlInner(uintptr_t* ctl, uint32_t num, uint32_t type)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
     PARAM_NULL_RETURN_ERROR_WITH_EXT_ERRCODE(ctl, RT_ERROR_INVALID_VALUE);
-    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM((type >= static_cast<uint32_t>(RT_GNL_CTRL_TYPE_MAX)), RT_ERROR_INVALID_VALUE, 
-        type, "less than " + std::to_string(RT_GNL_CTRL_TYPE_MAX));
+    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(
+        (type >= static_cast<uint32_t>(RT_GNL_CTRL_TYPE_MAX)), RT_ERROR_INVALID_VALUE, type,
+        "less than " + std::to_string(RT_GNL_CTRL_TYPE_MAX));
 
-    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER((g_genCtrPro[type].funcCall == nullptr), RT_ERROR_INVALID_VALUE,
-        ErrorCode::EE1004, __func__, "current type " + GnlCtrlTypeToString(static_cast<rtGeneralCtrlType_t>(type)) + " func call");
+    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER(
+        (g_genCtrPro[type].funcCall == nullptr), RT_ERROR_INVALID_VALUE, ErrorCode::EE1004, __func__,
+        "current type " + GnlCtrlTypeToString(static_cast<rtGeneralCtrlType_t>(type)) + " func call");
 
-    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM((num != static_cast<uint32_t>(g_genCtrPro[type].num)), RT_ERROR_INVALID_VALUE, 
-        num, std::to_string(g_genCtrPro[type].num));
+    COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(
+        (num != static_cast<uint32_t>(g_genCtrPro[type].num)), RT_ERROR_INVALID_VALUE, num,
+        std::to_string(g_genCtrPro[type].num));
     return g_genCtrPro[type].funcCall(ctl, num);
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

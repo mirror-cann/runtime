@@ -151,7 +151,7 @@ const TsErrCode g_tsErrCodeMap[] = {
     {TS_ERROR_SDMA_POISON_ERROR, RT_ERROR_SDMA_POISON_ERROR, ERR_MODULE_RTS, "sdma poison error"},
 
     {TS_ERROR_LOCAL_MEM_ERROR, RT_ERROR_LOCAL_MEM_ERROR, ERR_MODULE_RTS, "local mem error"},
-    
+
     {TS_ERROR_REMOTE_MEM_ERROR, RT_ERROR_REMOTE_MEM_ERROR, ERR_MODULE_RTS, "remote mem error"},
 
     {TS_ERROR_SUSPECT_MTE_ERROR, RT_ERROR_SUSPECT_DEVICE_MEM_ERROR, ERR_MODULE_RTS, "suspect mem error"},
@@ -190,11 +190,9 @@ const TsErrCode g_tsErrCodeMap[] = {
 
     {TS_ERROR_DEBUG_AI_CORE_FULL, RT_ERROR_TSFW_DEBUG_AI_CORE_FULL, ERR_MODULE_RTS, "debug aicore full"},
 
-    {TS_ERROR_DEBUG_AI_CORE_NOT_EXIST, RT_ERROR_TSFW_DEBUG_AI_CORE_NOT_EXIST, ERR_MODULE_RTS,
-     "debug aicore not exist"},
+    {TS_ERROR_DEBUG_AI_CORE_NOT_EXIST, RT_ERROR_TSFW_DEBUG_AI_CORE_NOT_EXIST, ERR_MODULE_RTS, "debug aicore not exist"},
 
-    {TS_ERROR_DEBUG_AI_CORE_EXCEPTION, RT_ERROR_TSFW_DEBUG_AI_CORE_EXCEPTION, ERR_MODULE_RTS,
-     "debug aicore exception"},
+    {TS_ERROR_DEBUG_AI_CORE_EXCEPTION, RT_ERROR_TSFW_DEBUG_AI_CORE_EXCEPTION, ERR_MODULE_RTS, "debug aicore exception"},
 
     {TS_ERROR_DEBUG_AI_CORE_TIMEOUT, RT_ERROR_TSFW_DEBUG_AI_CORE_TIMEOUT, ERR_MODULE_RTS, "debug aicore timeout"},
 
@@ -237,8 +235,7 @@ const TsErrCode g_tsErrCodeMap[] = {
 
     {TS_ERROR_REPEAT_MODEL_STREAM, RT_ERROR_TSFW_REPEAT_MODEL_STREAM, ERR_MODULE_RTS, "repeat model stream"},
 
-    {TS_ERROR_STREAM_MODEL_UNBIND, RT_ERROR_TSFW_STREAM_MODEL_UNBIND, ERR_MODULE_RTS,
-     "the model stream unbind failed"},
+    {TS_ERROR_STREAM_MODEL_UNBIND, RT_ERROR_TSFW_STREAM_MODEL_UNBIND, ERR_MODULE_RTS, "the model stream unbind failed"},
 
     {TS_MODEL_STREAM_EXE_FAILED, RT_ERROR_TSFW_MODEL_EXE_FAILED, ERR_MODULE_RTS, "the model stream execute failed"},
 
@@ -281,7 +278,7 @@ const TsErrCode g_tsErrCodeMap[] = {
     {TS_ERROR_TASK_BUS_ERROR, RT_ERROR_TSFW_TASK_BUS_ERROR, ERR_MODULE_RTS, "task bus error"},
 
     {TS_ERROR_TASK_RES_CONFLICT_ERROR, RT_ERROR_TSFW_TASK_RES_CONFLICT_ERROR, ERR_MODULE_RTS,
-        "task res conflict error"},
+     "task res conflict error"},
 
     {TS_ERROR_TASK_SW_STATUS_ERROR, RT_ERROR_TSFW_TASK_SW_STATUS_ERROR, ERR_MODULE_RTS, "task sw status error"},
 
@@ -315,8 +312,7 @@ const TsErrCode g_tsErrCodeMap[] = {
 
     {TS_ERROR_FFTSPLUS_TASK_TRAP, RT_ERROR_TSFW_FFTS_PLUS_TRAP_EXCEPTION, ERR_MODULE_RTS,
      "fftsplus task trap exception"},
-    {TS_ERROR_TS_CLOSED, RT_ERROR_TSFW_TS_CLOSED, ERR_MODULE_RTS,
-     "TS is closed"},
+    {TS_ERROR_TS_CLOSED, RT_ERROR_TSFW_TS_CLOSED, ERR_MODULE_RTS, "TS is closed"},
 };
 
 uint32_t GetTsErrModuleType(const uint32_t type)
@@ -331,7 +327,7 @@ uint32_t GetTsErrModuleType(const uint32_t type)
     return ERR_MODULE_RTS;
 }
 
-const char_t *GetTsErrCodeDesc(const uint32_t type)
+const char_t* GetTsErrCodeDesc(const uint32_t type)
 {
     const uint32_t errCodeCount = sizeof(g_tsErrCodeMap) / sizeof(g_tsErrCodeMap[0]);
     for (uint32_t idx = 0U; idx < errCodeCount; idx++) {
@@ -343,7 +339,7 @@ const char_t *GetTsErrCodeDesc(const uint32_t type)
     return "unknown error";
 }
 
-const char_t *GetTsErrDescByRtErr(const rtError_t rtErrCode)
+const char_t* GetTsErrDescByRtErr(const rtError_t rtErrCode)
 {
     const uint32_t errCodeCount = sizeof(g_tsErrCodeMap) / sizeof(g_tsErrCodeMap[0]);
     for (uint32_t idx = 0U; idx < errCodeCount; idx++) {
@@ -355,7 +351,7 @@ const char_t *GetTsErrDescByRtErr(const rtError_t rtErrCode)
     return "unknown error";
 }
 
-const char_t *GetTsErrCodeMap(const uint32_t type, rtError_t * const rtErrCode)
+const char_t* GetTsErrCodeMap(const uint32_t type, rtError_t* const rtErrCode)
 {
     *rtErrCode = RT_ERROR_TSFW_RESERVED;
     const uint32_t errCodeCount = sizeof(g_tsErrCodeMap) / sizeof(g_tsErrCodeMap[0]);
@@ -368,5 +364,5 @@ const char_t *GetTsErrCodeMap(const uint32_t type, rtError_t * const rtErrCode)
 
     return "unknown error";
 }
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

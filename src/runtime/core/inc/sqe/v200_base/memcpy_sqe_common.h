@@ -17,7 +17,7 @@
 namespace cce {
 namespace runtime {
 #pragma pack(push)
-#pragma pack (1)
+#pragma pack(1)
 
 // MemAsync
 struct MemcpyStride00 {
@@ -200,16 +200,16 @@ struct RtDavidStarsPcieDmaSqe {
     uint16_t res4 : 15;
 
     /* word7 */
-    uint32_t isConverted : 1;  //use reserved filed
+    uint32_t isConverted : 1; // use reserved filed
     uint32_t res5 : 31;
 
     /* word8~11 */
-    uint64_t src;  //use reserved filed
-    uint64_t dst;  //use reserved filed
+    uint64_t src; // use reserved filed
+    uint64_t dst; // use reserved filed
 
     /* word12-15 */
-    uint64_t length;  //use reserved filed
-    uint32_t passId;  //use reserved filed
+    uint64_t length; // use reserved filed
+    uint32_t passId; // use reserved filed
     uint32_t res6;
 };
 
@@ -237,6 +237,6 @@ struct RtDavidStarsMemcpyPtrSqe {
     uint32_t res5[10];
 };
 #pragma pack(pop)
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // CCE_RUNTIME_MEMCPY_SQE_COMMON_H

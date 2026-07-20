@@ -9,24 +9,24 @@
  */
 #ifndef FP16_T_H
 #define FP16_T_H
- 
+
 #include <algorithm>
 #include <cmath>
 #include <math.h>
 #include <stdint.h>
- 
+
 namespace cce {
 namespace runtime {
- 
+
 constexpr uint16_t DIM_1 = 1;
 constexpr uint16_t DIM_2 = 2;
 constexpr uint16_t DIM_7 = 7;
 constexpr uint16_t DIM_11 = 11;
- 
+
 constexpr uint16_t BitShift_15 = 15;
 constexpr uint16_t BitShift_31 = 31;
 constexpr uint16_t BitShift_32 = 32;
- 
+
 /**
  * @ingroup fp16 basic parameter
  * @brief   fp16 exponent bias
@@ -96,56 +96,52 @@ constexpr uint16_t FP16_MAX_MAN = 0x03FF;
  * @ingroup fp16 basic operator
  * @brief   get sign of fp16
  */
-inline uint16_t Fp16ExtracSign(const uint16_t x) {
-  return ((x >> 15U) & 1U);
-}
+inline uint16_t Fp16ExtracSign(const uint16_t x) { return ((x >> 15U) & 1U); }
 /**
  * @ingroup fp16 basic operator
  * @brief   get exponent of fp16
  */
-inline uint16_t Fp16ExtracExp(const uint16_t x) {
-  return ((x >> 10U) & FP16_MAX_EXP);
-}
+inline uint16_t Fp16ExtracExp(const uint16_t x) { return ((x >> 10U) & FP16_MAX_EXP); }
 /**
  * @ingroup fp16 basic operator
  * @brief   get mantissa of fp16
  */
 inline uint16_t Fp16ExtracMan(const uint16_t x)
 {
-  return (((x) >> 0) & 0x3FF) | (((((x) >> 10U) & 0x1F) > 0 ? 1 : 0) * 0x400);
+    return (((x) >> 0) & 0x3FF) | (((((x) >> 10U) & 0x1F) > 0 ? 1 : 0) * 0x400);
 }
 /**
  * @ingroup fp16 basic operator
  * @brief   constructor of fp16 from sign exponent and mantissa
  */
 #define FP16_CONSTRUCTOR(s, e, m) \
-    (static_cast<uint16_t>(((s) << FP16_SIGN_INDEX) | ((e) << FP16_MAN_LEN) | ((m) &FP16_MAX_MAN)))
- 
+    (static_cast<uint16_t>(((s) << FP16_SIGN_INDEX) | ((e) << FP16_MAN_LEN) | ((m)&FP16_MAX_MAN)))
+
 /**
  * @ingroup fp16 special value judgment
  * @brief   whether a fp16 is zero
  */
-#define FP16_IS_ZERO(x) (((x) &FP16_ABS_MAX) == 0)
+#define FP16_IS_ZERO(x) (((x)&FP16_ABS_MAX) == 0)
 /**
  * @ingroup fp16 special value judgment
  * @brief   whether a fp16 is a denormalized value
  */
-#define FP16_IS_DENORM(x) ((((x) &FP16_EXP_MASK) == 0))
+#define FP16_IS_DENORM(x) ((((x)&FP16_EXP_MASK) == 0))
 /**
  * @ingroup fp16 special value judgment
  * @brief   whether a fp16 is infinite
  */
-#define FP16_IS_INF(x) (((x) &FP16_ABS_MAX) == FP16_ABS_MAX)
+#define FP16_IS_INF(x) (((x)&FP16_ABS_MAX) == FP16_ABS_MAX)
 /**
  * @ingroup fp16 special value judgment
  * @brief   whether a fp16 is NaN
  */
-#define FP16_IS_NAN(x) ((((x) & FP16_EXP_MASK) == FP16_EXP_MASK) && ((x) & FP16_MAN_MASK))
+#define FP16_IS_NAN(x) ((((x)&FP16_EXP_MASK) == FP16_EXP_MASK) && ((x)&FP16_MAN_MASK))
 /**
  * @ingroup fp16 special value judgment
  * @brief   whether a fp16 is invalid
  */
-#define FP16_IS_INVALID(x) (((x) & FP16_EXP_MASK) == FP16_EXP_MASK)
+#define FP16_IS_INVALID(x) (((x)&FP16_EXP_MASK) == FP16_EXP_MASK)
 /**
  * @ingroup fp32 basic parameter
  * @brief   fp32 exponent bias
@@ -206,17 +202,17 @@ constexpr uint32_t FP32_MAX_MAN = 0x7FFFFF;
  * @ingroup fp32 special value judgment
  * @brief   whether a fp32 is NaN
  */
-#define FP32_IS_NAN(x) ((((x) & FP32_EXP_MASK) == FP32_EXP_MASK) && ((x) & FP32_MAN_MASK))
+#define FP32_IS_NAN(x) ((((x)&FP32_EXP_MASK) == FP32_EXP_MASK) && ((x)&FP32_MAN_MASK))
 /**
  * @ingroup fp32 special value judgment
  * @brief   whether a fp32 is infinite
  */
-#define FP32_IS_INF(x) ((((x) & FP32_EXP_MASK) == FP32_EXP_MASK) && (!((x) & FP32_MAN_MASK)))
+#define FP32_IS_INF(x) ((((x)&FP32_EXP_MASK) == FP32_EXP_MASK) && (!((x)&FP32_MAN_MASK)))
 /**
  * @ingroup fp32 special value judgment
  * @brief   whether a fp32 is a denormalized value
  */
-#define FP32_IS_DENORM(x) ((((x) &FP32_EXP_MASK) == 0))
+#define FP32_IS_DENORM(x) ((((x)&FP32_EXP_MASK) == 0))
 /**
  * @ingroup fp32 basic operator
  * @brief   get sign of fp32
@@ -226,19 +222,19 @@ constexpr uint32_t FP32_MAX_MAN = 0x7FFFFF;
  * @ingroup fp32 basic operator
  * @brief   get exponent of fp16
  */
-#define FP32_EXTRAC_EXP(x) (((x) &FP32_EXP_MASK) >> FP32_MAN_LEN)
+#define FP32_EXTRAC_EXP(x) (((x)&FP32_EXP_MASK) >> FP32_MAN_LEN)
 /**
  * @ingroup fp32 basic operator
  * @brief   get mantissa of fp16
  */
 #define FP32_EXTRAC_MAN(x) \
-    (((x) &FP32_MAN_MASK) | (((((x) >> FP32_MAN_LEN) & FP32_MAX_EXP) > 0 ? 1 : 0) * FP32_MAN_HIDE_BIT))
+    (((x)&FP32_MAN_MASK) | (((((x) >> FP32_MAN_LEN) & FP32_MAX_EXP) > 0 ? 1 : 0) * FP32_MAN_HIDE_BIT))
 /**
  * @ingroup fp32 basic operator
  * @brief   constructor of fp32 from sign exponent and mantissa
  */
-#define FP32_CONSTRUCTOR(s, e, m) (((s) << FP32_SIGN_INDEX) | ((e) << FP32_MAN_LEN) | ((m) &FP32_MAX_MAN))
- 
+#define FP32_CONSTRUCTOR(s, e, m) (((s) << FP32_SIGN_INDEX) | ((e) << FP32_MAN_LEN) | ((m)&FP32_MAX_MAN))
+
 /**
  * @ingroup fp64 basic parameter
  * @brief   fp64 exponent bias
@@ -298,13 +294,13 @@ constexpr uint64_t FP64_MAX_MAN = 0xFFFFFFFFFFFLLu;
  * @ingroup fp64 special value judgment
  * @brief   whether a fp64 is NaN
  */
-#define FP64_IS_NAN(x) ((((x) & FP64_EXP_MASK) == FP64_EXP_MASK) && ((x) & FP64_MAN_MASK))
+#define FP64_IS_NAN(x) ((((x)&FP64_EXP_MASK) == FP64_EXP_MASK) && ((x)&FP64_MAN_MASK))
 /**
  * @ingroup fp64 special value judgment
  * @brief   whether a fp64 is infinite
  */
-#define FP64_IS_INF(x) ((((x) & FP64_EXP_MASK) == FP64_EXP_MASK) && (!((x) & FP64_MAN_MASK)))
- 
+#define FP64_IS_INF(x) ((((x)&FP64_EXP_MASK) == FP64_EXP_MASK) && (!((x)&FP64_MAN_MASK)))
+
 /**
  * @ingroup integer special value judgment
  * @brief   maximum positive value of int8_t            (0111 1111)
@@ -339,7 +335,7 @@ constexpr uint32_t BIT_LEN32_MAX = 0xFFFFFFFFu;
  * @ingroup print switch
  * @brief   print an error if input fp16 is overflow
  */
- 
+
 /**
  * @ingroup fp16_t enum
  * @brief   round mode of last valid digital
@@ -349,7 +345,7 @@ typedef enum tagFp16RoundMode {
     ROUND_BY_TRUNCATED,   /**< round by truncated    */
     ROUND_MODE_RESERVED,
 } fp16RoundMode_t;
- 
+
 /**
  * @ingroup fp16_t
  * @brief   Half precision float
@@ -360,105 +356,98 @@ typedef enum tagFp16RoundMode {
  */
 typedef struct tagFp16 final {
     uint16_t val;
- 
+
 public:
     /**
-   * @ingroup fp16_t constructor
-   * @brief   Constructor without any param(default constructor)
-   */
-    tagFp16(void)
-    {
-        val = 0x0u;
-    }
+     * @ingroup fp16_t constructor
+     * @brief   Constructor without any param(default constructor)
+     */
+    tagFp16(void) { val = 0x0u; }
     /**
-   * @ingroup all type constructor
-   * @brief   Constructor with all type
-   */
-    template<typename T>
-    tagFp16(const T &value)
+     * @ingroup all type constructor
+     * @brief   Constructor with all type
+     */
+    template <typename T>
+    tagFp16(const T& value)
     {
         *this = value;
     }
     /**
-   * @ingroup fp16_t constructor
-   * @brief   Constructor with an uint16_t value
-   */
-    constexpr tagFp16(const uint16_t &uiVal) : val(uiVal)
-    {
-    }
+     * @ingroup fp16_t constructor
+     * @brief   Constructor with an uint16_t value
+     */
+    constexpr tagFp16(const uint16_t& uiVal) : val(uiVal) {}
     /**
-   * @ingroup fp16_t constructor
-   * @brief   Constructor with a fp16_t object(copy constructor)
-   */
-    tagFp16(const tagFp16 &fp) : val(fp.val)
-    {
-    }
+     * @ingroup fp16_t constructor
+     * @brief   Constructor with a fp16_t object(copy constructor)
+     */
+    tagFp16(const tagFp16& fp) : val(fp.val) {}
     /**
-   * @ingroup fp16_t math evaluation operator
-   * @param [in] fp fp16_t object to be copy to fp16_t
-   * @brief   Override basic evaluation operator to copy fp16_t to a new fp16_t
-   * @return  Return fp16_t result from fp
-   */
-    tagFp16 &operator=(const tagFp16 &fp);
+     * @ingroup fp16_t math evaluation operator
+     * @param [in] fp fp16_t object to be copy to fp16_t
+     * @brief   Override basic evaluation operator to copy fp16_t to a new fp16_t
+     * @return  Return fp16_t result from fp
+     */
+    tagFp16& operator=(const tagFp16& fp);
     /**
-   * @ingroup fp16_t math evaluation operator
-   * @param [in] fVal float object to be converted to fp16_t
-   * @brief   Override basic evaluation operator to convert float to fp16_t
-   * @return  Return fp16_t result from fVal
-   */
-    tagFp16 &operator=(const float &fVal);
+     * @ingroup fp16_t math evaluation operator
+     * @param [in] fVal float object to be converted to fp16_t
+     * @brief   Override basic evaluation operator to convert float to fp16_t
+     * @return  Return fp16_t result from fVal
+     */
+    tagFp16& operator=(const float& fVal);
     /**
-   * @ingroup fp16_t math evaluation operator
-   * @param [in] dVal double object to be converted to fp16_t
-   * @brief   Override basic evaluation operator to convert double to fp16_t
-   * @return  Return fp16_t result from dVal
-   */
-    tagFp16 &operator=(const double &dVal);
+     * @ingroup fp16_t math evaluation operator
+     * @param [in] dVal double object to be converted to fp16_t
+     * @brief   Override basic evaluation operator to convert double to fp16_t
+     * @return  Return fp16_t result from dVal
+     */
+    tagFp16& operator=(const double& dVal);
     /**
-   * @ingroup fp16_t math evaluation operator
-   * @param [in] iVal float object to be converted to fp16_t
-   * @brief   Override basic evaluation operator to convert float to fp16_t
-   * @return  Return fp16_t result from iVal
-   */
-    tagFp16 &operator=(const int8_t &iVal);
+     * @ingroup fp16_t math evaluation operator
+     * @param [in] iVal float object to be converted to fp16_t
+     * @brief   Override basic evaluation operator to convert float to fp16_t
+     * @return  Return fp16_t result from iVal
+     */
+    tagFp16& operator=(const int8_t& iVal);
     /**
-   * @ingroup fp16_t math evaluation operator
-   * @param [in] uiVal uint8_t object to be converted to fp16_t
-   * @brief   Override basic evaluation operator to convert uint8_t to fp16_t
-   * @return  Return fp16_t result from uiVal
-   */
-    tagFp16 &operator=(const uint8_t &uiVal);
+     * @ingroup fp16_t math evaluation operator
+     * @param [in] uiVal uint8_t object to be converted to fp16_t
+     * @brief   Override basic evaluation operator to convert uint8_t to fp16_t
+     * @return  Return fp16_t result from uiVal
+     */
+    tagFp16& operator=(const uint8_t& uiVal);
     /**
-   * @ingroup fp16_t math evaluation operator
-   * @param [in] iVal int16_t object to be converted to fp16_t
-   * @brief   Override basic evaluation operator to convert int16_t to fp16_t
-   * @return  Return fp16_t result from iVal
-   */
-    tagFp16 &operator=(const int16_t &iVal);
+     * @ingroup fp16_t math evaluation operator
+     * @param [in] iVal int16_t object to be converted to fp16_t
+     * @brief   Override basic evaluation operator to convert int16_t to fp16_t
+     * @return  Return fp16_t result from iVal
+     */
+    tagFp16& operator=(const int16_t& iVal);
     /**
-   * @ingroup fp16_t math evaluation operator
-   * @param [in] iVal int32_t object to be converted to fp16_t
-   * @brief   Override basic evaluation operator to convert int32_t to fp16_t
-   * @return  Return fp16_t result from iVal
-   */
-    tagFp16 &operator=(const int32_t &iVal);
+     * @ingroup fp16_t math evaluation operator
+     * @param [in] iVal int32_t object to be converted to fp16_t
+     * @brief   Override basic evaluation operator to convert int32_t to fp16_t
+     * @return  Return fp16_t result from iVal
+     */
+    tagFp16& operator=(const int32_t& iVal);
     /**
-   * @ingroup fp16_t math evaluation operator
-   * @param [in] uiVal uint32_t object to be converted to fp16_t
-   * @brief   Override basic evaluation operator to convert uint32_t to fp16_t
-   * @return  Return fp16_t result from uiVal
-   */
-    tagFp16 &operator=(const uint32_t &uiVal);
-    tagFp16 &operator=(const int64_t &iVal);
-    tagFp16 &operator=(const uint64_t &uiVal);
+     * @ingroup fp16_t math evaluation operator
+     * @param [in] uiVal uint32_t object to be converted to fp16_t
+     * @brief   Override basic evaluation operator to convert uint32_t to fp16_t
+     * @return  Return fp16_t result from uiVal
+     */
+    tagFp16& operator=(const uint32_t& uiVal);
+    tagFp16& operator=(const int64_t& iVal);
+    tagFp16& operator=(const uint64_t& uiVal);
     /**
-   * @ingroup fp16_t math conversion
-   * @brief   Convert fp16_t to float/fp32
-   * @return  Return float/fp32 value of fp16_t
-   */
+     * @ingroup fp16_t math conversion
+     * @brief   Convert fp16_t to float/fp32
+     * @return  Return float/fp32 value of fp16_t
+     */
     float toFloat() const;
 } fp16_t;
- 
+
 /**
  * @ingroup fp16_t public method
  * @param [in]     val signature is negative
@@ -467,7 +456,7 @@ public:
  * @param [in|out] m   mantissa of fp16_t object
  * @brief   Extract the sign, exponent and mantissa of a fp16_t object
  */
-void ExtractFP16(const uint16_t &val, uint16_t *s, int16_t *e, uint16_t *m);
+void ExtractFP16(const uint16_t& val, uint16_t* s, int16_t* e, uint16_t* m);
 /*lint +e1573*/
 /**
  * @ingroup fp16_t public method
@@ -478,9 +467,9 @@ void ExtractFP16(const uint16_t &val, uint16_t *s, int16_t *e, uint16_t *m);
  * @param [in] shift   abbreviation bits
  * @brief    Round fp16_t or float mantissa to nearest value
  * @return   Returns true if round 1,otherwise false;
-*/
+ */
 /*lint -e1573*/
-template<typename T>
+template <typename T>
 T ManRoundToNearest(bool bit0, bool bit1, bool bitLeft, T man, uint16_t shift = 0)
 {
     man = (man >> shift) + ((bit1 && (bitLeft || bit0)) ? 1 : 0);
@@ -494,7 +483,7 @@ T ManRoundToNearest(bool bit0, bool bit1, bool bitLeft, T man, uint16_t shift = 
  * @return  Return bit length of man
  */
 /*lint -e1573*/
-template<typename T>
+template <typename T>
 int16_t GetManBitLength(T man)
 {
     int16_t len = 0;
@@ -504,9 +493,9 @@ int16_t GetManBitLength(T man)
     }
     return len;
 }
- 
+
 /*lint +e1573*/
-} // runtime
-} // cce
- 
+} // namespace runtime
+} // namespace cce
+
 #endif /*_FP16_T_HPP_*/

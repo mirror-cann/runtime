@@ -21,19 +21,19 @@ constexpr uint16_t STARS_SIMPLE_SQ_TAIL_OFFSET = 0x8U;
 namespace cce {
 namespace runtime {
 enum RtStarsCondIsaOpCode : uint32_t {
-    RT_STARS_COND_ISA_OP_CODE_OP_IMM = 0B0010011,                      // Integer Register-immd Instructions
-    RT_STARS_COND_ISA_OP_CODE_NOP = RT_STARS_COND_ISA_OP_CODE_OP_IMM,  // NOP is using OP_IMM ADDI R0,R0,0
-    RT_STARS_COND_ISA_OP_CODE_OP = 0B0110011,                          // Integer Register-Register Operations
-    RT_STARS_COND_ISA_OP_CODE_LWI = 0B1011011,                         // load immd
-    RT_STARS_COND_ISA_OP_CODE_BRANCH = 0B1100011,                      // Conditional stream-jump
-    RT_STARS_COND_ISA_OP_CODE_LOOP = 0B1111011,                        // LOOP
-    RT_STARS_COND_ISA_OP_CODE_STREAM = 0B0101011,                      // STREAM
-    RT_STARS_COND_ISA_OP_CODE_LOAD_IMM = 0B0000111,                    // LOAD immd
-    RT_STARS_COND_ISA_OP_CODE_LOAD = 0B0000011,                        // Load
-    RT_STARS_COND_ISA_OP_CODE_STORE = 0B0100111,                       // Store
-    RT_STARS_COND_ISA_OP_CODE_FUNC_CALL = 0B1101011,                   // FUNC_CALL
-    RT_STARS_COND_ISA_OP_CODE_SYSTEM = 0B1110011,                      // CSR
-    RT_STARS_COND_ISA_OP_CODE_GQM = 0B0000101                          // GQM
+    RT_STARS_COND_ISA_OP_CODE_OP_IMM = 0B0010011,                     // Integer Register-immd Instructions
+    RT_STARS_COND_ISA_OP_CODE_NOP = RT_STARS_COND_ISA_OP_CODE_OP_IMM, // NOP is using OP_IMM ADDI R0,R0,0
+    RT_STARS_COND_ISA_OP_CODE_OP = 0B0110011,                         // Integer Register-Register Operations
+    RT_STARS_COND_ISA_OP_CODE_LWI = 0B1011011,                        // load immd
+    RT_STARS_COND_ISA_OP_CODE_BRANCH = 0B1100011,                     // Conditional stream-jump
+    RT_STARS_COND_ISA_OP_CODE_LOOP = 0B1111011,                       // LOOP
+    RT_STARS_COND_ISA_OP_CODE_STREAM = 0B0101011,                     // STREAM
+    RT_STARS_COND_ISA_OP_CODE_LOAD_IMM = 0B0000111,                   // LOAD immd
+    RT_STARS_COND_ISA_OP_CODE_LOAD = 0B0000011,                       // Load
+    RT_STARS_COND_ISA_OP_CODE_STORE = 0B0100111,                      // Store
+    RT_STARS_COND_ISA_OP_CODE_FUNC_CALL = 0B1101011,                  // FUNC_CALL
+    RT_STARS_COND_ISA_OP_CODE_SYSTEM = 0B1110011,                     // CSR
+    RT_STARS_COND_ISA_OP_CODE_GQM = 0B0000101                         // GQM
 };
 
 enum rtStarsCondCsrRegister_t : uint32_t {
@@ -54,9 +54,9 @@ enum rtStarsCondIsaLoadImmFunc3_t : uint32_t {
     RT_STARS_COND_ISA_LOAD_IMM_FUNC3_LWU = 0B110
 };
 // enum for isa op Op Imm func3
-enum RtStarsCondIsaOpImmFunc3 : uint32_t{
+enum RtStarsCondIsaOpImmFunc3 : uint32_t {
     RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI = 0B000,
-    RT_STARS_COND_ISA_OP_IMM_FUNC3_NOP = RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI,  // NOP is using OP_IMM ADDI R0,R0,0
+    RT_STARS_COND_ISA_OP_IMM_FUNC3_NOP = RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, // NOP is using OP_IMM ADDI R0,R0,0
     RT_STARS_COND_ISA_OP_IMM_FUNC3_SLLI = 0B001,
     RT_STARS_COND_ISA_OP_IMM_FUNC3_SLTI = 0B010,
     RT_STARS_COND_ISA_OP_IMM_FUNC3_SLTIU = 0B011,
@@ -64,7 +64,7 @@ enum RtStarsCondIsaOpImmFunc3 : uint32_t{
     RT_STARS_COND_ISA_OP_IMM_FUNC3_SRLI = 0B101,
     RT_STARS_COND_ISA_OP_IMM_FUNC3_ORI = 0B110,
     RT_STARS_COND_ISA_OP_IMM_FUNC3_ANDI = 0B111,
-    RT_STARS_COND_ISA_OP_IMM_FUNC3_SRAI = 0B101  // diff with SRLI by func7
+    RT_STARS_COND_ISA_OP_IMM_FUNC3_SRAI = 0B101 // diff with SRLI by func7
 };
 
 // enum for isa op Op Imm func7
@@ -109,7 +109,10 @@ enum RtStarsCondIsaOpFunc7 : uint32_t {
 enum rtStarsCondIsaLoadFunc3_t : uint32_t { RT_STARS_COND_ISA_LOAD_FUNC3_LDR = 0B011 };
 
 // enum for isa op LWI func3
-enum rtStarsCondIsaLwiFunc3_t : uint32_t { RT_STARS_COND_ISA_LWI_FUNC3_LHWI = 0B000, RT_STARS_COND_ISA_LWI_FUNC3_LLWI = 0B001 };
+enum rtStarsCondIsaLwiFunc3_t : uint32_t {
+    RT_STARS_COND_ISA_LWI_FUNC3_LHWI = 0B000,
+    RT_STARS_COND_ISA_LWI_FUNC3_LLWI = 0B001
+};
 
 // enum for isa op Branch func3
 enum rtStarsCondIsaBranchFunc3_t : uint32_t {
@@ -151,6 +154,6 @@ enum rtStarsCondIsaSystemFunc3_t : uint32_t {
 enum RtStarsCondFuncCallFunc3 : uint32_t {
     RT_STARS_COND_FUNC_CALL_FUNC3 = 0B000,
 };
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 #endif

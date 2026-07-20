@@ -22,19 +22,20 @@ constexpr uint8_t BLOCK_PREFETCH_ENABLE = 1U;
 constexpr uint8_t BLOCK_PREFETCH_DISABLE = 0U;
 
 // Launch kernel接口新老参数信息适配
-rtError_t ConvertLaunchCfgToTaskCfg(TaskCfg &taskCfg, const rtKernelLaunchCfg_t* const cfg);
+rtError_t ConvertLaunchCfgToTaskCfg(TaskCfg& taskCfg, const rtKernelLaunchCfg_t* const cfg);
 // rtTaskCfgInfo_t 转换成 TaskCfg
-rtError_t ConvertTaskCfgInfoToTaskCfg(TaskCfg &taskCfg, const rtTaskCfgInfo_t* const cfgInfo);
+rtError_t ConvertTaskCfgInfoToTaskCfg(TaskCfg& taskCfg, const rtTaskCfgInfo_t* const cfgInfo);
 // RtArgsHandle 转化成 rtArgsEx_t
-rtError_t ConvertArgsByArgsHandle(rtArgsEx_t &oldArgs, const RtArgsHandle * const argsHandle,
-    rtHostInputInfo_t specialArgsInfos[], const uint8_t arrayArgsNum);
-rtError_t ConvertCpuArgsByArgsHandle(rtCpuKernelArgs_t &oldArgs, const RtArgsHandle *const argsHandle,
-    rtHostInputInfo_t specialArgsInfos[], const uint8_t arrayArgsNum);
+rtError_t ConvertArgsByArgsHandle(
+    rtArgsEx_t& oldArgs, const RtArgsHandle* const argsHandle, rtHostInputInfo_t specialArgsInfos[],
+    const uint8_t arrayArgsNum);
+rtError_t ConvertCpuArgsByArgsHandle(
+    rtCpuKernelArgs_t& oldArgs, const RtArgsHandle* const argsHandle, rtHostInputInfo_t specialArgsInfos[],
+    const uint8_t arrayArgsNum);
 uint64_t ConvertTimeoutToInner(uint64_t timeout);
-uint64_t ConvertAicpuTimeout(const rtAicpuArgsEx_t * const argsInfo, const TaskCfg *taskCfg,
-    const uint32_t flag);
-rtError_t ConvertArgsArrayToArgsEx(rtArgsEx_t &argsEx, const Kernel *kernel, void **argsArray);
-}
-}
+uint64_t ConvertAicpuTimeout(const rtAicpuArgsEx_t* const argsInfo, const TaskCfg* taskCfg, const uint32_t flag);
+rtError_t ConvertArgsArrayToArgsEx(rtArgsEx_t& argsEx, const Kernel* kernel, void** argsArray);
+} // namespace runtime
+} // namespace cce
 
-#endif  // RUNTIME_PARAM_CONVERTOR_HPP
+#endif // RUNTIME_PARAM_CONVERTOR_HPP

@@ -20,7 +20,7 @@
 namespace cce {
 namespace runtime {
 
-rtError_t ApiImplDavid::XpuProfilingCommandHandle(uint32_t type, void *data, uint32_t len)
+rtError_t ApiImplDavid::XpuProfilingCommandHandle(uint32_t type, void* data, uint32_t len)
 {
     if (type != PROF_CTRL_SWITCH) {
         RT_LOG(RT_LOG_WARNING, "does not support the type: %u", type);
@@ -34,18 +34,18 @@ rtError_t ApiImplDavid::XpuProfilingCommandHandle(uint32_t type, void *data, uin
         return RT_ERROR_INVALID_VALUE;
     }
 
-    rtProfCommandHandle_t * const profilerConfig = static_cast<rtProfCommandHandle_t *>(data);
+    rtProfCommandHandle_t* const profilerConfig = static_cast<rtProfCommandHandle_t*>(data);
     if (profilerConfig->type == PROF_COMMANDHANDLE_TYPE_START) {
-        Context * const curCtx = Runtime::Instance()->GetXpuCtxt();
+        Context* const curCtx = Runtime::Instance()->GetXpuCtxt();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-        XpuDevice * const xpuDevice = static_cast<XpuDevice *>(curCtx->Device_());
+        XpuDevice* const xpuDevice = static_cast<XpuDevice*>(curCtx->Device_());
         xpuDevice->SetXpuTaskReportEnable(true);
         TprtProfilingEnable(true);
         return RT_ERROR_NONE;
     } else if (profilerConfig->type == PROF_COMMANDHANDLE_TYPE_STOP) {
-        Context * const curCtx = Runtime::Instance()->GetXpuCtxt();
+        Context* const curCtx = Runtime::Instance()->GetXpuCtxt();
         CHECK_CONTEXT_VALID_WITH_RETURN(curCtx, RT_ERROR_CONTEXT_NULL);
-        XpuDevice * const xpuDevice = static_cast<XpuDevice *>(curCtx->Device_());
+        XpuDevice* const xpuDevice = static_cast<XpuDevice*>(curCtx->Device_());
         xpuDevice->SetXpuTaskReportEnable(false);
         TprtProfilingEnable(false);
         return RT_ERROR_NONE;
@@ -55,17 +55,17 @@ rtError_t ApiImplDavid::XpuProfilingCommandHandle(uint32_t type, void *data, uin
     return RT_ERROR_NONE;
 }
 
-rtError_t XpuProfilingHandle(uint32_t type, void *data, uint32_t len)
+rtError_t XpuProfilingHandle(uint32_t type, void* data, uint32_t len)
 {
-    Api * const apiInstance = Runtime::Instance()->ApiImpl_();
+    Api* const apiInstance = Runtime::Instance()->ApiImpl_();
     return apiInstance->XpuProfilingCommandHandle(type, data, len);
 }
 
 rtError_t ApiImplDavid::SetXpuDevice(const rtXpuDevType devType, const uint32_t devId)
 {
     RT_LOG(RT_LOG_INFO, "Set xpu device device_id=%u, devType=%u.", devId, devType);
-    Runtime *const rt = Runtime::Instance();
-    Context *context = nullptr;
+    Runtime* const rt = Runtime::Instance();
+    Context* context = nullptr;
     {
         const std::unique_lock<std::mutex> xpuSetDevLock(rt->XpuSetDevMutex());
         if (rt->GetXpuDevice() == nullptr) {
@@ -83,7 +83,7 @@ rtError_t ApiImplDavid::SetXpuDevice(const rtXpuDevType devType, const uint32_t 
     return RT_ERROR_NONE;
 }
 
-rtError_t ApiImplDavid::GetXpuDevCount(const rtXpuDevType devType, uint32_t *devCount)
+rtError_t ApiImplDavid::GetXpuDevCount(const rtXpuDevType devType, uint32_t* devCount)
 {
     rtError_t error = RT_ERROR_NONE;
     switch (devType) {
@@ -91,7 +91,8 @@ rtError_t ApiImplDavid::GetXpuDevCount(const rtXpuDevType devType, uint32_t *dev
             *devCount = 1;
             break;
         default:
-            RT_LOG(RT_LOG_ERROR, "devType=%d is invalid, retCode=%#x", devType,
+            RT_LOG(
+                RT_LOG_ERROR, "devType=%d is invalid, retCode=%#x", devType,
                 static_cast<uint32_t>(RT_ERROR_INVALID_VALUE));
             error = RT_ERROR_INVALID_VALUE;
             break;
@@ -103,13 +104,14 @@ rtError_t ApiImplDavid::ResetXpuDevice(const rtXpuDevType devType, const uint32_
 {
     (void)devType;
     rtError_t error = RT_ERROR_NONE;
-    Runtime *const rt = Runtime::Instance();
+    Runtime* const rt = Runtime::Instance();
     error = rt->PrimaryXpuContextRelease(devId);
-    COND_RETURN_ERROR_MSG_INNER(error != RT_ERROR_NONE, error, "DeviceReset failed, drv devId=%u, retCode=%#x",
-        devId, static_cast<uint32_t>(error));
+    COND_RETURN_ERROR_MSG_INNER(
+        error != RT_ERROR_NONE, error, "DeviceReset failed, drv devId=%u, retCode=%#x", devId,
+        static_cast<uint32_t>(error));
     RT_LOG(RT_LOG_INFO, "Succ, drv devId=%u.", devId);
     return error;
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

@@ -12,7 +12,7 @@
 namespace cce {
 namespace runtime {
 
-rtError_t StreamUbDbSend(const rtUbDbInfo_t * const dbInfo, Stream * const stm, const uint16_t source)
+rtError_t StreamUbDbSend(const rtUbDbInfo_t* const dbInfo, Stream* const stm, const uint16_t source)
 {
     UNUSED(dbInfo);
     UNUSED(stm);

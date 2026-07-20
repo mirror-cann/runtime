@@ -28,7 +28,7 @@ static bool FftsPlusTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommonForDavid,
     };
 
-    const auto &chips = GetDavidChips();
+    const auto& chips = GetDavidChips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_FFTS_PLUS, funcs);
     }
@@ -39,5 +39,5 @@ static bool FftsPlusTaskRegister()
 
 static bool g_fftsPlusTaskRegister = FftsPlusTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

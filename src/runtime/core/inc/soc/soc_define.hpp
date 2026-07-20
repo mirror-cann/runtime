@@ -36,15 +36,15 @@ typedef enum tagRtChipType {
     CHIP_MC62CM12A = 17,  /* MC62CM12A */
     CHIP_MC32DM11A = 18,  /* MC32DM11A */
     CHIP_ASCEND_350 = 19, /* Ascend350 */
-    CHIP_XPU = 20,             /* XPU，无驱动值，但是有task处理，值不需要固定，无ini配置文件 */
+    CHIP_XPU = 20,        /* XPU，无驱动值，但是有task处理，值不需要固定，无ini配置文件 */
     CHIP_5162A = 21,
-    CHIP_END,             /* 常规芯片类型结束边界（运行时涉及芯片，除 XPU 外，和驱动定义的值一致） */
+    CHIP_END, /* 常规芯片类型结束边界（运行时涉及芯片，除 XPU 外，和驱动定义的值一致） */
 
     /* 扩展芯片类型段（值大于 CHIP_END，仅用于离线编译，运行时不使用） */
-    CHIP_EXT_BEGIN = 200, /* 扩展芯片类型起始边界 */
-    CHIP_X90 = CHIP_EXT_BEGIN,       /* KirinX90 */
-    CHIP_9030,      /* Kirin9030 */
-    CHIP_EXT_END    /* 扩展芯片类型结束边界 */
+    CHIP_EXT_BEGIN = 200,      /* 扩展芯片类型起始边界 */
+    CHIP_X90 = CHIP_EXT_BEGIN, /* KirinX90 */
+    CHIP_9030,                 /* Kirin9030 */
+    CHIP_EXT_END               /* 扩展芯片类型结束边界 */
 } rtChipType_t;
 
 typedef enum tagRtVersion {
@@ -58,6 +58,6 @@ typedef enum tagRtVersion {
     VER_END = 6,
 } rtVersion_t;
 
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // CCE_RUNTIME_SOC_DEFINE_HPP

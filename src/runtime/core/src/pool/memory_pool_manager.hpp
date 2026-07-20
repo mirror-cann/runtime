@@ -23,14 +23,14 @@ class MemoryPool;
 
 // 原子查询结果：baseAddr + adviseMutex 在同一把锁下一起获取，避免 TOCTOU
 struct PoolMemInfo {
-    const void *baseAddr = nullptr;
-    std::mutex *adviseMutex = nullptr;
+    const void* baseAddr = nullptr;
+    std::mutex* adviseMutex = nullptr;
     bool found = false;
 };
 
 class MemoryPoolManager : public NoCopy {
 public:
-    explicit MemoryPoolManager(Device *dev, int32_t initialPoolsNum = 1);
+    explicit MemoryPoolManager(Device* dev, int32_t initialPoolsNum = 1);
 
     ~MemoryPoolManager() noexcept override;
 
@@ -52,8 +52,9 @@ public:
 
     bool Contains(void* ptr);
 
-    std::mutex *GetMemoryPoolAdviseMutex(void* ptr);
-    const void *GetMemoryPoolBaseAddr(void *ptr);
+    std::mutex* GetMemoryPoolAdviseMutex(void* ptr);
+    const void* GetMemoryPoolBaseAddr(void* ptr);
+
 private:
     // 创建一个新的内存池并增加池的数量（调用者必须持有 mutex_ 写锁）
     rtError_t AddMemoryPool(const bool readOnly);
@@ -64,12 +65,12 @@ private:
     // 使用 deque 而非 vector：push_back 不会使已有元素的指针/引用失效
     // 即使 vector realloc 导致迭代器失效的并发遍历场景，deque 的指针稳定性也能避免悬空
     std::deque<MemoryPool*> pools_;
-    mutable std::shared_mutex mutex_;  // 读写锁：读操作 shared_lock，写操作 unique_lock
-    Device *device_ = nullptr;
-    Driver *driver_ = nullptr;
-    int32_t numPools_ = 0; // 当前内存池的数量
+    mutable std::shared_mutex mutex_; // 读写锁：读操作 shared_lock，写操作 unique_lock
+    Device* device_ = nullptr;
+    Driver* driver_ = nullptr;
+    int32_t numPools_ = 0;     // 当前内存池的数量
     int32_t maxFreePools_ = 5; // 空闲池数量
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 #endif // CCE_RUNTIME_MEMORY_POOL_MANAGER_HPP

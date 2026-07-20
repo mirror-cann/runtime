@@ -122,7 +122,7 @@ public:
 
 private:
     rtError_t CreateJetty(JettyType type, uint32_t depth, JettyInfo& jettyInfo) const;
-    bool FindJettyByState(JettyType type, JettyState state, JettyInfo *&jettyInfo);
+    bool FindJettyByState(JettyType type, JettyState state, JettyInfo*& jettyInfo);
 
     uint32_t deviceId_{0};
     std::vector<JettyInfo> h2dJettyPool_;

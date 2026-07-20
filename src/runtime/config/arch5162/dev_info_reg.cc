@@ -29,8 +29,7 @@ static const std::unordered_set<RtOptionalFeatureType> CHIP_5162A_FEATURE{
     RtOptionalFeatureType::RT_FEATURE_STREAM_HUGE_DEPTH,
     RtOptionalFeatureType::RT_FEATURE_STREAM_DELETE_FORCE,
     RtOptionalFeatureType::RT_FEATURE_NOTIFY_WAIT,
-    RtOptionalFeatureType::RT_FEATURE_NOTIFY_WAIT_TIMEOUT
-};
+    RtOptionalFeatureType::RT_FEATURE_NOTIFY_WAIT_TIMEOUT};
 
 REGISTER_CHIP_FEATURE_SET(CHIP_5162A, CHIP_5162A_FEATURE);
 
@@ -177,5 +176,5 @@ static const DevProperties CHIP_5162A_PROPERTIES = {
 };
 
 REGISTER_DEV_PROPERTIES(CHIP_5162A, CHIP_5162A_PROPERTIES);
-}
-}
+} // namespace runtime
+} // namespace cce

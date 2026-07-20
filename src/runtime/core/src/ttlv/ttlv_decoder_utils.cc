@@ -15,7 +15,7 @@
 
 namespace cce {
 namespace runtime {
-static std::map<uint16_t, const char_t *> g_taskType2String = {
+static std::map<uint16_t, const char_t*> g_taskType2String = {
     {TS_TASK_TYPE_KERNEL_AICORE, "aicore kernel"},
     {TS_TASK_TYPE_KERNEL_AICPU, "aicpu kernel"},
     {TS_TASK_TYPE_EVENT_RECORD, "event record"},
@@ -71,7 +71,7 @@ static std::map<uint16_t, const char_t *> g_taskType2String = {
     {TS_TASK_TYPE_CAPTURE_CONDITION, "capture model condition"},
 };
 
-static std::map<uint8_t, const char_t *> g_taskPhase2String = {
+static std::map<uint8_t, const char_t*> g_taskPhase2String = {
     {TASK_PHASE_INIT, "INIT"},
     {TASK_PHASE_WAIT_EXEC, "WAIT EXECUTE"},
     {TASK_PHASE_RUN, "RUN"},
@@ -84,34 +84,30 @@ static std::map<uint8_t, const char_t *> g_taskPhase2String = {
     {TASK_PHASE_AICPU_TIMEOUT_PROC, "AICPU TIMEOUT PROC"},
 };
 
-static std::map<uint16_t, const char_t *> g_streamPhase2String = {
-    {STREAM_STATE_INIT, "INIT"},
-    {STREAM_STATE_CREATE, "CREATE"},
-    {STREAM_STATE_ACTIVE, "ACTIVE"},
-    {STREAM_STATE_AICPU_ACTIVE, "AICPU ACTIVE"},
-    {STREAM_STATE_SCHEDULE, "SCHEDULE"},
-    {STREAM_STATE_DEACTIVE, "DEACTIVE"},
-    {STREAM_STATE_DESTROY, "DESTROY"},
-    {STREAM_STATE_RECYCLE, "RECYCLE"}
-};
+static std::map<uint16_t, const char_t*> g_streamPhase2String = {
+    {STREAM_STATE_INIT, "INIT"},         {STREAM_STATE_CREATE, "CREATE"},
+    {STREAM_STATE_ACTIVE, "ACTIVE"},     {STREAM_STATE_AICPU_ACTIVE, "AICPU ACTIVE"},
+    {STREAM_STATE_SCHEDULE, "SCHEDULE"}, {STREAM_STATE_DEACTIVE, "DEACTIVE"},
+    {STREAM_STATE_DESTROY, "DESTROY"},   {STREAM_STATE_RECYCLE, "RECYCLE"}};
 
-rtError_t TTLVDecoderUtils::DefaultPhaseValue(const uint16_t msgLen, const void * const buffer, uint64_t &outData)
+rtError_t TTLVDecoderUtils::DefaultPhaseValue(const uint16_t msgLen, const void* const buffer, uint64_t& outData)
 {
     // no need parse
     if (msgLen == 0U) {
         return RT_ERROR_NONE;
     }
-    COND_RETURN_AND_MSG_INNER(msgLen > sizeof(uint64_t), RT_ERROR_INVALID_VALUE,
+    COND_RETURN_AND_MSG_INNER(
+        msgLen > sizeof(uint64_t), RT_ERROR_INVALID_VALUE,
         "Failed to parse TTLV value because msgLen=%hu exceeds max %zu.", msgLen, sizeof(uint64_t));
-    const auto err = memcpy_s(static_cast<void *>(&outData), sizeof(uint64_t), buffer,
-        static_cast<std::size_t>(msgLen));
-    COND_RETURN_AND_MSG_INNER(err != 0, RT_ERROR_SEC_HANDLE,
-        "Failed to copy TTLV value because memcpy_s failed. ret=%d, copySize=%hu, destMax=%zu.",
-        err, msgLen, sizeof(uint64_t));
+    const auto err = memcpy_s(static_cast<void*>(&outData), sizeof(uint64_t), buffer, static_cast<std::size_t>(msgLen));
+    COND_RETURN_AND_MSG_INNER(
+        err != 0, RT_ERROR_SEC_HANDLE,
+        "Failed to copy TTLV value because memcpy_s failed. ret=%d, copySize=%hu, destMax=%zu.", err, msgLen,
+        sizeof(uint64_t));
     return RT_ERROR_NONE;
 }
 
-rtError_t TTLVDecoderUtils::PhaseValueHex(const uint16_t msgLen, const void * const buffer, std::string &outputStr)
+rtError_t TTLVDecoderUtils::PhaseValueHex(const uint16_t msgLen, const void* const buffer, std::string& outputStr)
 {
     uint64_t outData = 0UL;
     const int32_t ret = DefaultPhaseValue(msgLen, buffer, outData);
@@ -124,7 +120,7 @@ rtError_t TTLVDecoderUtils::PhaseValueHex(const uint16_t msgLen, const void * co
     return ret;
 }
 
-rtError_t TTLVDecoderUtils::PhaseValueDecimal(const uint16_t msgLen, const void * const buffer, std::string &outputStr)
+rtError_t TTLVDecoderUtils::PhaseValueDecimal(const uint16_t msgLen, const void* const buffer, std::string& outputStr)
 {
     uint64_t outData = 0UL;
     const int32_t ret = DefaultPhaseValue(msgLen, buffer, outData);
@@ -135,17 +131,17 @@ rtError_t TTLVDecoderUtils::PhaseValueDecimal(const uint16_t msgLen, const void 
     return ret;
 }
 
-rtError_t TTLVDecoderUtils::PhaseTaskType(const uint16_t msgLen, const void * const buffer, std::string &outputStr)
+rtError_t TTLVDecoderUtils::PhaseTaskType(const uint16_t msgLen, const void* const buffer, std::string& outputStr)
 {
     if (msgLen != sizeof(uint16_t)) { // task type is uint16_t
         RT_LOG(RT_LOG_WARNING, "PhaseTaskType failed, msgLen=%hu", msgLen);
         return RT_ERROR_INVALID_VALUE;
     }
-    const uint16_t taskType = *(static_cast<const uint16_t *>(buffer));
+    const uint16_t taskType = *(static_cast<const uint16_t*>(buffer));
     int32_t ret = RT_ERROR_NONE;
     const auto iter = g_taskType2String.find(taskType);
     if (iter != g_taskType2String.end()) {
-        const auto &outStr = (*iter).second;
+        const auto& outStr = (*iter).second;
         outputStr = std::string(outStr);
     } else {
         ret = PhaseValueDecimal(msgLen, buffer, outputStr);
@@ -153,17 +149,17 @@ rtError_t TTLVDecoderUtils::PhaseTaskType(const uint16_t msgLen, const void * co
     return ret;
 }
 
-rtError_t TTLVDecoderUtils::PhaseTaskPhase(const uint16_t msgLen, const void * const buffer, std::string &outputStr)
+rtError_t TTLVDecoderUtils::PhaseTaskPhase(const uint16_t msgLen, const void* const buffer, std::string& outputStr)
 {
     if (msgLen != sizeof(uint8_t)) { // task phase is uint16_t
         RT_LOG(RT_LOG_WARNING, "PhaseTaskPhase failed, msgLen=%hu", msgLen);
         return RT_ERROR_INVALID_VALUE;
     }
-    const uint8_t taskPhase = *(static_cast<const uint8_t *>(buffer));
+    const uint8_t taskPhase = *(static_cast<const uint8_t*>(buffer));
     int32_t ret = RT_ERROR_NONE;
     const auto iter = g_taskPhase2String.find(taskPhase);
     if (iter != g_taskPhase2String.end()) {
-        const auto &outStr = (*iter).second;
+        const auto& outStr = (*iter).second;
         outputStr = std::string(outStr);
     } else {
         ret = PhaseValueDecimal(msgLen, buffer, outputStr);
@@ -171,17 +167,17 @@ rtError_t TTLVDecoderUtils::PhaseTaskPhase(const uint16_t msgLen, const void * c
     return ret;
 }
 
-rtError_t TTLVDecoderUtils::PhaseStreamPhase(const uint16_t msgLen, const void * const buffer, std::string &outputStr)
+rtError_t TTLVDecoderUtils::PhaseStreamPhase(const uint16_t msgLen, const void* const buffer, std::string& outputStr)
 {
     if (msgLen != sizeof(uint16_t)) { // task phase is uint16_t
         RT_LOG(RT_LOG_WARNING, "PhaseStreamPhase failed, msgLen=%hu", msgLen);
         return RT_ERROR_INVALID_VALUE;
     }
-    const uint16_t streamPhase = *(static_cast<const uint16_t *>(buffer));
+    const uint16_t streamPhase = *(static_cast<const uint16_t*>(buffer));
     rtError_t ret = RT_ERROR_NONE;
     const auto iter = g_streamPhase2String.find(streamPhase);
     if (iter != g_streamPhase2String.end()) {
-        const auto &outStr = (*iter).second;
+        const auto& outStr = (*iter).second;
         outputStr = std::string(outStr);
     } else {
         ret = PhaseValueDecimal(msgLen, buffer, outputStr);
@@ -190,73 +186,81 @@ rtError_t TTLVDecoderUtils::PhaseStreamPhase(const uint16_t msgLen, const void *
 }
 
 // define for decode err message member var
-rtError_t TTLVDecoderUtils::ParseFuncCode(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag)
+rtError_t TTLVDecoderUtils::ParseFuncCode(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag)
 {
-    ERROR_RETURN(ttlvTag.DecoderString(), "ParseFuncCode failed, tag=%hu, type=%hu, len=%hu.",
-                 ttlvTag.GetTag(), ttlvTag.GetType(), ttlvTag.GetMsgLen());
+    ERROR_RETURN(
+        ttlvTag.DecoderString(), "ParseFuncCode failed, tag=%hu, type=%hu, len=%hu.", ttlvTag.GetTag(),
+        ttlvTag.GetType(), ttlvTag.GetMsgLen());
     errMsg.SetFuncCode(ttlvTag.GetOutputStr());
     return RT_ERROR_NONE;
 }
 
-rtError_t TTLVDecoderUtils::ParseLineCode(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag)
+rtError_t TTLVDecoderUtils::ParseLineCode(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag)
 {
     uint64_t res = 0U;
-    ERROR_RETURN(ttlvTag.DecoderBasicType(res), "ParseLineCode failed, tag=%hu, type=%hu, len=%hu.",
-                 ttlvTag.GetTag(), ttlvTag.GetType(), ttlvTag.GetMsgLen());
+    ERROR_RETURN(
+        ttlvTag.DecoderBasicType(res), "ParseLineCode failed, tag=%hu, type=%hu, len=%hu.", ttlvTag.GetTag(),
+        ttlvTag.GetType(), ttlvTag.GetMsgLen());
     errMsg.SetLine(static_cast<uint16_t>(res));
     return RT_ERROR_NONE;
 }
 
-rtError_t TTLVDecoderUtils::ParseTsErrCode(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag)
+rtError_t TTLVDecoderUtils::ParseTsErrCode(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag)
 {
     uint64_t res = 0U;
-    ERROR_RETURN(ttlvTag.DecoderBasicType(res), "ParseTsErrCode failed, tag=%hu, type=%hu, len=%hu.",
-                 ttlvTag.GetTag(), ttlvTag.GetType(), ttlvTag.GetMsgLen());
+    ERROR_RETURN(
+        ttlvTag.DecoderBasicType(res), "ParseTsErrCode failed, tag=%hu, type=%hu, len=%hu.", ttlvTag.GetTag(),
+        ttlvTag.GetType(), ttlvTag.GetMsgLen());
     errMsg.SetRetErrCode(static_cast<uint16_t>(res));
     return RT_ERROR_NONE;
 }
 
-rtError_t TTLVDecoderUtils::ParseTimestampSec(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag)
+rtError_t TTLVDecoderUtils::ParseTimestampSec(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag)
 {
     uint64_t res = 0U;
-    ERROR_RETURN(ttlvTag.DecoderBasicType(res), "ParseTimestampSec failed, tag=%hu, type=%hu, len=%hu.",
-                 ttlvTag.GetTag(), ttlvTag.GetType(), ttlvTag.GetMsgLen());
+    ERROR_RETURN(
+        ttlvTag.DecoderBasicType(res), "ParseTimestampSec failed, tag=%hu, type=%hu, len=%hu.", ttlvTag.GetTag(),
+        ttlvTag.GetType(), ttlvTag.GetMsgLen());
     errMsg.SetTimestampSec(res);
     return RT_ERROR_NONE;
 }
 
-rtError_t TTLVDecoderUtils::ParseTimestampUsec(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag)
+rtError_t TTLVDecoderUtils::ParseTimestampUsec(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag)
 {
     uint64_t res = 0U;
-    ERROR_RETURN(ttlvTag.DecoderBasicType(res), "ParseTimestampUsec failed, tag=%hu, type=%hu, len=%hu.",
-                 ttlvTag.GetTag(), ttlvTag.GetType(), ttlvTag.GetMsgLen());
+    ERROR_RETURN(
+        ttlvTag.DecoderBasicType(res), "ParseTimestampUsec failed, tag=%hu, type=%hu, len=%hu.", ttlvTag.GetTag(),
+        ttlvTag.GetType(), ttlvTag.GetMsgLen());
     errMsg.SetTimestampUsec(res);
     return RT_ERROR_NONE;
 }
 
-rtError_t TTLVDecoderUtils::ParseCurrentTimeString(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag)
+rtError_t TTLVDecoderUtils::ParseCurrentTimeString(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag)
 {
-    ERROR_RETURN(ttlvTag.DecoderString(), "ParseCurrentTimeString failed, tag=%hu, type=%hu, len=%hu.",
-                 ttlvTag.GetTag(), ttlvTag.GetType(), ttlvTag.GetMsgLen());
+    ERROR_RETURN(
+        ttlvTag.DecoderString(), "ParseCurrentTimeString failed, tag=%hu, type=%hu, len=%hu.", ttlvTag.GetTag(),
+        ttlvTag.GetType(), ttlvTag.GetMsgLen());
     errMsg.SetCurrentTime(ttlvTag.GetOutputStr());
     return RT_ERROR_NONE;
 }
 
-rtError_t TTLVDecoderUtils::ParseErrMsgString(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag)
+rtError_t TTLVDecoderUtils::ParseErrMsgString(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag)
 {
-    ERROR_RETURN(ttlvTag.DecoderString(), "ParseErrMsgString failed, tag=%hu, type=%hu, len=%hu.",
-                 ttlvTag.GetTag(), ttlvTag.GetType(), ttlvTag.GetMsgLen());
+    ERROR_RETURN(
+        ttlvTag.DecoderString(), "ParseErrMsgString failed, tag=%hu, type=%hu, len=%hu.", ttlvTag.GetTag(),
+        ttlvTag.GetType(), ttlvTag.GetMsgLen());
     errMsg.SetErrMsgSting(ttlvTag.GetOutputStr());
     return RT_ERROR_NONE;
 }
 
-rtError_t TTLVDecoderUtils::ParseErrCode(TTLVErrMsgDecoder &errMsg, TTLVWordDecoder &ttlvTag)
+rtError_t TTLVDecoderUtils::ParseErrCode(TTLVErrMsgDecoder& errMsg, TTLVWordDecoder& ttlvTag)
 {
-    ERROR_RETURN(ttlvTag.DecoderString(), "ParseErrCode failed, tag=%hu, type=%hu, len=%hu.",
-                 ttlvTag.GetTag(), ttlvTag.GetType(), ttlvTag.GetMsgLen());
+    ERROR_RETURN(
+        ttlvTag.DecoderString(), "ParseErrCode failed, tag=%hu, type=%hu, len=%hu.", ttlvTag.GetTag(),
+        ttlvTag.GetType(), ttlvTag.GetMsgLen());
     errMsg.SetErrCode(ttlvTag.GetOutputStr());
     return RT_ERROR_NONE;
 }
 
-}
-}
+} // namespace runtime
+} // namespace cce

@@ -19,18 +19,18 @@ namespace cce {
 namespace runtime {
 TIMESTAMP_EXTERN(rtMemManagedGetAttr);
 TIMESTAMP_EXTERN(rtMemManagedGetAttrs);
-}
-}
+} // namespace runtime
+} // namespace cce
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
 
 VISIBILITY_DEFAULT
-rtError_t rtMemManagedAdvise(const void *const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
+rtError_t rtMemManagedAdvise(const void* const ptr, uint64_t size, uint16_t advise, rtMemManagedLocation location)
 {
     GLOBAL_STATE_WAIT_IF_LOCKED();
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     const rtError_t error = apiInstance->MemManagedAdvise(ptr, size, advise, location);
     COND_RETURN_WITH_NOLOG(error == RT_ERROR_DRV_NOT_SUPPORT, ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
@@ -39,9 +39,10 @@ rtError_t rtMemManagedAdvise(const void *const ptr, uint64_t size, uint16_t advi
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemManagedGetAttr(rtMemManagedRangeAttribute attribute, const void *ptr, size_t size, void *data, size_t dataSize)
+rtError_t rtMemManagedGetAttr(
+    rtMemManagedRangeAttribute attribute, const void* ptr, size_t size, void* data, size_t dataSize)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtMemManagedGetAttr);
     const rtError_t error = apiInstance->MemManagedGetAttr(attribute, ptr, size, data, dataSize);
@@ -53,10 +54,11 @@ rtError_t rtMemManagedGetAttr(rtMemManagedRangeAttribute attribute, const void *
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemManagedGetAttrs(rtMemManagedRangeAttribute *attributes, size_t numAttributes, const void *ptr, 
-                                size_t size, void **data, size_t *dataSizes)
+rtError_t rtMemManagedGetAttrs(
+    rtMemManagedRangeAttribute* attributes, size_t numAttributes, const void* ptr, size_t size, void** data,
+    size_t* dataSizes)
 {
-    Api * const apiInstance = Api::Instance();
+    Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     TIMESTAMP_BEGIN(rtMemManagedGetAttrs);
     const rtError_t error = apiInstance->MemManagedGetAttrs(attributes, numAttributes, ptr, size, data, dataSizes);
@@ -68,30 +70,32 @@ rtError_t rtMemManagedGetAttrs(rtMemManagedRangeAttribute *attributes, size_t nu
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemManagedPrefetchAsync(const void* ptr, size_t size, rtMemManagedLocation location,
-    uint32_t flags, rtStream_t stream)
+rtError_t rtMemManagedPrefetchAsync(
+    const void* ptr, size_t size, rtMemManagedLocation location, uint32_t flags, rtStream_t stream)
 {
     Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stream, Stream, streamPtr);
     const rtError_t error = apiInstance->MemManagedPrefetchAsync(ptr, size, location, flags, streamPtr);
-    COND_RETURN_WITH_NOLOG(((error == RT_ERROR_FEATURE_NOT_SUPPORT) || (error == RT_ERROR_DRV_NOT_SUPPORT)),
+    COND_RETURN_WITH_NOLOG(
+        ((error == RT_ERROR_FEATURE_NOT_SUPPORT) || (error == RT_ERROR_DRV_NOT_SUPPORT)),
         ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;
 }
 
 VISIBILITY_DEFAULT
-rtError_t rtMemManagedPrefetchBatchAsync(const void** ptrs, size_t* sizes, size_t count,
-    rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs, size_t numPrefetchLocs, uint64_t flags,
-    rtStream_t stream)
+rtError_t rtMemManagedPrefetchBatchAsync(
+    const void** ptrs, size_t* sizes, size_t count, rtMemManagedLocation* prefetchLocs, size_t* prefetchLocIdxs,
+    size_t numPrefetchLocs, uint64_t flags, rtStream_t stream)
 {
     Api* const apiInstance = Api::Instance();
     NULL_RETURN_ERROR_WITH_EXT_ERRCODE(apiInstance);
     RT_VALIDATE_AND_UNWRAP_OBJECT(stream, Stream, streamPtr);
-    const rtError_t error = apiInstance->MemManagedPrefetchBatchAsync(ptrs, sizes, count, prefetchLocs, prefetchLocIdxs,
-        numPrefetchLocs, flags, streamPtr);
-    COND_RETURN_WITH_NOLOG(((error == RT_ERROR_FEATURE_NOT_SUPPORT) || (error == RT_ERROR_DRV_NOT_SUPPORT)),
+    const rtError_t error = apiInstance->MemManagedPrefetchBatchAsync(
+        ptrs, sizes, count, prefetchLocs, prefetchLocIdxs, numPrefetchLocs, flags, streamPtr);
+    COND_RETURN_WITH_NOLOG(
+        ((error == RT_ERROR_FEATURE_NOT_SUPPORT) || (error == RT_ERROR_DRV_NOT_SUPPORT)),
         ACL_ERROR_RT_FEATURE_NOT_SUPPORT);
     ERROR_RETURN_WITH_EXT_ERRCODE(error);
     return ACL_RT_SUCCESS;

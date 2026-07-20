@@ -101,5 +101,5 @@ Runtime::~Runtime()
     DeleteModuleBackupPoint();
 }
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce

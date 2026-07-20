@@ -29,7 +29,7 @@ DriverFactory::~DriverFactory()
         }
     }
 }
-Driver *DriverFactory::GetDriver(const driverType_t type)
+Driver* DriverFactory::GetDriver(const driverType_t type)
 {
     if (drivers_[type] == nullptr) {
         const std::unique_lock<std::mutex> mutexLock(m);
@@ -39,12 +39,12 @@ Driver *DriverFactory::GetDriver(const driverType_t type)
     }
     return drivers_[type];
 }
-Driver *DriverFactory::GetDriverIfCreated(const driverType_t type) const
+Driver* DriverFactory::GetDriverIfCreated(const driverType_t type) const
 {
     const int32_t typeValue = static_cast<int32_t>(type);
     if ((typeValue < 0) || (typeValue >= static_cast<int32_t>(MAX_DRIVER_NUM))) {
-        RT_LOG(RT_LOG_ERROR, "driver type is invalid, type=%d, max=%d.", typeValue,
-            static_cast<int32_t>(MAX_DRIVER_NUM));
+        RT_LOG(
+            RT_LOG_ERROR, "driver type is invalid, type=%d, max=%d.", typeValue, static_cast<int32_t>(MAX_DRIVER_NUM));
         return nullptr;
     }
     return drivers_[type].load();
@@ -59,17 +59,11 @@ bool DriverFactory::RegDriver(const driverType_t type, DriverGetInsFunc_t const 
     return true;
 }
 
-Driver::Driver() : NoCopy(), callBack_(nullptr)
-{
-}
+Driver::Driver() : NoCopy(), callBack_(nullptr) {}
 
-Driver::~Driver()
-{
-    callBack_ = nullptr;
-}
+Driver::~Driver() { callBack_ = nullptr; }
 
-
-rtError_t FacadeDriver::GetDeviceCount(int32_t * const deviceCount) const
+rtError_t FacadeDriver::GetDeviceCount(int32_t* const deviceCount) const
 {
     rtError_t error = RT_ERROR_NONE;
     uint32_t devCnt = 0U;
@@ -82,16 +76,18 @@ rtError_t FacadeDriver::GetDeviceCount(int32_t * const deviceCount) const
     return error;
 }
 
-rtError_t FacadeDriver::GetDeviceIDs(uint32_t * const devices, const uint32_t len) const
+rtError_t FacadeDriver::GetDeviceIDs(uint32_t* const devices, const uint32_t len) const
 {
     rtError_t error = RT_ERROR_NONE;
 
     const drvError_t drvRet = drvGetDevIDs(devices, len);
     if (drvRet != DRV_ERROR_NONE) {
-        DRV_ERROR_PROCESS(drvRet, "Call driver api drvGetDevIDs failed, drvRetCode=%d, length=%u.", static_cast<int32_t>(drvRet), len);
+        DRV_ERROR_PROCESS(
+            drvRet, "Call driver api drvGetDevIDs failed, drvRetCode=%d, length=%u.", static_cast<int32_t>(drvRet),
+            len);
         error = RT_GET_DRV_ERRCODE(drvRet);
     }
     return error;
 }
-}
-}
+} // namespace runtime
+} // namespace cce

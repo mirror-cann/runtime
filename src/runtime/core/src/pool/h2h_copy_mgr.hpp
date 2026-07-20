@@ -18,30 +18,28 @@
 namespace cce {
 namespace runtime {
 
-enum class H2HCopyPolicy : uint64_t {
-    H2H_POLICY_DEFAULT,
-    H2H_COPY_POLICY_SYNC
-};
+enum class H2HCopyPolicy : uint64_t { H2H_POLICY_DEFAULT, H2H_COPY_POLICY_SYNC };
 constexpr uint32_t DEFAULT_INIT_ITEM_SIZE = 4096U;
 class H2HCopyMgr : public NoCopy {
 public:
-    H2HCopyMgr(const uint32_t size, const uint32_t initCnt,
-        const uint32_t maxCnt, const BufferAllocator::Strategy stg, H2HCopyPolicy policy);
+    H2HCopyMgr(
+        const uint32_t size, const uint32_t initCnt, const uint32_t maxCnt, const BufferAllocator::Strategy stg,
+        H2HCopyPolicy policy);
     H2HCopyMgr(H2HCopyPolicy policy);
     ~H2HCopyMgr() override;
 
-    void *AllocHostMem(const bool isLogError = true) const;
-    void *AllocHostMem(const uint32_t size) const;
-    void FreeHostMem(void *item) const;
-    rtError_t H2DMemCopy(void *dst, const void * const src, const uint32_t size) const;
+    void* AllocHostMem(const bool isLogError = true) const;
+    void* AllocHostMem(const uint32_t size) const;
+    void FreeHostMem(void* item) const;
+    rtError_t H2DMemCopy(void* dst, const void* const src, const uint32_t size) const;
 
 private:
-    static void *MallocBuffer(const size_t size, void * const para);
-    static void FreeBuffer(void * const addr, void * const para);
-    BufferAllocator *argAllocator_{nullptr};
+    static void* MallocBuffer(const size_t size, void* const para);
+    static void FreeBuffer(void* const addr, void* const para);
+    BufferAllocator* argAllocator_{nullptr};
     H2HCopyPolicy policy_;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_H2H_COPY_MGR_HPP
+#endif // CCE_RUNTIME_H2H_COPY_MGR_HPP

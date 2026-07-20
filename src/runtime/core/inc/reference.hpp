@@ -19,9 +19,7 @@ namespace runtime {
 template <class T, T initVal = static_cast<T>(0)>
 class RefObject {
 public:
-    RefObject() : status_(STATUS_IDLE), count_(0ULL), value_(initVal)
-    {
-    }
+    RefObject() : status_(STATUS_IDLE), count_(0ULL), value_(initVal) {}
 
     ~RefObject() = default;
 
@@ -68,7 +66,7 @@ public:
     }
 
     // The return value indicates whether the reference count is decremented, different from other api.
-    bool TryDecRef(bool &needReset)
+    bool TryDecRef(bool& needReset)
     {
         uint64_t oldVal;
         uint64_t newVal;
@@ -124,15 +122,9 @@ public:
         return success;
     }
 
-    uint64_t GetRef() const
-    {
-        return count_.Value();
-    }
+    uint64_t GetRef() const { return count_.Value(); }
 
-    uint64_t GetRefCount() const
-    {
-        return count_.Value() & (~REF_UPDATING);
-    }
+    uint64_t GetRefCount() const { return count_.Value() & (~REF_UPDATING); }
 
     // callef after IncRef return 0.
     void SetVal(T val)
@@ -144,10 +136,7 @@ public:
     }
 
     // callef after DecRef return 0.
-    void ResetVal()
-    {
-        SetVal(initVal);
-    }
+    void ResetVal() { SetVal(initVal); }
 
     void ResetValForAbort()
     {
@@ -196,25 +185,13 @@ public:
         return value_;
     }
 
-    bool IsValIdle()
-    {
-        return status_.CompareExchange(STATUS_IDLE, STATUS_BUSY);
-    }
+    bool IsValIdle() { return status_.CompareExchange(STATUS_IDLE, STATUS_BUSY); }
 
-    void ChangeValStatus(uint32_t status)
-    {
-        status_.Set(status);
-    }
+    void ChangeValStatus(uint32_t status) { status_.Set(status); }
 
-    bool GetPrimaryCtxCallBackFlag() const
-    {
-        return primaryCtxCallBackFlag_;
-    }
+    bool GetPrimaryCtxCallBackFlag() const { return primaryCtxCallBackFlag_; }
 
-    void SetPrimaryCtxCallBackFlag(const bool flag)
-    {
-        primaryCtxCallBackFlag_ = flag;
-    }
+    void SetPrimaryCtxCallBackFlag(const bool flag) { primaryCtxCallBackFlag_ = flag; }
     static constexpr uint32_t STATUS_IDLE = 0U;
     static constexpr uint32_t STATUS_BUSY = 1U;
 
@@ -225,7 +202,7 @@ private:
     static constexpr uint64_t REF_UPDATING = 0x8000000000000000ULL; // INT64_MAX + 1
     bool primaryCtxCallBackFlag_ = false;
 };
-}
-}
+} // namespace runtime
+} // namespace cce
 
-#endif  // __CCE_RUNTIME_REFERENCE_HPP__
+#endif // __CCE_RUNTIME_REFERENCE_HPP__

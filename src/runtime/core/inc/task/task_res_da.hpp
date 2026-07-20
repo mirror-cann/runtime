@@ -15,36 +15,24 @@ namespace cce {
 namespace runtime {
 
 class TaskResManageDavid : public TaskResManage {
-public: 
+public:
     TaskResManageDavid();
     ~TaskResManageDavid() override;
 
     TaskInfo* GetTaskInfo(uint32_t taskId) const override;
     void ResetTaskRes() override;
     bool RecycleTaskInfo(uint32_t pos, uint32_t sqeNum);
-    rtError_t AllocTaskInfoAndPos(uint32_t sqeNum, uint32_t &pos, TaskInfo **task, bool needLog = true);
-    void GetHeadTail(uint16_t &head, uint16_t &tail) const;
+    rtError_t AllocTaskInfoAndPos(uint32_t sqeNum, uint32_t& pos, TaskInfo** task, bool needLog = true);
+    void GetHeadTail(uint16_t& head, uint16_t& tail) const;
     void RollbackTail(uint16_t pos);
 
-    uint16_t GetTaskPosHead() const
-    {
-        return taskResAHead_.Value();
-    }
+    uint16_t GetTaskPosHead() const { return taskResAHead_.Value(); }
 
-    uint16_t GetTaskPosTail() const
-    {
-        return taskResATail_.Value();
-    }
+    uint16_t GetTaskPosTail() const { return taskResATail_.Value(); }
 
-    bool IsEmpty() const
-    {
-        return taskResAHead_.Value() == taskResATail_.Value();
-    }
+    bool IsEmpty() const { return taskResAHead_.Value() == taskResATail_.Value(); }
 
-    uint64_t GetAllocNum() const
-    {
-        return allocNum_;
-    }
+    uint64_t GetAllocNum() const { return allocNum_; }
 
     uint16_t GetPendingNum();
     bool IsRecyclePosValid(uint16_t recyclePos) const;
@@ -57,7 +45,7 @@ private:
     uint64_t allocNum_{0U};
 };
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
 
-#endif  // CCE_RUNTIME_TASK_RES_DAVID_HPP
+#endif // CCE_RUNTIME_TASK_RES_DAVID_HPP

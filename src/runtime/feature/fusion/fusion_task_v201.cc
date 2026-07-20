@@ -17,13 +17,14 @@
 namespace cce {
 namespace runtime {
 
-void ConstructAicpuSubSqe(TaskInfo * const taskInfo, rtDavidSqe_t * const davidSqe, uint32_t &sqeIndex,
-                          uint32_t aicpuIndex, uint32_t taskIdx, uint64_t sqBaseAddr)
+void ConstructAicpuSubSqe(
+    TaskInfo* const taskInfo, rtDavidSqe_t* const davidSqe, uint32_t& sqeIndex, uint32_t aicpuIndex, uint32_t taskIdx,
+    uint64_t sqBaseAddr)
 {
     ConstructAicpuSubSqeBase(taskInfo, davidSqe, sqeIndex, aicpuIndex, taskIdx, sqBaseAddr);
 
-    rtDavidSqe_t *sqeAddr = &davidSqe[sqeIndex];
-    RtDavidStarsAicpuKernelSqe *const sqe = &(sqeAddr->aicpuSqe);
+    rtDavidSqe_t* sqeAddr = &davidSqe[sqeIndex];
+    RtDavidStarsAicpuKernelSqe* const sqe = &(sqeAddr->aicpuSqe);
     // swap buffer use host pid
     sqe->header.type = RT_DAVID_SQE_TYPE_AICPU_D;
     sqe->topicType = TOPIC_TYPE_DEVICE_AICPU_SRC_PID;
@@ -51,7 +52,7 @@ static bool FusionKernelTaskRegister()
         .setStarsResultFunc = &SetStarsResultForFusionKernelTask,
     };
 
-    const auto &chips = GetV201Chips();
+    const auto& chips = GetV201Chips();
     for (const auto chip : chips) {
         RegTaskFunc(chip, TS_TASK_TYPE_FUSION_KERNEL, funcs);
     }
@@ -62,5 +63,5 @@ static bool FusionKernelTaskRegister()
 
 static bool g_fusionKernelTaskRegister = FusionKernelTaskRegister();
 
-}  // namespace runtime
-}  // namespace cce
+} // namespace runtime
+} // namespace cce
