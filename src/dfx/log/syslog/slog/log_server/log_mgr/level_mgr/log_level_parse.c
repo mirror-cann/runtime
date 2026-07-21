@@ -47,7 +47,7 @@ int32_t SlogdGetEventLevel(void)
 // module level
 STATIC INLINE bool IsModuleIdValid(int32_t moduleId)
 {
-    return ((moduleId >= 0) && (moduleId < INVLID_MOUDLE_ID)) ? true : false;
+    return ((moduleId >= 0) && (moduleId < INVALID_MODULE_ID)) ? true : false;
 }
 
 STATIC INLINE bool IsDevIdValid(int32_t devId)
@@ -147,7 +147,7 @@ int32_t SlogdGetModuleLevelByDevId(int32_t devId, int32_t moduleId, uint32_t typ
 bool SetGroupIdByModuleId(int32_t moduleId, int32_t value)
 {
     ModuleInfo *set = g_moduleInfo;
-    if ((moduleId >= 0) && (moduleId < INVLID_MOUDLE_ID)) {
+    if ((moduleId >= 0) && (moduleId < INVALID_MODULE_ID)) {
         set[moduleId].groupId = value;
         return true;
     }
@@ -184,7 +184,7 @@ void SetGroupIdToUninitModule(int32_t id)
 int32_t GetGroupIdByModuleId(int32_t moduleId)
 {
     const ModuleInfo *set = g_moduleInfo;
-    if ((moduleId >= 0) && (moduleId < INVLID_MOUDLE_ID)) {
+    if ((moduleId >= 0) && (moduleId < INVALID_MODULE_ID)) {
         return set[moduleId].groupId;
     }
     return -1;
@@ -225,7 +225,7 @@ const ModuleInfo *GetModuleInfoByName(const char *name)
 */
 const ModuleInfo *GetModuleInfoById(int32_t moduleId)
 {
-    if ((moduleId >= 0) && (moduleId < INVLID_MOUDLE_ID)) {
+    if ((moduleId >= 0) && (moduleId < INVALID_MODULE_ID)) {
         return &(g_moduleInfo[moduleId]);
     }
     return NULL;
@@ -238,7 +238,7 @@ const ModuleInfo *GetModuleInfoById(int32_t moduleId)
 */
 const char *GetModuleNameById(int32_t moduleId)
 {
-    if ((moduleId >= 0) && (moduleId < INVLID_MOUDLE_ID)) {
+    if ((moduleId >= 0) && (moduleId < INVALID_MODULE_ID)) {
         return g_moduleInfo[moduleId].moduleName;
     }
     return NULL;

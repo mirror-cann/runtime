@@ -128,12 +128,12 @@ STATIC LogStatus DlogInitModuleLogLevelByEnv(void)
         SELF_LOG_ERROR("no string to search.");
         return LOG_FAILURE;
     }
-    IdValueInfo setBuf[INVLID_MOUDLE_ID];
+    IdValueInfo setBuf[INVALID_MODULE_ID];
     (void)memset_s(setBuf, sizeof(setBuf), 0, sizeof(setBuf));
     int32_t itemNum = 0;
     while (token != NULL) {
-        // INVLID_MOUDLE_ID
-        ONE_ACT_ERR_LOG(itemNum >= INVLID_MOUDLE_ID, return LOG_FAILURE,
+        // INVALID_MODULE_ID
+        ONE_ACT_ERR_LOG(itemNum >= INVALID_MODULE_ID, return LOG_FAILURE,
             "env ASCEND_MODULE_LOG_LEVEL number exceed the limit");
         int32_t moduleId = INVALID_NUM;
         int32_t logLevel = INVALID_NUM;

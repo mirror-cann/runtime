@@ -20,7 +20,7 @@ extern "C" {
 #endif
 
 #define FULL_RATIO          100
-#define GROUP_MAP_SIZE      (INVLID_MOUDLE_ID + 1)
+#define GROUP_MAP_SIZE      (INVALID_MODULE_ID + 1)
 #define GROUP_NAME_MAX_LEN  127
 #define SLOG_AGENT_FILE_DIR 255
 

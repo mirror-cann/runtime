@@ -22,7 +22,7 @@
 #define OUTPUT_LOG_FILE         "/ascendmerge.log"
 #define OUTPUT_GZ_LOG_FILE      "/ascendmerge.log.gz"
 #define GENERAL_LOG_NUM         3U           // genenal log = deviece-os + device-app + aos-core-app
-#define GROUP_MAP_SIZE          (INVLID_MOUDLE_ID + 1)
+#define GROUP_MAP_SIZE          (INVALID_MODULE_ID + 1)
 #define GZIP_SUFFIX             ".gz"
 
 typedef struct {

@@ -50,7 +50,7 @@ enum { // use as constant
 
 typedef struct {
     char configName[CONF_NAME_MAX_LEN + 1];
-    int32_t configValue[INVLID_MOUDLE_ID];
+    int32_t configValue[INVALID_MODULE_ID];
 } LogLevelConfInfo;
 
 // log level type
@@ -88,7 +88,7 @@ typedef struct TagModuleInfo {
 #define MULTI_MODULE_MAP(x, y) { #x, x, true, -1, {y, y, y, y}, INVAILD_GROUP_ID }
 
 // number id means discarded id, can be reused in the future
-#define DEFINE_MODULE_LEVEL(var)   ModuleInfo (var)[INVLID_MOUDLE_ID + 1] = {  \
+#define DEFINE_MODULE_LEVEL(var)   ModuleInfo (var)[INVALID_MODULE_ID + 1] = {  \
     SINGL_MODULE_MAP(SLOG, MODULE_INIT_LOG_LEVEL),          \
     SINGL_MODULE_MAP(IDEDD, MODULE_INIT_LOG_LEVEL),         \
     SINGL_MODULE_MAP(SCC, MODULE_INIT_LOG_LEVEL),             \

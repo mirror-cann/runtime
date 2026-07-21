@@ -620,7 +620,7 @@ STATIC void ResetGroupInfo(void)
 STATIC void SetAllLogToOthersGroup(void)
 {
     g_groupInfo.map[DEFAULT_GROUP_ID].isInit = 1;
-    g_groupInfo.map[DEFAULT_GROUP_ID].moduleNum = INVLID_MOUDLE_ID;
+    g_groupInfo.map[DEFAULT_GROUP_ID].moduleNum = INVALID_MODULE_ID;
     uint32_t ratio = (unsigned int)FULL_RATIO >> 1;
     g_groupInfo.map[DEFAULT_GROUP_ID].fileRatio = (int)ratio;
     g_groupInfo.allRatio = FULL_RATIO;
@@ -685,7 +685,7 @@ STATIC void PrintGroupConfig(void)
         SELF_LOG_INFO("group active file size %dKB.", g_groupInfo.map[groupId].fileSize);
         SELF_LOG_INFO("group rotate file total size %uKB.", g_groupInfo.map[groupId].totalMaxFileSize);
         SELF_LOG_INFO("group contains the following modules:");
-        for (int32_t moduleId = 0; moduleId < INVLID_MOUDLE_ID; moduleId++) {
+        for (int32_t moduleId = 0; moduleId < INVALID_MODULE_ID; moduleId++) {
             if (modSet[moduleId].groupId == groupId) {
                 char tmpStr[CONF_VALUE_MAX_LEN + 1] = { 0 };
                 int32_t ret = sprintf_s(tmpStr, CONF_VALUE_MAX_LEN, " %s", modSet[moduleId].moduleName);

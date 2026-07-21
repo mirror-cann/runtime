@@ -35,7 +35,7 @@ extern "C" {
  * @ingroup slog
  *
  * module id
- * if a module needs to be added, add the module at the end and before INVLID_MOUDLE_ID
+ * if a module needs to be added, add the module at the end and before INVALID_MODULE_ID
  */
 #define ALL_MODULE  (0x0000FFFFU)
 

@@ -111,8 +111,11 @@ enum {
     SYSMONITOR = 73,
     AML = 74,
     ADETECT = 75,
-    INVLID_MOUDLE_ID = 76   /* add new module before INVLID_MOUDLE_ID */
+    INVALID_MODULE_ID = 76   /* add new module before INVALID_MODULE_ID */
 };
+/* Backward compatibility for old misspelled name */
+#define INVLID_MOUDLE_ID INVALID_MODULE_ID
+
  
 typedef enum {
     APPLICATION = 0,

@@ -644,12 +644,12 @@ STATIC int32_t ConstructModuleLevel(GetLevelInfo *level, const ConfList *listNod
     }
     ONE_ACT_ERR_LOG(ret == -1, return SYS_ERROR,
                     "snprintf_s single module failed, strerr=%s.", strerror(ToolGetErrorCode()));
-    ret = strcat_s(level->moduleLevel, INVLID_MOUDLE_ID * SINGLE_MODULE_MAX_LEN, moduleStr);
+    ret = strcat_s(level->moduleLevel, INVALID_MODULE_ID * SINGLE_MODULE_MAX_LEN, moduleStr);
     ONE_ACT_ERR_LOG(ret != EOK, return SYS_ERROR,
                     "strcat_s single module failed, strerr=%s.", strerror(ToolGetErrorCode()));
     level->moduleNum++;
     if (((level->moduleNum % LOG_EVENT_WRAP_NUM) == 0) && !isNewStyle) {
-        ret = strcat_s(level->moduleLevel, INVLID_MOUDLE_ID * SINGLE_MODULE_MAX_LEN, "\n");
+        ret = strcat_s(level->moduleLevel, INVALID_MODULE_ID * SINGLE_MODULE_MAX_LEN, "\n");
         ONE_ACT_ERR_LOG(ret != EOK, return SYS_ERROR,
                         "strcat_s failed, strerr=%s.", strerror(ToolGetErrorCode()));
     }
@@ -746,7 +746,7 @@ STATIC LogRt GetLogLevelValue(char *logLevelResult, int32_t devId, bool isNewSty
 {
     char globalLevel[GLOBAL_ENABLE_MAX_LEN] = { 0 };
     char eventLevel[GLOBAL_ENABLE_MAX_LEN] = { 0 };
-    char *moduleLevel = (char *)calloc(1, INVLID_MOUDLE_ID * SINGLE_MODULE_MAX_LEN);
+    char *moduleLevel = (char *)calloc(1, INVALID_MODULE_ID * SINGLE_MODULE_MAX_LEN);
     if (moduleLevel == NULL) {
         XFREE(moduleLevel);
         SELF_LOG_ERROR("calloc moduleLevel failed, strerr=%s.", strerror(ToolGetErrorCode()));

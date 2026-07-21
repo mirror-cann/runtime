@@ -519,7 +519,7 @@ STATIC int32_t DlogSetModuleLevel(uint32_t moduleId, int32_t level)
         SetGlobalLogTypeLevelVar(level, typeMask);
         DlogSetLogTypeLevelToAllModule(level, typeMask);
         SetGlobalLevelSettedVar(true);
-    } else if (realModuleId < static_cast<uint32_t>(INVLID_MOUDLE_ID)) {
+    } else if (realModuleId < static_cast<uint32_t>(INVALID_MODULE_ID)) {
         (void)DlogSetLogTypeLevelByModuleId(static_cast<uint32_t>(realModuleId), level, typeMask);
     } else {
         SELF_LOG_WARN("set loglevel input moduleId=%u is illegal.", moduleId);

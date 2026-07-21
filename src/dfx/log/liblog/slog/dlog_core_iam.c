@@ -105,7 +105,7 @@ STATIC void ParseLogMsg(LogMsg *logMsg, LogMsgArg *msgArg)
 STATIC int32_t ConstructBaseMsg(char *msg, uint32_t msgLen, const LogMsgArg *msgArg)
 {
     int32_t err;
-    if (msgArg->moduleId < (uint32_t)INVLID_MOUDLE_ID) {
+    if (msgArg->moduleId < (uint32_t)INVALID_MODULE_ID) {
         if (((msgArg->level >= DLOG_DEBUG) && (msgArg->level < DLOG_NULL)) || (msgArg->level == DLOG_EVENT)) {
             err = snprintf_s(msg, msgLen, (size_t)msgLen - 1U, "[%s] %s(%d,%s):%s ",
                              DlogGetLevelNameById(msgArg->level), DlogGetModuleNameById(msgArg->moduleId),

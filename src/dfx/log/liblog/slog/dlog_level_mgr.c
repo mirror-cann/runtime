@@ -127,7 +127,7 @@ void SetLevelStatus(int32_t levelStatus)
 STATIC bool DlogSetDebugLevelByModuleId(int32_t moduleId, int32_t level)
 {
     ModuleInfo *set = g_dlogModuleInfo;
-    if ((moduleId >= 0) && (moduleId < INVLID_MOUDLE_ID)) {
+    if ((moduleId >= 0) && (moduleId < INVALID_MODULE_ID)) {
         set[moduleId].moduleLevel = (int8_t)level;
         return true;
     }
@@ -173,7 +173,7 @@ void DlogSetLogTypeLevelToAllModule(int32_t level, uint32_t typeMask)
 int32_t DlogGetLogTypeLevelByModuleId(uint32_t moduleId, uint32_t typeMask)
 {
     if ((typeMask == DEBUG_LOG_MASK) || (typeMask == 0U)) {
-        if (moduleId < (uint32_t)INVLID_MOUDLE_ID) {
+        if (moduleId < (uint32_t)INVALID_MODULE_ID) {
             return (int32_t)g_dlogModuleInfo[moduleId].moduleLevel;
         } else {
             return (int32_t)g_dlogLevel.globalLogLevel;
@@ -190,7 +190,7 @@ int32_t DlogGetLogTypeLevelByModuleId(uint32_t moduleId, uint32_t typeMask)
 
 int32_t DlogGetDebugLogLevelByModuleId(uint32_t moduleId)
 {
-    if (moduleId < (uint32_t)INVLID_MOUDLE_ID) {
+    if (moduleId < (uint32_t)INVALID_MODULE_ID) {
         return (int32_t)g_dlogModuleInfo[moduleId].moduleLevel;
     } else {
         return (int32_t)g_dlogLevel.globalLogLevel;
@@ -236,7 +236,7 @@ const ModuleInfo *DlogGetModuleInfoByName(const char *name)
 */
 const char *DlogGetModuleNameById(uint32_t moduleId)
 {
-    if (moduleId < (uint32_t)INVLID_MOUDLE_ID) {
+    if (moduleId < (uint32_t)INVALID_MODULE_ID) {
         return g_dlogModuleInfo[moduleId].moduleName;
     }
     return NULL;

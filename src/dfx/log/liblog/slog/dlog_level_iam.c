@@ -49,7 +49,7 @@ STATIC void GetModuleLogLevelByIam(void)
     }
 
     for (; moduleInfo->moduleName != NULL; moduleInfo++) {
-        if ((moduleInfo->moduleId < 0) || (moduleInfo->moduleId >= INVLID_MOUDLE_ID) ||
+        if ((moduleInfo->moduleId < 0) || (moduleInfo->moduleId >= INVALID_MODULE_ID) ||
             (levelInfo.configValue[moduleInfo->moduleId] < LOG_MIN_LEVEL) ||
             (levelInfo.configValue[moduleInfo->moduleId] > LOG_MAX_LEVEL)) {
             continue;

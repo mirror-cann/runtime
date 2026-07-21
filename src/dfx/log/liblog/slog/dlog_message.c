@@ -56,7 +56,7 @@ STATIC int32_t ConstructBaseLogForInvalidModuleId(char *msg, uint32_t msgLen, co
 STATIC int32_t ConstructBaseLogMsg(char *msg, uint32_t msgLen, const LogMsgArg *msgArg)
 {
     int32_t err;
-    if (msgArg->moduleId < (uint32_t)INVLID_MOUDLE_ID) {
+    if (msgArg->moduleId < (uint32_t)INVALID_MODULE_ID) {
         err = ConstructBaseLogForValidModuleId(msg, msgLen, msgArg);
     } else {
         err = ConstructBaseLogForInvalidModuleId(msg, msgLen, msgArg);

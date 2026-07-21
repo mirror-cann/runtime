@@ -114,14 +114,14 @@ STATIC LogRt ParseLogLevel(const char *levelStr, const char *moduleStr)
             continue;
         }
         int32_t pre = i;
-        for (; i < INVLID_MOUDLE_ID; i++) {
+        for (; i < INVALID_MODULE_ID; i++) {
             const char *name  = moduleInfos[i].moduleName;
             if (strncmp(name, moduleStr + offPre, strlen(name)) == 0) {
                 ParseModuleLevel(levelStr, n, &moduleInfos[i]); // parse n module level
                 break;
             }
         }
-        if (i == INVLID_MOUDLE_ID) {
+        if (i == INVALID_MODULE_ID) {
             i = pre;
         }
         n++; // next module in moduleStr

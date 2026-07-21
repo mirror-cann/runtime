@@ -186,7 +186,7 @@ STATIC LogRt ConstructLevelStr(char *str, size_t strLen)
     ONE_ACT_ERR_LOG(ret != EOK, return STR_COPY_FAILED,
                     "copy failed, ret=%d, strerr=%s.", ret, strerror(ToolGetErrorCode()));
     // module
-    for (int32_t i = 0; i < INVLID_MOUDLE_ID; i++) {
+    for (int32_t i = 0; i < INVALID_MODULE_ID; i++) {
         level = '\0';
         int32_t levell = SlogdGetModuleLevel(i, DEBUG_LOG_MASK);
         int32_t levelr = SlogdGetModuleLevel(i, RUN_LOG_MASK);
@@ -215,7 +215,7 @@ STATIC LogRt ConstructModuleStr(char *str, size_t strLen)
     size_t len = 0;
     const ModuleInfo *moduleInfos = GetModuleInfos();
     ONE_ACT_NO_LOG(moduleInfos == NULL, return ARGV_NULL);
-    for (int32_t i = 0; i < INVLID_MOUDLE_ID; i++) {
+    for (int32_t i = 0; i < INVALID_MODULE_ID; i++) {
         int32_t ret = sprintf_s(str + len, strLen - 1U, "%s;", moduleInfos[i].moduleName);
         if ((ret == -1) || ((unsigned)ret != (strlen(moduleInfos[i].moduleName) + 1U))) {
             SELF_LOG_ERROR("copy failed, ret=%d, strerr=%s.", ret, strerror(ToolGetErrorCode()));
@@ -434,7 +434,7 @@ STATIC void SlogdUpdateEventLogLevel(void)
 STATIC void SlogdUpdateModuleLogLevel(void)
 {
     int32_t level = SlogdGetGlobalLevel(SLOGD_GLOBAL_TYPE_MASK);
-    for (int32_t moduleId = 0; moduleId < INVLID_MOUDLE_ID; ++moduleId) {
+    for (int32_t moduleId = 0; moduleId < INVALID_MODULE_ID; ++moduleId) {
         (void)SlogdSetModuleLevel(moduleId, level, SLOGD_GLOBAL_TYPE_MASK);
     }
     const ModuleInfo *moduleInfo = GetModuleInfos();

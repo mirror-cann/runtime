@@ -181,7 +181,7 @@ STATIC LogStatus SlogdCheckLogLevel(LogHead msgRes)
         mask = SLOGD_GLOBAL_TYPE_MASK;
     }
     int moduleLevel = SlogdGetGlobalLevel(mask);
-    if ((msgRes.moduleId >= 0U) && (msgRes.moduleId < (uint16_t)INVLID_MOUDLE_ID)) {
+    if ((msgRes.moduleId >= 0U) && (msgRes.moduleId < (uint16_t)INVALID_MODULE_ID)) {
         moduleLevel = SlogdGetModuleLevel(msgRes.moduleId, mask);
         if ((moduleLevel < LOG_MIN_LEVEL) || (moduleLevel > LOG_MAX_LEVEL)) {
             moduleLevel = SlogdGetGlobalLevel(mask);
@@ -299,7 +299,7 @@ STATIC int LogIamOpsIoctlGetLevel(LogLevelConfInfo *levelConfInfo)
     if (strcmp(levelConfInfo->configName, IOCTL_MODULE_NAME) == 0) {
         const ModuleInfo *moduleInfo = GetModuleInfos();
         for (; moduleInfo->moduleName != NULL; moduleInfo++) {
-            if ((moduleInfo->moduleId < 0) || (moduleInfo->moduleId >= INVLID_MOUDLE_ID)) {
+            if ((moduleInfo->moduleId < 0) || (moduleInfo->moduleId >= INVALID_MODULE_ID)) {
                 continue;
             }
             (void)memset_s(configValue, sizeof(configValue), 0, sizeof(configValue));
