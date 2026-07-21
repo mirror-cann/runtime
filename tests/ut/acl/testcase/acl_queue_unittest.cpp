@@ -1027,10 +1027,14 @@ TEST_F(UTEST_QUEUE, SendConnectQsMsg_Fail)
         .WillRepeatedly(Return((RT_ERROR_NONE)));
     auto ret = queueProcess.SendConnectQsMsg(0, eventSum, ack);
     EXPECT_EQ(ret, ACL_SUCCESS);
+    EXPECT_EQ(eventSum.msg, nullptr);
+    EXPECT_EQ(eventSum.msgLen, 0U);
     // for cov
     rsp.retCode = 1;
     ret = queueProcess.SendConnectQsMsg(0, eventSum, ack);
     EXPECT_EQ(ret, ACL_ERROR_FAILURE);
+    EXPECT_EQ(eventSum.msg, nullptr);
+    EXPECT_EQ(eventSum.msgLen, 0U);
 }
 
 TEST_F(UTEST_QUEUE, SendBindUnbindMsg_Fail)
@@ -1080,6 +1084,8 @@ TEST_F(UTEST_QUEUE, GetQueueRouteNum_Fail)
     QueueProcessorHost processorHost;
     auto ret = processorHost.GetQueueRouteNum(&queryInfo, 0, eventSum, ack, routeNum);
     EXPECT_EQ(ret, ACL_ERROR_FAILURE);
+    EXPECT_EQ(eventSum.msg, nullptr);
+    EXPECT_EQ(eventSum.msgLen, 0U);
 }
 
 TEST_F(UTEST_QUEUE, SendBindUnbindMsgOnDevice_Fail)

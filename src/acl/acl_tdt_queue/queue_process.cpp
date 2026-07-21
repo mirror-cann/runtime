@@ -204,7 +204,10 @@ aclError QueueProcessor::SendConnectQsMsg(
     eventSum.subeventId = bqs::ACL_BIND_QUEUE_INIT;
     eventSum.msgLen = sizeof(qsInitMsg);
     eventSum.msg = reinterpret_cast<char_t*>(&qsInitMsg);
-    ACL_REQUIRES_RTS_OK_WARN_NOT_SUPPORT(rtEschedSubmitEventSync(deviceId, &eventSum, &ack), rtEschedSubmitEventSync);
+    const rtError_t ret = rtEschedSubmitEventSync(deviceId, &eventSum, &ack);
+    eventSum.msgLen = 0U;
+    eventSum.msg = nullptr;
+    ACL_REQUIRES_RTS_OK_WARN_NOT_SUPPORT(ret, rtEschedSubmitEventSync);
     bqs::QsProcMsgRsp* const rsp = reinterpret_cast<bqs::QsProcMsgRsp*>(ack.buf);
     if (rsp->retCode != 0) {
         ACL_LOG_INNER_ERROR("send connect qs failed, ret code is %d", rsp->retCode);
@@ -214,8 +217,6 @@ aclError QueueProcessor::SendConnectQsMsg(
     if (rsp->majorVersion >= MBUF_ENHANCED_QS) {
         isMbufEnhanced_ = true;
     }
-    eventSum.msgLen = 0U;
-    eventSum.msg = nullptr;
     ACL_LOG_INFO("successfully execute to SendConnectQsMsg");
     return ACL_SUCCESS;
 }
@@ -309,15 +310,16 @@ aclError QueueProcessor::GetQueueRouteNum(
     eventSum.subeventId = bqs::ACL_QUERY_QUEUE_NUM;
     eventSum.msgLen = sizeof(routeQuery);
     eventSum.msg = reinterpret_cast<char_t*>(&routeQuery);
-    ACL_REQUIRES_RTS_OK_WARN_NOT_SUPPORT(rtEschedSubmitEventSync(deviceId, &eventSum, &ack), rtEschedSubmitEventSync);
+    const rtError_t ret = rtEschedSubmitEventSync(deviceId, &eventSum, &ack);
+    eventSum.msgLen = 0U;
+    eventSum.msg = nullptr;
+    ACL_REQUIRES_RTS_OK_WARN_NOT_SUPPORT(ret, rtEschedSubmitEventSync);
     bqs::QsProcMsgRsp* const rsp = reinterpret_cast<bqs::QsProcMsgRsp*>(ack.buf);
     if (rsp->retCode != 0) {
         ACL_LOG_INNER_ERROR("get queue route num failed, ret code is %d", rsp->retCode);
         return ACL_ERROR_FAILURE;
     }
     routeNum = rsp->retValue;
-    eventSum.msgLen = 0U;
-    eventSum.msg = nullptr;
     ACL_LOG_INFO("successfully to get queue route num %zu.", routeNum);
     return ACL_SUCCESS;
 }
