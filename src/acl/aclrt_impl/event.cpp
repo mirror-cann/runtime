@@ -385,7 +385,7 @@ aclError aclrtGetErrorVerboseImpl(int32_t deviceId, aclrtErrorInfo* errorInfo)
     ACL_LOG_INFO("start to execute aclrtGetErrorVerbose with deviceId %d", deviceId);
 
     // Type conversion adaptation
-    uint32_t rtsDeviceId = static_cast<uint32_t>(deviceId);
+    const uint32_t rtsDeviceId = static_cast<uint32_t>(deviceId);
     rtErrorInfo rtsErrorInfo = {};
     // Call RTS interface
     ACL_REQUIRES_RTS_OK(rtsGetErrorVerbose(rtsDeviceId, &rtsErrorInfo));
@@ -396,7 +396,7 @@ aclError aclrtGetErrorVerboseImpl(int32_t deviceId, aclrtErrorInfo* errorInfo)
     errorInfo->detail.aicoreErrType = static_cast<aclrtAicoreErrorType>(rtsErrorInfo.detail.aicoreErrType);
     if ((rtsErrorInfo.hasDetail == 1U) && (rtsErrorInfo.errorType == RT_ERROR_MEMORY)) {
         uceInfo->arraySize = rtsErrorInfo.detail.uceInfo.arraySize;
-        size_t realSize =
+        const size_t realSize =
             std::min(rtsErrorInfo.detail.uceInfo.arraySize, static_cast<size_t>(ACL_RT_MEM_UCE_INFO_MAX_NUM));
         for (size_t i = 0U; i < realSize; ++i) {
             uceInfo->memUceInfoArray[i].addr =
@@ -416,7 +416,7 @@ aclError aclrtRepairErrorImpl(int32_t deviceId, const aclrtErrorInfo* errorInfo)
     ACL_LOG_INFO("start to execute aclrtRepairError with deviceId %d and errorType %d", deviceId, errorInfo->errorType);
 
     // Type conversion adaptation
-    uint32_t rtsDeviceId = static_cast<uint32_t>(deviceId);
+    const uint32_t rtsDeviceId = static_cast<uint32_t>(deviceId);
     rtErrorInfo rtsErrorInfo = {};
     rtsErrorInfo.tryRepair = errorInfo->tryRepair;
     rtsErrorInfo.hasDetail = errorInfo->hasDetail;
@@ -424,7 +424,7 @@ aclError aclrtRepairErrorImpl(int32_t deviceId, const aclrtErrorInfo* errorInfo)
     rtsErrorInfo.detail.aicoreErrType = static_cast<rtAicoreErrorType>(errorInfo->detail.aicoreErrType);
     if ((rtsErrorInfo.hasDetail == 1U) && (rtsErrorInfo.errorType == RT_ERROR_MEMORY)) {
         rtsErrorInfo.detail.uceInfo.arraySize = errorInfo->detail.uceInfo.arraySize;
-        size_t realSize =
+        const size_t realSize =
             std::min(rtsErrorInfo.detail.uceInfo.arraySize, static_cast<size_t>(RT_MAX_RECORD_PA_NUM_PER_DEV));
         for (size_t i = 0U; i < realSize; ++i) {
             rtsErrorInfo.detail.uceInfo.repairAddrArray[i].ptr =

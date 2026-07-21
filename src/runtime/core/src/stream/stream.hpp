@@ -80,12 +80,12 @@ class EngineStreamObserver;
 class TaskAllocator;
 class CaptureModel;
 
-using RtSqAllocType = enum TagtsSqAllocType { SQ_ALLOC_TYPE_RT_DEFAULT = 0 };
-
+enum class TagtsSqAllocType : std::uint32_t { SQ_ALLOC_TYPE_RT_DEFAULT = 0U };
+using RtSqAllocType = TagtsSqAllocType;
 typedef enum TagStreamFailureMode {
-    CONTINUE_ON_FAILURE = 0,
-    STOP_ON_FAILURE = 1,
-    ABORT_ON_FAILURE = 2,
+    CONTINUE_ON_FAILURE = 0U,
+    STOP_ON_FAILURE = 1U,
+    ABORT_ON_FAILURE = 2U,
 } TsStreamFailureMode;
 
 enum class StreamStateCallback : uint8_t {
@@ -691,7 +691,7 @@ public:
     bool IsSyncFinished();
     void GetCurrentRunningTaskInfo(uint16_t& taskId, tsTaskType_t& taskType, const char_t*& taskTypeName) const;
 
-    virtual RtSqAllocType GetTsSqAllocType() const { return SQ_ALLOC_TYPE_RT_DEFAULT; }
+    virtual RtSqAllocType GetTsSqAllocType() const { return RtSqAllocType::SQ_ALLOC_TYPE_RT_DEFAULT; }
 
     virtual rtError_t AddTaskToList(const TaskInfo* const tsk);
     rtError_t TryDelPublicRecordedTask(const uint16_t tailTaskId);

@@ -76,7 +76,7 @@ rtError_t DeviceSqCqPool::AllocSqCqFromDrv(
     info.overflowEn = false; // capture stream use default flag
     info.threadDisableFlag = static_cast<uint32_t>(Runtime::Instance()->GetDisableThread());
     info.shareSqId = device_->GetShareSqId();
-    info.tsSqType = SQ_ALLOC_TYPE_RT_DEFAULT;
+    info.tsSqType = static_cast<uint32_t>(RtSqAllocType::SQ_ALLOC_TYPE_RT_DEFAULT);
     info.swsqFlag = true;
 
     if (device_->IsDavidPlatform()) {

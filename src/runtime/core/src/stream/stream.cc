@@ -983,7 +983,7 @@ rtError_t Stream::AllocSqeBufferForAutoSplit()
     sqeBuffer_ = new (std::nothrow) uint8_t[sqeBufferSize_];
     COND_RETURN_AND_MSG_OUTER(sqeBuffer_ == nullptr, RT_ERROR_STREAM_NEW, ErrorCode::EE1013, sqeBufferSize_, "new");
 
-    errno_t ret = memset_s(sqeBuffer_, sqeBufferSize_, 0U, sqeBufferSize_);
+    const errno_t ret = memset_s(sqeBuffer_, sqeBufferSize_, 0U, sqeBufferSize_);
     COND_RETURN_ERROR_MSG_INNER(
         ret != EOK, RT_ERROR_STREAM_NEW,
         "Failed to call memset_s to set sqeBuffer_, dest=%p, dest_max=%u, c=0, count=%u, retCode=%d.", sqeBuffer_,

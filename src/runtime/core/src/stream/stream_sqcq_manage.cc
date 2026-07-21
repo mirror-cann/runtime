@@ -80,7 +80,7 @@ rtError_t StreamSqCqManage::AllocStreamSqCq(
     infoPtr->overflowEn = newStm->IsOverflowEnable();
     infoPtr->threadDisableFlag = static_cast<uint32_t>(Runtime::Instance()->GetDisableThread());
     infoPtr->shareSqId = device_->GetShareSqId();
-    infoPtr->tsSqType = newStm->GetTsSqAllocType();
+    infoPtr->tsSqType = static_cast<uint32_t>(newStm->GetTsSqAllocType());
     infoPtr->swsqFlag = true;
 
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
@@ -132,7 +132,7 @@ rtError_t StreamSqCqManage::AllocDavidStreamSqCq(
     infoPtr->overflowEn = newStm->IsOverflowEnable();
     infoPtr->threadDisableFlag = static_cast<uint32_t>(Runtime::Instance()->GetDisableThread());
     infoPtr->shareSqId = device_->GetShareSqId();
-    infoPtr->tsSqType = newStm->GetTsSqAllocType();
+    infoPtr->tsSqType = static_cast<uint32_t>(newStm->GetTsSqAllocType());
     infoPtr->swsqFlag = false;
     infoPtr->ctrlSQFlag = newStm->IsCtrlSQStream();
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
@@ -180,7 +180,7 @@ rtError_t StreamSqCqManage::UpdateStreamSqCq(Stream* newStm)
     infoPtr->overflowEn = newStm->IsOverflowEnable();
     infoPtr->threadDisableFlag = static_cast<uint32_t>(Runtime::Instance()->GetDisableThread());
     infoPtr->shareSqId = device_->GetShareSqId();
-    infoPtr->tsSqType = newStm->GetTsSqAllocType();
+    infoPtr->tsSqType = static_cast<uint32_t>(newStm->GetTsSqAllocType());
     infoPtr->swsqFlag = true;
 
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
@@ -238,7 +238,7 @@ rtError_t StreamSqCqManage::ReAllocSqCqId(const Stream* const newStm)
     infoPtr->overflowEn = newStm->IsOverflowEnable();
     infoPtr->threadDisableFlag = static_cast<uint32_t>(Runtime::Instance()->GetDisableThread());
     infoPtr->shareSqId = device_->GetShareSqId();
-    infoPtr->tsSqType = newStm->GetTsSqAllocType();
+    infoPtr->tsSqType = static_cast<uint32_t>(newStm->GetTsSqAllocType());
     infoPtr->swsqFlag = true;
 
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);
@@ -290,7 +290,7 @@ rtError_t StreamSqCqManage::ReAllocDavidSqCqId(const Stream* const stream)
     infoPtr->overflowEn = stream->IsOverflowEnable();
     infoPtr->threadDisableFlag = static_cast<uint32_t>(Runtime::Instance()->GetDisableThread());
     infoPtr->shareSqId = device_->GetShareSqId();
-    infoPtr->tsSqType = stream->GetTsSqAllocType();
+    infoPtr->tsSqType = static_cast<uint32_t>(stream->GetTsSqAllocType());
     infoPtr->swsqFlag = false;
 
     const std::lock_guard<std::mutex> stmLock(streamMapLock_);

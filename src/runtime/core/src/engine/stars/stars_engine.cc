@@ -474,7 +474,7 @@ rtError_t StarsEngine::FinishedTaskReclaim(
 
 rtError_t StarsEngine::TaskReclaimByStm(Stream* const stm, const bool limited, uint32_t& taskId)
 {
-    if (stm->GetTsSqAllocType() != SQ_ALLOC_TYPE_RT_DEFAULT) {
+    if (stm->GetTsSqAllocType() != RtSqAllocType::SQ_ALLOC_TYPE_RT_DEFAULT) {
         RT_LOG(RT_LOG_DEBUG, "ts SQ no need to do task reclaim, streamId=%d.", stm->Id_());
         return RT_ERROR_NONE;
     }
