@@ -11,7 +11,7 @@
 #include "stars_david.hpp"
 #include "stream.hpp"
 #include "profiling_task.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "debug_task.h"
 
 namespace cce {

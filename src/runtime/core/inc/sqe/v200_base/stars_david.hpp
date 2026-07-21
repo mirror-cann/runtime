@@ -12,7 +12,7 @@
 #define __CCE_RUNTIME_STARS_DAVID_HPP__
 
 #include "task_info.hpp"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "place_holder_sqe.h"
 #include "aicpu_sqe.h"
 #include "memcpy_sqe.h"

@@ -9,7 +9,7 @@
  */
 #include "ttlv_decoder_utils.hpp"
 #include <sstream>
-#include "tsch_defines.h"
+#include "runtime_tsch_defines.h"
 #include "ttlv_err_msg_decoder.hpp"
 #include "error_message_manage.hpp"
 

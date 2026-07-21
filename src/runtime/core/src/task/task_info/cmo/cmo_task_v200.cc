@@ -11,7 +11,7 @@
 #include "stars_david.hpp"
 #include "stream.hpp"
 #include "model.hpp"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 
 namespace cce {
 namespace runtime {

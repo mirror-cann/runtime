@@ -11,6 +11,6 @@
 #ifndef CMODEL_BUILD_SHIM_TSCH_DEFINES_H_
 #define CMODEL_BUILD_SHIM_TSCH_DEFINES_H_
 
-#include "../../../../../src/runtime/core/inc/tsch_defines.h"
+#include "../../../../../src/runtime/core/inc/runtime_tsch_defines.h"
 
 #endif

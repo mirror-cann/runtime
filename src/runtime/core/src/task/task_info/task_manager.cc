@@ -8,7 +8,7 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "model_execute_task.h"
 #include "profiling_task.h"
 #include "stream.hpp"

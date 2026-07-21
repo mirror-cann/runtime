@@ -18,7 +18,7 @@
 #include "aicpu_sched/common/aicpu_task_struct.h"
 #include "context.hpp"
 #include "task_info_v100.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "task_execute_time.h"
 #include "error_code.h"
 

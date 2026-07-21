@@ -16,7 +16,7 @@
 #include <map>
 #include <vector>
 #include "aicpu_msg.h"
-#include "tsch_defines.h"
+#include "runtime_tsch_defines.h"
 #include "task_scheduler_error.h"
 #include "rt_model.h"
 #include "ascend_hal.h"

@@ -32,7 +32,7 @@
 #include "notify.hpp"
 #include "group_device.hpp"
 #include "task.hpp"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "host_task.hpp"
 #include "osal.hpp"
 #include "profiler.hpp"

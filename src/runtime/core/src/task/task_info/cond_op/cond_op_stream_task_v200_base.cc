@@ -13,7 +13,7 @@
 #include "runtime.hpp"
 #include "stars_cond_isa_helper.hpp"
 #include "cond_op_stream_task.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "aclgraph_cond_task.h"
 
 namespace cce {

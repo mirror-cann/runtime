@@ -66,7 +66,7 @@
 #include "aicpu_c.hpp"
 #include "aix_c.hpp"
 #include "memory_task.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "event_task.h"
 #include "kernel_utils.hpp"
 #include "event_david.hpp"

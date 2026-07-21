@@ -7,8 +7,8 @@
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
  */
-#ifndef TS_TSCH_DEFINES_H
-#define TS_TSCH_DEFINES_H
+#ifndef RUNTIME_CORE_INC_RUNTIME_TSCH_DEFINES_H_
+#define RUNTIME_CORE_INC_RUNTIME_TSCH_DEFINES_H_
 
 #ifndef DAVINCI_MDC_VOS
 #if defined(__COMPILER_HUAWEILITEOS__)
@@ -645,4 +645,4 @@ typedef struct {
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-#endif /* TS_TSCH_DEFINES_H */
+#endif /* RUNTIME_CORE_INC_RUNTIME_TSCH_DEFINES_H_ */

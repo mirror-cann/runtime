@@ -11,7 +11,7 @@
 #include "thread_local_container.hpp"
 #include "inner_thread_local.hpp"
 #include "stars_cond_isa_helper.hpp"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "stream_sqcq_manage.hpp"
 #include "stream_task.h"
 #include "stub_task.hpp"

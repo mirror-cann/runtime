@@ -19,7 +19,7 @@
 #include "stream_david.hpp"
 #include "stream_c.hpp"
 #include "ctrl_sq.hpp"
-#include "dump_task.h"
+#include "runtime_dump_task.h"
 #include "model_maintaince_task.h"
 #include "model_execute_task.h"
 #include "model_to_aicpu_task.h"

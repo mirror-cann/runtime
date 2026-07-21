@@ -12,7 +12,7 @@
 #include "memory_task.h"
 #include "common_task.h"
 #include "stream.hpp"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "stars_cond_isa_helper.hpp"
 #include "stars_external_event_cond_isa_helper.hpp"
 

@@ -9,7 +9,7 @@
  */
 
 #include "aclgraph_cond_task.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "stars_cond_isa_helper.hpp"
 
 namespace cce {

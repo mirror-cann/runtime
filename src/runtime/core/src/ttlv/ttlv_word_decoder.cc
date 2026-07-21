@@ -9,7 +9,7 @@
  */
 #include "ttlv_word_decoder.hpp"
 
-#include "tsch_defines.h"
+#include "runtime_tsch_defines.h"
 #include "ttlv_decoder_utils.hpp"
 
 namespace cce {

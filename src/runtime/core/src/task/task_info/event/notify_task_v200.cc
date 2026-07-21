@@ -12,7 +12,7 @@
 #include "stars.hpp"
 #include "device.hpp"
 #include "notify_task.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "error_code.h"
 namespace cce {
 namespace runtime {

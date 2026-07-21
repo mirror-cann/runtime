@@ -14,7 +14,7 @@
 #include "model.hpp"
 #include "task_info_v100.h"
 #include "cond_op_label_task.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 
 namespace cce {
 namespace runtime {

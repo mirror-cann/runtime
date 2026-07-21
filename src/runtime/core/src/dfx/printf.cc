@@ -20,7 +20,7 @@
 #include "runtime.hpp"
 #include "fp16_t.h"
 #include "bfloat16.h"
-#include "hifloat.h"
+#include "runtime_hifloat.h"
 #include "external/graph/types.h"
 #include "runtime/rt_inner_dfx.h"
 #include "npu_driver.hpp"

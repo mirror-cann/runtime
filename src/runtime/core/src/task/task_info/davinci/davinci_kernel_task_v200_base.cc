@@ -11,7 +11,7 @@
 #include "davinci_kernel_task.h"
 #include "stream_david.hpp"
 #include "task_scheduler_error.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "device_error_proc.hpp"
 #include "runtime.hpp"
 #include "event_david.hpp"

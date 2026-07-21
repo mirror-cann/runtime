@@ -31,7 +31,7 @@
 #include "npu_driver.hpp"
 #include "../../rt_utest_config_define.hpp"
 #include "rt_unwrap.h"
-#include "dump_task.h"
+#include "runtime_dump_task.h"
 #include "model_maintaince_task.h"
 #include "model_to_aicpu_task.h"
 #include "stub/hal_stub.h"

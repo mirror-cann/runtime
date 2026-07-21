@@ -22,7 +22,7 @@
 #include "stars_engine.hpp"
 #include "raw_device.hpp"
 #include "barrier_task.h"
-#include "dump_task.h"
+#include "runtime_dump_task.h"
 #include "model_maintaince_task.h"
 #include "model_execute_task.h"
 #include "model_graph_task.h"

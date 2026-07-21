@@ -13,7 +13,7 @@
 #include "memory_task.h"
 #include "stream.hpp"
 #include "runtime.hpp"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "error_code.h"
 #include "stream_david.hpp"
 #include "stars_cond_isa_define.hpp"

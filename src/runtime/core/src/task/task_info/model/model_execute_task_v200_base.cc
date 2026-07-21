@@ -15,7 +15,7 @@
 #include "stars_david.hpp"
 #include "stars_cond_isa_helper.hpp"
 #include "model_execute_task.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 
 namespace cce {
 namespace runtime {

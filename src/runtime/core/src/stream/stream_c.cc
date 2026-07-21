@@ -8,7 +8,7 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 #include "stream_c.hpp"
-#include "dump_task.h"
+#include "runtime_dump_task.h"
 #include "memcpy_c.hpp"
 #include "task_david.hpp"
 #include "stream_factory.hpp"
@@ -22,7 +22,7 @@
 #include "ctrl_sq.hpp"
 #include "cmo_task.h"
 #include "stream_task.h"
-#include "dump_task.h"
+#include "runtime_dump_task.h"
 #include "timeout_set_task.h"
 #include "maintenance_task.h"
 #include "common_task.h"

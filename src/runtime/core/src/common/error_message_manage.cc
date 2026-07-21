@@ -12,7 +12,7 @@
 #include "task.hpp"
 #include "driver.hpp"
 #include "runtime.hpp"
-#include "tsch_defines.h"
+#include "runtime_tsch_defines.h"
 #include "ttlv.hpp"
 #if (!defined WIN32) && (!defined CFG_DEV_PLATFORM_PC)
 #include "error_manager.h"

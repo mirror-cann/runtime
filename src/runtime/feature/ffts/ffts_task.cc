@@ -25,7 +25,7 @@
 #include "device/device_error_proc.hpp"
 #include "hwts.hpp"
 #include "common_task.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "model.hpp"
 #include "error_code.h"
 #include "davinci_kernel_task.h"

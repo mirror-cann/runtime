@@ -12,7 +12,7 @@
 #include "runtime.hpp"
 #include "stars_david.hpp"
 #include "model_graph_task.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 
 namespace cce {
 namespace runtime {

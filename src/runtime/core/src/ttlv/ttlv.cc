@@ -10,7 +10,7 @@
 #include "ttlv.hpp"
 #include <sstream>
 #include <map>
-#include "tsch_defines.h"
+#include "runtime_tsch_defines.h"
 #include "ttlv_decoder_utils.hpp"
 #include "error_message_manage.hpp"
 

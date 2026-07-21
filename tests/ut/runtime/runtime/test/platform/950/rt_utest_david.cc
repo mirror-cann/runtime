@@ -17,7 +17,7 @@
 #include "task_res.hpp"
 #include "task_submit.hpp"
 #include "rdma_task.h"
-#include "dump_task.h"
+#include "runtime_dump_task.h"
 #include "model_maintaince_task.h"
 #include "model_execute_task.h"
 #include "model_to_aicpu_task.h"

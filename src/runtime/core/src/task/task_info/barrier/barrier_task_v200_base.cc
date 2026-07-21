@@ -9,7 +9,7 @@
  */
 
 #include "barrier_task.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "stars_david.hpp"
 
 namespace cce {

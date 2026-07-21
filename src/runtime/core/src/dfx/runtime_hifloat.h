@@ -8,8 +8,8 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#ifndef HIFLOAT_H
-#define HIFLOAT_H
+#ifndef RUNTIME_CORE_SRC_DFX_RUNTIME_HIFLOAT_H_
+#define RUNTIME_CORE_SRC_DFX_RUNTIME_HIFLOAT_H_
 
 #include <cmath>
 #include <string>
@@ -65,4 +65,4 @@ private:
 } // namespace runtime
 } // namespace cce
 
-#endif
+#endif // RUNTIME_CORE_SRC_DFX_RUNTIME_HIFLOAT_H_

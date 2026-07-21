@@ -10,7 +10,7 @@
 #ifndef BFLOAT16_H
 #define BFLOAT16_H
 
-#include "hifloat.h"
+#include "runtime_hifloat.h"
 
 namespace cce {
 namespace runtime {

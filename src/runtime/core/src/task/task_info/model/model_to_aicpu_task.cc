@@ -14,7 +14,7 @@
 #include "context.hpp"
 #include "stub_task.hpp"
 #include "error_code.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "model_to_aicpu_task.h"
 #include "task_info.hpp"
 

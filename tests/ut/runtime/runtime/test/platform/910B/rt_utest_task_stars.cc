@@ -25,7 +25,7 @@
 #include "task_info_v100.h"
 #include "rdma_task.h"
 #include "stream_task.h"
-#include "dump_task.h"
+#include "runtime_dump_task.h"
 #include "cond_op_stream_task.h"
 #include "cond_op_label_task.h"
 #include "maintenance_task.h"

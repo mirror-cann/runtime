@@ -30,7 +30,7 @@
 #include "stream_sqcq_manage.hpp"
 #include "davinci_kernel_task.h"
 #include <fstream>
-#include "tsch_defines.h"
+#include "runtime_tsch_defines.h"
 #include "utils.h"
 #include <functional>
 #include "npu_driver_dcache_lock.hpp"

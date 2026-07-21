@@ -8,7 +8,7 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 #include "ttlv_paragraph_decoder.hpp"
-#include "tsch_defines.h"
+#include "runtime_tsch_defines.h"
 #include "runtime.hpp"
 #include "error_message_manage.hpp"
 #include "error_code.h"

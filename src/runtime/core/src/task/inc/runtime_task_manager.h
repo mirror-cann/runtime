@@ -7,8 +7,8 @@
  * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
  * See LICENSE in the root of the software repository for the full text of the License.
  */
-#ifndef RUNTIME_TASK_MANAGER_H
-#define RUNTIME_TASK_MANAGER_H
+#ifndef RUNTIME_CORE_SRC_TASK_INC_RUNTIME_TASK_MANAGER_H_
+#define RUNTIME_CORE_SRC_TASK_INC_RUNTIME_TASK_MANAGER_H_
 
 #include "stream.hpp"
 #include "driver.hpp"
@@ -90,4 +90,4 @@ const std::vector<rtChipType_t>& GetV201Chips();
 
 } // namespace runtime
 } // namespace cce
-#endif // RUNTIME_TASK_MANAGER_H
+#endif // RUNTIME_CORE_SRC_TASK_INC_RUNTIME_TASK_MANAGER_H_

@@ -14,7 +14,7 @@
 #include "osal.hpp"
 #include "reference.hpp"
 #include "symbol_table.hpp"
-#include "tsch_defines.h"
+#include "runtime_tsch_defines.h"
 #include "driver.hpp"
 #include "tsd_client.h"
 #include "funcsymbol_table.hpp"

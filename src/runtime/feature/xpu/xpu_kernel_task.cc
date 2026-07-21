@@ -11,7 +11,7 @@
 #include "tprt_sqe_cqe.h"
 #include "stream_xpu.hpp"
 #include "kernel.hpp"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "xpu_task_fail_callback_data_manager.h"
 #include "error_code.h"
 #include "task_scheduler_error.h"

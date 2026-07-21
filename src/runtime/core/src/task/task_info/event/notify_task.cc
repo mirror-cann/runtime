@@ -19,7 +19,7 @@
 #include "task_info.hpp"
 #include "task_fail_callback_manager.hpp"
 #include "device/device_error_proc.hpp"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "error_code.h"
 #include "rdma_task.h"
 #include "model_execute_task.h"

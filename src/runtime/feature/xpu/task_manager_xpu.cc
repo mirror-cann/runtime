@@ -13,7 +13,7 @@
 #include "task_res_da.hpp"
 #include "stream_xpu.hpp"
 #include "stream.hpp"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 
 namespace cce {
 namespace runtime {

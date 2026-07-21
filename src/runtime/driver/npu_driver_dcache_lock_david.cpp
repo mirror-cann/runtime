@@ -14,7 +14,7 @@
 #include "aix_c.hpp"
 #include "driver/ascend_hal.h"
 #include "driver/ascend_hal_define.h"
-#include "tsch_defines.h"
+#include "runtime_tsch_defines.h"
 
 namespace cce {
 namespace runtime {

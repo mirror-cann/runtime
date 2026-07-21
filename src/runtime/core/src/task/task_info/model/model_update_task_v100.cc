@@ -12,7 +12,7 @@
 #include "runtime.hpp"
 #include "task_info_v100.h"
 #include "model_update_task.h"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 
 namespace cce {
 namespace runtime {

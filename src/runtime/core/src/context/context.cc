@@ -11,7 +11,7 @@
 #include "davinci_kernel_task.h"
 #include "maintenance_task.h"
 #include "model_graph_task.h"
-#include "dump_task.h"
+#include "runtime_dump_task.h"
 #include <cinttypes>
 #include <exception>
 #include <queue>
@@ -30,7 +30,7 @@
 #include "npu_driver.hpp"
 #include "onlineprof.hpp"
 #include "task.hpp"
-#include "dump_task.h"
+#include "runtime_dump_task.h"
 #include "osal.hpp"
 #include "error_message_manage.hpp"
 #include "profiler.hpp"

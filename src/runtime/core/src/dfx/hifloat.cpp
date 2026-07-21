@@ -14,7 +14,7 @@
 #include <limits>
 #include <unordered_map>
 #include "base.hpp"
-#include "hifloat.h"
+#include "runtime_hifloat.h"
 
 namespace cce {
 namespace runtime {

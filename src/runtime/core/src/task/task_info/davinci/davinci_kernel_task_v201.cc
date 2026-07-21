@@ -11,7 +11,7 @@
 #include "stars_david.hpp"
 #include "base_david.hpp"
 #include "kernel.hpp"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 #include "davinci_kernel_task.h"
 
 namespace cce {

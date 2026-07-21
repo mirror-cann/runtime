@@ -8,8 +8,8 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 
-#ifndef RUNTIME_DUMP_TASK_H
-#define RUNTIME_DUMP_TASK_H
+#ifndef RUNTIME_CORE_SRC_TASK_INC_RUNTIME_DUMP_TASK_H_
+#define RUNTIME_CORE_SRC_TASK_INC_RUNTIME_DUMP_TASK_H_
 
 #include "task_info.hpp"
 #include "hwts.hpp"
@@ -45,4 +45,4 @@ rtError_t NopTaskInit(TaskInfo* taskInfo);
 void ToCommandForNopTask(TaskInfo* const taskInfo, rtCommand_t* const command);
 } // namespace runtime
 } // namespace cce
-#endif // RUNTIME_DUMP_TASK_H
+#endif // RUNTIME_CORE_SRC_TASK_INC_RUNTIME_DUMP_TASK_H_

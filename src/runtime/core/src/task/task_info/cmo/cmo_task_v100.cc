@@ -13,7 +13,7 @@
 #include "stream.hpp"
 #include "device.hpp"
 #include "model.hpp"
-#include "task_manager.h"
+#include "runtime_task_manager.h"
 
 namespace cce {
 namespace runtime {

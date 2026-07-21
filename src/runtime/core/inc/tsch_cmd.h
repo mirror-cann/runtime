@@ -10,7 +10,7 @@
 
 #ifndef TSCH_CMD_H
 #define TSCH_CMD_H
-#include "tsch_defines.h"
+#include "runtime_tsch_defines.h"
 
 #ifdef __cplusplus
 extern "C" {

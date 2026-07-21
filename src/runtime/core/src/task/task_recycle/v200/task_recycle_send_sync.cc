@@ -19,7 +19,7 @@
 #include "device/device_error_proc.hpp"
 #include "aicpu_sched/common/aicpu_task_struct.h"
 #include "context.hpp"
-#include "tsch_defines.h"
+#include "runtime_tsch_defines.h"
 #include "profiler.hpp"
 #include "stars.hpp"
 #include "stars_david.hpp"
