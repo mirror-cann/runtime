@@ -595,7 +595,7 @@ int32_t ProfHostService::KillToolAndWaitHostProcess() const
         bool isExited = false;
         ret = analysis::dvvp::common::utils::Utils::WaitProcess(hostProcess_, isExited, exitCode, true);
         if (ret != PROFILING_SUCCESS) {
-            MSPROF_LOGE("Failed to wait process %d, ret=%d,  exitCode=%d", hostProcess_, ret, exitCode);
+            MSPROF_LOGE("Failed to wait process %d, ret=%d, exitCode=%d", hostProcess_, ret, exitCode);
             MSPROF_INNER_ERROR("EK9999", "Failed to wait process %d, ret=%d, exitCode=%d", hostProcess_, ret, exitCode);
             return ret;
         } else {
@@ -616,7 +616,7 @@ int32_t ProfHostService::Uninit()
 {
     int32_t ret = KillToolAndWaitHostProcess();
     if (ret != PROFILING_SUCCESS) {
-        MSPROF_LOGI("Failed to kill process %s, ", toolName_.c_str());
+        MSPROF_LOGI("Kill process %s was not completed", toolName_.c_str());
         return ret;
     }
     MSPROF_LOGI("Succeeded to kill process %s", toolName_.c_str());

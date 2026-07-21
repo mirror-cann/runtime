@@ -64,7 +64,7 @@ void ChannelJob::AddReader(int32_t devId, int32_t channelId, const std::string &
     if (poll != nullptr) {
         (void)poll->AddReader(devId, channelId, reader);
     } else {
-        MSPROF_LOGI("Channel job add reader failed, devId:%d, channel:%d, filepath:%s",
+        MSPROF_LOGI("Channel job skipped adding reader, devId:%d, channel:%d, filepath:%s",
                     devId, channelId, Utils::BaseName(filePath).c_str());
     }
 }

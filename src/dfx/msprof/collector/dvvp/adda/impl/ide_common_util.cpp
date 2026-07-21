@@ -141,7 +141,6 @@ int32_t IdeComponentsInit()
         int32_t err = g_ideComponentsFuncs.init[i]();
         if (err != IDE_DAEMON_OK) {
             MSPROF_LOGE("call [%s] init function failed", IdeGetCompontName(i));
-            printf("init [%s] failed\n", IdeGetCompontName(i));
             if (i == IDE_COMPONENT_HDC) {
                 return IDE_DAEMON_ERROR;
             }

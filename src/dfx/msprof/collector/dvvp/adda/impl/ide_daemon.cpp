@@ -79,7 +79,6 @@ STATIC int32_t AdxStartUpInit()
     // DaemonInit function
     if (DaemonInit() != IDE_DAEMON_OK) {
         MSPROF_LOGE("ada init failed, exit");
-        printf("ada init failed, exit\n");
         return IDE_DAEMON_ERROR;
     }
     // handle request

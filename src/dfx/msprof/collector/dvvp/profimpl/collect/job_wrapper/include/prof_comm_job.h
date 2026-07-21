@@ -33,14 +33,14 @@ using namespace analysis::dvvp::common::config;
 #define CHECK_JOB_CONTEXT_PARAM_RET(cfg, ACTION)  do {                                 \
     if ((cfg) == nullptr || (cfg)->comParams == nullptr ||                             \
         (cfg)->comParams->jobCtx == nullptr || (cfg)->comParams->params == nullptr) {  \
-        MSPROF_LOGI("Job check context param failed");                                 \
+        MSPROF_LOGI("Job context param check not passed");                             \
         ACTION;                                                                        \
     }                                                                                  \
 } while (0)
 
 #define CHECK_JOB_COMMON_PARAM_RET(cfg, ACTION) do {                                   \
     if ((cfg) == nullptr || (cfg)->comParams == nullptr) {                             \
-        MSPROF_LOGI("Job check comm param failed");                                    \
+        MSPROF_LOGI("Job common param check not passed");                              \
         ACTION;                                                                        \
     }                                                                                  \
 } while (0)

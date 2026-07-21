@@ -37,11 +37,67 @@
 #include "prof_inter_connection_job.h"
 #include "prof_io_job.h"
 #include "prof_perf_job.h"
+#include "channel_job.h"
 #include "uploader_mgr.h"
 
 using namespace analysis::dvvp::common::error;
 using namespace analysis::dvvp::message;
 using namespace Analysis::Dvvp::JobWrapper;
+
+namespace {
+template <typename BaseJob>
+class TestCollectionJobBase : public BaseJob {
+public:
+    int32_t Process() override
+    {
+        return PROFILING_SUCCESS;
+    }
+
+    int32_t Uninit() override
+    {
+        return PROFILING_SUCCESS;
+    }
+};
+
+class TestProfDrvJob : public TestCollectionJobBase<ProfDrvJob> {
+public:
+    int32_t Init(const std::shared_ptr<CollectionJobCfg> cfg) override
+    {
+        collectionJobCfg_ = cfg;
+        return PROFILING_SUCCESS;
+    }
+
+    void InitForTest(const std::shared_ptr<CollectionJobCfg> &cfg)
+    {
+        collectionJobCfg_ = cfg;
+    }
+
+    void AddReaderForTest(const std::string &key, int32_t devId,
+        analysis::dvvp::driver::AI_DRV_CHANNEL channelId, const std::string &filePath)
+    {
+        AddReader(key, devId, channelId, filePath);
+    }
+};
+
+class TestChannelJob : public TestCollectionJobBase<::Dvvp::Collect::JobWrapper::ChannelJob> {
+public:
+    int32_t Init(const std::shared_ptr<CollectionJobCfg> cfg) override
+    {
+        cfg_ = cfg;
+        return PROFILING_SUCCESS;
+    }
+
+    void InitForTest(const std::shared_ptr<CollectionJobCfg> &cfg)
+    {
+        cfg_ = cfg;
+    }
+
+    void AddReaderForTest(int32_t devId, int32_t channelId, const std::string &filePath)
+    {
+        AddReader(devId, channelId, filePath);
+    }
+};
+}
 
 class JOB_WRAPPER_PROF_PERIPHERAL_JOB_TEST: public testing::Test {
 protected:
@@ -195,6 +251,36 @@ TEST_F(JOB_WRAPPER_PROF_DDR_JOB_TEST, AddReader) {
         .stubs()
         .will(returnValue(poller));
     proDdrJob->AddReader("jobId", dev_id, channel_id, file_path);
+}
+
+TEST_F(JOB_WRAPPER_PROF_DDR_JOB_TEST, AddReaderNoPoller) {
+    GlobalMockObject::verify();
+
+    TestProfDrvJob profDrvJob;
+    const int32_t devId = 0;
+    const auto channelId = analysis::dvvp::driver::PROF_CHANNEL_AI_CORE;
+    const std::string filePath = "test";
+
+    profDrvJob.InitForTest(collectionJobCfg_);
+    MOCKER_CPP(&ProfChannelManager::GetChannelPoller)
+        .stubs()
+        .will(returnValue(std::shared_ptr<analysis::dvvp::transport::ChannelPoll>(nullptr)));
+    profDrvJob.AddReaderForTest("jobId", devId, channelId, filePath);
+}
+
+TEST_F(JOB_WRAPPER_PROF_DDR_JOB_TEST, ChannelJobAddReaderNoPoller) {
+    GlobalMockObject::verify();
+
+    TestChannelJob channelJob;
+    const int32_t devId = 0;
+    const int32_t channelId = analysis::dvvp::driver::PROF_CHANNEL_AI_CORE;
+    const std::string filePath = "test";
+
+    channelJob.InitForTest(collectionJobCfg_);
+    MOCKER_CPP(&ProfChannelManager::GetChannelPoller)
+        .stubs()
+        .will(returnValue(std::shared_ptr<analysis::dvvp::transport::ChannelPoll>(nullptr)));
+    channelJob.AddReaderForTest(devId, channelId, filePath);
 }
 
 TEST_F(JOB_WRAPPER_PROF_DDR_JOB_TEST, Uninit) {

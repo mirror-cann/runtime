@@ -1144,6 +1144,38 @@ TEST_F(JOB_WRAPPER_PROF_HOST_SERVER_TEST, Uninit) {
     EXPECT_EQ(PROFILING_FAILED, profHostService->Uninit());
 }
 
+TEST_F(JOB_WRAPPER_PROF_HOST_SERVER_TEST, KillToolAndWaitHostProcessWaitFailed) {
+    GlobalMockObject::verify();
+    constexpr OsalProcess hostProcess = 1;
+    constexpr int32_t waitExitCode = 125;
+
+    MOCKER(analysis::dvvp::common::utils::Utils::ExecCmd)
+        .stubs()
+        .will(returnValue(PROFILING_SUCCESS));
+
+    MOCKER(analysis::dvvp::common::utils::Utils::WaitProcess)
+        .stubs()
+        .with(any(), any(), outBound(waitExitCode), any())
+        .will(returnValue(PROFILING_FAILED));
+
+    auto profHostService = std::make_shared<Analysis::Dvvp::JobWrapper::ProfHostService>();
+    profHostService->hostProcess_ = hostProcess;
+
+    EXPECT_EQ(PROFILING_FAILED, profHostService->KillToolAndWaitHostProcess());
+}
+
+TEST_F(JOB_WRAPPER_PROF_HOST_SERVER_TEST, UninitKillToolFailed) {
+    GlobalMockObject::verify();
+
+    MOCKER_CPP(&Analysis::Dvvp::JobWrapper::ProfHostService::KillToolAndWaitHostProcess)
+        .stubs()
+        .will(returnValue(PROFILING_FAILED));
+
+    auto profHostService = std::make_shared<Analysis::Dvvp::JobWrapper::ProfHostService>();
+
+    EXPECT_EQ(PROFILING_FAILED, profHostService->Uninit());
+}
+
 TEST_F(JOB_WRAPPER_PROF_HOST_SERVER_TEST, CollectToolIsRun) {
     GlobalMockObject::verify();
 

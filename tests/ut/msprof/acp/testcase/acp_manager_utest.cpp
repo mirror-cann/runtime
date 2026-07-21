@@ -447,6 +447,15 @@ TEST_F(ACP_MANAGER_UTEST, AddBinaryBaseAddr)
     AcpManager::instance()->UnInit();
 }
 
+TEST_F(ACP_MANAGER_UTEST, SaveRtMallocAttrNullAddr)
+{
+    GlobalMockObject::verify();
+    AcpBackupAttr attr = {nullptr, 0, 0, 0};
+
+    AcpManager::instance()->SaveRtMallocAttr(attr);
+    AcpManager::instance()->UnInit();
+}
+
 #ifndef BUILD_PROFILING_OPEN_PROJECT
 TEST_F(ACP_MANAGER_UTEST, AcpManagerCustomBase)
 {

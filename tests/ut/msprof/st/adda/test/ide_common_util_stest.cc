@@ -10,6 +10,8 @@
 #include <gtest/gtest.h>
 #include "mockcpp/mockcpp.hpp"
 
+#include <sys/stat.h>
+#include <unistd.h>
 #include <vector>
 #include <string>
 #include "ide_common_util_stest.h"
@@ -39,12 +41,66 @@ extern int IdeSendFrontData(struct IdeData &pdata, int handler, struct IdeSockHa
 extern int IdeSendLastData(struct IdeData &pdata, int handler, struct IdeSockHandle handle,
                            uint32_t perSendSize, uint32_t remain);
 
+namespace {
+int InitOk()
+{
+    return IDE_DAEMON_OK;
+}
+
+int InitFailed()
+{
+    return IDE_DAEMON_ERROR;
+}
+
+void ResetIdeComponentsFuncs()
+{
+    for (int32_t i = 0; i < NR_IDE_COMPONENTS; ++i) {
+        g_ideComponentsFuncs.init[i] = nullptr;
+        g_ideComponentsFuncs.destroy[i] = nullptr;
+        g_ideComponentsFuncs.sockProcess[i] = nullptr;
+        g_ideComponentsFuncs.hdcProcess[i] = nullptr;
+    }
+}
+
+void MockDaemonInitCommon(int32_t subInitRet = IDE_DAEMON_OK)
+{
+    MOCKER(IdeFork)
+        .stubs()
+        .will(returnValue(0));
+
+    MOCKER(setsid)
+        .stubs()
+        .will(returnValue(0));
+
+    MOCKER(chdir)
+        .stubs()
+        .will(returnValue(0));
+
+    MOCKER(mmChdir)
+        .stubs()
+        .will(returnValue(0));
+
+    MOCKER(umask)
+        .stubs()
+        .will(returnValue(0));
+
+    MOCKER(mmUmask)
+        .stubs()
+        .will(returnValue(0));
+
+    MOCKER(IdeDaemonSubInit)
+        .stubs()
+        .will(returnValue(subInitRet));
+}
+} // namespace
+
 class IDE_DAEMON_COMMON_UTIL_STEST: public testing::Test {
 protected:
     virtual void SetUp() {
         g_getpkg_len_stub_flag = 0;
     }
     virtual void TearDown() {
+        ResetIdeComponentsFuncs();
         GlobalMockObject::verify();
     }
 };
@@ -97,81 +153,24 @@ TEST_F(IDE_DAEMON_COMMON_UTIL_STEST, IdeReqFree)
 
 TEST_F(IDE_DAEMON_COMMON_UTIL_STEST, DaemonInit_init_failed)
 {
-    mmSockHandle sock;
-
-    MOCKER(IdeFork)
-        .stubs()
-        .will(returnValue(0));
-
-    MOCKER(setsid)
-        .stubs()
-        .will(returnValue(0));
-
-    MOCKER(IdeDaemonSubInit)
-        .stubs()
-        .will(returnValue(IDE_DAEMON_ERROR));
+    MockDaemonInitCommon(IDE_DAEMON_ERROR);
 
     EXPECT_EQ(IDE_DAEMON_ERROR, DaemonInit());
 }
 
-TEST_F(IDE_DAEMON_COMMON_UTIL_STEST, DaemonInit_chdir_failed)
+TEST_F(IDE_DAEMON_COMMON_UTIL_STEST, DaemonInit_hdc_init_failed)
 {
-    mmSockHandle sock;
+    MockDaemonInitCommon();
+    g_ideComponentsFuncs.init[IDE_COMPONENT_HDC] = InitFailed;
 
-    MOCKER(IdeFork)
-        .stubs()
-        .will(returnValue(0));
-    
-    MOCKER(setsid)
-        .stubs()
-        .will(returnValue(0));
-
-    MOCKER(IdeDaemonSubInit)
-        .stubs()
-        .will(returnValue(IDE_DAEMON_OK));
-
-    MOCKER(mmChdir)
-        .stubs()
-        .will(returnValue(-1))
-        .then(returnValue(0));
-
-    MOCKER(IdeComponentsInit)
-        .stubs()
-        .will(returnValue(IDE_DAEMON_ERROR));
-    
-    EXPECT_EQ(IDE_DAEMON_ERROR, DaemonInit());
     EXPECT_EQ(IDE_DAEMON_ERROR, DaemonInit());
 }
 
 TEST_F(IDE_DAEMON_COMMON_UTIL_STEST, DaemonInit_success)
 {
-    mmSockHandle sock;
-    int port = 22118;
+    MockDaemonInitCommon();
+    g_ideComponentsFuncs.init[IDE_COMPONENT_HDC] = nullptr;
 
-    MOCKER(IdeFork)
-        .stubs()
-        .will(returnValue(0));
-
-    MOCKER(setsid)
-        .stubs()
-        .will(returnValue(0));
-
-    MOCKER(IdeDaemonSubInit)
-        .stubs()
-        .will(returnValue(IDE_DAEMON_OK));
-
-    MOCKER(chdir)
-        .stubs()
-        .will(returnValue(0));
-
-    MOCKER(umask)
-        .stubs()
-        .will(returnValue(0));
-
-    MOCKER(IdeComponentsInit)
-        .stubs()
-        .will(returnValue(IDE_DAEMON_OK));
-    
     EXPECT_EQ(IDE_DAEMON_OK, DaemonInit());
 }
 
@@ -224,22 +223,18 @@ TEST_F(IDE_DAEMON_COMMON_UTIL_STEST, IdeRegisterModule)
 
 TEST_F(IDE_DAEMON_COMMON_UTIL_STEST, IdeComponentsInit)
 {
-    MOCKER(hdc_init_mock)
-        .stubs()
-        .will(returnValue(IDE_DAEMON_OK))
-        .then(returnValue(IDE_DAEMON_ERROR));
-
-    MOCKER(profile_init_mock)
-        .stubs()
-        .will(returnValue(IDE_DAEMON_OK));   
+    ResetIdeComponentsFuncs();
+    g_ideComponentsFuncs.init[IDE_COMPONENT_HDC] = InitOk;
+    g_ideComponentsFuncs.init[IDE_COMPONENT_PROFILING] = InitOk;
 
     EXPECT_EQ(IDE_DAEMON_OK, IdeComponentsInit());
+
+    g_ideComponentsFuncs.init[IDE_COMPONENT_HDC] = InitFailed;
     EXPECT_EQ(IDE_DAEMON_ERROR, IdeComponentsInit());
 
-    MOCKER(profile_destroy_mock)
-        .stubs()
-        .will(returnValue(IDE_DAEMON_ERROR));
+    g_ideComponentsFuncs.destroy[IDE_COMPONENT_PROFILING] = InitFailed;
     IdeComponentsDestroy();
+    ResetIdeComponentsFuncs();
 }
 
 TEST_F(IDE_DAEMON_COMMON_UTIL_STEST, IdeGetComponentType)

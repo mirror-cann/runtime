@@ -29,12 +29,16 @@ protected:
 };
 
 TEST_F(PROF_CHANNEL_MANAGER_UTEST, ProfChannelManager_Init) {
+    GlobalMockObject::verify();
     auto entry = ProfChannelManager::instance();
+    entry->UnInit(true);
     MOCKER(mmCreateTaskWithThreadAttr)
         .stubs()
         .will(returnValue(EN_OK));
     EXPECT_EQ(entry->Init(), PROFILING_SUCCESS);
     EXPECT_NE(nullptr, entry->GetChannelPoller());
+    entry->UnInit(true);
+    GlobalMockObject::verify();
 }
 
 TEST_F(PROF_CHANNEL_MANAGER_UTEST, ProfChannelManager_UnInit) {
