@@ -541,9 +541,10 @@ rtError_t CaptureModel::ReleaseNotifyId(uint32_t &releaseNum)
     for (CaptureModel *subModel : allSubModels) {
         if (subModel->GetEndGraphNotify() != nullptr) {
             rtError_t subError = subModel->GetEndGraphNotify()->FreeId();
+            subModel->isNeedUpdateEndGraph_ = true;
             COND_PROC(subError != RT_ERROR_NONE,
-                RT_LOG(RT_LOG_WARNING, "Free notify %u failed", subModel->GetEndGraphNotify()->GetNotifyId()));
-            COND_PROC(subError == RT_ERROR_NONE, subModel->isNeedUpdateEndGraph_ = true; releaseNum++;);
+                RT_LOG(RT_LOG_DEBUG, "Model model_id=%u, free notify %u failed", subModel->Id_(), subModel->GetEndGraphNotify()->GetNotifyId()));
+            COND_PROC(subError == RT_ERROR_NONE, releaseNum++;);
         }
     }
 
