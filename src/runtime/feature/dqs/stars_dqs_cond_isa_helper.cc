@@ -84,15 +84,26 @@ static void ConstructOpAnd(
     ConstructOpOp(rs1Reg, rs2Reg, dstReg, RT_STARS_COND_ISA_OP_FUNC3_AND, RT_STARS_COND_ISA_OP_FUNC7_AND, opOp);
 }
 
-static void InitMbufOpCnt(
-    const rtStarsCondIsaRegister_t dstReg, uint64_t cntAddr, RtStarsCondOpLLWI& llwiCntAddr,
-    RtStarsCondOpLHWI& lhwiCntAddr, RtStarsCondOpStore& initCnt)
+static void InitMbufOpDot(const rtStarsCondIsaRegister_t dstReg, uint64_t cntAddr, MbufOpDotInitFc& fc)
 {
     constexpr rtStarsCondIsaRegister_t r0 = RT_STARS_COND_ISA_REGISTER_R0;
 
-    ConstructLLWI(dstReg, cntAddr, llwiCntAddr);
-    ConstructLHWI(dstReg, cntAddr, lhwiCntAddr);
-    ConstructStore(dstReg, r0, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SB, initCnt);
+    ConstructLLWI(dstReg, cntAddr, fc.llwiDotAddr);
+    ConstructLHWI(dstReg, cntAddr, fc.lhwiDotAddr);
+    ConstructStore(dstReg, r0, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SB, fc.initDotVal);
+
+    return;
+}
+
+static void AddMbufOpDot(
+    uint64_t mbufOpCntAddr, MbufOpCntFc& fc, const rtStarsCondIsaRegister_t avail_r1,
+    const rtStarsCondIsaRegister_t avail_r2)
+{
+    ConstructLLWI(avail_r1, mbufOpCntAddr, fc.llwiCntAddr);
+    ConstructLHWI(avail_r1, mbufOpCntAddr, fc.lhwiCntAddr);
+    ConstructLoad(avail_r1, 0U, avail_r2, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldrCntAddr);
+    ConstructOpImmAndi(avail_r2, avail_r2, 1U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addiCntAddr);
+    ConstructStore(avail_r1, avail_r2, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SB, fc.incCnt);
 
     return;
 }
@@ -282,8 +293,9 @@ static void ConstructMbufFreeDssDelayPart(RtStarsDqsMbufFreeFc& fc, const RtDqsM
 
 void ConstructMbufFreeInstrFc(RtStarsDqsMbufFreeFc& fc, const RtDqsMbufFreeFcPara& funcCallPara)
 {
-    // realFreeMbufCnt = 0
-    InitMbufOpCnt(r1, funcCallPara.realFreeMbufCntAddr, fc.llwiCntAddr1, fc.lhwiCntAddr1, fc.initCnt1);
+    // free pre/post dot init
+    InitMbufOpDot(r1, funcCallPara.freePreDotAddr, fc.freePreDotInitFc);
+    InitMbufOpDot(r1, funcCallPara.freePostDotAddr, fc.freePostDotInitFc);
 
     // r8 = read immd reg va cfg mask
     ConstructLLWI(r8, AXI_USER_VA_CFG_MASK, fc.llwi);
@@ -324,6 +336,9 @@ void ConstructMbufFreeInstrFc(RtStarsDqsMbufFreeFc& fc, const RtDqsMbufFreeFcPar
         static_cast<uint32_t>((RtPtrToValue(&(fc.freeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.freeMbufTracefc, funcCallPara.freeMbufTracePara, freeRegParam, mbufTraceNop);
 
+    // increment free pre dot cnt
+    AddMbufOpDot(funcCallPara.freePreDotAddr, fc.freepreCntFc, r10, r9);
+
     // cfg use PA
     ConstructSystemCsr(r8, r0, RT_STARS_COND_CSR_AXI_USER_REG, RT_STARS_COND_ISA_SYSTEM_FUNC3_CSRRC, fc.csrrc);
 
@@ -333,6 +348,9 @@ void ConstructMbufFreeInstrFc(RtStarsDqsMbufFreeFc& fc, const RtDqsMbufFreeFcPar
     // restore to use VA
     ConstructSystemCsr(r8, r0, RT_STARS_COND_CSR_AXI_USER_REG, RT_STARS_COND_ISA_SYSTEM_FUNC3_CSRRS, fc.csrrs);
 
+    // increment freePostDotAddr
+    AddMbufOpDot(funcCallPara.freePostDotAddr, fc.freePostCntFc, r10, r9);
+
     // r2 mbufHandleAddr + 4， 下一个mbuf handle 的地址
     ConstructOpImmAndi(r2, r2, 4, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addi2);
 
@@ -341,13 +359,6 @@ void ConstructMbufFreeInstrFc(RtStarsDqsMbufFreeFc& fc, const RtDqsMbufFreeFcPar
 
     // r6自增1, index ++
     ConstructOpImmAndi(r6, r6, 1, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addi4);
-
-    // increment realFreeMbufCntAddr
-    ConstructLLWI(r10, static_cast<uint64_t>(funcCallPara.realFreeMbufCntAddr), fc.llwiCntAddr2);
-    ConstructLHWI(r10, static_cast<uint64_t>(funcCallPara.realFreeMbufCntAddr), fc.lhwiCntAddr2);
-    ConstructLoad(r10, 0U, r9, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldrCntAddr1);
-    ConstructOpImmAndi(r9, r9, 1U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addiCnt1);
-    ConstructStore(r10, r9, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SB, fc.incCnt1);
 
     // 加载 mbufPoolIndexMax 到 r3 寄存器中
     ConstructLLWI(r3, funcCallPara.mbufPoolIndexMax, fc.llwi3);
@@ -371,8 +382,9 @@ void ConstructMbufFreeInstrFc(RtStarsDqsMbufFreeFc& fc, const RtDqsMbufFreeFcPar
 
 void ConstructDqsEnqueueFc(RtStarsDqsEnqueueFc& fc, const RtStarsDqsFcPara& funcCallPara)
 {
-    // realEnqueMbufCntAddr = 0
-    InitMbufOpCnt(r1, funcCallPara.realEnqueMbufCntAddr, fc.llwiCntAddr0, fc.lhwiCntAddr0, fc.initCnt0);
+    // enquePostDot / enquePreDot
+    InitMbufOpDot(r1, funcCallPara.enquePreDotAddr, fc.enqueuePreDotInitFc);
+    InitMbufOpDot(r1, funcCallPara.enquePostDotAddr, fc.enqueuePostDotInitFc);
 
     // r10 作为output queue num 的下标，从0开始
     ConstructOpImmAndi(r0, r10, 0, RT_STARS_COND_ISA_OP_IMM_FUNC3_ANDI, fc.andi1);
@@ -461,12 +473,6 @@ void ConstructDqsEnqueueFc(RtStarsDqsEnqueueFc& fc, const RtStarsDqsFcPara& func
     ConstructOpImmSlli(r6, r5, 32U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SLLI, RT_STARS_COND_ISA_OP_IMM_FUNC7_SLLI, fc.slli2);
     ConstructOpImmSlli(r5, r5, 32U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SRLI, RT_STARS_COND_ISA_OP_IMM_FUNC7_SRLI, fc.srli2);
 
-    // load enqueOpAddr into R7
-    ConstructLoad(r3, 0U, r7, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldr5);
-
-    // Qmanager enqueue
-    ConstructStore(r7, r5, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SW, fc.enquei);
-
     // r5为当前操作mbuf handle value寄存器，集合上下文mbuf_handle_reg可复用
     MbufTraceRegParam enqueRegInfo = {
         .loop_index_reg = r10,
@@ -476,15 +482,20 @@ void ConstructDqsEnqueueFc(RtStarsDqsEnqueueFc& fc, const RtStarsDqsFcPara& func
         .avail_reg2 = r7,
         .avail_reg3 = r8};
     mbufTraceNop =
-        static_cast<uint32_t>((RtPtrToValue(&(fc.enqueMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
-    ConstructMbufTrace(fc.enqueMbufTracefc, funcCallPara.enqueMbufTracePara, enqueRegInfo, mbufTraceNop);
+        static_cast<uint32_t>((RtPtrToValue(&(fc.enqueMbufTraceFc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
+    ConstructMbufTrace(fc.enqueMbufTraceFc, funcCallPara.enqueMbufTracePara, enqueRegInfo, mbufTraceNop);
 
-    // increment realEnqueMbufCntAddr
-    ConstructLLWI(r5, static_cast<uint64_t>(funcCallPara.realEnqueMbufCntAddr), fc.llwiCntAddr1);
-    ConstructLHWI(r5, static_cast<uint64_t>(funcCallPara.realEnqueMbufCntAddr), fc.lhwiCntAddr1);
-    ConstructLoad(r5, 0U, r7, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldrCntAddr1);
-    ConstructOpImmAndi(r7, r7, 1U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addiCntAddr1);
-    ConstructStore(r5, r7, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SB, fc.incCnt1);
+    // load enqueOpAddr into R7
+    ConstructLoad(r3, 0U, r7, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldr5);
+
+    // increment enquePreDotAddr
+    AddMbufOpDot(funcCallPara.enquePreDotAddr, fc.enqueOpPreCntFc, r4, r6);
+
+    // Qmanager enqueue
+    ConstructStore(r7, r5, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SW, fc.enquei);
+
+    // increment enquePostDotAddr
+    AddMbufOpDot(funcCallPara.enquePostDotAddr, fc.enqueOpPostCntFc, r5, r7);
 
     // r1 prodqOwAddr + 8， 下一个prodqOwAddr
     ConstructOpImmAndi(r1, r1, 8, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addi1);
@@ -543,8 +554,8 @@ void ConstructDqsDequeueFc(RtStarsDqsDequeueFc& fc, const RtStarsDqsFcPara& func
 {
     RtStarsCondGqmOpFc gqmPopi;
 
-    // realInputMbufCntAddr = 0
-    InitMbufOpCnt(r4, funcCallPara.realInputMbufCntAddr, fc.llwiCntAddr0, fc.lhwiCntAddr0, fc.initCnt0);
+    // dequeuePostDot = 0
+    InitMbufOpDot(r4, funcCallPara.dequeuePostDotAddr, fc.dequeuePostDotInitFc);
 
     // load GQM inst into R1
     ConstructGqmPopInstr(gqmPopi.inst);
@@ -582,6 +593,12 @@ void ConstructDqsDequeueFc(RtStarsDqsDequeueFc& fc, const RtStarsDqsFcPara& func
     ConstructOpImmSlli(r7, r9, 17U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SRLI, RT_STARS_COND_ISA_OP_IMM_FUNC7_SRLI, fc.srli1);
     ConstructBranch(r0, r9, RT_STARS_COND_ISA_BRANCH_FUNC3_BNE, static_cast<uint8_t>(offset), fc.bne2);
 
+    // write mbuffer into mbuf handle addr
+    ConstructStore(r8, r7, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SW, fc.store);
+
+    // increment deque dot cnt
+    AddMbufOpDot(funcCallPara.dequeuePostDotAddr, fc.dequePostDotFc, r4, r5);
+
     // r7位当前操作mbuf handle value寄存器，结合上下文mbuf_handle_reg不可复用
     MbufTraceRegParam param = {
         .loop_index_reg = r0,
@@ -593,16 +610,6 @@ void ConstructDqsDequeueFc(RtStarsDqsDequeueFc& fc, const RtStarsDqsFcPara& func
     const uint32_t mbufTraceNop =
         static_cast<uint32_t>((RtPtrToValue(&(fc.dequeMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(fc.dequeMbufTracefc, funcCallPara.dequeMbufTracePara, param, mbufTraceNop);
-
-    // write mbuffer into mbuf handle addr
-    ConstructStore(r8, r7, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SW, fc.store);
-
-    // r4 is cnt addr
-    ConstructLoad(r4, 0U, r5, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldr2);
-    // increment count: R5 = R5 + 1
-    ConstructOpImmAndi(r5, r5, 1U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addi1);
-    // store updated count back
-    ConstructStore(r4, r5, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SB, fc.initCnt1);
 
     offset = static_cast<uint64_t>(RtPtrToPtr<const uint32_t*>(&fc.end) - RtPtrToPtr<const uint32_t*>(&fc));
     /* go to nop */
@@ -628,6 +635,7 @@ void ConstructDqsDequeueFc(RtStarsDqsDequeueFc& fc, const RtStarsDqsFcPara& func
 
 void ConstructDqsBatchDequeueFc(RtStarsDqsBatchDequeueFc& fc, const RtStarsDqsBatchDeqFcPara& funcCallPara)
 {
+    InitMbufOpDot(r1, funcCallPara.dequeuePostDotAddr, fc.dequeuePostDotInitFc);
     // 加载 gqmAddr 到 r2 寄存器中
     ConstructLLWI(r2, funcCallPara.gqmAddr, fc.llwiGqmAddr);
     ConstructLHWI(r2, funcCallPara.gqmAddr, fc.lhwiGqmAddr);
@@ -725,6 +733,8 @@ void ConstructDqsBatchDequeueFc(RtStarsDqsBatchDequeueFc& fc, const RtStarsDqsBa
     ConstructOpImmSlli(
         r6, r9, 17U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SRLI, RT_STARS_COND_ISA_OP_IMM_FUNC7_SRLI, fc.srliHandleValue);
     ConstructBranch(r0, r9, RT_STARS_COND_ISA_BRANCH_FUNC3_BNE, static_cast<uint8_t>(offset), fc.bneErrHandle);
+    // increment deque dot cnt
+    AddMbufOpDot(funcCallPara.dequeuePostDotAddr, fc.dequePostDotFc, r1, r5);
 
     /* 此时r6存储的是合法的handle。可用寄存器：R1\5\8\9\10 */
     // r6为mbuf handle value寄存器，结合上下文，mbuf_handle_reg不可复用
@@ -743,9 +753,8 @@ void ConstructDqsBatchDequeueFc(RtStarsDqsBatchDequeueFc& fc, const RtStarsDqsBa
     ConstructOpImmAndi(r3, r10, 0U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.ldrHandleCacheAddr);
     ConstructLLWI(r5, static_cast<uint64_t>(funcCallPara.cntOffset), fc.llwiHandleCnt); // r5 = offsetOfCnt;
     ConstructLHWI(r5, static_cast<uint64_t>(funcCallPara.cntOffset), fc.lhwiHandleCnt); // r5 = offsetOfCnt;
-    ConstructOpOp(
-        r5, r10, r5, RT_STARS_COND_ISA_OP_FUNC3_ADD, RT_STARS_COND_ISA_OP_FUNC7_ADD,
-        fc.AddQueueStatus);                                                          // r5 = r10 + r5
+    // r5 = r10 + r5
+    ConstructOpOp(r5, r10, r5, RT_STARS_COND_ISA_OP_FUNC3_ADD, RT_STARS_COND_ISA_OP_FUNC7_ADD, fc.AddQueueStatus);
     ConstructLoad(r5, 0U, r5, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldrHandleCacheCnt);
     ConstructOpImmAndi(r5, r5, 48U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SLLI, fc.left2);  /* 左移48位 */
     ConstructOpImmAndi(r5, r5, 48U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SRLI, fc.right2); /* 右移48位，取低16位 */
@@ -755,8 +764,8 @@ void ConstructDqsBatchDequeueFc(RtStarsDqsBatchDequeueFc& fc, const RtStarsDqsBa
     ConstructSetJumpPcFc(r1, offset, fc.jumpNotFull);
     ConstructBranch(r5, r0, RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ, static_cast<uint8_t>(offset), fc.bneCacheSize0);
 
-    ConstructLoad(
-        r10, 0U, r1, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldrNewValue); /* r1 = newValue;最新的元素的下标恒为0 */
+    /* r1 = newValue;最新的元素的下标恒为0 */
+    ConstructLoad(r10, 0U, r1, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldrNewValue);
     ConstructOpImmAndi(r1, r1, 32U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SLLI, fc.left3);  /* 左移32位 */
     ConstructOpImmAndi(r1, r1, 32U, RT_STARS_COND_ISA_OP_IMM_FUNC3_SRLI, fc.right3); /* 右移32位，取低32位 */
     ConstructOpImmAndi(r10, r9, 4U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addi1GetOldAddr); /* 老元素的下标为4 */
@@ -774,13 +783,13 @@ void ConstructDqsBatchDequeueFc(RtStarsDqsBatchDequeueFc& fc, const RtStarsDqsBa
 
     ConstructStore(r10, r6, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SW, fc.swHandle); /* 把新的handle写到索引为0的地方 */
 
-                                                                                /* free被覆盖的handle */
+    /* free被覆盖的handle */
     offset = offsetof(RtStarsDqsBatchDequeueFc, ldrMbuffMangAddr);
     offset = offset / sizeof(uint32_t);
     ConstructSetJumpPcFc(r1, offset, fc.jumpFreeHandle);
     ConstructBranch(r0, r0, RT_STARS_COND_ISA_BRANCH_FUNC3_BEQ, static_cast<uint8_t>(offset), fc.beqFreeHandle);
 
-    // cache_not_full:
+    // cache_not_full
     ConstructLLWI(r1, static_cast<uint64_t>(funcCallPara.cntOffset), fc.llwiHandleCnt1);
     ConstructLHWI(r1, static_cast<uint64_t>(funcCallPara.cntOffset), fc.lhwiHandleCnt1);
     ConstructOpOp(r1, r10, r1, RT_STARS_COND_ISA_OP_FUNC3_ADD, RT_STARS_COND_ISA_OP_FUNC7_ADD, fc.AddQueueStatus1);
@@ -1050,8 +1059,8 @@ void ConstructDqsFrameAlignFc(RtStarsDqsFrameAlignFc& fc, const RtStarsDqsFrameA
 
 void ConstructDqsPrepareFc(RtStarsDqsPrepareOutFc& fc, const RtStarsDqsPrepareFcPara& fcPara)
 {
-    // realOutputAllocMbufCnt = 0
-    InitMbufOpCnt(r9, fcPara.realOutputAllocMbufCntAddr, fc.llwiCntAddr1, fc.lhwiCntAddr1, fc.initCnt1);
+    // alloc post dot init
+    InitMbufOpDot(r9, fcPara.allocPostDotAddr, fc.allocPostDotInitFc);
 
     /* 计算input_private_info_addr，存入r1 */
     ConstructLLWI(r1, fcPara.csPtrInputMbufHandleAddr, fc.llwi1);
@@ -1112,18 +1121,6 @@ void ConstructDqsPrepareFc(RtStarsDqsPrepareOutFc& fc, const RtStarsDqsPrepareFc
     ConstructSetJumpPcFc(r6, offset, fc.jumpPc1);
     ConstructBranch(r5, r0, RT_STARS_COND_ISA_BRANCH_FUNC3_BNE, offset, fc.bne);
 
-    // r4 当前操作mbuf handle value寄存器, mbuf_handle_reg不可复用
-    MbufTraceRegParam param = {
-        .loop_index_reg = r2,
-        .mbuf_handle_reg = r4,
-        .avail_reg0 = r5,
-        .avail_reg1 = r6,
-        .avail_reg2 = r7,
-        .avail_reg3 = r8};
-    const uint32_t mbufTraceNop =
-        static_cast<uint32_t>((RtPtrToValue(&(fc.allocMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
-    ConstructMbufTrace(fc.allocMbufTracefc, fcPara.allocMbufTracePara, param, mbufTraceNop);
-
     /* 将output mbuf 存入ctrlSpace output_mbuf_list */
     ConstructLLWI(r5, dqsPoolIdBlkIdMask, fc.llwi13);
     ConstructLHWI(r5, dqsPoolIdBlkIdMask, fc.lhwi13);
@@ -1139,9 +1136,19 @@ void ConstructDqsPrepareFc(RtStarsDqsPrepareOutFc& fc, const RtStarsDqsPrepareFc
     ConstructStore(r5, r4, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SW, fc.store3);
 
     // 如果mbuf存入output_mbuf_list完成realOutputAllocMbufCnt递增
-    ConstructLoad(r9, 0U, r5, RT_STARS_COND_ISA_LOAD_FUNC3_LDR, fc.ldrCntAddr1);
-    ConstructOpImmAndi(r5, r5, 1U, RT_STARS_COND_ISA_OP_IMM_FUNC3_ADDI, fc.addiCnt);
-    ConstructStore(r9, r5, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SB, fc.incCnt1);
+    AddMbufOpDot(fcPara.allocPostDotAddr, fc.allocPostCntFc, r9, r10);
+
+    // r4 当前操作mbuf handle value寄存器, mbuf_handle_reg不可复用
+    MbufTraceRegParam param = {
+        .loop_index_reg = r2,
+        .mbuf_handle_reg = r4,
+        .avail_reg0 = r5,
+        .avail_reg1 = r9,
+        .avail_reg2 = r7,
+        .avail_reg3 = r8};
+    const uint32_t mbufTraceNop =
+        static_cast<uint32_t>((RtPtrToValue(&(fc.allocMbufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
+    ConstructMbufTrace(fc.allocMbufTracefc, fcPara.allocMbufTracePara, param, mbufTraceNop);
 
     /* 计算output_private_info_addr[i]，存入r4 */
     ConstructLLWI(r5, fcPara.csPtrOutputHeadPoolBlockSize, fc.llwi15);
@@ -1621,9 +1628,9 @@ void ConstructDqsInterChipPostProcFc(
         .avail_reg2 = r9,
         .avail_reg3 = r10};
     mbufTraceNop =
-        static_cast<uint32_t>((RtPtrToValue(&(fc.dstProdEnquembufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
+        static_cast<uint32_t>((RtPtrToValue(&(fc.dstProdEnqueMbufTraceFc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
     ConstructMbufTrace(
-        fc.dstProdEnquembufTracefc, funcCallPara.dstProdEnqueMbufTracePara, dstProdEnqueRegInfo, mbufTraceNop);
+        fc.dstProdEnqueMbufTraceFc, funcCallPara.dstProdEnqueMbufTracePara, dstProdEnqueRegInfo, mbufTraceNop);
 
     // cfg use PA
     ConstructSystemCsr(r4, r0, RT_STARS_COND_CSR_AXI_USER_REG, RT_STARS_COND_ISA_SYSTEM_FUNC3_CSRRC, fc.csrrc2);
@@ -1652,8 +1659,8 @@ void ConstructDqsInterChipPostProcFc(
         .avail_reg2 = r6,
         .avail_reg3 = r7};
     mbufTraceNop =
-        static_cast<uint32_t>((RtPtrToValue(&(fc.srcConsFreembufTracefc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
-    ConstructMbufTrace(fc.srcConsFreembufTracefc, funcCallPara.srcConsFreeMbufTracePara, srcConsFreePara, mbufTraceNop);
+        static_cast<uint32_t>((RtPtrToValue(&(fc.srcConsFreembufTraceFc.nop)) - RtPtrToValue(&fc)) / sizeof(uint32_t));
+    ConstructMbufTrace(fc.srcConsFreembufTraceFc, funcCallPara.srcConsFreeMbufTracePara, srcConsFreePara, mbufTraceNop);
 
     // cfg use PA
     ConstructSystemCsr(r4, r0, RT_STARS_COND_CSR_AXI_USER_REG, RT_STARS_COND_ISA_SYSTEM_FUNC3_CSRRC, fc.csrrc3);

@@ -35,10 +35,8 @@ struct RtStarsGqmInitFc {
 };
 
 struct RtStarsDqsEnqueueFc {
-    RtStarsCondOpLLWI llwiCntAddr0;
-    RtStarsCondOpLHWI lhwiCntAddr0;
-    RtStarsCondOpStore initCnt0;
-
+    MbufOpDotInitFc enqueuePreDotInitFc;
+    MbufOpDotInitFc enqueuePostDotInitFc;
     RtStarsCondOpImm andi1;
     RtStarsCondOpLLWI llwi1;
     RtStarsCondOpLHWI lhwi1;
@@ -75,16 +73,14 @@ struct RtStarsDqsEnqueueFc {
     RtStarsCondOpLoad ldr4;
     RtStarsCondOpImmSLLI slli2;
     RtStarsCondOpImmSLLI srli2;
+    CondMbufTraceFc enqueMbufTraceFc;
     RtStarsCondOpLoad ldr5;
+    // 入队前计数
+    MbufOpCntFc enqueOpPreCntFc;
     RtStarsCondOpStore enquei;
 
-    CondMbufTraceFc enqueMbufTracefc;
-    // 成功计数处理
-    RtStarsCondOpLLWI llwiCntAddr1;
-    RtStarsCondOpLHWI lhwiCntAddr1;
-    RtStarsCondOpLoad ldrCntAddr1;
-    RtStarsCondOpImm addiCntAddr1;
-    RtStarsCondOpStore incCnt1;
+    // 入队后计数
+    MbufOpCntFc enqueOpPostCntFc;
 
     RtStarsCondOpImm addi1;
     RtStarsCondOpImm addi2;
@@ -110,10 +106,7 @@ struct RtStarsDqsEnqueueFc {
 };
 
 struct RtStarsDqsDequeueFc {
-    RtStarsCondOpLLWI llwiCntAddr0;
-    RtStarsCondOpLHWI lhwiCntAddr0;
-    RtStarsCondOpStore initCnt0;
-
+    MbufOpDotInitFc dequeuePostDotInitFc;
     RtStarsCondOpLLWI llwi1;
     RtStarsCondOpLHWI lhwi1;
     RtStarsCondOpLLWI llwi2;
@@ -132,14 +125,10 @@ struct RtStarsDqsDequeueFc {
     RtStarsSetCsrJumpPc jumpPc2;
     RtStarsCondOpImmSLLI srli1;
     RtStarsCondOpBranch bne2;
-
-    CondMbufTraceFc dequeMbufTracefc;
-
     RtStarsCondOpStore store;
 
-    RtStarsCondOpLoad ldr2;
-    RtStarsCondOpImm addi1;
-    RtStarsCondOpStore initCnt1;
+    MbufOpCntFc dequePostDotFc;
+    CondMbufTraceFc dequeMbufTracefc;
 
     RtStarsSetCsrJumpPc jumpPc3;
     RtStarsCondOpBranch beq1; // BEQ: r0 r0, goto nop
@@ -155,9 +144,7 @@ struct RtStarsDqsDequeueFc {
 };
 
 struct RtStarsDqsPrepareOutFc {
-    RtStarsCondOpLLWI llwiCntAddr1;
-    RtStarsCondOpLHWI lhwiCntAddr1;
-    RtStarsCondOpStore initCnt1;
+    MbufOpDotInitFc allocPostDotInitFc;
 
     // 计算input[0] private info addr
     RtStarsCondOpLLWI llwi1;
@@ -200,9 +187,6 @@ struct RtStarsDqsPrepareOutFc {
     RtStarsCondOpStore store2;
     RtStarsSetCsrJumpPc jumpPc1;
     RtStarsCondOpBranch bne;
-
-    CondMbufTraceFc allocMbufTracefc;
-
     // 将output mbuf存入output_mbuf_list
     RtStarsCondOpLLWI llwi13;
     RtStarsCondOpLHWI lhwi13;
@@ -213,9 +197,8 @@ struct RtStarsDqsPrepareOutFc {
     RtStarsCondOpOp add3;
     RtStarsCondOpStore store3;
 
-    RtStarsCondOpLoad ldrCntAddr1;
-    RtStarsCondOpImm addiCnt;
-    RtStarsCondOpStore incCnt1;
+    MbufOpCntFc allocPostCntFc;
+    CondMbufTraceFc allocMbufTracefc;
 
     // 计算output[i] privateinfo addr
     RtStarsCondOpLLWI llwi15;
@@ -485,7 +468,7 @@ struct RtStarsDqsInterChipPostProcFc {
     RtStarsCondOpLHWI lhwi8;
     RtStarsCondOpLoad ldr5;
 
-    CondMbufTraceFc dstProdEnquembufTracefc;
+    CondMbufTraceFc dstProdEnqueMbufTraceFc;
 
     RtStarsCondOpSystemCsr csrrc2;
     RtStarsCondOpStore sw2;
@@ -498,7 +481,7 @@ struct RtStarsDqsInterChipPostProcFc {
     RtStarsCondOpLHWI lhwi10;
     RtStarsCondOpLoad ldr7;
 
-    CondMbufTraceFc srcConsFreembufTracefc;
+    CondMbufTraceFc srcConsFreembufTraceFc;
 
     RtStarsCondOpSystemCsr csrrc3;
     RtStarsCondOpStore sw3;

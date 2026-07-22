@@ -121,8 +121,12 @@ static rtError_t InitFuncCallParaForDqsEnqueueTask(TaskInfo* taskInfo, RtStarsDq
     fcPara.mbufFreePara.mbufFreeAddr = fcPara.ctrlSpaceAddr + static_cast<uint64_t>(offset);
 
     offset = offsetof(stars_dqs_ctrl_space_t, mbuf_list_op_snapshot);
-    offset += offsetof(mbuf_list_op_snapshot_info, real_enqueue_output_mbuf_cnt);
-    fcPara.realEnqueMbufCntAddr = fcPara.ctrlSpaceAddr + static_cast<uint64_t>(offset);
+    offset += offsetof(mbuf_list_op_snapshot_info, enqueue_post_dot);
+    fcPara.enquePostDotAddr = fcPara.ctrlSpaceAddr + static_cast<uint64_t>(offset);
+
+    offset = offsetof(stars_dqs_ctrl_space_t, mbuf_list_op_snapshot);
+    offset += offsetof(mbuf_list_op_snapshot_info, enqueue_pre_dot);
+    fcPara.enquePreDotAddr = fcPara.ctrlSpaceAddr + static_cast<uint64_t>(offset);
 
     const uint32_t streamId = static_cast<uint32_t>(stm->Id_());
     InitEnqueOwFreeMbufTracePara(fcPara.owFreeMbufTracePara, fcPara.ctrlSpaceAddr, streamId);
@@ -254,8 +258,8 @@ static rtError_t InitFuncCallParaForDqsDequeueTask(TaskInfo* taskInfo, RtStarsDq
     fcPara.gqmAddr = fcPara.ctrlSpaceAddr + static_cast<uint64_t>(offset);
 
     offset = offsetof(stars_dqs_ctrl_space_t, mbuf_list_op_snapshot);
-    offset = offset + offsetof(mbuf_list_op_snapshot_info, real_input_mbuf_cnt);
-    fcPara.realInputMbufCntAddr = fcPara.ctrlSpaceAddr + static_cast<uint64_t>(offset);
+    offset = offset + offsetof(mbuf_list_op_snapshot_info, deque_post_dot);
+    fcPara.dequeuePostDotAddr = fcPara.ctrlSpaceAddr + static_cast<uint64_t>(offset);
 
     const uint32_t streamId = static_cast<uint32_t>(stm->Id_());
     InitDequeMbufTracePara(fcPara.dequeMbufTracePara, fcPara.ctrlSpaceAddr, streamId);
@@ -358,6 +362,7 @@ static rtError_t InitFuncCallParaForDqsBatchDequeueTask(TaskInfo* taskInfo, RtSt
     fcPara.sizeofHandleCache = static_cast<uint8_t>(sizeof(input_mbuf_cache_t));
 
     fcPara.mbufPoolIndexMax = static_cast<uint16_t>(ctrlSpacePtr->input_queue_num);
+    fcPara.dequeuePostDotAddr = RtPtrToValue(&(ctrlSpacePtr->mbuf_list_op_snapshot.deque_post_dot));
 
     const uint32_t streamId = static_cast<uint32_t>(stm->Id_());
     InitDequeMbufTracePara(fcPara.dequeMbufTracePara, RtPtrToValue(ctrlSpacePtr), streamId);
@@ -599,9 +604,12 @@ static rtError_t InitFuncCallParaForDqsMbufFreeTask(TaskInfo* const taskInfo, Rt
     fcPara.lastMbufHandleAddr = RtPtrToValue(&ctrlSpacePtr->input_mbuf_cache_list[0].last_used_handle);
     fcPara.sizeofHandleCache = static_cast<uint8_t>(sizeof(input_mbuf_cache_t));
 
-    offset = offsetof(stars_dqs_ctrl_space_t, mbuf_list_op_snapshot);
-    offset = offset + offsetof(mbuf_list_op_snapshot_info, real_free_input_mbuf_cnt);
-    fcPara.realFreeMbufCntAddr = fcPara.ctrlSpaceAddr + static_cast<uint64_t>(offset);
+    size_t snap_offset = offsetof(stars_dqs_ctrl_space_t, mbuf_list_op_snapshot);
+    offset = snap_offset + offsetof(mbuf_list_op_snapshot_info, free_post_dot);
+    fcPara.freePostDotAddr = fcPara.ctrlSpaceAddr + static_cast<uint64_t>(offset);
+
+    offset = snap_offset + offsetof(mbuf_list_op_snapshot_info, free_pre_dot);
+    fcPara.freePreDotAddr = fcPara.ctrlSpaceAddr + static_cast<uint64_t>(offset);
 
     const uint32_t streamId = static_cast<uint32_t>(streamWithDqs->Id_());
     InitFreeMbufTracePara(fcPara, streamId);
@@ -1353,7 +1361,7 @@ static void ResetMbufListOpSnapshot(
 
     ConstructLLWI(dstReg, mbufListOpSnapshotAddr, sqe.llwiMbufOpSnapshotAddr);
     ConstructLHWI(dstReg, mbufListOpSnapshotAddr, sqe.lhwiMbufOpSnapshotAddr);
-    ConstructStore(dstReg, r0, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SW, sqe.resetSnapShot);
+    ConstructStore(dstReg, r0, 0U, RT_STARS_COND_ISA_STORE_FUNC3_SD, sqe.resetSnapShot);
 
     return;
 }
@@ -1510,8 +1518,8 @@ static rtError_t InitFuncCallParaForDqsPrepareTask(TaskInfo* taskInfo, RtStarsDq
     fcPara.csPtrOutputHeadPoolBlockSize = fcPara.ctrlSpacePtr + static_cast<uint64_t>(offset);
 
     offset = offsetof(stars_dqs_ctrl_space_t, mbuf_list_op_snapshot);
-    offset += offsetof(mbuf_list_op_snapshot_info, real_output_alloc_mbuf_cnt);
-    fcPara.realOutputAllocMbufCntAddr = fcPara.ctrlSpacePtr + static_cast<uint64_t>(offset);
+    offset += offsetof(mbuf_list_op_snapshot_info, alloc_post_dot);
+    fcPara.allocPostDotAddr = fcPara.ctrlSpacePtr + static_cast<uint64_t>(offset);
 
     const uint32_t streamId = static_cast<uint32_t>(stm->Id_());
     InitPrepareAllocMbufTracePara(fcPara.allocMbufTracePara, fcPara.ctrlSpacePtr, streamId);

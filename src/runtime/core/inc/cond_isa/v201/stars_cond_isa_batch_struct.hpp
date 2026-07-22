@@ -22,6 +22,7 @@ namespace runtime {
 #pragma pack(1)
 
 struct RtStarsDqsBatchDequeueFc {
+    MbufOpDotInitFc dequeuePostDotInitFc;
     RtStarsCondOpLLWI llwiGqmAddr;
     RtStarsCondOpLHWI lhwiGqmAddr;
 
@@ -81,6 +82,7 @@ struct RtStarsDqsBatchDequeueFc {
     RtStarsCondOpImmSLLI srliHandleValue;
     RtStarsCondOpBranch bneErrHandle;
 
+    MbufOpCntFc dequePostDotFc;
     CondMbufTraceFc dequeMbufTracefc;
 
     RtStarsCondOpImm ldrHandleCacheAddr;
@@ -265,9 +267,8 @@ struct RtStarsDqsFrameAlignForDssFc {
 };
 
 struct RtStarsDqsMbufFreeFc {
-    RtStarsCondOpLLWI llwiCntAddr1;
-    RtStarsCondOpLHWI lhwiCntAddr1;
-    RtStarsCondOpStore initCnt1;
+    MbufOpDotInitFc freePreDotInitFc;
+    MbufOpDotInitFc freePostDotInitFc;
 
     RtStarsCondOpLLWI llwi;
     RtStarsCondOpLHWI lhwi;
@@ -305,18 +306,14 @@ struct RtStarsDqsMbufFreeFc {
     RtStarsCondOpBranch bgeu2;
     RtStarsCondOpLoad ldr3;
     CondMbufTraceFc freeMbufTracefc;
+    MbufOpCntFc freepreCntFc;
     RtStarsCondOpSystemCsr csrrc; // use PA
     RtStarsCondOpStore sw3;
     RtStarsCondOpSystemCsr csrrs; // restore to VA
+    MbufOpCntFc freePostCntFc;
     RtStarsCondOpImm addi2;
     RtStarsCondOpImm addi3;
     RtStarsCondOpImm addi4;
-
-    RtStarsCondOpLLWI llwiCntAddr2;
-    RtStarsCondOpLHWI lhwiCntAddr2;
-    RtStarsCondOpLoad ldrCntAddr1;
-    RtStarsCondOpImm addiCnt1;
-    RtStarsCondOpStore incCnt1;
     RtStarsCondOpLLWI llwi3;
     RtStarsCondOpLHWI lhwi3;
     RtStarsSetCsrJumpPc jumpPc4;

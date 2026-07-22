@@ -276,10 +276,14 @@ typedef struct {
 } input_mbuf_cache_t;
 
 typedef struct {
-    uint8_t real_input_mbuf_cnt;
-    uint8_t real_output_alloc_mbuf_cnt;
-    uint8_t real_enqueue_output_mbuf_cnt;
-    uint8_t real_free_input_mbuf_cnt;
+    uint8_t deque_pre_dot;
+    uint8_t deque_post_dot;
+    uint8_t alloc_pre_dot;
+    uint8_t alloc_post_dot;
+    uint8_t enqueue_pre_dot;
+    uint8_t enqueue_post_dot;
+    uint8_t free_pre_dot;
+    uint8_t free_post_dot;
 } mbuf_list_op_snapshot_info;
 
 typedef struct {

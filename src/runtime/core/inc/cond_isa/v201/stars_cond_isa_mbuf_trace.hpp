@@ -28,6 +28,20 @@ struct MbufTraceRegParam {
     rtStarsCondIsaRegister_t avail_reg3;
 };
 
+struct MbufOpCntFc {
+    RtStarsCondOpLLWI llwiCntAddr;
+    RtStarsCondOpLHWI lhwiCntAddr;
+    RtStarsCondOpLoad ldrCntAddr;
+    RtStarsCondOpImm addiCntAddr;
+    RtStarsCondOpStore incCnt;
+};
+
+struct MbufOpDotInitFc {
+    RtStarsCondOpLLWI llwiDotAddr;
+    RtStarsCondOpLHWI lhwiDotAddr;
+    RtStarsCondOpStore initDotVal;
+};
+
 struct CondMbufTraceFc {
     RtStarsCondOpLLWI llwiBlkIdMask;
     RtStarsCondOpLHWI lhwiBlkIdMask;

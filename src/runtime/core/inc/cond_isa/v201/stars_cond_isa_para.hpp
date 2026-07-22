@@ -33,8 +33,9 @@ struct RtDqsMbufFreeFcPara {
     uint64_t mbufFreeAddr;       // 存放mbuf pool寄存器的地址
     uint64_t mbufHandleAddr;     // 存放mbufHandle的
     uint64_t lastMbufHandleAddr; // 存放上一帧mbufHandle
-    uint64_t realFreeMbufCntAddr;
-    uint16_t mbufPoolIndexMax;   // pool的下标 和 mbufHandle的下标一致
+    uint64_t freePreDotAddr;
+    uint64_t freePostDotAddr;
+    uint16_t mbufPoolIndexMax; // pool的下标 和 mbufHandle的下标一致
     uint8_t schedType;
     uint8_t sizeofHandleCache;
     CondMbufTraceParam freeMbufTracePara;
@@ -51,8 +52,9 @@ struct RtStarsDqsFcPara {
     uint64_t streamExecTimesAddr;
     uint64_t enqueOpAddr;
     uint64_t prodqOwAddr;
-    uint64_t realInputMbufCntAddr;
-    uint64_t realEnqueMbufCntAddr;
+    uint64_t dequeuePostDotAddr;
+    uint64_t enquePostDotAddr;
+    uint64_t enquePreDotAddr;
     uint32_t sqId;
     RtDqsMbufFreeFcPara mbufFreePara;
     CondMbufTraceParam owFreeMbufTracePara;
@@ -67,6 +69,7 @@ struct RtStarsDqsBatchDeqFcPara {
     uint64_t mbufFreeAddr; // 存放mbuf pool寄存器的地址
     uint64_t cntNotifyReadAddr;
     uint64_t cntNotifyClearAddr;
+    uint64_t dequeuePostDotAddr;
     uint32_t sqId;
     uint8_t cntOffset;
     uint8_t sizeofHandleCache;
@@ -89,7 +92,7 @@ struct RtStarsDqsPrepareFcPara {
     uint64_t csPtrOutputMbufHandleAddr;
     uint64_t csPtrOutputHeadPoolBaseAddr; // 含offset
     uint64_t csPtrOutputHeadPoolBlockSize;
-    uint64_t realOutputAllocMbufCntAddr;  // alloc成功计数
+    uint64_t allocPostDotAddr;            // alloc成功计数地址
 
     CondMbufTraceParam allocMbufTracePara;
 };
@@ -101,8 +104,8 @@ struct RtStarsDqsZeroCopyPara {
     uint64_t offsetAddr;
     uint64_t destAddr;
     uint64_t count;
-    bool
-        isCpyAddrLow32First; // 零拷贝时，64bit的地址拆分为两个32bit地址，分为高32和低32，true代表拷贝时低32位在前，高32位在后
+    // 零拷贝时，64bit的地址拆分为两个32bit地址，分为高32和低32，true代表拷贝时低32位在前，高32位在后
+    bool isCpyAddrLow32First;
 };
 
 struct RtStarsDqsConditionCopyPara {
