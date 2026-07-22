@@ -94,12 +94,9 @@ aclError aclmdlRICaptureEndImpl(aclrtStream stream, aclmdlRI* modelRI)
     ACL_PROFILING_REG(acl::AclProfType::AclmdlRICaptureEnd);
     ACL_LOG_INFO("start to execute aclmdlRICaptureEnd");
     ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(stream);
-    ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(modelRI);
 
-    rtModel_t rtModel = nullptr;
     ACL_REQUIRES_RTS_OK_WARN_NOT_SUPPORT(
-        rtStreamEndCapture(static_cast<rtStream_t>(stream), &rtModel), rtStreamEndCapture);
-    *modelRI = static_cast<aclmdlRI>(rtModel);
+        rtStreamEndCapture(static_cast<rtStream_t>(stream), static_cast<rtModel_t*>(modelRI)), rtStreamEndCapture);
 
     ACL_LOG_INFO("successfully execute aclmdlRICaptureEnd");
     return ACL_SUCCESS;
