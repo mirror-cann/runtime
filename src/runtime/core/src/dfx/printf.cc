@@ -21,7 +21,6 @@
 #include "fp16_t.h"
 #include "bfloat16.h"
 #include "runtime_hifloat.h"
-#include "external/graph/types.h"
 #include "runtime/rt_inner_dfx.h"
 #include "npu_driver.hpp"
 #include "device.hpp"
@@ -41,6 +40,28 @@ constexpr uint16_t INT32_SIZE = 4U;
 constexpr uint16_t INT64_SIZE = 8U;
 constexpr size_t ONE_LINE_NUM = 30U;
 constexpr uint32_t CORE_NUMBER_MAX = 1024U;
+
+constexpr uint32_t GE_DT_FLOAT = 0U;
+constexpr uint32_t GE_DT_FLOAT16 = 1U;
+constexpr uint32_t GE_DT_INT8 = 2U;
+constexpr uint32_t GE_DT_INT32 = 3U;
+constexpr uint32_t GE_DT_UINT8 = 4U;
+constexpr uint32_t GE_DT_INT16 = 6U;
+constexpr uint32_t GE_DT_UINT16 = 7U;
+constexpr uint32_t GE_DT_UINT32 = 8U;
+constexpr uint32_t GE_DT_INT64 = 9U;
+constexpr uint32_t GE_DT_UINT64 = 10U;
+constexpr uint32_t GE_DT_DOUBLE = 11U;
+constexpr uint32_t GE_DT_BOOL = 12U;
+constexpr uint32_t GE_DT_STRING = 13U;
+constexpr uint32_t GE_DT_COMPLEX64 = 16U;
+constexpr uint32_t GE_DT_COMPLEX128 = 17U;
+constexpr uint32_t GE_DT_BF16 = 27U;
+constexpr uint32_t GE_DT_HIFLOAT8 = 34U;
+constexpr uint32_t GE_DT_FLOAT8_E5M2 = 35U;
+constexpr uint32_t GE_DT_FLOAT8_E4M3FN = 36U;
+constexpr uint32_t GE_DT_FLOAT8_E8M0 = 37U;
+
 bool IsDumpSimdBlockInfo[CORE_NUMBER_MAX]{false};
 bool IsDumpSimtBlockInfo = false;
 
@@ -420,22 +441,22 @@ void PrintTensor(const void* data, const size_t dataNum)
 }
 
 const std::unordered_map<uint32_t, std::function<void(const void*, const size_t)>> PRINT_TENSOR_CALLS{
-    {ge::DT_UINT8, &PrintTensor<uint8_t>},
-    {ge::DT_INT8, &PrintTensor<int8_t>},
-    {ge::DT_INT16, &PrintTensor<int16_t>},
-    {ge::DT_UINT16, &PrintTensor<uint16_t>},
-    {ge::DT_INT32, &PrintTensor<int32_t>},
-    {ge::DT_UINT32, &PrintTensor<uint32_t>},
-    {ge::DT_INT64, &PrintTensor<int64_t>},
-    {ge::DT_UINT64, &PrintTensor<uint64_t>},
-    {ge::DT_FLOAT, &PrintTensor<float>},
-    {ge::DT_FLOAT16, &PrintTensor<cce::runtime::fp16_t>},
-    {ge::DT_BF16, &PrintTensor<cce::runtime::BFloat16>},
-    {ge::DT_HIFLOAT8, &PrintTensor<cce::runtime::HiFloat8>},
-    {ge::DT_FLOAT8_E5M2, &PrintTensor<cce::runtime::Fp8E5M2>},
-    {ge::DT_FLOAT8_E4M3FN, &PrintTensor<cce::runtime::Fp8E4M3>},
-    {ge::DT_FLOAT8_E8M0, &PrintTensor<cce::runtime::Fp8E8M0>},
-    {ge::DT_BOOL, &PrintBoolTensor},
+    {GE_DT_UINT8, &PrintTensor<uint8_t>},
+    {GE_DT_INT8, &PrintTensor<int8_t>},
+    {GE_DT_INT16, &PrintTensor<int16_t>},
+    {GE_DT_UINT16, &PrintTensor<uint16_t>},
+    {GE_DT_INT32, &PrintTensor<int32_t>},
+    {GE_DT_UINT32, &PrintTensor<uint32_t>},
+    {GE_DT_INT64, &PrintTensor<int64_t>},
+    {GE_DT_UINT64, &PrintTensor<uint64_t>},
+    {GE_DT_FLOAT, &PrintTensor<float>},
+    {GE_DT_FLOAT16, &PrintTensor<cce::runtime::fp16_t>},
+    {GE_DT_BF16, &PrintTensor<cce::runtime::BFloat16>},
+    {GE_DT_HIFLOAT8, &PrintTensor<cce::runtime::HiFloat8>},
+    {GE_DT_FLOAT8_E5M2, &PrintTensor<cce::runtime::Fp8E5M2>},
+    {GE_DT_FLOAT8_E4M3FN, &PrintTensor<cce::runtime::Fp8E4M3>},
+    {GE_DT_FLOAT8_E8M0, &PrintTensor<cce::runtime::Fp8E8M0>},
+    {GE_DT_BOOL, &PrintBoolTensor},
 };
 
 static void AppendBracketsAndNewlines(
@@ -506,22 +527,22 @@ size_t PrintValidTensorBoolData(
 }
 
 const std::unordered_map<uint32_t, uint16_t> SUPPORT_DATA_TYPE_SIZE{
-    {ge::DT_UINT8, 1U},
-    {ge::DT_INT8, 1U},
-    {ge::DT_BOOL, 1U},
-    {ge::DT_INT16, INT16_SIZE},
-    {ge::DT_UINT16, INT16_SIZE},
-    {ge::DT_INT32, INT32_SIZE},
-    {ge::DT_UINT32, INT32_SIZE},
-    {ge::DT_INT64, INT64_SIZE},
-    {ge::DT_UINT64, INT64_SIZE},
-    {ge::DT_FLOAT, INT32_SIZE},
-    {ge::DT_FLOAT16, INT16_SIZE},
-    {ge::DT_BF16, INT16_SIZE},
-    {ge::DT_HIFLOAT8, 1U},
-    {ge::DT_FLOAT8_E5M2, 1U},
-    {ge::DT_FLOAT8_E4M3FN, 1U},
-    {ge::DT_FLOAT8_E8M0, 1U}};
+    {GE_DT_UINT8, 1U},
+    {GE_DT_INT8, 1U},
+    {GE_DT_BOOL, 1U},
+    {GE_DT_INT16, INT16_SIZE},
+    {GE_DT_UINT16, INT16_SIZE},
+    {GE_DT_INT32, INT32_SIZE},
+    {GE_DT_UINT32, INT32_SIZE},
+    {GE_DT_INT64, INT64_SIZE},
+    {GE_DT_UINT64, INT64_SIZE},
+    {GE_DT_FLOAT, INT32_SIZE},
+    {GE_DT_FLOAT16, INT16_SIZE},
+    {GE_DT_BF16, INT16_SIZE},
+    {GE_DT_HIFLOAT8, 1U},
+    {GE_DT_FLOAT8_E5M2, 1U},
+    {GE_DT_FLOAT8_E4M3FN, 1U},
+    {GE_DT_FLOAT8_E8M0, 1U}};
 
 bool GetDataTypeSize(uint32_t dataType, uint16_t& size)
 {
@@ -536,26 +557,26 @@ bool GetDataTypeSize(uint32_t dataType, uint16_t& size)
 static std::string DataTypeToString(uint32_t dataType)
 {
     static std::map<uint32_t, std::string> dtype = {
-        {ge::DT_FLOAT, "float32"},
-        {ge::DT_FLOAT16, "float16"},
-        {ge::DT_INT8, "int8"},
-        {ge::DT_INT32, "int32"},
-        {ge::DT_UINT8, "uint8"},
-        {ge::DT_INT16, "int16"},
-        {ge::DT_UINT16, "uint16"},
-        {ge::DT_UINT32, "uint32"},
-        {ge::DT_INT64, "int64"},
-        {ge::DT_UINT64, "uint64"},
-        {ge::DT_DOUBLE, "double"},
-        {ge::DT_BOOL, "bool"},
-        {ge::DT_STRING, "string"},
-        {ge::DT_COMPLEX64, "complex64"},
-        {ge::DT_COMPLEX128, "complex128"},
-        {ge::DT_BF16, "bfloat16"},
-        {ge::DT_HIFLOAT8, "hifloat8"},
-        {ge::DT_FLOAT8_E5M2, "float8_e5m2"},
-        {ge::DT_FLOAT8_E4M3FN, "float8_e4m3fn"},
-        {ge::DT_FLOAT8_E8M0, "float8_e8m0"}};
+        {GE_DT_FLOAT, "float32"},
+        {GE_DT_FLOAT16, "float16"},
+        {GE_DT_INT8, "int8"},
+        {GE_DT_INT32, "int32"},
+        {GE_DT_UINT8, "uint8"},
+        {GE_DT_INT16, "int16"},
+        {GE_DT_UINT16, "uint16"},
+        {GE_DT_UINT32, "uint32"},
+        {GE_DT_INT64, "int64"},
+        {GE_DT_UINT64, "uint64"},
+        {GE_DT_DOUBLE, "double"},
+        {GE_DT_BOOL, "bool"},
+        {GE_DT_STRING, "string"},
+        {GE_DT_COMPLEX64, "complex64"},
+        {GE_DT_COMPLEX128, "complex128"},
+        {GE_DT_BF16, "bfloat16"},
+        {GE_DT_HIFLOAT8, "hifloat8"},
+        {GE_DT_FLOAT8_E5M2, "float8_e5m2"},
+        {GE_DT_FLOAT8_E4M3FN, "float8_e4m3fn"},
+        {GE_DT_FLOAT8_E8M0, "float8_e8m0"}};
     auto iter = dtype.find(dataType);
     if (iter != dtype.end()) {
         return (iter->second).c_str();
@@ -567,22 +588,22 @@ static std::string DataTypeToString(uint32_t dataType)
 const std::unordered_map<
     uint32_t, std::function<size_t(const void*, const size_t, const std::vector<size_t>&, std::string&, const size_t)>>
     PRINT_BY_SHAPE_CALLS{
-        {ge::DT_UINT8, &PrintValidTensorData<uint8_t>},
-        {ge::DT_INT8, &PrintValidTensorData<int8_t>},
-        {ge::DT_INT16, &PrintValidTensorData<int16_t>},
-        {ge::DT_UINT16, &PrintValidTensorData<uint16_t>},
-        {ge::DT_INT32, &PrintValidTensorData<int32_t>},
-        {ge::DT_UINT32, &PrintValidTensorData<uint32_t>},
-        {ge::DT_INT64, &PrintValidTensorData<int64_t>},
-        {ge::DT_UINT64, &PrintValidTensorData<uint64_t>},
-        {ge::DT_FLOAT, &PrintValidTensorData<float>},
-        {ge::DT_FLOAT16, &PrintValidTensorData<cce::runtime::fp16_t>},
-        {ge::DT_BOOL, &PrintValidTensorBoolData},
-        {ge::DT_BF16, &PrintValidTensorData<cce::runtime::BFloat16>},
-        {ge::DT_HIFLOAT8, &PrintValidTensorData<cce::runtime::HiFloat8>},
-        {ge::DT_FLOAT8_E5M2, &PrintValidTensorData<cce::runtime::Fp8E5M2>},
-        {ge::DT_FLOAT8_E4M3FN, &PrintValidTensorData<cce::runtime::Fp8E4M3>},
-        {ge::DT_FLOAT8_E8M0, &PrintValidTensorData<cce::runtime::Fp8E8M0>}};
+        {GE_DT_UINT8, &PrintValidTensorData<uint8_t>},
+        {GE_DT_INT8, &PrintValidTensorData<int8_t>},
+        {GE_DT_INT16, &PrintValidTensorData<int16_t>},
+        {GE_DT_UINT16, &PrintValidTensorData<uint16_t>},
+        {GE_DT_INT32, &PrintValidTensorData<int32_t>},
+        {GE_DT_UINT32, &PrintValidTensorData<uint32_t>},
+        {GE_DT_INT64, &PrintValidTensorData<int64_t>},
+        {GE_DT_UINT64, &PrintValidTensorData<uint64_t>},
+        {GE_DT_FLOAT, &PrintValidTensorData<float>},
+        {GE_DT_FLOAT16, &PrintValidTensorData<cce::runtime::fp16_t>},
+        {GE_DT_BOOL, &PrintValidTensorBoolData},
+        {GE_DT_BF16, &PrintValidTensorData<cce::runtime::BFloat16>},
+        {GE_DT_HIFLOAT8, &PrintValidTensorData<cce::runtime::HiFloat8>},
+        {GE_DT_FLOAT8_E5M2, &PrintValidTensorData<cce::runtime::Fp8E5M2>},
+        {GE_DT_FLOAT8_E4M3FN, &PrintValidTensorData<cce::runtime::Fp8E4M3>},
+        {GE_DT_FLOAT8_E8M0, &PrintValidTensorData<cce::runtime::Fp8E8M0>}};
 
 void GetDumpShape(const DumpInfoHead* dumpHead, std::vector<size_t>& shape)
 {
