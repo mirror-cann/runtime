@@ -1962,7 +1962,7 @@ TEST_F(NpuDriverJettyTest, Context_ExpandCapacity_ExceedsMaxDepth)
     StreamJettyContext context;
     context.capacity = StreamJettyContext::JETTY_DEPTH_MAX;
     rtError_t error = context.ExpandCapacity(stream_->Device_()->Driver_());
-    EXPECT_EQ(error, RT_ERROR_INVALID_VALUE);
+    EXPECT_EQ(error, RT_ERROR_JETTY_LIMIT);
 }
 // ========== Additional coverage for JettyManager functions ==========
 
@@ -2220,12 +2220,12 @@ TEST_F(NpuDriverJettyTest, Context_RoundUpCapacity_AllBranches)
         EXPECT_EQ(ctx.wqeBuffers.size(), 2u);
     }
 
-    // Case 4: capacity exceeds JETTY_DEPTH_MAX → RT_ERROR_INVALID_VALUE
+    // Case 4: capacity exceeds JETTY_DEPTH_MAX → RT_ERROR_JETTY_LIMIT
     {
         StreamJettyContext ctx;
         ctx.filledWqeCount = 33000;
         ctx.capacity = 34816;
-        EXPECT_EQ(ctx.RoundUpCapacity(drv, 0), RT_ERROR_INVALID_VALUE);
+        EXPECT_EQ(ctx.RoundUpCapacity(drv, 0), RT_ERROR_JETTY_LIMIT);
     }
 
     // Case 5: success path (capacity 6144 → 8192, allocate 1 new buffer + fill NOP)

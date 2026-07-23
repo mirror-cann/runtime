@@ -67,7 +67,7 @@ rtError_t StreamJettyContext::ExpandCapacity(Driver* driver)
             "of numBatches. "
             "2. If the value of height for aclrtMemcpy2dAsync in the ACL Graph is too large, reduce the value of "
             "height");
-        return RT_ERROR_INVALID_VALUE;
+        return RT_ERROR_JETTY_LIMIT;
     }
 
     const rtError_t error = AllocWqeBuffer(driver);
@@ -93,7 +93,7 @@ rtError_t StreamJettyContext::RoundUpCapacity(Driver* driver, uint32_t deviceId)
                 "value of numBatches. "
                 "2. If the value of height for aclrtMemcpy2dAsync in the ACL Graph is too large, reduce the value of "
                 "height");
-            return RT_ERROR_INVALID_VALUE;
+            return RT_ERROR_JETTY_LIMIT;
         }
     }
 

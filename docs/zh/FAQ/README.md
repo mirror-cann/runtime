@@ -1,5 +1,6 @@
 # 常见问题（FAQ）
 
+- [EE1023资源不足问题](EE1023资源不足问题.md)
 - [Runtime版本与CANN版本不匹配导致的问题](Runtime版本与CANN版本不匹配导致的问题.md)
 - [aclInit初始化失败常见原因排查](aclInit初始化失败常见原因排查.md)
 - [aclrtSetDevice调用失败](aclrtSetDevice调用失败.md)
