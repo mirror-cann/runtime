@@ -197,16 +197,12 @@ bool ParamValidation::CheckAicoreMetricsIsValid(const std::string &aicoreMetrics
         return false;
     }
 
-    std::string errReason = std::string("The aic_metrics include ArithmeticUtilization, PipeUtilization, ") +
-        "Memory, MemoryL0, ResourceConflictRatio, MemoryUB, L2Cache, MemoryAccess";
     if (aicoreMetrics.compare(0, CUSTOM_METRICS.length(), CUSTOM_METRICS) == 0) {
         std::string aicoreEvent = aicoreMetrics.substr(CUSTOM_METRICS.length());
         std::transform(aicoreEvent.begin(), aicoreEvent.end(), aicoreEvent.begin(), ::tolower);
         int32_t sw = CustomHexCharConfig(aicoreEvent, ",");
         if (sw == PROFILING_FAILED) {
             MSPROF_LOGE("The aic_metrics[%s] of input config is invalid", aicoreMetrics.c_str());
-            MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"config", "value", "reason"}),
-                std::vector<std::string>({"aic_metrics", aicoreMetrics.c_str(), errReason}));
             return false;
         }
         return true;
@@ -217,8 +213,6 @@ bool ParamValidation::CheckAicoreMetricsIsValid(const std::string &aicoreMetrics
     }
 
     MSPROF_LOGE("The aic_metrics[%s] of input config is invalid", aicoreMetrics.c_str());
-    MSPROF_INPUT_ERROR("EK0003", std::vector<std::string>({"config", "value", "reason"}),
-        std::vector<std::string>({"aic_metrics", aicoreMetrics.c_str(), errReason}));
     return false;
 }
 

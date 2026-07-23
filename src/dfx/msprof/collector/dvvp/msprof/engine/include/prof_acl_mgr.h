@@ -330,6 +330,7 @@ private:
         SHARED_PTR_ALIA<Analysis::Dvvp::Host::Adapter::ProfApiStartReq> feature) const;
     void AicoreMetricsEnumToName(ProfAicoreMetrics aicMetrics, std::string &name) const;
     void AicoreMetricsEnumToNameTwo(ProfAicoreMetrics aicMetrics, std::string &name) const;
+    int32_t CheckAclApiAicoreMetricsIsValid(const MsprofConfig *config) const;
     int32_t StartDeviceTask(const uint32_t devId, SHARED_PTR_ALIA<analysis::dvvp::message::ProfileParams> params);
     int32_t StopCommonCallback(const std::vector<uint32_t> &devIds, uint64_t profSwitch);
     int32_t StopCommonDeviceTasks(const std::vector<uint32_t> &devIds);

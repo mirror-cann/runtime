@@ -1250,7 +1250,7 @@
       "errClass": "Profiling Errors",
       "errTitle": "Resource_Error_Insufficient_Host_Memory",
       "ErrCode": "EK0201",
-      "ErrMessage": "Failed to allocate host memory for Profiling: %s.",
+      "ErrMessage": "Failed to allocate %s host memory for Profiling.",
       "Arglist": "buf_size",
       "suggestion": {
         "Possible Cause": "Allocation failed due to insufficient host memory.",

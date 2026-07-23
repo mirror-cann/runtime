@@ -3065,6 +3065,10 @@ int32_t ProfAclMgr::PrepareStartAclApiParam(const MsprofConfig *config)
 {
     MSPROF_EVENT("Received ProfAclStart request from acl");
     MSPROF_LOGI("Received dataTypeConfig 0x%llx by Profiling AscendCL API", config->profSwitch);
+    int32_t ret = CheckAclApiAicoreMetricsIsValid(config);
+    if (ret != ACL_SUCCESS) {
+        return ret;
+    }
     SHARED_PTR_ALIA<ProfApiStartReq> feature = nullptr;
     MSVP_MAKE_SHARED0(feature, ProfApiStartReq, return ACL_ERROR_PROFILING_FAILURE);
     // Transfer task-based dataTypeConfig to ProfApiStartReq
@@ -3085,6 +3089,32 @@ int32_t ProfAclMgr::PrepareStartAclApiParam(const MsprofConfig *config)
     (void)MsprofTxApiHandle(dataTypeConfig_);
     params_->profMode = MSVP_PROF_ACLAPI_MODE;
     return ACL_SUCCESS;
+}
+
+int32_t ProfAclMgr::CheckAclApiAicoreMetricsIsValid(const MsprofConfig *config) const
+{
+    if ((config->profSwitch & PROF_AICORE_METRICS_MASK) == 0) {
+        return ACL_SUCCESS;
+    }
+    if (config->metrics == static_cast<uint32_t>(PROF_AICORE_NONE)) {
+        return ACL_SUCCESS;
+    }
+    std::string metrics;
+    AicoreMetricsEnumToName(static_cast<ProfAicoreMetrics>(config->metrics), metrics);
+    if (metrics.empty()) {
+        return ACL_ERROR_INVALID_PARAM;
+    }
+    PlatformFeature featureMetrics = Platform::instance()->PmuToFeature(metrics);
+    if (Platform::instance()->CheckIfSupport(featureMetrics)) {
+        return ACL_SUCCESS;
+    }
+
+    std::string value = std::to_string(static_cast<uint32_t>(config->metrics));
+    std::string reason = "The aicore metrics enum is not supported on the current platform";
+    MSPROF_LOGE("Invalid aicore metrics enum: %s", value.c_str());
+    MSPROF_INPUT_ERROR("EK0001", std::vector<std::string>({"value", "param", "reason"}),
+        std::vector<std::string>({value, "aicoreMetrics", reason}));
+    return ACL_ERROR_INVALID_PARAM;
 }
 
 int32_t ProfAclMgr::PrepareStopAclApi(const MsprofConfig *config)

@@ -2181,6 +2181,17 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitGeOptionsInvalidInputsReportInputError)
     EXPECT_EQ("EK0003", MsprofUtestStub::GetMsprofLastInputErrorCode());
     ExpectLastInputErrorReasonContains("invalid character");
     ExpectLastInputErrorReasonNotEndWithPeriod();
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitGeOptionsInvalidConfigsReportInputError)
+{
+    using namespace Msprofiler::Api;
+    MOCKER_CPP(&ProfAclMgr::CallbackInitPrecheck)
+        .stubs()
+        .will(returnValue(PROFILING_SUCCESS));
+
+    struct MsprofGeOptions options = {};
+    (void)strcpy_s(options.jobId, sizeof(options.jobId), "0");
 
     (void)strcpy_s(options.options, sizeof(options.options), "{\"l2\":\"xx\"}");
     MsprofUtestStub::ResetMsprofLastInputErrorCode();
@@ -2189,6 +2200,76 @@ TEST_F(MSPROF_ACL_CORE_UTEST, MsprofInitGeOptionsInvalidInputsReportInputError)
     EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
     ExpectLastInputErrorReasonContains("'on' or 'off'");
     ExpectLastInputErrorReasonNotEndWithPeriod();
+
+    (void)strcpy_s(options.options, sizeof(options.options), "{\"aic_metrics\":\"Custom:0xss\"}");
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(MSPROF_ERROR_CONFIG_INVALID,
+        ProfAclMgr::instance()->MsprofInitGeOptions(&options, sizeof(options)));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorParamAndReasonContains("aic_metrics", "supported aic_metrics value");
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, CheckAclApiAicoreMetricsInvalidReportsInputError)
+{
+    using namespace Msprofiler::Api;
+
+    MsprofConfig config = {};
+    config.profSwitch = PROF_AICORE_METRICS_MASK;
+    config.metrics = PROF_AICORE_PIPE_EXECUTE_UTILIZATION;
+
+    MOCKER_CPP(&Platform::CheckIfSupport, bool (Platform::*)(const PlatformFeature) const)
+        .stubs()
+        .will(returnValue(false));
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, ProfAclMgr::instance()->CheckAclApiAicoreMetricsIsValid(&config));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorParamAndReasonContains("aicoreMetrics", "not supported on the current platform");
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, CheckAclApiAicoreMetricsUnknownEnumReturnsInvalidParam)
+{
+    using namespace Msprofiler::Api;
+
+    MsprofConfig config = {};
+    config.profSwitch = PROF_AICORE_METRICS_MASK;
+    config.metrics = PROF_AICORE_METRICS_COUNT;
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, ProfAclMgr::instance()->CheckAclApiAicoreMetricsIsValid(&config));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorParamAndReasonContains("aicoreMetrics", "not supported on the current platform");
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, CheckAclApiAicoreMetricsUnsupportedL2CacheReturnsInvalidParam)
+{
+    using namespace Msprofiler::Api;
+
+    MsprofConfig config = {};
+    config.profSwitch = PROF_AICORE_METRICS_MASK;
+    config.metrics = PROF_AICORE_L2_CACHE;
+
+    MOCKER_CPP(&ConfigManager::GetPlatformType)
+        .stubs()
+        .will(returnValue(PlatformType::CLOUD_TYPE));
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_ERROR_INVALID_PARAM, ProfAclMgr::instance()->CheckAclApiAicoreMetricsIsValid(&config));
+    EXPECT_EQ("EK0001", MsprofUtestStub::GetMsprofLastInputErrorCode());
+    ExpectLastInputErrorParamAndReasonContains("aicoreMetrics", "not supported on the current platform");
+}
+
+TEST_F(MSPROF_ACL_CORE_UTEST, CheckAclApiAicoreMetricsNoneReturnsSuccess)
+{
+    using namespace Msprofiler::Api;
+
+    MsprofConfig config = {};
+    config.profSwitch = PROF_AICORE_METRICS_MASK;
+    config.metrics = PROF_AICORE_NONE;
+
+    MsprofUtestStub::ResetMsprofLastInputErrorCode();
+    EXPECT_EQ(ACL_SUCCESS, ProfAclMgr::instance()->CheckAclApiAicoreMetricsIsValid(&config));
+    EXPECT_TRUE(MsprofUtestStub::GetMsprofLastInputErrorCode().empty());
 }
 
 TEST_F(MSPROF_ACL_CORE_UTEST, MsprofAclJsonParamConstruct) {
