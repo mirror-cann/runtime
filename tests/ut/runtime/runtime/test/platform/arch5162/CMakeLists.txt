@@ -20,7 +20,7 @@ set(runtimeut_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cmo/cmo_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/common/common_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/cond_op_label_task.cc
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/cond_op_stream_task.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/cond_op_stream_task_base.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_task_arch5162.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_kernel_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/davinci/davinci_multiple_task.cc
@@ -43,6 +43,7 @@ set(runtimeut_src_task_list
     ${TOP_DIR}/src/runtime/core/src/task/task_info/reduce/reduce_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/ringbuffer_maintain/ringbuffer_maintain_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/stream/stream_task.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/stream/stream_task_arch5162.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_info/timeout_set/timeout_set_task.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_res_manage/task_res.cc
     ${TOP_DIR}/src/runtime/core/src/task/task_submit/v100/task_submit.cc
@@ -196,7 +197,7 @@ set(runtime_raw_device_adpt_common_list
 
 
 set(runtimeut_src_aclgraph_list
-    ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/cond_op_arch5162.cc
+    ${TOP_DIR}/src/runtime/core/src/task/task_info/cond_op/cond_op_task_arch5162.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/api_decorator_aclgraph.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/capture_model_utils.cc
     ${TOP_DIR}/src/runtime/feature/aclgraph/cond_handle.cc

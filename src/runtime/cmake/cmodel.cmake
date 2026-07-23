@@ -31,6 +31,7 @@ set(libruntime_cmodel_v100_task_src_files
     ${RUNTIME_CORE_DIR}/src/task/task_info/reduce/reduce_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_stream_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_stream_task_v100.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_stream_task_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_label_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_label_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/aclgraph_cond_task.cc
@@ -41,6 +42,7 @@ set(libruntime_cmodel_v100_task_src_files
     ${RUNTIME_CORE_DIR}/src/task/task_info/dump/dump_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task_v100.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task_active.cc
     ${RUNTIME_CORE_DIR}/src/task/task_execute_time.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/common/common_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/common/common_task_v100.cc
@@ -104,6 +106,7 @@ set(david_series_common_task_src_file_cmodel
     ${RUNTIME_CORE_DIR}/src/task/task_info/reduce/reduce_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/reduce/reduce_task_v200_base.cc
 
+    ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_stream_task_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_stream_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_stream_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_label_task.cc
@@ -116,6 +119,7 @@ set(david_series_common_task_src_file_cmodel
     ${RUNTIME_CORE_DIR}/src/task/task_info/dump/dump_task_v200_base.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task_v200_base.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task_active.cc
     ${RUNTIME_CORE_DIR}/src/task/task_execute_time.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/common/common_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/common/common_task_v200_base.cc

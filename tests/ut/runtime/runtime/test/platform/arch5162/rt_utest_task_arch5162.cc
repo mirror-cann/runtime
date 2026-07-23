@@ -30,6 +30,12 @@
 #include "log_types.h"
 #include "task_execute_time.h"
 #include "device_error_proc.hpp"
+#include "cond_op_label_task.h"
+#include "model.hpp"
+#include "stars_cond_isa_helper.hpp"
+#include "cond_op_stream_task.h"
+#include "stream_task.h"
+#include "task_res.hpp"
 
 using namespace cce::runtime;
 
@@ -322,6 +328,142 @@ TEST_F(Arch5162TaskTest, MemcpyAsyncTaskUnInitAndDoComplete)
     task.errorCode = TS_ERROR_TASK_TIMEOUT;
     PfnDoCompleteSucc doCompleteSuccFunc = g_taskFuncArrays[CHIP_5162A].doCompleteSuccFunc[task.type];
     doCompleteSuccFunc(&task, 0);
+    delete stream;
+    delete device;
+}
+TEST_F(Arch5162TaskTest, ConstructLabelSetSqe)
+{
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
+    EXPECT_NE(stream, nullptr);
+    TaskInfo taskInfo = {};
+    taskInfo.stream = stream;
+    taskInfo.u.labelSetTask.labelId = 0;
+    rtStarsSqe_t sqe = {};
+    memset_s(&sqe, sizeof(sqe), 0, sizeof(sqe));
+    ConstructSqeForLabelSetTask(&taskInfo, &sqe);
+    EXPECT_EQ(sqe.phSqe.header.type, RT_STARS_SQE_TYPE_PLACE_HOLDER);
+    delete stream;
+    delete device;
+}
+
+TEST_F(Arch5162TaskTest, ConstructLabelSwitchSqe)
+{
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
+    EXPECT_NE(stream, nullptr);
+    TaskInfo taskInfo = {};
+    taskInfo.stream = stream;
+    taskInfo.u.stmLabelSwitchIdxTask.indexPtr = 0;
+    taskInfo.u.stmLabelSwitchIdxTask.labelInfoPtr = 0;
+    rtStarsSqe_t sqe = {};
+    memset_s(&sqe, sizeof(sqe), 0, sizeof(sqe));
+    ConstructSqeForStreamLabelSwitchByIndexTask(&taskInfo, &sqe);
+    EXPECT_EQ(sqe.phSqe.header.type, RT_STARS_SQE_TYPE_PLACE_HOLDER);
+    delete stream;
+    delete device;
+}
+
+TEST_F(Arch5162TaskTest, ConstructStreamSwitchSqe)
+{
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
+    EXPECT_NE(stream, nullptr);
+    TaskInfo taskInfo = {};
+    taskInfo.stream = stream;
+    taskInfo.u.streamswitchTask.trueStreamId = 0;
+    taskInfo.u.streamswitchTask.condition = RT_EQUAL;
+    taskInfo.u.streamswitchTask.dataType = RT_SWITCH_INT32;
+    taskInfo.u.streamswitchTask.ptr = 0;
+    taskInfo.u.streamswitchTask.valuePtr = 0;
+    rtStarsSqe_t sqe = {};
+    memset_s(&sqe, sizeof(sqe), 0, sizeof(sqe));
+    ConstructSqeForStreamSwitchTask(&taskInfo, &sqe);
+    EXPECT_EQ(sqe.phSqe.header.type, RT_STARS_SQE_TYPE_PLACE_HOLDER);
+    delete stream;
+    delete device;
+}
+
+TEST_F(Arch5162TaskTest, ConstructStreamActiveSqe)
+{
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
+    EXPECT_NE(stream, nullptr);
+    TaskInfo taskInfo = {};
+    taskInfo.stream = stream;
+    taskInfo.u.streamactiveTask.activeStreamId = 0;
+    rtStarsSqe_t sqe = {};
+    memset_s(&sqe, sizeof(sqe), 0, sizeof(sqe));
+    ConstructSqeForStreamActiveTask(&taskInfo, &sqe);
+    EXPECT_EQ(sqe.phSqe.header.type, RT_STARS_SQE_TYPE_PLACE_HOLDER);
+    delete stream;
+    delete device;
+}
+
+TEST_F(Arch5162TaskTest, LabelSetTaskInit)
+{
+    rtError_t error;
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
+    TaskResManage taskResMng;
+    stream->taskResMang_ = &taskResMng;
+    TaskInfo task = {};
+    uint32_t devDestSize = 4;
+    void* const devDestAddr = &devDestSize;
+    task.stream = stream;
+    error = LabelSetTaskInit(&task, 1, devDestAddr);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    stream->taskResMang_ = nullptr;
+    delete stream;
+    delete device;
+}
+
+TEST_F(Arch5162TaskTest, ToCommandBodyForStreamSwitchNTask)
+{
+    TaskInfo task = {};
+    task.u.streamSwitchNTask.dataType = RT_SWITCH_INT32;
+    task.u.streamSwitchNTask.elementSize = 4U;
+    task.u.streamSwitchNTask.phyPtr = 0x1000ULL;
+    task.u.streamSwitchNTask.phyTrueStreamPtr = 0x2000ULL;
+    task.u.streamSwitchNTask.phyValuePtr = 0x3000ULL;
+    task.u.streamSwitchNTask.size = 16U;
+    task.u.streamSwitchNTask.isTransAddr = true;
+    rtCommand_t command = {};
+    ToCommandBodyForStreamSwitchNTask(&task, &command);
+    EXPECT_EQ(command.u.streamSwitchNTask.dataType, static_cast<uint8_t>(RT_SWITCH_INT32));
+}
+
+TEST_F(Arch5162TaskTest, StreamLabelSwitchByIndexTaskInit)
+{
+    rtError_t error;
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
+    TaskResManage taskResMng;
+    stream->taskResMang_ = &taskResMng;
+    TaskInfo task = {};
+    uint64_t ptr = 0;
+    uint32_t max = 1;
+    uint32_t labelInfoPtr[16] = {};
+    rtStarsSqe_t sqe[2];
+    task.stream = stream;
+    error = StreamLabelSwitchByIndexTaskInit(&task, (void*)&ptr, max, (void*)labelInfoPtr);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    stream->taskResMang_ = nullptr;
+    delete stream;
+    delete device;
+}
+
+TEST_F(Arch5162TaskTest, StreamActiveTaskInit)
+{
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
+    TaskResManage taskResMng;
+    stream->taskResMang_ = &taskResMng;
+    TaskInfo task = {};
+    task.stream = stream;
+    rtError_t error = StreamActiveTaskInit(&task, stream);
+    EXPECT_EQ(error, RT_ERROR_NONE);
+    stream->taskResMang_ = nullptr;
     delete stream;
     delete device;
 }

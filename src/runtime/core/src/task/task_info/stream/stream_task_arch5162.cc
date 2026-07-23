@@ -1,0 +1,90 @@
+/**
+ * Copyright (c) 2026 Huawei Technologies Co., Ltd.
+ * This program is free software, you can redistribute it and/or modify it under the terms and conditions of
+ * CANN Open Software License Agreement Version 2.0 (the "License").
+ * Please refer to the License for details. You may not use this file except in compliance with the License.
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE.
+ * See LICENSE in the root of the software repository for the full text of the License.
+ */
+
+#include "stars_cond_isa_helper.hpp"
+#include "stream_sqcq_manage.hpp"
+#include "stream_task.h"
+#include "task_info_v100.h"
+#include "stub_task.hpp"
+#include "runtime_task_manager.h"
+#include "arg_loader/arg_loader.hpp"
+
+namespace cce {
+namespace runtime {
+
+#if F_DESC("StreamActiveTask")
+void ConstructSqeForStreamActiveTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
+{
+    StreamActiveTaskInfo* streamActiveTask = &(taskInfo->u.streamactiveTask);
+    Stream* const stm = taskInfo->stream;
+    RtStarsPhSqe* const sqe = (RtStarsPhSqe*)&(command->phSqe);
+
+    sqe->header.type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
+    sqe->header.l1Lock = 0U;
+    sqe->header.l1UnLock = 0U;
+    sqe->header.ie = RT_STARS_SQE_INT_DIR_NO;
+    sqe->header.preP = RT_STARS_SQE_INT_DIR_TO_TSCPU;
+    sqe->header.postP = RT_STARS_SQE_INT_DIR_NO;
+    sqe->header.wrCqe = stm->GetStarsWrCqeFlag();
+    sqe->header.rdConds = 0U;
+    sqe->header.res1 = 0U;
+    sqe->header.u.sqeSubType = RT_SQE_SUBTYPE_CONDS_STREAM_ACTIVE;
+    sqe->header.rtStreamId = static_cast<uint16_t>(stm->Id_());
+    sqe->header.taskId = taskInfo->id;
+
+    sqe->u.streamActiveInfo.activeStreamId = streamActiveTask->activeStreamId;
+    PrintSqe(command, "StreamActiveTask");
+    RT_LOG(
+        RT_LOG_INFO,
+        "StreamActiveTask streamId=%d, taskId=%hu, activeStreamId=%u, type=%u, sqeSubType=%" PRIu16 ", preP=%u.",
+        stm->Id_(), taskInfo->id, streamActiveTask->activeStreamId, static_cast<unsigned int>(sqe->header.type),
+        sqe->header.u.sqeSubType, static_cast<unsigned int>(sqe->header.preP));
+    return;
+}
+
+rtError_t StreamActiveTaskInit(TaskInfo* taskInfo, const Stream* const stm)
+{
+    StreamActiveTaskInfo* streamActiveTask = &(taskInfo->u.streamactiveTask);
+    TaskCommonInfoInit(taskInfo);
+    taskInfo->type = TS_TASK_TYPE_STREAM_ACTIVE;
+    taskInfo->typeName = "STREAM_ACTIVE";
+    streamActiveTask->activeStreamId = static_cast<uint32_t>(stm->Id_());
+    streamActiveTask->activeStream = const_cast<Stream*>(stm);
+    streamActiveTask->activeStreamSqId = 0U;
+    streamActiveTask->funcCallSvmMem = nullptr;
+    streamActiveTask->baseFuncCallSvmMem = nullptr;
+    streamActiveTask->dfxPtr = nullptr;
+    streamActiveTask->funCallMemSize = 0UL;
+    return RT_ERROR_NONE;
+}
+
+#endif
+
+static bool StreamTaskRegister()
+{
+    TaskFuncSingle streamActiveFuncs = {
+        .toCommandFunc = nullptr,
+        .toSqeFunc = &ConstructSqeForStreamActiveTask,
+        .doCompleteSuccFunc = &DoCompleteSuccess,
+        .taskUnInitFunc = nullptr,
+        .waitAsyncCpCompleteFunc = nullptr,
+        .printErrorInfoFunc = nullptr,
+        .setResultFunc = nullptr,
+        .setStarsResultFunc = &SetStarsResultCommon,
+    };
+
+    RegTaskFunc(CHIP_5162A, TS_TASK_TYPE_STREAM_ACTIVE, streamActiveFuncs);
+    return true;
+}
+
+static bool g_streamTaskRegister = StreamTaskRegister();
+
+} // namespace runtime
+} // namespace cce
