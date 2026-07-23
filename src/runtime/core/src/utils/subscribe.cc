@@ -474,7 +474,6 @@ rtError_t CbSubscribe::GetThreadIdByStreamId(const uint32_t devId, const int32_t
 
 void CbSubscribe::DeleteAll()
 {
-    rtError_t ret;
     subscribeLock_.lock();
     for (auto &it : subscribeMapByStreamId_) {
         const rtChipType_t chipType = Runtime::Instance()->GetChipType();
@@ -494,17 +493,6 @@ void CbSubscribe::DeleteAll()
                 }
                 delete event;
             }
-        }
-        const auto devDriver = it.second.stream->Device_()->Driver_();
-        ret = devDriver->SqCqFree(it.second.sqId,
-            it.second.cqId, it.second.stream->Device_()->Id_(),
-            it.second.stream->Device_()->DevGetTsId());
-        if (ret != RT_ERROR_NONE) {
-            RT_LOG(
-                RT_LOG_ERROR,
-                "Failed to free SQ/CQ, thread_id=%" PRIu64 ", device_id=%u, ts_id=%u, sq_id=%u, cq_id=%u, retCode=%#x.",
-                it.second.threadId, it.second.stream->Device_()->Id_(), it.second.stream->Device_()->DevGetTsId(),
-                it.second.sqId, it.second.cqId, static_cast<uint32_t>(ret));
         }
     }
 
