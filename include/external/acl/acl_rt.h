@@ -3779,7 +3779,6 @@ ACL_FUNC_VISIBILITY aclError aclrtValueWait(void* devAddr, uint64_t value, uint3
  * @retval ACL_SUCCESS The function is successfully executed.
  * @retval OtherValues Failure
  */
-ACL_DEPRECATED_MESSAGE("aclrtGetStreamAvailableNum is deprecated")
 ACL_FUNC_VISIBILITY aclError aclrtGetStreamAvailableNum(uint32_t* streamCount);
 
 /**

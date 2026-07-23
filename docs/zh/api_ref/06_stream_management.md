@@ -14,7 +14,7 @@
 - [`aclError aclrtSynchronizeStreamWithTimeout(aclrtStream stream, int32_t timeout)`](#aclrtSynchronizeStreamWithTimeout)：阻塞Host侧当前线程直到指定Stream中的所有任务都完成，该接口是在[aclrtSynchronizeStream](#aclrtSynchronizeStream)接口基础上进行了增强，支持用户设置超时时间，当应用程序异常时可根据所设置的超时时间自行退出。
 - [`aclError aclrtStreamAbort(aclrtStream stream)`](#aclrtStreamAbort)：停止指定Stream上正在执行的任务、丢弃指定Stream上已下发但未执行的任务。本接口执行期间，指定Stream上新下发的任务不再生效。
 - [`aclError aclrtStreamGetId(aclrtStream stream, int32_t *streamId)`](#aclrtStreamGetId)：获取指定Stream的ID。
-- [`aclError aclrtGetStreamAvailableNum(uint32_t *streamCount)`](#aclrtGetStreamAvailableNum_deprecated)：获取当前Device上剩余可用的Stream数量。（废弃接口）
+- [`aclError aclrtGetStreamAvailableNum(uint32_t *streamCount)`](#aclrtGetStreamAvailableNum)：获取当前Device上剩余可用的Stream数量。
 - [`aclError aclrtSetStreamAttribute(aclrtStream stream, aclrtStreamAttr stmAttrType, aclrtStreamAttrValue *value)`](#aclrtSetStreamAttribute)：设置Stream属性值。
 - [`aclError aclrtGetStreamAttribute(aclrtStream stream, aclrtStreamAttr stmAttrType, aclrtStreamAttrValue *value)`](#aclrtGetStreamAttribute)：获取Stream属性值。
 - [`aclError aclrtActiveStream(aclrtStream activeStream, aclrtStream stream)`](#aclrtActiveStream)：激活Stream。异步接口。
@@ -776,15 +776,13 @@ aclError aclrtStreamGetId(aclrtStream stream, int32_t *streamId)
 <br>
 <br>
 
-<a id="aclrtGetStreamAvailableNum_deprecated"></a>
+<a id="aclrtGetStreamAvailableNum"></a>
 
-## aclrtGetStreamAvailableNum（废弃）
+## aclrtGetStreamAvailableNum
 
 ```c
 aclError aclrtGetStreamAvailableNum(uint32_t *streamCount)
 ```
-
-**须知：此接口后续版本会废弃。**
 
 ### 产品支持情况
 
