@@ -91,8 +91,42 @@ STATIC TraStatus TraceMkdirRecur(const char *dirPath)
     return err;
 }
 
+STATIC TraStatus TraceNormalizeEnvPath(char *envDir, uint32_t len)
+{
+    if ((envDir == NULL) || (len == 0U) || (envDir[0] == '\0')) {
+        ADIAG_WAR("ASCEND_WORK_PATH is invalid.");
+        return TRACE_FAILURE;
+    }
+    if (envDir[0] == '/') {
+        return TRACE_SUCCESS;
+    }
+
+    char cwd[MAX_FILEDIR_LEN + 1U] = { 0 };
+    if (getcwd(cwd, sizeof(cwd)) == NULL) {
+        ADIAG_WAR("get current directory failed, strerr=%s.", strerror(AdiagGetErrorCode()));
+        return TRACE_FAILURE;
+    }
+
+    char absPath[MAX_FILEDIR_LEN + 1U] = { 0 };
+    int32_t ret = snprintf_s(absPath, sizeof(absPath), sizeof(absPath) - 1U, "%s/%s", cwd, envDir);
+    if (ret == -1) {
+        ADIAG_WAR("build ASCEND_WORK_PATH absolute path failed, path may exceed %u bytes, cwd=%s, env=%s.",
+            MAX_FILEDIR_LEN, cwd, envDir);
+        return TRACE_FAILURE;
+    }
+    ret = strcpy_s(envDir, len, absPath);
+    if (ret != EOK) {
+        ADIAG_WAR("copy ASCEND_WORK_PATH absolute path failed, ret=%d.", ret);
+        return TRACE_FAILURE;
+    }
+    return TRACE_SUCCESS;
+}
+
 STATIC TraStatus TraceGetValidPath(char *envDir, uint32_t len)
 {
+    if (TraceNormalizeEnvPath(envDir, len) != TRACE_SUCCESS) {
+        return TRACE_FAILURE;
+    }
     if ((TraceAccess(envDir, F_OK) != EN_OK) && (TraceMkdirRecur(envDir) != EN_OK)) {
         ADIAG_WAR("path %s doesn't exist.", envDir);
         return TRACE_FAILURE;
@@ -182,16 +216,16 @@ STATIC TraStatus TraceInitRootPath(TraceRecorderMgr *mgr)
         return TRACE_FAILURE;
     }
 #else
-    char *path = (char *)AdiagMalloc(MAX_FILEDIR_LEN);
+    char *path = (char *)AdiagMalloc(MAX_FILEDIR_LEN + 1U);
     ADIAG_CHK_EXPR_ACTION(path == NULL, return TRACE_FAILURE,
         "malloc root path failed, strerr=%s", strerror(AdiagGetErrorCode()));
 
-    TraStatus ret = TraceGetEnvPath(path, MAX_FILEDIR_LEN);
+    TraStatus ret = TraceGetEnvPath(path, MAX_FILEDIR_LEN + 1U);
     if (ret == TRACE_SUCCESS) {
         res = snprintf_truncated_s(mgr->rootPath, MAX_FILEDIR_LEN + 1U, "%s", path);
     } else {
         // get process user home path
-        ret = TraceGetHomeDir(path, MAX_FILEDIR_LEN);
+        ret = TraceGetHomeDir(path, MAX_FILEDIR_LEN + 1U);
         if (ret != TRACE_SUCCESS) {
             ADIAG_SAFE_FREE(path);
             ADIAG_ERR("get home directory failed, ret=%d.", ret);

@@ -20,7 +20,9 @@
 #include <atomic>
 #include <cerrno>
 #include <fcntl.h>
+#include <string>
 #include <sys/stat.h>
+#include <vector>
 
 #define TIMESTAMP_MAX_LENGTH 29U
 
@@ -28,6 +30,7 @@ static std::atomic<uint32_t> g_traceOpenCallIndex(0);
 static std::atomic<bool> g_firstTraceOpenEntered(false);
 static std::atomic<bool> g_allowFirstTraceOpen(false);
 static std::atomic<bool> g_agingThreadDone(false);
+static std::atomic<uint32_t> g_strcpyCallIndex(0);
 
 typedef struct {
     TraceDirInfo dirInfo;
@@ -57,6 +60,39 @@ int32_t TraceOpenBlockFirstThenOpen(const char *filePath, int32_t flag, uint32_t
         (void)fchmod(fd, mode);
     }
     return fd;
+}
+
+TraStatus TraceHandleEmptyEnvStringStub(const char *env, char *buf, uint32_t len)
+{
+    (void)env;
+    if ((buf == nullptr) || (len == 0U)) {
+        return TRACE_FAILURE;
+    }
+    buf[0] = '\0';
+    return TRACE_SUCCESS;
+}
+
+TraStatus TraceHandleRelativeEnvStringStub(const char *env, char *buf, uint32_t len)
+{
+    (void)env;
+    const char relativePath[] = "trace_recorder_copy_failed_path";
+    if ((buf == nullptr) || (len <= strlen(relativePath))) {
+        return TRACE_FAILURE;
+    }
+    errno_t ret = memcpy_s(buf, len, relativePath, strlen(relativePath) + 1U);
+    return (ret == EOK) ? TRACE_SUCCESS : TRACE_FAILURE;
+}
+
+errno_t StrcpyFailOnceThenCopy(char *strDest, size_t destMax, const char *strSrc)
+{
+    if (g_strcpyCallIndex.fetch_add(1U) == 0U) {
+        return EINVAL;
+    }
+    if ((strDest == nullptr) || (strSrc == nullptr) || (destMax == 0U) || (strlen(strSrc) >= destMax)) {
+        return EINVAL;
+    }
+    errno_t ret = memcpy_s(strDest, destMax, strSrc, strlen(strSrc) + 1U);
+    return (ret == EOK) ? EOK : EINVAL;
 }
 
 void *TraceRecorderGetFdThread(void *arg)
@@ -113,6 +149,49 @@ bool BuildRecorderFilePath(char *path, size_t len, const char *eventName, const 
     int32_t ret = snprintf_s(path, len, len - 1U, "%s/%s_tracer_%s%s", dirPath, tracerName, objName, suffix);
     return ret != -1;
 }
+
+bool BuildRecorderFilePathWithRoot(char *path, size_t len, const char *rootPath, const char *eventName,
+    const char *dirTime, const char *tracerName, const char *objName, const char *suffix)
+{
+    int32_t ret = snprintf_s(path, len, len - 1U, "%s/atrace/trace_%d_%d_%s/%s_event_%d_%s/%s_tracer_%s%s",
+        rootPath, TraceAttrGetPgid(), TraceAttrGetPid(), TraceAttrGetTime(), eventName, getpid(), dirTime,
+        tracerName, objName, suffix);
+    return ret != -1;
+}
+
+void RemoveTestPath(const std::string &path)
+{
+    if (path.empty()) {
+        return;
+    }
+    std::string cmd = "rm -rf " + path;
+    (void)system(cmd.c_str());
+}
+
+class ScopedEnvAndPathCleanup {
+public:
+    explicit ScopedEnvAndPathCleanup(const char *envName) : envName_(envName)
+    {
+    }
+
+    ~ScopedEnvAndPathCleanup()
+    {
+        unsetenv(envName_);
+        for (auto iter = cleanupPaths_.rbegin(); iter != cleanupPaths_.rend(); ++iter) {
+            RemoveTestPath(*iter);
+        }
+    }
+
+    void AddPath(const std::string &path)
+    {
+        cleanupPaths_.push_back(path);
+        RemoveTestPath(path);
+    }
+
+private:
+    const char *envName_;
+    std::vector<std::string> cleanupPaths_;
+};
 
 class TraceRecorderUtest: public testing::Test {
 protected:
@@ -205,6 +284,148 @@ TEST_F(TraceRecorderUtest, TestRecordEnvPath)
     TestRecorderWrite(1, 1, 2, TRACE_FILE_TXT_SUFFIX);
 
     unsetenv("ASCEND_WORK_PATH");
+}
+
+TEST_F(TraceRecorderUtest, TestRecordEnvRelativePath)
+{
+    TraceRecorderExit();
+    ScopedEnvAndPathCleanup envGuard("ASCEND_WORK_PATH");
+    const std::string relativeDir = "trace_recorder_relative_path_ut";
+    envGuard.AddPath(relativeDir);
+    setenv("ASCEND_WORK_PATH", ("./" + relativeDir).c_str(), 1);
+    ASSERT_EQ(TRACE_SUCCESS, TraceRecorderInit());
+
+    const char *dirTime = "19700101080004000001";
+    TraceDirInfo dirInfo = { TRACER_SCHEDULE_NAME, getpid(), dirTime, true };
+    TraceFileInfo fileInfo = { TRACER_SCHEDULE_NAME, "relative", TRACE_FILE_TXT_SUFFIX };
+    int32_t fd = -1;
+    auto ret = TraceRecorderGetFd(&dirInfo, &fileInfo, &fd);
+    ASSERT_EQ(TRACE_SUCCESS, ret);
+    EXPECT_EQ(TRACE_SUCCESS, TraceRecorderWrite(fd, "relative", 8U));
+    if (fd >= 0) {
+        close(fd);
+    }
+
+    char cwd[MAX_FILEDIR_LEN + 1U] = {0};
+    ASSERT_NE(nullptr, getcwd(cwd, sizeof(cwd)));
+    std::string expectedRoot = std::string(cwd) + "/" + relativeDir;
+    char filePath[MAX_FULLPATH_LEN + 1U] = {0};
+    ASSERT_TRUE(BuildRecorderFilePathWithRoot(filePath, MAX_FULLPATH_LEN + 1U, expectedRoot.c_str(),
+        TRACER_SCHEDULE_NAME, dirTime, TRACER_SCHEDULE_NAME, "relative", TRACE_FILE_TXT_SUFFIX));
+    EXPECT_EQ(0, access(filePath, F_OK));
+}
+
+TEST_F(TraceRecorderUtest, TestRecordEnvRelativePathWithParentDir)
+{
+    TraceRecorderExit();
+    ScopedEnvAndPathCleanup envGuard("ASCEND_WORK_PATH");
+    const std::string parentDir = "trace_recorder_relative_dotdot_parent";
+    const std::string targetDir = "trace_recorder_relative_dotdot_target";
+    envGuard.AddPath(parentDir);
+    envGuard.AddPath(targetDir);
+    setenv("ASCEND_WORK_PATH", (parentDir + "/../" + targetDir).c_str(), 1);
+    ASSERT_EQ(TRACE_SUCCESS, TraceRecorderInit());
+
+    const char *dirTime = "19700101080004000002";
+    TraceDirInfo dirInfo = { TRACER_SCHEDULE_NAME, getpid(), dirTime, true };
+    TraceFileInfo fileInfo = { TRACER_SCHEDULE_NAME, "dotdot", TRACE_FILE_TXT_SUFFIX };
+    int32_t fd = -1;
+    auto ret = TraceRecorderGetFd(&dirInfo, &fileInfo, &fd);
+    ASSERT_EQ(TRACE_SUCCESS, ret);
+    if (fd >= 0) {
+        close(fd);
+    }
+
+    char cwd[MAX_FILEDIR_LEN + 1U] = {0};
+    ASSERT_NE(nullptr, getcwd(cwd, sizeof(cwd)));
+    std::string expectedRoot = std::string(cwd) + "/" + targetDir;
+    char filePath[MAX_FULLPATH_LEN + 1U] = {0};
+    ASSERT_TRUE(BuildRecorderFilePathWithRoot(filePath, MAX_FULLPATH_LEN + 1U, expectedRoot.c_str(),
+        TRACER_SCHEDULE_NAME, dirTime, TRACER_SCHEDULE_NAME, "dotdot", TRACE_FILE_TXT_SUFFIX));
+    EXPECT_EQ(0, access(filePath, F_OK));
+}
+
+TEST_F(TraceRecorderUtest, TestRecordEnvEmptyPathFallbackToHome)
+{
+    TraceRecorderExit();
+    ScopedEnvAndPathCleanup envGuard("ASCEND_WORK_PATH");
+    setenv("ASCEND_WORK_PATH", "", 1);
+    ASSERT_EQ(TRACE_SUCCESS, TraceRecorderInit());
+
+    const char *dirTime = "19700101080004000003";
+    TraceDirInfo dirInfo = { TRACER_SCHEDULE_NAME, getpid(), dirTime, true };
+    TraceFileInfo fileInfo = { TRACER_SCHEDULE_NAME, "empty", TRACE_FILE_TXT_SUFFIX };
+    int32_t fd = -1;
+    auto ret = TraceRecorderGetFd(&dirInfo, &fileInfo, &fd);
+    ASSERT_EQ(TRACE_SUCCESS, ret);
+    if (fd >= 0) {
+        close(fd);
+    }
+
+    char filePath[MAX_FULLPATH_LEN + 1U] = {0};
+    ASSERT_TRUE(BuildRecorderFilePathWithRoot(filePath, MAX_FULLPATH_LEN + 1U, LLT_TEST_DIR "/ascend",
+        TRACER_SCHEDULE_NAME, dirTime, TRACER_SCHEDULE_NAME, "empty", TRACE_FILE_TXT_SUFFIX));
+    EXPECT_EQ(0, access(filePath, F_OK));
+}
+
+TEST_F(TraceRecorderUtest, TestRecordEnvNormalizeEmptyBufferFallbackToHome)
+{
+    TraceRecorderExit();
+    ScopedEnvAndPathCleanup envGuard("ASCEND_WORK_PATH");
+    MOCKER(TraceHandleEnvString).stubs().will(invoke(TraceHandleEmptyEnvStringStub));
+    ASSERT_EQ(TRACE_SUCCESS, TraceRecorderInit());
+    GlobalMockObject::verify();
+}
+
+TEST_F(TraceRecorderUtest, TestRecordEnvRelativePathGetcwdFailedFallbackToHome)
+{
+    TraceRecorderExit();
+    ScopedEnvAndPathCleanup envGuard("ASCEND_WORK_PATH");
+    setenv("ASCEND_WORK_PATH", "trace_recorder_getcwd_failed_path", 1);
+    MOCKER(getcwd).stubs().will(returnValue((char *)nullptr));
+    ASSERT_EQ(TRACE_SUCCESS, TraceRecorderInit());
+    GlobalMockObject::verify();
+}
+
+TEST_F(TraceRecorderUtest, TestRecordEnvRelativePathCopyFailedFallbackToHome)
+{
+    TraceRecorderExit();
+    ScopedEnvAndPathCleanup envGuard("ASCEND_WORK_PATH");
+    g_strcpyCallIndex.store(0U);
+    MOCKER(TraceHandleEnvString).stubs().will(invoke(TraceHandleRelativeEnvStringStub));
+    MOCKER(strcpy_s).stubs().will(invoke(StrcpyFailOnceThenCopy));
+    ASSERT_EQ(TRACE_SUCCESS, TraceRecorderInit());
+    GlobalMockObject::verify();
+}
+
+TEST_F(TraceRecorderUtest, TestRecordEnvRelativePathMaxLengthInitSucceeds)
+{
+    TraceRecorderExit();
+    ScopedEnvAndPathCleanup envGuard("ASCEND_WORK_PATH");
+    char cwd[MAX_FILEDIR_LEN + 1U] = {0};
+    ASSERT_NE(nullptr, getcwd(cwd, sizeof(cwd)));
+    ASSERT_LT(strlen(cwd) + 1U, static_cast<size_t>(MAX_FILEDIR_LEN));
+    size_t relativeLen = static_cast<size_t>(MAX_FILEDIR_LEN) - strlen(cwd) - 1U;
+    std::string relativeDir(relativeLen, 'a');
+    envGuard.AddPath(relativeDir);
+    setenv("ASCEND_WORK_PATH", relativeDir.c_str(), 1);
+    EXPECT_EQ(TRACE_SUCCESS, TraceRecorderInit());
+    EXPECT_EQ(0, access(relativeDir.c_str(), F_OK));
+}
+
+TEST_F(TraceRecorderUtest, TestRecordEnvRelativePathTooLongFallbackToHome)
+{
+    TraceRecorderExit();
+    ScopedEnvAndPathCleanup envGuard("ASCEND_WORK_PATH");
+    char cwd[MAX_FILEDIR_LEN + 1U] = {0};
+    ASSERT_NE(nullptr, getcwd(cwd, sizeof(cwd)));
+    ASSERT_LT(strlen(cwd), static_cast<size_t>(MAX_FILEDIR_LEN));
+    size_t relativeLen = static_cast<size_t>(MAX_FILEDIR_LEN) - strlen(cwd) + 1U;
+    std::string relativeDir(relativeLen, 'b');
+    envGuard.AddPath(relativeDir);
+    setenv("ASCEND_WORK_PATH", relativeDir.c_str(), 1);
+    EXPECT_EQ(TRACE_SUCCESS, TraceRecorderInit());
+    EXPECT_NE(0, access(relativeDir.c_str(), F_OK));
 }
 
 TEST_F(TraceRecorderUtest, TestRecordEnvInvalidPath)
