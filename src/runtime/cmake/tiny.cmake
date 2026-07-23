@@ -40,7 +40,7 @@ set(libruntime_v100_task_src_files
     ${RUNTIME_CORE_DIR}/src/task/task_info/dump/dump_task_v100.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task_v100.cc
-    ${RUNTIME_CORE_DIR}/src/task/task_info/cond_op/cond_op_stream_task_base.cc
+    ${RUNTIME_CORE_DIR}/src/task/task_info/stream/stream_task_active.cc
     ${RUNTIME_CORE_DIR}/src/task/task_execute_time.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/common/common_task.cc
     ${RUNTIME_CORE_DIR}/src/task/task_info/common/common_task_v100.cc
