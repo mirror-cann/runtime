@@ -251,7 +251,7 @@ inline const char* GetSysParamOptDesc(aclSysParamOpt opt)
 {
     // OPT_STRONG_CONSISTENCY has the same value as the deprecated enum ACL_OPT_STRONG_CONSISTENCY (=2).
     // Defined as static_cast to bypass the ACL_DEPRECATED_MESSAGE warning under -Werror compilation.
-    const aclSysParamOpt OPT_STRONG_CONSISTENCY = static_cast<aclSysParamOpt>(2);
+    constexpr aclSysParamOpt OPT_STRONG_CONSISTENCY = static_cast<aclSysParamOpt>(2);
     static const std::unordered_map<aclSysParamOpt, const char*> sysParamOptDescMap = {
         {ACL_OPT_DETERMINISTIC, "ACL_OPT_DETERMINISTIC(0)"},
         {ACL_OPT_ENABLE_DEBUG_KERNEL, "ACL_OPT_ENABLE_DEBUG_KERNEL(1)"},

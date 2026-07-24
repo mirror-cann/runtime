@@ -3499,7 +3499,7 @@ RTS_API rtError_t rtCtxGetSysParamOpt(const rtSysParamOpt configOpt, int64_t* co
 VISIBILITY_DEFAULT
 RTS_API rtError_t rtSetSysParamOpt(const rtSysParamOpt configOpt, const int64_t configVal)
 {
-    const int64_t SYS_OPT_DETERMINISTIC_LEVEL_MAX = 4;
+    constexpr int64_t SYS_OPT_DETERMINISTIC_LEVEL_MAX = 4;
     COND_RETURN_EXT_ERRCODE_AND_MSG_OUTER_WITH_PARAM(
         (configOpt >= SYS_OPT_RESERVED) || (configOpt < 0), RT_ERROR_INVALID_VALUE, configOpt,
         RtFmtMsg("[0, %d)", static_cast<int32_t>(SYS_OPT_RESERVED)));

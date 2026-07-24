@@ -89,7 +89,7 @@ aclError aclrtGetCurrentContextImpl(aclrtContext* context)
 
 static aclError GetSysParamOpt(aclSysParamOpt opt, int64_t* value, bool isCtx)
 {
-    const aclSysParamOpt OPT_STRONG_CONSISTENCY = static_cast<aclSysParamOpt>(2);
+    constexpr aclSysParamOpt OPT_STRONG_CONSISTENCY = static_cast<aclSysParamOpt>(2);
     ACL_REQUIRES_NOT_NULL_WITH_INPUT_REPORT(value);
     ACL_CHECK_INVALID_VALUE_WITH_DESC(
         (opt == ACL_OPT_DETERMINISTIC || opt == ACL_OPT_ENABLE_DEBUG_KERNEL || opt == OPT_STRONG_CONSISTENCY),
@@ -116,7 +116,7 @@ static aclError GetSysParamOpt(aclSysParamOpt opt, int64_t* value, bool isCtx)
 
 static aclError SetSysParamOpt(aclSysParamOpt opt, int64_t value, bool isCtx)
 {
-    const aclSysParamOpt OPT_STRONG_CONSISTENCY = static_cast<aclSysParamOpt>(2);
+    constexpr aclSysParamOpt OPT_STRONG_CONSISTENCY = static_cast<aclSysParamOpt>(2);
     ACL_CHECK_INVALID_VALUE_WITH_DESC(
         (opt == ACL_OPT_DETERMINISTIC || opt == ACL_OPT_ENABLE_DEBUG_KERNEL || opt == OPT_STRONG_CONSISTENCY),
         acl::GetSysParamOptDesc(opt), "opt",
