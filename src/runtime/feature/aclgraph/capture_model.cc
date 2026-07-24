@@ -795,39 +795,60 @@ void CaptureModel::DebugDotPrintTaskGroups(const uint32_t deviceId) const
         taskGroupId++;
     }
 }
-void CaptureModel::ReportedStreamInfoForProfiling() const
+bool CaptureModel::ReportSingleCaptureStreamInfo(
+    uint16_t captureStatus, uint32_t captureStmId, uint32_t singleOperStmId, uint64_t timeStamp) const
 {
-    MsprofCompactInfo compactInfo;
+    const uint16_t deviceId = static_cast<uint16_t>(Context_()->Device_()->Id_());
+
+    MsprofCompactInfo compactInfo{};
     compactInfo.level = MSPROF_REPORT_RUNTIME_LEVEL;
     compactInfo.type = RT_PROFILE_TYPE_CAPTURE_STREAM_INFO;
-    compactInfo.timeStamp = beginCaptureTimeStamp_;
+    compactInfo.timeStamp = timeStamp;
     compactInfo.threadId = GetCurrentTid();
     compactInfo.dataLen = static_cast<uint32_t>(sizeof(MsprofCaptureStreamInfo));
+    compactInfo.data.captureStreamInfo.captureStatus = captureStatus;
+    compactInfo.data.captureStreamInfo.modelStreamId = static_cast<uint16_t>(captureStmId);
+    compactInfo.data.captureStreamInfo.originalStreamId = static_cast<uint16_t>(singleOperStmId);
+    compactInfo.data.captureStreamInfo.modelId = static_cast<uint16_t>(Id_());
+    compactInfo.data.captureStreamInfo.deviceId = deviceId;
+
+    const int32_t v1Error = MsprofReportCompactInfo(0, &compactInfo, static_cast<uint32_t>(sizeof(MsprofCompactInfo)));
+    if (v1Error != MSPROF_ERROR_NONE) {
+        RT_LOG(RT_LOG_ERROR, "Reported capture stream info for profiling failed, retCode=%#x.", v1Error);
+    }
+
+    MsprofCompactInfo compactInfoV2{};
+    compactInfoV2.level = compactInfo.level;
+    compactInfoV2.type = RT_PROFILE_TYPE_CAPTURE_STREAM_INFO_V2;
+    compactInfoV2.timeStamp = compactInfo.timeStamp;
+    compactInfoV2.threadId = compactInfo.threadId;
+    compactInfoV2.dataLen = static_cast<uint32_t>(sizeof(MsprofCaptureStreamInfoV2));
+    compactInfoV2.data.captureStreamInfoV2.captureStatus = static_cast<uint8_t>(captureStatus);
+    compactInfoV2.data.captureStreamInfoV2.streamId = captureStmId;
+    compactInfoV2.data.captureStreamInfoV2.originalStreamId = singleOperStmId;
+    compactInfoV2.data.captureStreamInfoV2.modelId = Id_();
+    compactInfoV2.data.captureStreamInfoV2.deviceId = deviceId;
+
+    const int32_t v2Error =
+        MsprofReportCompactInfo(0, &compactInfoV2, static_cast<uint32_t>(sizeof(MsprofCompactInfo)));
+    if (v2Error != MSPROF_ERROR_NONE) {
+        RT_LOG(RT_LOG_ERROR, "Reported capture stream info v2 for profiling failed, retCode=%#x.", v2Error);
+    }
+
+    return (v1Error == MSPROF_ERROR_NONE);
+}
+
+void CaptureModel::ReportedStreamInfoForProfiling() const
+{
     for (const auto& iter : singleOperStmIdAndCaptureStmIdMap_) {
-        const int32_t singleOperStmId = iter.first;
-        const auto& captureStmIds = iter.second;
-        for (int32_t captureStmId : captureStmIds) {
-            compactInfo.data.captureStreamInfo.captureStatus = 0U;
-            compactInfo.data.captureStreamInfo.modelStreamId = static_cast<uint16_t>(captureStmId);
-            compactInfo.data.captureStreamInfo.originalStreamId = static_cast<uint16_t>(singleOperStmId);
-            compactInfo.data.captureStreamInfo.modelId = static_cast<uint16_t>(Id_());
-            compactInfo.data.captureStreamInfo.deviceId = static_cast<uint16_t>(Context_()->Device_()->Id_());
-            const auto error =
-                MsprofReportCompactInfo(0, &compactInfo, static_cast<uint32_t>(sizeof(MsprofCompactInfo)));
-            if (error != MSPROF_ERROR_NONE) {
-                RT_LOG(RT_LOG_ERROR, "Reported capture stream info for profiling failed, retCode=%#x.", error);
+        for (int32_t captureStmId : iter.second) {
+            if (!ReportSingleCaptureStreamInfo(
+                    0U, static_cast<uint32_t>(captureStmId), static_cast<uint32_t>(iter.first),
+                    beginCaptureTimeStamp_)) {
                 return;
             }
-            RT_LOG(
-                RT_LOG_DEBUG,
-                "Reported capture stream info for profiling successfully, captureStatus=%hu, stream_id=%hu, "
-                "original_stream_id=%hu, model_id=%hu, device_id=%hu, beginCaptureTimeStamp_=%" PRIu64 ".",
-                compactInfo.data.captureStreamInfo.captureStatus, compactInfo.data.captureStreamInfo.modelStreamId,
-                compactInfo.data.captureStreamInfo.originalStreamId, compactInfo.data.captureStreamInfo.modelId,
-                compactInfo.data.captureStreamInfo.deviceId, beginCaptureTimeStamp_);
         }
     }
-    return;
 }
 
 void CaptureModel::ReportedStreamInfoForProfilingForAllModels()
@@ -846,29 +867,7 @@ void CaptureModel::ReportedStreamInfoForProfilingForAllModels()
 
 void CaptureModel::EraseStreamInfoForProfiling() const
 {
-    MsprofCompactInfo compactInfo;
-    compactInfo.level = MSPROF_REPORT_RUNTIME_LEVEL;
-    compactInfo.type = RT_PROFILE_TYPE_CAPTURE_STREAM_INFO;
-    compactInfo.timeStamp = MsprofSysCycleTime();
-    compactInfo.threadId = GetCurrentTid();
-    compactInfo.dataLen = static_cast<uint32_t>(sizeof(MsprofCaptureStreamInfo));
-    compactInfo.data.captureStreamInfo.captureStatus = 1U;
-    compactInfo.data.captureStreamInfo.modelStreamId = 0xFFFFU;
-    compactInfo.data.captureStreamInfo.originalStreamId = 0xFFFFU;
-    compactInfo.data.captureStreamInfo.modelId = static_cast<uint16_t>(Id_());
-    compactInfo.data.captureStreamInfo.deviceId = static_cast<uint16_t>(Context_()->Device_()->Id_());
-    const auto error = MsprofReportCompactInfo(0, &compactInfo, static_cast<uint32_t>(sizeof(MsprofCompactInfo)));
-    if (error != MSPROF_ERROR_NONE) {
-        RT_LOG(RT_LOG_ERROR, "Reported capture stream info for profiling failed, retCode=%#x.", error);
-    } else {
-        RT_LOG(
-            RT_LOG_DEBUG,
-            "Reported capture stream info for profiling successfully, captureStatus=%hu, stream_id=%hu, "
-            "original_stream_id=%hu, model_id=%hu, device_id=%hu.",
-            compactInfo.data.captureStreamInfo.captureStatus, compactInfo.data.captureStreamInfo.modelStreamId,
-            compactInfo.data.captureStreamInfo.originalStreamId, compactInfo.data.captureStreamInfo.modelId,
-            compactInfo.data.captureStreamInfo.deviceId);
-    }
+    (void)ReportSingleCaptureStreamInfo(1U, 0xFFFFFFFFU, 0xFFFFFFFFU, MsprofSysCycleTime());
 }
 Stream* CaptureModel::GetOriginalCaptureStream(void) const
 {

@@ -273,6 +273,8 @@ enum rtProfileDataType_t : uint32_t {
     RT_PROFILE_TYPE_SHAPE_INFO = 805,     /* aclgraph cache & report shape info */
     RT_PROFILE_TYPE_DPU_INFO = 806,       /* dpu task track*/
     RT_PROFILE_TYPE_STREAM_SQ_INFO = 807, /* stream sq info */
+    RT_PROFILE_TYPE_TASK_TRACK_V2 = 808,  /* task track v2 */
+    RT_PROFILE_TYPE_CAPTURE_STREAM_INFO_V2 = 809,
     RT_PROFILE_TYPE_API_BEGIN = 1000,     /* regist task type and task name for Parsing task info*/
     RT_PROFILE_TYPE_API_END = 2000,
     RT_PROFILE_TYPE_MAX = 2001

@@ -338,6 +338,8 @@ private:
     std::vector<CaptureModel*>& GetAllSubCaptureModels();
     void RestoreJettyForSnapshot();
     rtError_t RefreshJettyInfoList();
+    bool ReportSingleCaptureStreamInfo(
+        uint16_t captureStatus, uint32_t captureStmId, uint32_t singleOperStmId, uint64_t timeStamp) const;
     RtCaptureModelStatus captureModelStatus_{RtCaptureModelStatus::NONE};
     mutable uint32_t cacheOpInfoSwitch_{0U}; // aclgraph stream status: 0: false, 1:true
     std::map<int32_t, std::map<uint32_t, std::unique_ptr<uint8_t[]>>> shapeInfos_;

@@ -370,6 +370,11 @@ struct MsprofSimtKernelInfo {
     uint8_t reserved; 
 };
 
+struct MsprofModelInfo {
+    uint32_t modelId;
+    uint8_t rsv[12];
+};
+
 struct MsprofRuntimeTrack {  // for MsprofReportCompactInfo buffer data
     uint16_t deviceId;
     uint16_t streamId;
@@ -379,6 +384,21 @@ struct MsprofRuntimeTrack {  // for MsprofReportCompactInfo buffer data
     union {
         struct MsprofKernelInfo kernelInfo;
         struct MsprofSimtKernelInfo simtKernelInfo;
+        struct MsprofModelInfo modelInfo;
+    } extInfo;
+};
+
+struct MsprofRuntimeTrackV2 {  // for MsprofReportCompactInfo buffer data
+    uint16_t deviceId;
+    uint8_t rsv[2];
+    uint32_t streamId;
+    uint32_t taskId;
+    uint32_t taskType;       // task message hash id
+    uint64_t kernelName;     // kernelname hash id
+    union {
+        struct MsprofKernelInfo kernelInfo;
+        struct MsprofSimtKernelInfo simtKernelInfo;
+        struct MsprofModelInfo modelInfo;
     } extInfo;
 };
 
@@ -388,6 +408,15 @@ struct MsprofCaptureStreamInfo {  // for MsprofReportCompactInfo buffer data
     uint16_t originalStreamId;  // ori stream id. Destroy the stream ID of the record, set it to UINT16_MAX.
     uint16_t modelId;           // capture model id, independent of GE
     uint16_t deviceId;
+};
+
+struct MsprofCaptureStreamInfoV2 {  // for MsprofReportCompactInfo buffer data
+    uint16_t deviceId;
+    uint8_t captureStatus;     // Whether the mark is destroyed: 0 indicates normal, 1 indicates destroyed.
+    uint8_t rsv;
+    uint32_t streamId;     // capture stream id. Destroy the stream ID of the record, set it to UINT16_MAX.
+    uint32_t originalStreamId;  // ori stream id. Destroy the stream ID of the record, set it to UINT16_MAX.
+    uint32_t modelId;           // capture model id, independent of GE
 };
 
 struct MsprofStreamSqInfo {     // for MsprofReportCompactInfo buffer data
@@ -523,7 +552,9 @@ struct MsprofCompactInfo {  // for MsprofReportCompactInfo buffer data
     union {
         uint8_t info[MSPROF_COMPACT_INFO_DATA_LENGTH];
         struct MsprofRuntimeTrack runtimeTrack;
+        struct MsprofRuntimeTrackV2 runtimeTrackV2;
         struct MsprofCaptureStreamInfo captureStreamInfo;
+        struct MsprofCaptureStreamInfoV2 captureStreamInfoV2;
         struct MsprofStreamSqInfo streamSqInfo;
         struct MsprofNodeBasicInfo nodeBasicInfo;
         struct MsprofHCCLOPInfo hcclopInfo;

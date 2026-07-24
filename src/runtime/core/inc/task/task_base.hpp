@@ -223,6 +223,7 @@ typedef enum tagTsTaskType {
 enum class ProfTaskType : uint16_t {
     PROF_TASK_TYPE_BEGIN = 600,
     PROF_TASK_TYPE_KERNEL_SIMT = PROF_TASK_TYPE_BEGIN,
+    PROF_TASK_TYPE_MODEL_WAIT_COMPLETE,
 };
 
 enum class PhCmdType : uint8_t {

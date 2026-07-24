@@ -243,7 +243,19 @@ void Profiler::ModifyTrackData(TaskInfo* const taskInfo, const uint32_t devId, R
     } else {
         trackData->compactInfo.data.runtimeTrack.taskId = GetProfTaskId(taskInfo);
     }
-    trackData->compactInfo.data.runtimeTrack.taskType = taskInfo->type;
+    uint32_t taskType = taskInfo->type;
+    // model exec 的notify wait,给prof上报的type做适配修改
+    if (taskInfo->type == TS_TASK_TYPE_NOTIFY_WAIT &&
+        (taskInfo->u.notifywaitTask.isEndGraphNotify && taskInfo->u.notifywaitTask.captureModel != nullptr)) {
+        taskType = static_cast<uint32_t>(ProfTaskType::PROF_TASK_TYPE_MODEL_WAIT_COMPLETE);
+        trackData->compactInfo.data.runtimeTrack.extInfo.modelInfo.modelId =
+            taskInfo->u.notifywaitTask.captureModel->Id_();
+    }
+    if (taskType == TS_TASK_TYPE_MODEL_EXECUTE) {
+        trackData->compactInfo.data.runtimeTrack.extInfo.modelInfo.modelId = taskInfo->u.modelExecuteTaskInfo.modelId;
+    }
+
+    trackData->compactInfo.data.runtimeTrack.taskType = taskType;
     FillKernelLaunchExtInfo(trackData->compactInfo.data.runtimeTrack, taskInfo);
     trackData->compactInfo.data.runtimeTrack.kernelName = GetKernelNameId(*taskInfo);
 
@@ -351,6 +363,23 @@ void Profiler::ReportDestroyFlipTask(const Stream* const stm, const uint32_t dev
     if (ret != MSPROF_ERROR_NONE) {
         RT_LOG_CALL_MSG(ERR_MODULE_PROFILE, "Failed to report profiling task track data, retCode=%d.", ret);
         return;
+    }
+    MsprofCompactInfo compactInfoV2{};
+    compactInfoV2.level = compactInfo.level;
+    compactInfoV2.type = RT_PROFILE_TYPE_TASK_TRACK_V2;
+    compactInfoV2.timeStamp = compactInfo.timeStamp;
+    compactInfoV2.threadId = compactInfo.threadId;
+    compactInfoV2.dataLen = static_cast<uint32_t>(sizeof(MsprofRuntimeTrackV2));
+    compactInfoV2.data.runtimeTrackV2.deviceId = compactInfo.data.runtimeTrack.deviceId;
+    compactInfoV2.data.runtimeTrackV2.streamId =
+        (stm == nullptr) ? RT_MAX_STREAM_ID : static_cast<uint32_t>(stm->GetExposedStreamId());
+    compactInfoV2.data.runtimeTrackV2.taskId = 0xFFFFFFFFU;
+    compactInfoV2.data.runtimeTrackV2.taskType = TS_TASK_TYPE_FLIP;
+
+    const int32_t retV2 =
+        MsprofReportCompactInfo(true, &compactInfoV2, static_cast<uint32_t>(sizeof(MsprofCompactInfo)));
+    if (retV2 != MSPROF_ERROR_NONE) {
+        RT_LOG_CALL_MSG(ERR_MODULE_PROFILE, "Failed to report profiling task track v2 data, retCode=%d.", retV2);
     }
     return;
 }
@@ -467,7 +496,42 @@ void Profiler::ReportTrackData(const Stream* const s, const uint16_t taskId) con
     FillKernelLaunchExtInfo(trackData.compactInfo.data.runtimeTrack, task);
     trackData.compactInfo.data.runtimeTrack.kernelName = GetKernelNameId(*task);
     (void)ReportCompactInfo(&trackData);
+    ReportTrackDataV2(s, task, devId, trackData);
     return;
+}
+
+void Profiler::ReportTrackDataV2(
+    const Stream* const stm, const TaskInfo* const task, const uint32_t devId,
+    const RuntimeProfTrackData& v1TrackData) const
+{
+    const Model* model = stm->Model_();
+    if ((model == nullptr) || (model->GetModelType() != RT_MODEL_CAPTURE_MODEL)) {
+        return;
+    }
+
+    RuntimeProfTrackData trackData{};
+    trackData.isModel = true;
+    trackData.compactInfo.level = MSPROF_REPORT_RUNTIME_LEVEL;
+    trackData.compactInfo.type = RT_PROFILE_TYPE_TASK_TRACK_V2;
+    trackData.compactInfo.timeStamp = task->taskTrackTimeStamp;
+    trackData.compactInfo.threadId = task->tid;
+    trackData.compactInfo.dataLen = static_cast<uint32_t>(sizeof(MsprofRuntimeTrackV2));
+
+    MsprofRuntimeTrackV2& track = trackData.compactInfo.data.runtimeTrackV2;
+    track.deviceId = static_cast<uint16_t>(devId);
+    track.streamId = static_cast<uint32_t>(stm->GetExposedStreamId());
+    track.taskId = v1TrackData.compactInfo.data.runtimeTrack.taskId;
+    track.taskType = static_cast<uint32_t>(v1TrackData.compactInfo.data.runtimeTrack.taskType);
+    track.kernelName = v1TrackData.compactInfo.data.runtimeTrack.kernelName;
+    const errno_t rc = memcpy_s(
+        &track.extInfo, sizeof(track.extInfo), &v1TrackData.compactInfo.data.runtimeTrack.extInfo,
+        sizeof(v1TrackData.compactInfo.data.runtimeTrack.extInfo));
+    if (rc != EOK) {
+        RT_LOG(RT_LOG_ERROR, "memcpy_s failed for extInfo copy, rc=%d.", static_cast<int32_t>(rc));
+        return;
+    }
+
+    (void)ReportCompactInfo(&trackData);
 }
 
 // report cache task track and clear streamSet_

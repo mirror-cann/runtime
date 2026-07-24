@@ -129,6 +129,8 @@ rtError_t ProfilingAgent::RegisterProfTypeInfo() const
         {TS_TASK_TYPE_CAPTURE_CONDITION, "CAPTURE_CONDITION"},
         {TS_TASK_TYPE_CAPTURE_RECORD_EXTERNAL, "CAPTURE_RECORD_EXTERNAL"},
         {TS_TASK_TYPE_CAPTURE_WAIT_EXTERNAL, "CAPTURE_WAIT_EXTERNAL"},
+        {static_cast<uint32_t>(ProfTaskType::PROF_TASK_TYPE_MODEL_WAIT_COMPLETE), "MODEL_WAIT_COMPLETE"},
+
         // memcpy info
         {RT_PROFILE_TYPE_MEMCPY_INFO, "memcpy_info"},
 
@@ -144,6 +146,9 @@ rtError_t ProfilingAgent::RegisterProfTypeInfo() const
         {RT_PROFILE_TYPE_DPU_INFO, "dpu_track"},
         // stream sq info
         {RT_PROFILE_TYPE_STREAM_SQ_INFO, "stream_sq_info"},
+        // task_track_v2
+        {RT_PROFILE_TYPE_TASK_TRACK_V2, "task_track_v2"},
+        {RT_PROFILE_TYPE_CAPTURE_STREAM_INFO_V2, "capture_stream_info_v2"},
 
         // api, RT_PROFILE_TYPE_API_BEGIN + rtProfApiType_t
         {static_cast<uint32_t>(RT_PROFILE_TYPE_API_BEGIN) + static_cast<uint32_t>(RT_PROF_API_DEVBINARY_REGISTER),

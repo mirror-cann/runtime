@@ -69,6 +69,9 @@ public:
         const uint64_t profConfig, const uint32_t devId, Device* const dev, const bool needCloseTimeline);
     void TrackDataInit(void) const;
     void ReportTrackData(const Stream* const s, const uint16_t taskId) const;
+    void ReportTrackDataV2(
+        const Stream* const stm, const TaskInfo* const task, const uint32_t devId,
+        const RuntimeProfTrackData& v1TrackData) const;
     void SetTrackProfEnable(bool trackProfEnable, uint32_t cacheFlag = 0)
     {
         if (trackProfEnable) {
