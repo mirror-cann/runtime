@@ -23,9 +23,8 @@ bool IsDvppTask(const uint16_t sqeType)
 
 bool IsNeedRetryTask(const uint16_t sqeType)
 {
-    return (
-        (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_VPC)) ||
-        (sqeType == static_cast<uint16_t>(RT_DAVID_SQE_TYPE_NSC)));
+    UNUSED(sqeType);
+    return false;
 }
 
 bool IsSupportType(const uint16_t sqeType) { return IsDvppTask(sqeType); }

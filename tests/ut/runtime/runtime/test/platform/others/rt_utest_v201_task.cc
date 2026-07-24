@@ -1835,5 +1835,5 @@ TEST_F(TaskTestV201, ProcReportIsDvppErrorAndRetryTest)
     report.errorType = static_cast<uint16_t>(RT_STARS_CQE_ERR_TYPE_TASK_TIMEOUT);
 
     rtError_t error = ProcReportIsDvppErrorAndRetry(report, &task);
-    EXPECT_EQ(error, true);
+    EXPECT_EQ(error, false);
 }
