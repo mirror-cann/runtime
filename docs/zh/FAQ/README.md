@@ -4,6 +4,7 @@
 - [Runtime版本与CANN版本不匹配导致的问题](Runtime版本与CANN版本不匹配导致的问题.md)
 - [aclInit初始化失败常见原因排查](aclInit初始化失败常见原因排查.md)
 - [aclrtSetDevice调用失败](aclrtSetDevice调用失败.md)
+- [首次aclrtSetDevice耗时长](首次aclrtSetDevice耗时长.md)
 - [如何理解默认Device和默认Stream机制](如何理解默认Device和默认Stream机制.md)
 - [aclrtMalloc内存申请失败常见原因](aclrtMalloc内存申请失败常见原因.md)
 - [aclrtMemcpyAsync在错误的Stream上下发失败](aclrtMemcpyAsync在错误的Stream上下发失败.md)
