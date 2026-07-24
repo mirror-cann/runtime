@@ -2907,7 +2907,7 @@ TEST_F(Utest_mmpa_linux, Utest_mmCreateTaskWithThreadAttr_03)
     attr.policyFlag = 1;
     attr.policy = MMPA_THREAD_SCHED_RR;
     attr.priorityFlag = 1;
-    attr.priority = 1; // 1-99
+    attr.priority = 1;      // 1-99
     attr.stackFlag = 1;
     attr.stackSize = 20480; // 20K
 

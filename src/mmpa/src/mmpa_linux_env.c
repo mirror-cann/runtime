@@ -248,7 +248,7 @@ INT32 mmGetEnv(const CHAR* name, CHAR* value, UINT32 len)
     if ((envLen != MMPA_ZERO) && (len < envLen)) {
         return EN_INVALID_PARAM;
     } else {
-        ret = memcpy_s(value, len, envPtr, envLen); //lint !e613
+        ret = memcpy_s(value, len, envPtr, envLen);
         if (ret != EN_OK) {
             return EN_ERROR;
         }

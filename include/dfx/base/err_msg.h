@@ -76,9 +76,10 @@
 #define REPORT_PREDEFINED_ERRMSG_3PARAMS(error_code, key, value) \
     error_message::ReportPredefinedErrMsg((error_code), (key), (value))
 
-#define REPORT_PREDEFINED_ERR_MSG(...) \
-    REPORT_PREDEFINED_ERRMSG_CHOOSER(  \
-        __VA_ARGS__, REPORT_PREDEFINED_ERRMSG_3PARAMS, , REPORT_PREDEFINED_ERRMSG_1PARAMS)(__VA_ARGS__)
+#define REPORT_PREDEFINED_ERR_MSG(...)                                                     \
+    REPORT_PREDEFINED_ERRMSG_CHOOSER(                                                      \
+        __VA_ARGS__, REPORT_PREDEFINED_ERRMSG_3PARAMS, , REPORT_PREDEFINED_ERRMSG_1PARAMS) \
+    (__VA_ARGS__)
 
 #define REG_FORMAT_ERROR_MSG(error_msg, error_msg_len) \
     REG_FORMAT_ERROR_MSG_UNIQ_HELPER((error_msg), (error_msg_len), __COUNTER__)

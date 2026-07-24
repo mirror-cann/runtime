@@ -53,7 +53,7 @@ CHAR g_arch[MMPA_MAX_PROCESSOR_ARCHITECTURE_COUNT][MMPA_MIN_OS_VERSION_SIZE] = {
     "ARM",  // 5
     "ia64", // 6
     "",       "",
-    "x64", // 9
+    "x64",  // 9
 };
 
 /*
@@ -760,11 +760,11 @@ VOID LocalReceiveAction(mmPollfd fd, VOID* buf, UINT32 bufLen, LPOVERLAPPED poa)
             handle,       // device to be queried
             fd.ioctlCode, // operation to perform
             nullptr,
-            0,   // no input buffer
-            buf, // output buffer
+            0,            // no input buffer
+            buf,          // output buffer
             bufLen,
-            &dwRead, // bytes returned
-            poa);    // synchronous I/O
+            &dwRead,      // bytes returned
+            poa);         // synchronous I/O
     }
 }
 
@@ -955,11 +955,11 @@ INT32 mmWaitPid(mmProcess pid, INT32* status, INT32 options)
         if (status != nullptr) {
             GetExitCodeProcess(pid, (LPDWORD)status); // 按需获取退出码
         }
-        return EN_ERR; // 进程已结束
+        return EN_ERR;                                // 进程已结束
     } else if (ret == WAIT_FAILED) {
-        return EN_ERROR; // 调用异常
+        return EN_ERROR;                              // 调用异常
     } else {
-        return EN_OK; // 进程未结束
+        return EN_OK;                                 // 进程未结束
     }
 }
 

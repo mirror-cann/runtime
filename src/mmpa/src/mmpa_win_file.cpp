@@ -320,7 +320,7 @@ mmProcess mmOpenFile(const CHAR* fileName, UINT32 accessFlag, mmCreateFlag fileF
     }
     DWORD dwCreationDisposition;
     if (fileFlag.createFlag == OPEN_ALWAYS) {
-        dwCreationDisposition = OPEN_ALWAYS; // if no file , create file
+        dwCreationDisposition = OPEN_ALWAYS;   // if no file , create file
     } else {
         dwCreationDisposition = OPEN_EXISTING; // if no file , return false
     }

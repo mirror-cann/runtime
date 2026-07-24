@@ -12,8 +12,8 @@
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {
-#endif /* __cpluscplus */
-#endif /* __cpluscplus */
+#endif                         /* __cpluscplus */
+#endif                         /* __cpluscplus */
 
 static INT32 opterr = 1;       // 与linux的全局环境变量命名保持一致
 static INT32 optind = 1;       // 与linux的全局环境变量命名保持一致
@@ -343,7 +343,7 @@ static INT32 LocalJudgeM(
 {
     INT32 shortToo = 0;
     if (*g_place == '-') {
-        g_place++; /* --foo long option */
+        g_place++;    /* --foo long option */
     } else if (*g_place != ':' && strchr(options, *g_place) != nullptr) {
         shortToo = 1; /* could be short option too */
     }

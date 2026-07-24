@@ -974,7 +974,7 @@ INT32 mmWaitPid(mmProcess pid, INT32* status, INT32 options)
 
     INT32 ret = waitpid(pid, status, options);
     if (ret == EN_ERROR) {
-        return EN_ERROR; // 调用异常
+        return EN_ERROR;                     // 调用异常
     }
     if ((ret > MMPA_ZERO) && (ret == pid)) { // 返回了子进程ID
         if (status != NULL) {
@@ -987,7 +987,7 @@ INT32 mmWaitPid(mmProcess pid, INT32* status, INT32 options)
         }
         return EN_ERR; // 进程结束
     }
-    return EN_OK; // 进程未结束
+    return EN_OK;      // 进程未结束
 }
 
 /*
@@ -1194,7 +1194,7 @@ static INT32 LocalLookup(CHAR* buf, UINT32 bufLen, const CHAR* pattern, CHAR* va
 {
     const CHAR* pValue = NULL;
     CHAR* pBuf = NULL;
-    size_t len = strlen(pattern); //lint !e712
+    size_t len = strlen(pattern);
 
     // 空白字符过滤
     for (pBuf = buf; isspace(*pBuf) != 0; pBuf++) {

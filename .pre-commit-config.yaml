@@ -21,6 +21,7 @@ repos:
                 (?:
                   external
                   | tsd_client
+                  | dfx/base/err_msg.h
                 )(?:/|$)
               )
               | $
@@ -29,6 +30,8 @@ repos:
               /(?!
                 (?:
                   aicpu_sched
+                  | base/err_mgr.h
+                  | mmpa
                   | queue_schedule
                   | runtime
                   | tsd
@@ -39,8 +42,10 @@ repos:
             | scripts
             | src/(
               aicpu_sched
-              | dfx
-              | mmpa
+              | dfx/adump
+              | dfx/log
+              | dfx/msprof
+              | dfx/trace
               | queue_schedule
             )(/|$)
             | stub
@@ -48,10 +53,13 @@ repos:
               /(?!
                 (?:
                   cmodel_test
+                  | depends/mmpa
                   | depends/runtime
                   | depends/tdt
                   | ut/acl
                   | ut/aicpu_sched
+                  | ut/error_manager
+                  | ut/mmpa
                   | ut/queue_schedule
                   | ut/runtime
                   | ut/tsd

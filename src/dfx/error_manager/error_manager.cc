@@ -652,7 +652,8 @@ int32_t ErrorManager::OutputErrMessage(int32_t handle)
     if (err_msg.empty()) {
         std::stringstream err_stream;
         err_stream << "E19999: Internal error!" << std::endl;
-        err_stream << "        " << "Unknown error occurred. Please check the log." << std::endl;
+        err_stream << "        "
+                   << "Unknown error occurred. Please check the log." << std::endl;
         err_msg = err_stream.str();
     }
 
@@ -705,9 +706,8 @@ int32_t ErrorManager::ParseJsonFormatString(const void* const handle, uint32_t p
         }
         const nlohmann::json& error_list_json = json_file->at("error_info_list");
         if (error_list_json.is_null() || !error_list_json.is_array()) {
-            GELOGW(
-                "[Check][Config]The message of error_info_list is not found or "
-                "the message of error_info_list is not array");
+            GELOGW("[Check][Config]The message of error_info_list is not found or "
+                   "the message of error_info_list is not array");
             return -1;
         }
         for (const auto& error_json : error_list_json) {

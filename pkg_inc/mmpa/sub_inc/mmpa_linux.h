@@ -44,7 +44,7 @@ typedef int (*mmFilter)(const mmDirent* entry);
 typedef int (*mmFilter2)(const mmDirent2* entry);
 typedef int (*mmSort)(const mmDirent** a, const mmDirent** b);
 typedef int (*mmSort2)(const mmDirent2** a, const mmDirent2** b);
-typedef size_t mmSize_t; //lint !e410 !e1051
+typedef size_t mmSize_t; // lint !e410 !e1051
 typedef off_t mmOfft_t;
 typedef pid_t mmPid_t;
 typedef long MM_LONG;
@@ -248,8 +248,8 @@ typedef struct {
 
 #define M_WAIT_NOHANG WNOHANG // Non blocking waiting
 #define M_WAIT_UNTRACED \
-    WUNTRACED // If the subprocess enters the suspended state, it will return immediately
-              // But the end state of the subprocess is ignored
+    WUNTRACED                 // If the subprocess enters the suspended state, it will return immediately
+                              // But the end state of the subprocess is ignored
 #define M_UMASK_USRREAD S_IRUSR
 #define M_UMASK_GRPREAD S_IRGRP
 #define M_UMASK_OTHREAD S_IROTH
