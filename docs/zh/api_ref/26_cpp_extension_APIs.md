@@ -839,7 +839,7 @@ aclError aclrtMemAllocManaged(T **devPtr, size_t size, uint32_t flags = ACL_RT_M
 | 参数名 | 输入/输出 | 说明 |
 | --- | --- | --- |
 | ptr | 输出 | “已分配内存的指针”的指针，由于Host和Device虚拟地址统一编址，该参数不区分申请位置。 |
-| size | 输入 | 内存大小，单位Byte。<br>size不能为0，单个应用进程最大可申请3T UVM类型的虚拟内存。 |
+| size | 输入 | 内存大小，单位Byte。<br>size不能为0，单个应用进程最大可申请3TB UVM类型的虚拟内存。 |
 | flag | 输入 | 内存标识。<br>当前flag仅支持设置为ACL_RT_MEM_ATTACH_GLOBAL，所对应数值为1。设置为ACL_RT_MEM_ATTACH_GLOBAL后，通过本接口申请的内存在Device和Host侧都可以被访问。<br>宏定义如下：<br>#define ACL_RT_MEM_ATTACH_GLOBAL (0x01U) |
 
 ### 返回值说明
@@ -900,8 +900,8 @@ aclError aclrtMemManagedPrefetchAsync(const T *ptr, size_t size, aclrtMemManaged
 
 | 参数名 | 输入/输出 | 说明 |
 | --- | --- | --- |
-| ptr | 输入 | 待预取的内存地址，地址范围必须在UVM内存范围之内，即[0x90000000000ULL, 0x90000000000ULL+3T)。 |
-| size | 输入 | 待预取的内存长度，单位Byte，要求2MB对齐。取值范围为(0, 3T]。 |
+| ptr | 输入 | 待预取的内存地址，地址范围必须在UVM内存范围之内，即[0x90000000000ULL, 0x90000000000ULL+3TB)。 |
+| size | 输入 | 待预取的内存长度，单位Byte，要求2MB对齐。取值范围为(0, 3TB]。 |
 | location | 输入 | 物理内存的位置信息，location参数包含id和type两个成员。类型定义请参见[aclrtMemManagedLocation](25-04_Structs.md#aclrtMemManagedLocation)。 |
 | flags | 输入 | 预留参数。当前固定配置为0。 |
 | stream | 输入 | 指定执行内存预取任务的stream。类型定义请参见[aclrtStream](25-05_Typedefs.md#aclrtStream)。 |
@@ -963,8 +963,8 @@ aclError aclrtMemManagedPrefetchBatchAsync(const T **ptrs, size_t *sizes, size_t
 
 | 参数名 | 输入/输出 | 说明 |
 | --- | --- | --- |
-| ptrs | 输入 | 待预取的内存地址数组，每个地址的范围都必须在UVM内存范围之内，即[0x90000000000ULL, 0x90000000000ULL+3T)。 |
-| sizes | 输入 | 内存预取长度数组，用于存放每一段要预取的UVM内存长度，单位Byte。每段长度都要求2MB对齐，取值范围为(0, 3T]。 |
+| ptrs | 输入 | 待预取的内存地址数组，每个地址的范围都必须在UVM内存范围之内，即[0x90000000000ULL, 0x90000000000ULL+3TB)。 |
+| sizes | 输入 | 内存预取长度数组，用于存放每一段要预取的UVM内存长度，单位Byte。每段长度都要求2MB对齐，取值范围为(0, 3TB]。 |
 | count | 输入 | ptrs和sizes数组的长度。 |
 | prefetchLoc | 输入 | 物理内存的位置信息，每个位置信息都包含id和type两个成员。针对所有待预取的内存，使用同一个物理内存的位置信息<br>类型定义请参见[aclrtMemManagedLocation](25-04_Structs.md#aclrtMemManagedLocation)。 |
 | prefetchLocs | 输入 | 物理内存的位置信息数组，每个位置信息都包含id和type两个成员。针对每一段待预取的内存，使用相应的物理内存的位置信息<br>类型定义请参见[aclrtMemManagedLocation](25-04_Structs.md#aclrtMemManagedLocation)。 |
@@ -1093,7 +1093,7 @@ aclError aclrtMallocHost(T **hostPtr, size_t size, aclrtMallocConfig *cfg = null
 
 | 参数名 | 输入/输出 | 说明 |
 | --- | --- | --- |
-| devPtr | 输出 | “Device上已分配内存的指针”的指针。 |
+| hostPtr | 输出 | “已分配内存的指针”的指针。 |
 | size | 输入 | 申请内存的大小，单位Byte。<br>size不能为0。 |
 | policy | 输入 | 内存分配规则。类型定义请参见[aclrtMemMallocPolicy](25-02_Enumerations.md#aclrtMemMallocPolicy)。<br>若配置的内存分配规则超出[aclrtMemMallocPolicy](25-02_Enumerations.md#aclrtMemMallocPolicy)取值范围，size≥2M时，按大页申请内存，否则按普通页申请内存。 |
 | cfg | 输入 | 内存配置信息。类型定义请参见[aclrtMallocConfig](25-04_Structs.md#aclrtMallocConfig)。 |

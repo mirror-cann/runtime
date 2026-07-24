@@ -841,7 +841,7 @@ Ascend 950PR/Ascend 950DT中不再有单独的DVPP Device内存类型（即ACL\_
 | --- | :---: | --- |
 | addrList | 输入 | Device内存地址数组。 |
 | size | 输入 | addrList数组大小。 |
-| memType | 输入 | Device内存类型。若addrList数组中有多种不同类型的内存地址，则memType处需配置为多种内存类型位或，例如配置为：RT_MEM_MASK_DEV_TYPE \| RT_MEM_MASK_DVPP_TYPE <br><br>当前支持设置为如下宏：<br>  - ACL_RT_MEM_TYPE_DEV：表示调用[aclrtMalloc](11-01_device_memory_malloc_and_free.md#aclrtMalloc)、[aclrtMallocWithCfg](11-01_device_memory_malloc_and_free.md#aclrtMallocWithCfg)等接口申请的Device内存。<br>  - ACL_RT_MEM_TYPE_DVPP：表示DVPP专用的Device内存，可调用相关内存申请接口（例如hi_mpi_dvpp_malloc）申请该内存。Ascend 950PR/Ascend 950DT中不再有单独的DVPP Device内存类型，而是当做普通Device内存处理。<br>  - ACL_RT_MEM_TYPE_RSVD：表示调用[aclrtReserveMemAddress](11-04_virtual_memory_management.md#aclrtReserveMemAddress)接口预留的虚拟内存。<br><br><br>宏定义如下：<br>#define ACL_RT_MEM_TYPE_DEV  (0X2U)<br>#define ACL_RT_MEM_TYPE_DVPP  (0X8U)<br>#define ACL_RT_MEM_TYPE_RSVD  (0X10U) |
+| memType | 输入 | Device内存类型。若addrList数组中有多种不同类型的内存地址，则memType处需配置为多种内存类型位或，例如配置为：ACL_RT_MEM_TYPE_DEV \| ACL_RT_MEM_TYPE_DVPP <br><br>当前支持设置为如下宏：<br>  - ACL_RT_MEM_TYPE_DEV：表示调用[aclrtMalloc](11-01_device_memory_malloc_and_free.md#aclrtMalloc)、[aclrtMallocWithCfg](11-01_device_memory_malloc_and_free.md#aclrtMallocWithCfg)等接口申请的Device内存。<br>  - ACL_RT_MEM_TYPE_DVPP：表示DVPP专用的Device内存，可调用相关内存申请接口（例如hi_mpi_dvpp_malloc）申请该内存。Ascend 950PR/Ascend 950DT中不再有单独的DVPP Device内存类型，而是当做普通Device内存处理。<br>  - ACL_RT_MEM_TYPE_RSVD：表示调用[aclrtReserveMemAddress](11-04_virtual_memory_management.md#aclrtReserveMemAddress)接口预留的虚拟内存。<br><br><br>宏定义如下：<br>#define ACL_RT_MEM_TYPE_DEV  (0X2U)<br>#define ACL_RT_MEM_TYPE_DVPP  (0X8U)<br>#define ACL_RT_MEM_TYPE_RSVD  (0X10U) |
 | checkResult | 输出 | 检查addrList数组中内存地址类型与memType处是否匹配，1表示匹配，0表示不匹配。 |
 | reserve | 输入 | 预留参数，当前固定配置为0。 |
 

@@ -2126,7 +2126,6 @@ aclError aclrtDeviceSetLimit(aclrtDeviceLimit limit, size_t value)
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](25-01_aclError.md#aclError)。
 
-
 ### 约束说明
 
 - 必须在`aclInit`之后、`aclrtSetDevice`之前调用。
@@ -2194,7 +2193,6 @@ aclError aclrtDeviceGetLimit(aclrtDeviceLimit limit, size_t *value)
 ### 返回值说明
 
 返回0表示成功，返回其他值表示失败，请参见[aclError](25-01_aclError.md#aclError)。
-
 
 ### 约束说明
 

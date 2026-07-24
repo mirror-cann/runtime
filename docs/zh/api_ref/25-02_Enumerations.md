@@ -1674,6 +1674,7 @@ typedef enum aclrtMemLocationType {
 } aclrtMemLocationType;
 ```
 
+
 <br>
 
 <a id="aclrtMemMallocPolicy"></a>

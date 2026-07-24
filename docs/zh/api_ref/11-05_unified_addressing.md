@@ -55,7 +55,7 @@ aclError aclrtMemAllocManaged(void **ptr, uint64_t size, uint32_t flag)
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
 | ptr | 输出 | “已分配内存的指针”的指针，由于Host和Device虚拟地址统一编址，该参数不区分申请位置。 |
-| size | 输入 | 内存大小，单位Byte。<br>size不能为0，单个应用进程最大可申请3T UVM类型的虚拟内存。 |
+| size | 输入 | 内存大小，单位Byte。<br>size不能为0，单个应用进程最大可申请3TB UVM类型的虚拟内存。 |
 | flag | 输入 | 内存标识。<br>当前flag仅支持设置为ACL_RT_MEM_ATTACH_GLOBAL，所对应数值为1。设置为ACL_RT_MEM_ATTACH_GLOBAL后，通过本接口申请的内存在Device和Host侧都可以被访问。<br>宏定义如下：<br>#define ACL_RT_MEM_ATTACH_GLOBAL (0x01U) |
 
 ### 返回值说明
@@ -64,7 +64,7 @@ aclError aclrtMemAllocManaged(void **ptr, uint64_t size, uint32_t flag)
 
 ### 约束说明
 
-本接口分配的内存不会进行对内容进行初始化，建议在使用内存前先调用[aclrtMemset](11-03_memory_copy_and_set.md#aclrtMemset)接口先初始化内存，清除内存中的随机数。
+本接口分配的内存不会对内容进行初始化，建议在使用内存前先调用[aclrtMemset](11-03_memory_copy_and_set.md#aclrtMemset)接口先初始化内存，清除内存中的随机数。
 
 <br>
 <br>
@@ -113,8 +113,8 @@ aclError aclrtMemManagedAdvise(const void *const ptr, uint64_t size, aclrtMemMan
 
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
-| ptr | 输入 | 待设置属性的内存地址，地址范围必须在UVM内存范围之内，即[0x90000000000ULL, 0x90000000000ULL+3T)。 |
-| size | 输入 | 内存大小，单位Byte，要求2MB对齐。取值范围为(0, 3T]。 |
+| ptr | 输入 | 待设置属性的内存地址，地址范围必须在UVM内存范围之内，即[0x90000000000ULL, 0x90000000000ULL+3TB)。 |
+| size | 输入 | 内存大小，单位Byte，要求2MB对齐。取值范围为(0, 3TB]。 |
 | advise | 输入 | 内存策略属性。<br>类型定义请参见[aclrtMemManagedAdviseType](25-02_Enumerations.md#aclrtMemManagedAdviseType)。 |
 | location | 输入 | 物理内存的位置信息，location参数包含id和type两个成员。<br>类型定义请参见[aclrtMemManagedLocation](25-04_Structs.md#aclrtMemManagedLocation)。 |
 
@@ -172,8 +172,8 @@ aclError aclrtMemManagedGetAttr(aclrtMemManagedRangeAttribute attribute, const v
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
 | attribute | 输入 | 待查询的属性。类型定义请参见[aclrtMemManagedRangeAttribute](25-02_Enumerations.md#aclrtMemManagedRangeAttribute)。 |
-| ptr | 输入 | 待查询属性的内存首地址，范围必须在UVM内存范围之内，即[0x90000000000ULL, 0x90000000000ULL+3T)。 |
-| size | 输入 | 待查询属性的内存大小，单位Byte。取值范围为(0, 3T]。 |
+| ptr | 输入 | 待查询属性的内存首地址，范围必须在UVM内存范围之内，即[0x90000000000ULL, 0x90000000000ULL+3TB)。 |
+| size | 输入 | 待查询属性的内存大小，单位Byte。取值范围为(0, 3TB]。 |
 | data | 输出 | 查询结果。 |
 | dataSize | 输入 | 存放查询结果的内存大小，单位Byte。 |
 
@@ -232,8 +232,8 @@ aclError aclrtMemManagedGetAttrs(aclrtMemManagedRangeAttribute *attributes, size
 | --- | :---: | --- |
 | attributes | 输入 | 待查询的属性数组。类型定义请参见[aclrtMemManagedRangeAttribute](25-02_Enumerations.md#aclrtMemManagedRangeAttribute)。 |
 | numAttributes | 输入 | 待查询的属性数组大小。 |
-| ptr | 输入 | 待查询属性的内存首地址，范围必须在UVM内存范围之内，即[0x90000000000ULL, 0x90000000000ULL+3T)。 |
-| size | 输入 | 待查询属性的内存大小，单位Byte。取值范围为(0, 3T]。 |
+| ptr | 输入 | 待查询属性的内存首地址，范围必须在UVM内存范围之内，即[0x90000000000ULL, 0x90000000000ULL+3TB)。 |
+| size | 输入 | 待查询属性的内存大小，单位Byte。取值范围为(0, 3TB]。 |
 | data | 输出 | 查询结果数组。 |
 | dataSizes | 输入 | 存放查询结果数组的内存大小，单位Byte。 |
 
@@ -288,8 +288,8 @@ aclError aclrtMemManagedPrefetchAsync(const void* ptr, size_t size, aclrtMemMana
 
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
-| ptr      |   输入    | 待预取的内存地址，地址范围必须在UVM内存范围内存，即[0x90000000000ULL, 0x90000000000ULL+3T)。 |
-| size     |   输入    | 待预取的内存长度，单位Byte，要求2MB对齐。取值范围为(0, 3T]。 |
+| ptr      |   输入    | 待预取的内存地址，地址范围必须在UVM内存范围内存，即[0x90000000000ULL, 0x90000000000ULL+3TB)。 |
+| size     |   输入    | 待预取的内存长度，单位Byte，要求2MB对齐。取值范围为(0, 3TB]。 |
 | location |   输入    | 物理内存的位置信息，location参数包含id和type两个成员。类型定义请参见[aclrtMemManagedLocation](25-04_Structs.md#aclrtMemManagedLocation)。 |
 | flags    |   输入    | 预留参数。当前固定配置为0。                                  |
 | stream   |   输入    | 指定执行内存预取任务的Stream。类型定义请参见[aclrtStream](25-05_Typedefs.md#aclrtStream)。 |
@@ -345,8 +345,8 @@ aclError aclrtMemManagedPrefetchBatchAsync(const void** ptrs, size_t* sizes, siz
 
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
-| ptrs            |   输入    | 待预取的内存地址数组，每个地址范围必须在UVM内存范围内存，即[0x90000000000ULL, 0x90000000000ULL+3T)。 |
-| sizes           |   输入    | 内存预取长度数组，用于存放每一段要预取的UVM内存长度，单位Byte。每段长度要求2MB对齐，取值范围为(0, 3T]。 |
+| ptrs            |   输入    | 待预取的内存地址数组，每个地址范围必须在UVM内存范围内存，即[0x90000000000ULL, 0x90000000000ULL+3TB)。 |
+| sizes           |   输入    | 内存预取长度数组，用于存放每一段要预取的UVM内存长度，单位Byte。每段长度要求2MB对齐，取值范围为(0, 3TB]。 |
 | count           |   输入    | ptrs和sizes数组长度。                                        |
 | prefetchLocs    |   输入    | 物理内存的位置信息数组，每个位置信息都包含id和type两个成员。类型定义请参见[aclrtMemManagedLocation](25-04_Structs.md#aclrtMemManagedLocation)。 |
 | prefetchLocIdxs |   输入    | 物理内存预取信息索引数组，用于指定prefetchLocs数组中的每个物理地址适用的预取范围。对于prefetchLocs[k]指定的物理地址，将预取ptrs数组中从第prefetchLocIdxs[k]个下标到第prefetchLocIdxs[k+1]-1个下标指向元素的UVM内存地址，同时对于prefetchLocs[numPrefetchLocs-1]指定的物理地址，将预取ptrs数组中从第prefetchLocs[numPrefetchLocs-1]个下标到第count-1个下标指向元素的UVM内存地址。 |

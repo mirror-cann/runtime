@@ -64,7 +64,7 @@ aclError aclrtMallocHost(void **hostPtr, size_t size)
 
 ### 约束说明
 
-- 本接口分配的内存不会进行对内容进行初始化，建议在使用内存前先调用[aclrtMemset](11-03_memory_copy_and_set.md#aclrtMemset)接口先初始化内存，清除内存中的随机数。
+- 本接口分配的内存不会对内容进行初始化，建议在使用内存前先调用[aclrtMemset](11-03_memory_copy_and_set.md#aclrtMemset)接口先初始化内存，清除内存中的随机数。
 - 本接口内部不会进行隐式的device同步或流同步。如果申请内存成功或申请内存失败会立刻返回结果。
 - 使用aclrtMallocHost接口分配过多的锁页内存，将导致操作系统用于分页的物理内存变少，从而降低系统整体的性能。
 - 频繁调用aclrtMallocHost接口申请内存、调用[aclrtFreeHost](#aclrtFreeHost)接口释放内存，会损耗性能，建议用户提前做内存预先分配或二次管理，避免频繁申请/释放内存。
@@ -230,7 +230,7 @@ aclError aclrtFreeHostWithDevSync(void *hostPtr)
 
 释放通过[aclrtMallocHost](#aclrtMallocHost)接口或[aclrtMallocHostWithCfg](#aclrtMallocHostWithCfg)接口申请的Host内存。
 
-本接口内部会进行隐式的Device同步，并等待使用该内存的任务完成。
+本接口内部会执行隐式Device同步，并等待使用该内存的任务完成。
 
 ### 参数说明
 
@@ -290,7 +290,7 @@ aclError aclrtHostRegister(void *ptr, uint64_t size, aclrtHostRegisterType type,
 
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
-| ptr | 输入 | Host内存地址。<br>Host内存地址需4K页对齐。<br>当os内核版本为5.10或更低时，使用非锁页内存会导致异常，因此必须调用aclrtMallocHost接口来申请Host锁页内存。<br>当os内核版本为5.10以上时，支持使用非锁页的Host内存，因此既支持调用aclrtMallocHost接口申请Host锁页内存，也支持使用malloc接口申请Host非锁页内存。 |
+| ptr | 输入 | Host内存地址。<br>Host内存地址需4KB页对齐。<br>当os内核版本为5.10或更低时，使用非锁页内存会导致异常，因此必须调用aclrtMallocHost接口来申请Host锁页内存。<br>当os内核版本为5.10以上时，支持使用非锁页的Host内存，因此既支持调用aclrtMallocHost接口申请Host锁页内存，也支持使用malloc接口申请Host非锁页内存。 |
 | size | 输入 | 内存大小，单位Byte。 |
 | type | 输入 | 内存注册类型。类型定义请参见[aclrtHostRegisterType](25-02_Enumerations.md#aclrtHostRegisterType)。 |
 | devPtr | 输出 | Host内存映射成的Device可访问的内存地址。 |
@@ -347,9 +347,9 @@ aclError aclrtHostRegisterV2(void *ptr, uint64_t size, uint32_t flag)
 
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
-| ptr | 输入 | Host内存地址。<br>Host内存地址需4K页对齐。<br>当os内核版本为5.10或更低时，使用非锁页内存会导致异常，因此必须调用aclrtMallocHost接口来申请Host锁页内存。<br>当os内核版本为5.10以上时，支持使用非锁页的Host内存，因此既支持调用aclrtMallocHost接口申请Host锁页内存，也支持使用malloc接口申请Host非锁页内存。 |
+| ptr | 输入 | Host内存地址。<br>Host内存地址需4KB页对齐。<br>当os内核版本为5.10或更低时，使用非锁页内存会导致异常，因此必须调用aclrtMallocHost接口来申请Host锁页内存。<br>当os内核版本为5.10以上时，支持使用非锁页的Host内存，因此既支持调用aclrtMallocHost接口申请Host锁页内存，也支持使用malloc接口申请Host非锁页内存。 |
 | size | 输入 | 内存大小，单位Byte。 |
-| flag | 输入 | 内存注册类型。<br>取值为如下宏，支持配置单个宏，也支持配置多个宏位或（例如ACL_HOST_REG_MAPPED \| ACL_HOST_REG_PINNED）：<br><br>  - ACL_HOST_REG_MAPPED：将Host内存映射注册为Device可访问的内存地址，再配合调用[aclrtHostGetDevicePointer](#aclrtHostGetDevicePointer)接口获取映射后的Device内存地址。<br>  - ACL_HOST_REG_IOMEMORY：将Host上第三方PCIe设备的IO space(寄存器、缓存)映射注册为Device可访问，包括读写。预留选项，当前不支持。<br>  - ACL_HOST_REG_READONLY：Host内存映射注册为Device只读。预留选项，当前不支持。<br>  - ACL_HOST_REG_PINNED：将Host非锁页内存注册为锁页内存。Host非锁页内存可通过C/C++标准库函数（如malloc、calloc、new）或默认的mmap系统调用等方式申请。<br><br>宏定义如下：<br>#define ACL_HOST_REG_MAPPED 0x2UL<br>#define ACL_HOST_REG_IOMEMORY 0x4UL<br>#define ACL_HOST_REG_READONLY 0x8UL<br>#define ACL_HOST_REG_PINNED 0X10000000UL |
+| flag | 输入 | 内存注册类型。<br>取值为如下宏，支持配置单个宏，也支持配置多个宏位或（例如ACL_HOST_REG_MAPPED \| ACL_HOST_REG_PINNED）：<br><br>  - ACL_HOST_REG_MAPPED：将Host内存映射注册为Device可访问的内存地址，再配合调用[aclrtHostGetDevicePointer](#aclrtHostGetDevicePointer)接口获取映射后的Device内存地址。<br>  - ACL_HOST_REG_IOMEMORY：将Host上第三方PCIe设备的IO space(寄存器、缓存)映射注册为Device可访问，包括读写。预留选项，当前不支持。<br>  - ACL_HOST_REG_READONLY：Host内存映射注册为Device只读。预留选项，当前不支持。<br>  - ACL_HOST_REG_PINNED：将Host非锁页内存注册为锁页内存。Host非锁页内存可通过C/C++标准库函数（如malloc、calloc、new）或默认的mmap系统调用等方式申请。<br><br>宏定义如下：<br>#define ACL_HOST_REG_MAPPED 0x2UL<br>#define ACL_HOST_REG_IOMEMORY 0x4UL<br>#define ACL_HOST_REG_READONLY 0x8UL<br>#define ACL_HOST_REG_PINNED 0x10000000UL |
 
 ### 返回值说明
 

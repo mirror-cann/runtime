@@ -573,11 +573,36 @@ aclError aclrtGetLastError(aclrtLastErrLevel level)
 aclError aclrtGetMemUceInfo(int32_t deviceId, aclrtMemUceInfo *memUceInfoArray, size_t arraySize, size_t *retSize)
 ```
 
-**须知：本接口为预留接口，暂不支持。**
+**须知：本接口为试验特性，后续版本可能会存在变更，不支持应用于生产环境中。**
+
+### 产品支持情况
+
+<!-- npu="950" id1 -->
+- Ascend 950PR/Ascend 950DT：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：支持
+<!-- end id3 -->
+<!-- npu="310b" id4 -->
+- Atlas 200I/500 A2 推理产品：不支持
+<!-- end id4 -->
+<!-- npu="310p" id5 -->
+- Atlas 推理系列产品：不支持
+<!-- end id5 -->
+<!-- npu="910" id6 -->
+- Atlas 训练系列产品：不支持
+<!-- end id6 -->
+<!-- npu="IPV350" id7 -->
+- IPV350：不支持
+<!-- end id7 -->
+<!-- @ref: runtime/res/docs/zh/api_ref/13_exception_handling_res.md#id11 -->
 
 ### 功能说明
 
-获取内存UCE（uncorrect error，指系统硬件不能直接处理恢复内存错误）的错误虚拟地址。
+获取内存UCE（uncorrect error，指系统硬件不能直接处理并恢复内存错误）的错误虚拟地址。
 
 ### 参数说明
 
@@ -604,7 +629,32 @@ aclError aclrtGetMemUceInfo(int32_t deviceId, aclrtMemUceInfo *memUceInfoArray, 
 aclError aclrtMemUceRepair(int32_t deviceId, aclrtMemUceInfo *memUceInfoArray, size_t arraySize)
 ```
 
-**须知：本接口为预留接口，暂不支持。**
+**须知：本接口为试验特性，后续版本可能会存在变更，不支持应用于生产环境中。**
+
+### 产品支持情况
+
+<!-- npu="950" id8 -->
+- Ascend 950PR/Ascend 950DT：支持
+<!-- end id8 -->
+<!-- npu="A3" id9 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+<!-- end id9 -->
+<!-- npu="910b" id10 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：支持
+<!-- end id10 -->
+<!-- npu="310b" id11 -->
+- Atlas 200I/500 A2 推理产品：不支持
+<!-- end id11 -->
+<!-- npu="310p" id12 -->
+- Atlas 推理系列产品：不支持
+<!-- end id12 -->
+<!-- npu="910" id13 -->
+- Atlas 训练系列产品：不支持
+<!-- end id13 -->
+<!-- npu="IPV350" id14 -->
+- IPV350：不支持
+<!-- end id14 -->
+<!-- @ref: runtime/res/docs/zh/api_ref/13_exception_handling_res.md#id12 -->
 
 ### 功能说明
 
@@ -634,7 +684,32 @@ aclError aclrtMemUceRepair(int32_t deviceId, aclrtMemUceInfo *memUceInfoArray, s
 aclError aclrtDeviceTaskAbort(int32_t deviceId, uint32_t timeout)
 ```
 
-**须知：本接口为预留接口，暂不支持。**
+**须知：本接口为试验特性，后续版本可能会存在变更，不支持应用于生产环境中。**
+
+### 产品支持情况
+
+<!-- npu="950" id15 -->
+- Ascend 950PR/Ascend 950DT：支持
+<!-- end id15 -->
+<!-- npu="A3" id16 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+<!-- end id16 -->
+<!-- npu="910b" id17 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：支持
+<!-- end id17 -->
+<!-- npu="310b" id18 -->
+- Atlas 200I/500 A2 推理产品：不支持
+<!-- end id18 -->
+<!-- npu="310p" id19 -->
+- Atlas 推理系列产品：不支持
+<!-- end id19 -->
+<!-- npu="910" id20 -->
+- Atlas 训练系列产品：不支持
+<!-- end id20 -->
+<!-- npu="IPV350" id21 -->
+- IPV350：不支持
+<!-- end id21 -->
+<!-- @ref: runtime/res/docs/zh/api_ref/13_exception_handling_res.md#id13 -->
 
 ### 功能说明
 
@@ -663,7 +738,32 @@ aclError aclrtDeviceTaskAbort(int32_t deviceId, uint32_t timeout)
 aclError aclrtGetErrorVerbose(int32_t deviceId, aclrtErrorInfo *errorInfo);
 ```
 
-**须知：本接口为预留接口，暂不支持。**
+**须知：本接口为试验特性，后续版本可能会存在变更，不支持应用于生产环境中。**
+
+### 产品支持情况
+
+<!-- npu="950" id22 -->
+- Ascend 950PR/Ascend 950DT：支持
+<!-- end id22 -->
+<!-- npu="A3" id23 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+<!-- end id23 -->
+<!-- npu="910b" id24 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：支持
+<!-- end id24 -->
+<!-- npu="310b" id25 -->
+- Atlas 200I/500 A2 推理产品：不支持
+<!-- end id25 -->
+<!-- npu="310p" id26 -->
+- Atlas 推理系列产品：不支持
+<!-- end id26 -->
+<!-- npu="910" id27 -->
+- Atlas 训练系列产品：不支持
+<!-- end id27 -->
+<!-- npu="IPV350" id28 -->
+- IPV350：不支持
+<!-- end id28 -->
+<!-- @ref: runtime/res/docs/zh/api_ref/13_exception_handling_res.md#id14 -->
 
 ### 功能说明
 
@@ -674,7 +774,7 @@ aclError aclrtGetErrorVerbose(int32_t deviceId, aclrtErrorInfo *errorInfo);
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
 | deviceId | 输入 | Device ID。<br>与[aclrtSetDevice](04_device_management.md#aclrtSetDevice)接口中Device ID保持一致。 |
-| errorInfo | 输出 | 错误信息。<br>typedef enum { <br>   ACL_RT_NO_ERROR = 0,  // 无错误<br>   ACL_RT_ERROR_MEMORY = 1,  // 内存错误<br>   ACL_RT_ERROR_L2 = 2,  // L2 Buffer错误<br>   ACL_RT_ERROR_AICORE = 3,  // AI Core错误<br>   ACL_RT_ERROR_LINK = 4,  // 网络错误<br>   ACL_RT_ERROR_L3_PORT = 5,  // L3端口错误<br>   ACL_RT_ERROR_OTHERS = 0xFFFF, // 其它错误<br>} aclrtErrorType;<br><br>typedef enum aclrtAicoreErrorType { <br>   ACL_RT_AICORE_ERROR_UNKOWN,  // 未知错误<br>   ACL_RT_AICORE_ERROR_SW,  // 建议排查软件错误<br>   ACL_RT_AICORE_ERROR_HW_LOCAL, // 建议排查当前Device的硬件错误<br>} aclrtAicoreErrorType;<br><br>#define ACL_RT_MEM_UCE_INFO_MAX_NUM 20<br>typedef struct {<br>   size_t arraySize;  // memUceInfoArray数组大小<br>   [aclrtMemUceInfo](25-04_Structs.md#aclrtMemUceInfo) memUceInfoArray[ACL_RT_MEM_UCE_INFO_MAX_NUM];  // 内存UCE的错误虚拟地址数组<br>} aclrtMemUceInfoArray;<br><br>typedef union aclrtErrorInfoDetail { <br>   aclrtMemUceInfoArray uceInfo;  // 内存UCE（uncorrect error）<br>   aclrtAicoreErrorType aicoreErrType;  // AI Core错误<br>} aclrtErrorInfoDetail; <br><br>typedef struct aclrtErrorInfo { <br>   uint8_t tryRepair;  // 是否需要修复 ，0表示无需修复，1表示需修复   <br>   uint8_t hasDetail;  // 是否有详细报错信息，0表示没有，1表示有<br>   uint8_t reserved[2];  // 预留参数<br>   aclrtErrorType errorType;  // 错误类型<br>   aclrtErrorInfoDetail detail; // 错误详细信息<br>} aclrtErrorInfo; |
+| errorInfo | 输出 | 错误信息。<br>typedef enum { <br>   ACL_RT_NO_ERROR = 0,  // 无错误<br>   ACL_RT_ERROR_MEMORY = 1,  // 内存错误<br>   ACL_RT_ERROR_L2 = 2,  // L2 Buffer错误<br>   ACL_RT_ERROR_AICORE = 3,  // AI Core错误<br>   ACL_RT_ERROR_LINK = 4,  // 网络错误<br>   ACL_RT_ERROR_L3_PORT = 5,  // L3端口错误<br>   ACL_RT_ERROR_OTHERS = 0xFFFF, // 其它错误<br>} aclrtErrorType;<br><br>typedef enum aclrtAicoreErrorType { <br>   ACL_RT_AICORE_ERROR_UNKNOWN,  // 未知错误<br>   ACL_RT_AICORE_ERROR_SW,  // 建议排查软件错误<br>   ACL_RT_AICORE_ERROR_HW_LOCAL, // 建议排查当前Device的硬件错误<br>} aclrtAicoreErrorType;<br><br>#define ACL_RT_MEM_UCE_INFO_MAX_NUM 20<br>typedef struct {<br>   size_t arraySize;  // memUceInfoArray数组大小<br>   [aclrtMemUceInfo](25-04_Structs.md#aclrtMemUceInfo) memUceInfoArray[ACL_RT_MEM_UCE_INFO_MAX_NUM];  // 内存UCE的错误虚拟地址数组<br>} aclrtMemUceInfoArray;<br><br>typedef union aclrtErrorInfoDetail { <br>   aclrtMemUceInfoArray uceInfo;  // 内存UCE（uncorrect error）<br>   aclrtAicoreErrorType aicoreErrType;  // AI Core错误<br>} aclrtErrorInfoDetail; <br><br>typedef struct aclrtErrorInfo { <br>   uint8_t tryRepair;  // 是否需要修复 ，0表示无需修复，1表示需修复   <br>   uint8_t hasDetail;  // 是否有详细报错信息，0表示没有，1表示有<br>   uint8_t reserved[2];  // 预留参数<br>   aclrtErrorType errorType;  // 错误类型<br>   aclrtErrorInfoDetail detail; // 错误详细信息<br>} aclrtErrorInfo; |
 
 ### 返回值说明
 
@@ -697,7 +797,32 @@ aclError aclrtGetErrorVerbose(int32_t deviceId, aclrtErrorInfo *errorInfo);
 aclError aclrtRepairError(int32_t deviceId, const aclrtErrorInfo *errorInfo)
 ```
 
-**须知：本接口为预留接口，暂不支持。**
+**须知：本接口为试验特性，后续版本可能会存在变更，不支持应用于生产环境中。**
+
+### 产品支持情况
+
+<!-- npu="950" id29 -->
+- Ascend 950PR/Ascend 950DT：支持
+<!-- end id29 -->
+<!-- npu="A3" id30 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+<!-- end id30 -->
+<!-- npu="910b" id31 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：支持
+<!-- end id31 -->
+<!-- npu="310b" id32 -->
+- Atlas 200I/500 A2 推理产品：不支持
+<!-- end id32 -->
+<!-- npu="310p" id33 -->
+- Atlas 推理系列产品：不支持
+<!-- end id33 -->
+<!-- npu="910" id34 -->
+- Atlas 训练系列产品：不支持
+<!-- end id34 -->
+<!-- npu="IPV350" id35 -->
+- IPV350：不支持
+<!-- end id35 -->
+<!-- @ref: runtime/res/docs/zh/api_ref/13_exception_handling_res.md#id15 -->
 
 ### 功能说明
 

@@ -227,9 +227,9 @@ aclprofMarkEx打点接口。
 
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
-| msg | 输入 | 打点信息字符串指针。类型定义请参见[aclrtStream](25-05_Typedefs.md#aclrtStream)。 |
+| msg | 输入 | 打点信息字符串指针。 |
 | msgLen | 输入 | 字符串长度。最大支持127字符。 |
-| stream | 输入 | 指定Stream。<br>取值详见[aclrtStream](25-05_Typedefs.md#aclrtStream)。 |
+| stream | 输入 | 指定Stream。类型定义请参见[aclrtStream](25-05_Typedefs.md#aclrtStream)。 |
 
 ### 返回值说明
 

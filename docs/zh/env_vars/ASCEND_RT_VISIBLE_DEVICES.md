@@ -13,7 +13,7 @@
 
 >**须知：** 
 >
->- 该环境变量为试用环境变量，后续版本可能存在变更，不支持应用于商用产品中。
+>- 该环境变量为试用环境变量，后续版本可能存在变更，不支持应用于生产环境中。
 >- 仅支持指定的Device ID按照升序配置。
 >- 不支持使用DCMI接口时使用该环境变量。DCMI接口说明请参见[《DCMI API参考》](https://support.huawei.com/enterprise/zh/ascend-computing/ascend-hdk-pid-252764743?category=developer-documents&subcategory=api-reference)。
 >- 不支持使用HCCN Tool接口时使用该环境变量。HCCN Tool接口说明请参见[《HCCN Tool 接口参考》](https://support.huawei.com/enterprise/zh/ascend-computing/ascend-hdk-pid-252764743?category=developer-documents&subcategory=interface-reference)。

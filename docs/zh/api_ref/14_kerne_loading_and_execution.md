@@ -349,7 +349,7 @@ aclError aclrtBinaryGetDevAddress(const aclrtBinHandle binHandle, void **binAddr
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
 | binHandle | 输入 | 算子二进制句柄。类型定义请参见[aclrtBinHandle](25-05_Typedefs.md#aclrtBinHandle)。<br>调用[aclrtBinaryLoadFromFile](#aclrtBinaryLoadFromFile)接口或[aclrtBinaryLoadFromData](#aclrtBinaryLoadFromData)接口获取算子二进制句柄，再将其作为入参传入本接口。 |
-| binAddr | 输出 | 算子二进制数据在Device上的内存地址。<br>如果加载算子二进制时设置了懒加载标识（将aclrtBinaryLoadOptions.[aclrtBinaryLoadOption](25-04_Structs.md#aclrtBinaryLoadOption).isLazyLoad设置为1），那么调用本接口获取到的binAddr为空指针。 |
+| binAddr | 输出 | 算子二进制数据在Device上的内存地址。<br>如果加载算子二进制时设置了懒加载标识（将aclrtBinaryLoadOptions.aclrtBinaryLoadOption.[aclrtBinaryLoadOptionValue](25-04_Structs.md#aclrtBinaryLoadOptionValue).isLazyLoad设置为1），那么调用本接口获取到的binAddr为空指针。 |
 | binSize | 输出 | 算子二进制数据的大小，单位Byte。 |
 
 ### 返回值说明
@@ -1840,7 +1840,7 @@ aclError aclrtDestroyBinary(aclrtBinary binary)
 
 | 参数名 | 输入/输出 | 说明 |
 | --- | :---: | --- |
-| binary | 输入 | 待销毁的aclrtBinary类型的指针。 |
+| binary | 输入 | 待销毁的aclrtBinary类型的数据。 |
 
 ### 返回值说明
 

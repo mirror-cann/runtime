@@ -573,7 +573,7 @@ const char* acldumpGetPath(acldumpType dumpType)
 
 ### 功能说明
 
-获取Dump数据存放路径，以便用户将自定维测数据保存到该路径下。
+获取Dump数据存放路径，以便用户将自定义维测数据保存到该路径下。
 
 在调用本接口前，需通过[aclmdlInitDump](#aclmdlInitDump)接口初始化Dump功能、通过[aclmdlSetDump](#aclmdlSetDump)接口配置Dump信息，或者直接通过[aclInit](02_initialization_and_deinitialization.md#aclInit)接口配置Dump信息。
 

@@ -146,7 +146,7 @@ int main() {
             ACL_MEM_ALLOCATION_TYPE_PINNED, // allocType
             ACL_MEM_HANDLE_TYPE_NONE,       // handleType
             testLoc,                        // location
-            14UL << 30,                     // maxSize = 14GB， 内存池大小为14G
+            14UL << 30,                     // maxSize = 14GB， 内存池大小为14GB
             {0}                             // reserved
     };
 
