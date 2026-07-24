@@ -101,8 +101,9 @@ int main()
     aclrtEvent event1, event2;
     aclrtCreateStream(&stream1);
     aclrtCreateStream(&stream2);
-    aclrtCreateEvent(&event1);
-    aclrtCreateEvent(&event2);
+    // 捕获场景下需通过aclrtCreateEventExWithFlag接口创建带ACL_EVENT_SYNC标记的Event
+    aclrtCreateEventExWithFlag(&event1, ACL_EVENT_SYNC);
+    aclrtCreateEventExWithFlag(&event2, ACL_EVENT_SYNC);
 
     // ========开始捕获任务========
     aclmdlRICaptureBegin(stream1, ACL_MODEL_RI_CAPTURE_MODE_GLOBAL);
