@@ -331,11 +331,15 @@ static rtError_t CheckSimtArgsArray(const Kernel* kernel, const RtArgsWithType* 
     COND_RETURN_AND_MSG_OUTER(
         (simtArgs->gridDim.x == 0U) || (simtArgs->gridDim.y == 0U) || (simtArgs->gridDim.z == 0U),
         RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Checking SIMT parameters", "gridDim",
-        "gridDim.x, gridDim.y, gridDim.z must all be greater than 0");
+        RtFmtMsg(
+            "gridDim.x, gridDim.y, gridDim.z must all be greater than 0, actual gridDim=[%u,%u,%u]",
+            simtArgs->gridDim.x, simtArgs->gridDim.y, simtArgs->gridDim.z));
     COND_RETURN_AND_MSG_OUTER(
         (simtArgs->blockDim.x == 0U) || (simtArgs->blockDim.y == 0U) || (simtArgs->blockDim.z == 0U),
         RT_ERROR_INVALID_VALUE, ErrorCode::EE1017, "Checking SIMT parameters", "blockDim",
-        "blockDim.x, blockDim.y, blockDim.z must all be greater than 0");
+        RtFmtMsg(
+            "blockDim.x, blockDim.y, blockDim.z must all be greater than 0, actual blockDim=[%u,%u,%u]",
+            simtArgs->blockDim.x, simtArgs->blockDim.y, simtArgs->blockDim.z));
     if (kernel->GetParamCount() > 0U) {
         NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
             argsWithType->args.simtArgsArray->argsArrayInfo, RT_ERROR_INVALID_VALUE, "Checking SIMT parameters");
@@ -1026,10 +1030,9 @@ rtError_t ApiErrorDecorator::LaunchKernelV2(
 {
     NULL_PTR_RETURN_MSG_OUTER_WITH_FUNC_DESC(
         kernel, RT_ERROR_INVALID_VALUE, "Starting the compute task of the corresponding operator");
-    ZERO_RETURN_AND_MSG_OUTER(blockDim);
-
     rtError_t error = CheckArgsWithType(kernel, argsWithType);
     ERROR_RETURN(error, "check args with type failed, retCode=%#x.", error);
+    ZERO_RETURN_AND_MSG_OUTER(blockDim);
     error = CheckKernelLaunchCfg(cfg, kernel);
     ERROR_RETURN(error, "check cfgInfo failed, retCode=%#x.", error);
     error = impl_->LaunchKernelV2(kernel, blockDim, argsWithType, stm, cfg);

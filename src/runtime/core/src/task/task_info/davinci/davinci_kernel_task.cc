@@ -726,22 +726,23 @@ rtError_t GetArgsInfo(TaskInfo* taskInfo)
     AicTaskInfo* aicTaskInfo = &(taskInfo->u.aicTaskInfo);
     const uint64_t tilingKey = aicTaskInfo->tilingKey;
     void* hostMem = nullptr;
+    const uint32_t argSize = aicTaskInfo->comm.argsSize - aicTaskInfo->simtParamOffset;
+    const uint8_t* argsBase = static_cast<const uint8_t*>(aicTaskInfo->comm.args) + aicTaskInfo->simtParamOffset;
     COND_RETURN_ERROR_MSG_INNER(
-        (aicTaskInfo->comm.args == nullptr) || (aicTaskInfo->comm.argsSize == 0U), RT_ERROR_INVALID_VALUE,
-        "GetArgsInfo failed, address size=%u.", aicTaskInfo->comm.argsSize);
+        (aicTaskInfo->comm.args == nullptr) || (argSize == 0U), RT_ERROR_INVALID_VALUE,
+        "GetArgsInfo failed, address size=%u.", argSize);
     const auto dev = taskInfo->stream->Device_();
-    rtError_t error =
-        dev->Driver_()->HostMemAlloc(&hostMem, static_cast<uint64_t>(aicTaskInfo->comm.argsSize) + 1U, dev->Id_());
+    rtError_t error = dev->Driver_()->HostMemAlloc(&hostMem, static_cast<uint64_t>(argSize) + 1U, dev->Id_());
     ERROR_RETURN(error, "Malloc host memory for args failed, retCode=%#x", static_cast<uint32_t>(error));
     error = dev->Driver_()->MemCopySync(
-        hostMem, static_cast<uint64_t>(aicTaskInfo->comm.argsSize + 1U), aicTaskInfo->comm.args,
-        static_cast<uint64_t>(aicTaskInfo->comm.argsSize), RT_MEMCPY_DEVICE_TO_HOST);
+        hostMem, static_cast<uint64_t>(argSize + 1U), argsBase, static_cast<uint64_t>(argSize),
+        RT_MEMCPY_DEVICE_TO_HOST);
     COND_PROC_RETURN_ERROR(
         error != RT_ERROR_NONE, error, (void)dev->Driver_()->HostMemFree(hostMem),
-        "Memcpy failed, size=%u, type=%d(RT_MEMCPY_DEVICE_TO_HOST), retCode=%#x.", aicTaskInfo->comm.argsSize,
+        "Memcpy failed, size=%u, type=%d(RT_MEMCPY_DEVICE_TO_HOST), retCode=%#x.", argSize,
         static_cast<int32_t>(RT_MEMCPY_DEVICE_TO_HOST), static_cast<uint32_t>(error));
     // args info
-    const uint32_t totalLen = aicTaskInfo->comm.argsSize / static_cast<uint32_t>(sizeof(void*));
+    const uint32_t totalLen = argSize / static_cast<uint32_t>(sizeof(void*));
     const uint32_t argsTimes = (totalLen % ARGS_PER_STRING_MAX_LEN > 0) ? ((totalLen / ARGS_PER_STRING_MAX_LEN) + 1U) :
                                                                           (totalLen / ARGS_PER_STRING_MAX_LEN);
     for (uint32_t j = 1UL; j <= argsTimes; j++) {
@@ -759,8 +760,10 @@ rtError_t GetArgsInfo(TaskInfo* taskInfo)
     RT_LOG(
         RT_LOG_ERROR,
         "tilingKey = %" PRIu64 ", print %u Times totalLen=(%u*8), argsSize=%u, schemMode=%u,"
-        " blockDim=%hu",
-        tilingKey, argsTimes, totalLen, aicTaskInfo->comm.argsSize, aicTaskInfo->schemMode, aicTaskInfo->comm.dim);
+        " blockDim=%hu, gridDim3=[%u,%u,%u], blockDim3=[%u,%u,%u]",
+        tilingKey, argsTimes, totalLen, argSize, aicTaskInfo->schemMode, aicTaskInfo->comm.dim, aicTaskInfo->gridDim.x,
+        aicTaskInfo->gridDim.y, aicTaskInfo->gridDim.z, aicTaskInfo->blockDim.x, aicTaskInfo->blockDim.y,
+        aicTaskInfo->blockDim.z);
     (void)dev->Driver_()->HostMemFree(hostMem);
     return RT_ERROR_NONE;
 }

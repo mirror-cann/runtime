@@ -122,6 +122,10 @@ rtError_t StreamLaunchArgsArray(
 rtError_t StreamLaunchSimtArgsArray(
     Kernel* kernel, const uint32_t coreDim, Stream* stm, SimtArgsArray* simtArgsArray, TaskCfg& taskCfg)
 {
+    RT_LOG(
+        RT_LOG_INFO, "stream_id=%d, coreDim=%u, gridDim=[%u,%u,%u], blockDim=[%u,%u,%u], dynUbufSize=%zu.", stm->Id_(),
+        coreDim, simtArgsArray->gridDim.x, simtArgsArray->gridDim.y, simtArgsArray->gridDim.z,
+        simtArgsArray->blockDim.x, simtArgsArray->blockDim.y, simtArgsArray->blockDim.z, simtArgsArray->dynUbufSize);
     taskCfg.base.localMemorySize = static_cast<uint32_t>(simtArgsArray->dynUbufSize);
     rtArgsEx_t nonCpuArgsInfo = {};
     // argsSize都共用nonCpuArgsInfo.argsSize,
@@ -137,6 +141,11 @@ rtError_t StreamLaunchSimtArgsArray(
 rtError_t StreamLaunchSimtArgsHost(
     Kernel* kernel, const uint32_t coreDim, Stream* stm, SimtArgsHost* simtArgsHost, TaskCfg& taskCfg)
 {
+    RT_LOG(
+        RT_LOG_INFO, "stream_id=%d, coreDim=%u, gridDim=[%u,%u,%u], blockDim=[%u,%u,%u], dynUbufSize=%zu, argsSize=%u.",
+        stm->Id_(), coreDim, simtArgsHost->gridDim.x, simtArgsHost->gridDim.y, simtArgsHost->gridDim.z,
+        simtArgsHost->blockDim.x, simtArgsHost->blockDim.y, simtArgsHost->blockDim.z, simtArgsHost->dynUbufSize,
+        simtArgsHost->argsSize);
     taskCfg.base.localMemorySize = static_cast<uint32_t>(simtArgsHost->dynUbufSize);
     const uint32_t combinedSize =
         simtArgsHost->argsSize + SIMT_IMPLICIT_PARAM_SIZE; // argsSize都共用 nonCpuArgsInfo.argsSize,

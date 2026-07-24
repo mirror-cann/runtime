@@ -188,7 +188,7 @@ void FillKernelLaunchExtInfo(struct MsprofRuntimeTrack& runtimeTrack, const Task
         runtimeTrack.extInfo.simtKernelInfo.reserved = 0U;
         RT_LOG(
             RT_LOG_DEBUG,
-            "Fill SIMT ext info, gridDim=[%u,%u,%u], blockDim=[%u,%u,%u], argsSize=%hu, "
+            "Fill ext info, gridDim=[%u,%u,%u], blockDim=[%u,%u,%u], argsSize=%hu, "
             "original argsSize=%u, schedMode=%u",
             gridDim.x, gridDim.y, gridDim.z, blockDim.x, blockDim.y, blockDim.z, argsSizeU16, argsSize,
             runtimeTrack.extInfo.simtKernelInfo.schedMode);
@@ -209,7 +209,7 @@ void FillKernelLaunchExtInfo(struct MsprofRuntimeTrack& runtimeTrack, const Task
             sizeof(runtimeTrack.extInfo.kernelInfo.reserved));
         RT_LOG(
             RT_LOG_DEBUG,
-            "Fill non-SIMT ext info, numBlocks=%u, argsSize=%hu, "
+            "Fill ext info, numBlocks=%u, argsSize=%hu, "
             "original argsSize=%u, ratio=%u, schedMode=%u",
             runtimeTrack.extInfo.kernelInfo.numBlocks, argsSizeU16, argsSize, ratio,
             runtimeTrack.extInfo.kernelInfo.schedMode);
