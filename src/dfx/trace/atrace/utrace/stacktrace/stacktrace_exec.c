@@ -9,6 +9,7 @@
  */
 
 #include "stacktrace_exec.h"
+#include <signal.h>
 #include "adiag_print.h"
 #include "stacktrace_safe_recorder.h"
 #include "stacktrace_err_code.h"
@@ -22,6 +23,30 @@
                 rc = (exp);                        \
             } while (rc == -1 && errno == EINTR);  \
             rc; })
+
+STATIC TraStatus ScExecUnblockDumpSignals(void)
+{
+    const int32_t dumpSignals[] = {
+        SIGINT, SIGTERM, SIGQUIT, SIGILL, SIGTRAP, SIGABRT, SIGBUS, SIGFPE, SIGSEGV,
+        SIGXCPU, SIGXFSZ, SIGSYS, SIG_ATRACE
+    };
+    sigset_t set;
+    if (sigemptyset(&set) != 0) {
+        STACKTRACE_LOG_ERR("empty signal mask failed, errno=%d.", errno);
+        return TRACE_FAILURE;
+    }
+    for (size_t i = 0; i < sizeof(dumpSignals) / sizeof(dumpSignals[0]); i++) {
+        if (sigaddset(&set, dumpSignals[i]) != 0) {
+            STACKTRACE_LOG_ERR("add signal %d to mask failed, errno=%d.", dumpSignals[i], errno);
+            return TRACE_FAILURE;
+        }
+    }
+    if (sigprocmask(SIG_UNBLOCK, &set, NULL) != 0) {
+        STACKTRACE_LOG_ERR("unblock stacktrace signals failed, errno=%d.", errno);
+        return TRACE_FAILURE;
+    }
+    return TRACE_SUCCESS;
+}
 
 STATIC TraStatus ScExecSetArgs(ScdProcessArgs *args, const ThreadArgument *info)
 {
@@ -75,6 +100,9 @@ STATIC int32_t ScExecEntry(void *args)
     if (ScExecSetArgs(&scdArgs, info) != TRACE_SUCCESS) {
         LOGE("set args failed.");
         return SCD_ERR_CODE_SET_ARG;
+    }
+    if (ScExecUnblockDumpSignals() != TRACE_SUCCESS) {
+        return SCD_ERR_CODE_SIGMASK;
     }
 
     //create args pipe
@@ -131,6 +159,9 @@ STATIC void ScExecLogExitError(int32_t pid, int32_t exitStatus)
             break;
         case SCD_ERR_CODE_EXECLP:
             STACKTRACE_LOG_ERR("execlp stacktrace dumper process failed.");
+            break;
+        case SCD_ERR_CODE_SIGMASK:
+            STACKTRACE_LOG_ERR("unblock stacktrace signals failed.");
             break;
         default:
             STACKTRACE_LOG_ERR("child %d exited normally with non-zero exit status(%d)", pid, exitStatus);

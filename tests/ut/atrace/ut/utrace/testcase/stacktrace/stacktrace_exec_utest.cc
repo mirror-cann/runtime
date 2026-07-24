@@ -45,10 +45,26 @@ static void SaveAndCheckLogContains(const char *name, const char *content)
     CheckFileContains(path.c_str(), content);
 }
 
+static int32_t g_sigprocmask_checked = 0;
+static int sigprocmask_unblock_stub(int how, const sigset_t *set, sigset_t *oldset)
+{
+    (void)oldset;
+    g_sigprocmask_checked++;
+    EXPECT_EQ(SIG_UNBLOCK, how);
+    EXPECT_NE(nullptr, set);
+    if (set == nullptr) {
+        return -1;
+    }
+    EXPECT_EQ(1, sigismember(set, SIGSEGV));
+    EXPECT_EQ(1, sigismember(set, SIG_ATRACE));
+    return 0;
+}
+
 class TraceExecUtest: public testing::Test {
 protected:
     virtual void SetUp()
     {
+        g_sigprocmask_checked = 0;
         SetupTraceUtestEnv();
     }
 
@@ -56,6 +72,7 @@ protected:
     {
         TraceExit();
         GlobalMockObject::verify();
+        g_sigprocmask_checked = 0;
         system("rm -rf " LLT_TEST_DIR );
     }
 
@@ -119,6 +136,7 @@ TEST_F(TraceExecUtest, TestScExecEntry)
     ret = ScExecEntry(NULL);
     EXPECT_EQ(1, ret);
 
+    MOCKER(sigprocmask).stubs().will(invoke(sigprocmask_unblock_stub));
     MOCKER(pipe2).stubs().will(returnValue(-1));
     ret = ScExecEntry((void * )&args);
     EXPECT_EQ(SCD_ERR_CODE_PIPE2, ret);
@@ -154,6 +172,7 @@ TEST_F(TraceExecUtest, TestScExecEntrySyscallFailedLog)
     int32_t ret = 0;
     auto mocker_fcntl = reinterpret_cast<int (*)(int, int)>(fcntl);
 
+    MOCKER(sigprocmask).stubs().will(invoke(sigprocmask_unblock_stub));
     SetLogPath("test_exec_entry_pipe2_failed");
     MOCKER(pipe2).stubs().will(returnValue(-1));
     ret = ScExecEntry((void *)&args);
@@ -180,6 +199,40 @@ TEST_F(TraceExecUtest, TestScExecEntrySyscallFailedLog)
     ret = ScExecEntry((void *)&args);
     EXPECT_EQ(SCD_ERR_CODE_DUP2, ret);
     SaveAndCheckLogContains("test_exec_entry_dup2_failed", "dup2 stdin failed");
+    GlobalMockObject::verify();
+}
+
+TEST_F(TraceExecUtest, TestScExecEntryUnblocksSignalsBeforeExec)
+{
+    ThreadArgument args = {0};
+
+    MOCKER(sigprocmask).stubs().will(invoke(sigprocmask_unblock_stub));
+    MOCKER(pipe2).stubs().will(returnValue(-1));
+    EXPECT_EQ(SCD_ERR_CODE_PIPE2, ScExecEntry((void *)&args));
+    EXPECT_EQ(1, g_sigprocmask_checked);
+    GlobalMockObject::verify();
+}
+
+TEST_F(TraceExecUtest, TestScExecEntryUnblockSignalsFailure)
+{
+    ThreadArgument args = {0};
+
+    SetLogPath("test_exec_entry_sigemptyset_failed");
+    MOCKER(sigemptyset).stubs().will(returnValue(-1));
+    EXPECT_EQ(SCD_ERR_CODE_SIGMASK, ScExecEntry((void *)&args));
+    SaveAndCheckLogContains("test_exec_entry_sigemptyset_failed", "empty signal mask failed");
+    GlobalMockObject::verify();
+
+    SetLogPath("test_exec_entry_sigaddset_failed");
+    MOCKER(sigaddset).stubs().will(returnValue(-1));
+    EXPECT_EQ(SCD_ERR_CODE_SIGMASK, ScExecEntry((void *)&args));
+    SaveAndCheckLogContains("test_exec_entry_sigaddset_failed", "add signal");
+    GlobalMockObject::verify();
+
+    SetLogPath("test_exec_entry_sigprocmask_failed");
+    MOCKER(sigprocmask).stubs().will(returnValue(-1));
+    EXPECT_EQ(SCD_ERR_CODE_SIGMASK, ScExecEntry((void *)&args));
+    SaveAndCheckLogContains("test_exec_entry_sigprocmask_failed", "unblock stacktrace signals failed");
     GlobalMockObject::verify();
 }
 
@@ -333,6 +386,7 @@ TEST_F(TraceExecUtest, TestScExecEnd)
         {SCD_ERR_CODE_FCNTL, "test_exec_end_fcntl_failed", "set args pipe size failed"},
         {SCD_ERR_CODE_WRITEV, "test_exec_end_writev_failed", "write args to pipe failed"},
         {SCD_ERR_CODE_DUP2, "test_exec_end_dup2_failed", "dup2 stdin failed"},
+        {SCD_ERR_CODE_SIGMASK, "test_exec_end_sigmask_failed", "unblock stacktrace signals failed"},
     };
     for (const auto &item : exitLogCases) {
         CheckScExecEndFailure(child, item.errCode << 8, item.logName, item.expectedLog);

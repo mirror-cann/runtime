@@ -18,6 +18,7 @@
 #define SCD_ERR_CODE_WRITEV     13
 #define SCD_ERR_CODE_DUP2       14
 #define SCD_ERR_CODE_EXECLP     15
+#define SCD_ERR_CODE_SIGMASK    16
 
 
 #define SCD_ERR_CODE_READ_STDIN    101
