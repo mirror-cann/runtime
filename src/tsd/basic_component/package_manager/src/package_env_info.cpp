@@ -20,6 +20,7 @@
 #include "tsd/status.h"
 #include "tsd_util_func.h"
 #include "package_process_config.h"
+#include "weak_ascend_hal.h"
 
 namespace {
 const std::string AICPU_PACKAGE_PATTERN = "^Ascend([0-9]{3}(rc)?(P)?)?-aicpu_syskernels\\.tar\\.gz$";

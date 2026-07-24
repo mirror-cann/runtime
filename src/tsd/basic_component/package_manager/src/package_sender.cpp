@@ -12,7 +12,7 @@
 #include "package_manager.h"
 #include <string>
 #include <sys/file.h>
-#include "driver/ascend_hal.h"
+#include "weak_ascend_hal.h"
 #include "error_manager.h"
 #include "env_internal_api.h"
 #include "tsd_log.h"
