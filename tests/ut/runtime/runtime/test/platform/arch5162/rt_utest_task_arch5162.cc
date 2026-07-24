@@ -527,3 +527,25 @@ TEST_F(Arch5162TaskTest, MaintenanceTaskRegister)
     EXPECT_NE(g_taskFuncArrays[CHIP_5162A].setResultFunc[TS_TASK_TYPE_MAINTENANCE], nullptr);
     EXPECT_NE(g_taskFuncArrays[CHIP_5162A].setStarsResultFunc[TS_TASK_TYPE_MAINTENANCE], nullptr);
 }
+
+TEST_F(Arch5162TaskTest, ConstructSqeForCallbackLaunchTask)
+{
+    MOCKER_CPP(&Stream::GetCbRptCqid).stubs().will(returnValue(1U));
+    MOCKER_CPP(&Stream::GetCbGrpId).stubs().will(returnValue(1U));
+    RawDevice* device = new RawDevice(0);
+    Stream* stream = new Stream(device, 0);
+    EXPECT_NE(stream, nullptr);
+    TaskInfo taskInfo = {};
+    taskInfo.stream = stream;
+    taskInfo.u.callbackLaunchTask.eventId = 0;
+    taskInfo.u.callbackLaunchTask.isBlock = false;
+    taskInfo.u.callbackLaunchTask.callBackFunc = nullptr;
+    taskInfo.u.callbackLaunchTask.fnData = nullptr;
+    taskInfo.type = TS_TASK_TYPE_HOSTFUNC_CALLBACK;
+    rtStarsSqe_t sqe = {};
+    memset_s(&sqe, sizeof(sqe), 0, sizeof(sqe));
+    ConstructSqeForCallbackLaunchTask(&taskInfo, &sqe);
+    EXPECT_EQ(sqe.phSqe.header.type, RT_STARS_SQE_TYPE_PLACE_HOLDER);
+    delete stream;
+    delete device;
+}

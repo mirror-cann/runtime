@@ -512,7 +512,7 @@ rtError_t InitExternalEventHostRefresh(
         std::shared_ptr<uint8_t[]>(new (std::nothrow) uint8_t[totalSize](), std::default_delete<uint8_t[]>());
     COND_RETURN_ERROR_MSG_INNER(
         refreshInfo->hostRefresh == nullptr, RT_ERROR_MEMORY_ALLOCATION,
-        "Allocate external refresh host buffer failed, model_id=%u, size=%lu.", modelId, totalSize);
+        "Allocate external refresh host buffer failed, model_id=%u, size=%" PRIu64 ".", modelId, totalSize);
     const errno_t ret = memcpy_s(refreshInfo->hostRefresh.get(), totalSize, hostTemplate, totalSize);
     COND_RETURN_ERROR_MSG_INNER(
         ret != EOK, RT_ERROR_SEC_HANDLE, "Copy external refresh host template failed, model_id=%u, retCode=%d.",

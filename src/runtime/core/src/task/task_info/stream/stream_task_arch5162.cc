@@ -67,6 +67,54 @@ rtError_t StreamActiveTaskInit(TaskInfo* taskInfo, const Stream* const stm)
 
 #endif
 
+#if F_DESC("CallbackLaunchTask")
+void ConstructSqeForCallbackLaunchTask(TaskInfo* taskInfo, rtStarsSqe_t* const command)
+{
+    uint32_t pid = 0U;
+    RtStarsPhSqe* const sqe = &(command->phSqe);
+    Stream* stm = taskInfo->stream;
+    (void)memset_s(command, sizeof(rtStarsSqe_t), 0, sizeof(rtStarsSqe_t));
+
+    sqe->header.type = RT_STARS_SQE_TYPE_PLACE_HOLDER;
+    sqe->header.wrCqe = 1U; // callback need write cqe
+    sqe->header.rtStreamId = static_cast<uint16_t>(stm->Id_());
+    sqe->header.taskId = taskInfo->id;
+    sqe->header.u.sqeSubType = RT_SQE_SUBTYPE_CALLBACK;
+
+    sqe->u.callBackInfo.cbCqId = static_cast<uint16_t>(stm->GetCbRptCqid());
+    sqe->u.callBackInfo.cbGroupId = static_cast<uint16_t>(stm->GetCbGrpId());
+    sqe->u.callBackInfo.devId = static_cast<uint16_t>(stm->Device_()->Id_());
+    sqe->u.callBackInfo.streamId = static_cast<uint16_t>(stm->Id_());
+    sqe->u.callBackInfo.eventId = static_cast<uint16_t>(taskInfo->u.callbackLaunchTask.eventId);
+    sqe->u.callBackInfo.isBlock = taskInfo->u.callbackLaunchTask.isBlock;
+    sqe->u.callBackInfo.taskId = taskInfo->id; //  send taskId callback cqe
+
+    uint64_t addr = RtPtrToValue<rtCallback_t>(taskInfo->u.callbackLaunchTask.callBackFunc);
+    sqe->u.callBackInfo.hostfuncAddrLow = static_cast<uint32_t>(addr);
+    sqe->u.callBackInfo.hostfuncAddrHigh = static_cast<uint32_t>(addr >> UINT32_BIT_NUM);
+
+    addr = RtPtrToValue<void*>(taskInfo->u.callbackLaunchTask.fnData);
+    sqe->u.callBackInfo.fndataLow = static_cast<uint32_t>(addr);
+    sqe->u.callBackInfo.fndataHigh = static_cast<uint32_t>(addr >> UINT32_BIT_NUM);
+
+    sqe->u.callBackInfo.groupId = 11U; // 11U, drv defined
+    sqe->u.callBackInfo.destPid = pid;
+
+    PrintSqe(command, "CallbackLaunch");
+    RT_LOG(
+        RT_LOG_INFO,
+        "type=%d, wrCqe=%d, rtStreamId=%hu, taskId=%hu, sqeSubType=%hu, preP=%d, postP=%d, "
+        "cbCqId=%hu, cbGroupId=%hu, devId=%hu, streamId=%hu, eventId=%hu, isBlock=%hu, cbTaskId=%hu, "
+        "hostfuncAddrLow=%u, hostfuncAddrHigh=%u, fndataLow=%u, fndataHigh=%u, groupId=%u, destPid=%u",
+        sqe->header.type, sqe->header.wrCqe, sqe->header.rtStreamId, sqe->header.taskId, sqe->header.u.sqeSubType,
+        sqe->header.preP, sqe->header.postP, sqe->u.callBackInfo.cbCqId, sqe->u.callBackInfo.cbGroupId,
+        sqe->u.callBackInfo.devId, sqe->u.callBackInfo.streamId, sqe->u.callBackInfo.eventId,
+        sqe->u.callBackInfo.isBlock, sqe->u.callBackInfo.taskId, sqe->u.callBackInfo.hostfuncAddrLow,
+        sqe->u.callBackInfo.hostfuncAddrHigh, sqe->u.callBackInfo.fndataLow, sqe->u.callBackInfo.fndataHigh,
+        sqe->u.callBackInfo.groupId, sqe->u.callBackInfo.destPid);
+}
+#endif
+
 static bool StreamTaskRegister()
 {
     TaskFuncSingle streamActiveFuncs = {
@@ -80,7 +128,20 @@ static bool StreamTaskRegister()
         .setStarsResultFunc = &SetStarsResultCommon,
     };
 
+    TaskFuncSingle callbackLaunchFuncs = {
+        .toCommandFunc = nullptr,
+        .toSqeFunc = &ConstructSqeForCallbackLaunchTask,
+        .doCompleteSuccFunc = &DoCompleteSuccess,
+        .taskUnInitFunc = nullptr,
+        .waitAsyncCpCompleteFunc = nullptr,
+        .printErrorInfoFunc = &PrintErrorInfoCommon,
+        .setResultFunc = &SetResultCommon,
+        .setStarsResultFunc = &SetStarsResultCommon,
+    };
+
     RegTaskFunc(CHIP_5162A, TS_TASK_TYPE_STREAM_ACTIVE, streamActiveFuncs);
+    RegTaskFunc(CHIP_5162A, TS_TASK_TYPE_HOSTFUNC_CALLBACK, callbackLaunchFuncs);
+
     return true;
 }
 
