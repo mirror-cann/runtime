@@ -112,6 +112,9 @@ static void ConstructDavidSqeForEventRecordTask(
     const rtDavidStarsSqeType evtSqeType = evt->IsEventWithoutWaitTask() ?
         RT_DAVID_SQE_TYPE_PLACE_HOLDER : RT_DAVID_SQE_TYPE_NOTIFY_RECORD;
     sqe->header.wrCqe = (taskInfo->isCqeNeedConcern == 1U) ? 1U : 0U; // 1: set wr_cqe
+    if (Runtime::Instance()->GetConnectUbFlag() && (stream->Flags() & RT_STREAM_PERSISTENT) == 0U) {
+        sqe->header.headUpdate = 1U;
+    }
     sqe->header.type = static_cast<uint8_t>(evtSqeType);
 
     sqe->kernelCredit = RT_STARS_DEFAULT_KERNEL_CREDIT_DAVID;
