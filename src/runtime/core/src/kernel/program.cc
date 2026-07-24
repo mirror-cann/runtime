@@ -1422,7 +1422,7 @@ rtError_t Program::FreeSoAndNameByDeviceId(const uint32_t deviceId)
     return error;
 }
 
-static rtError_t BinaryMemAdvise(
+rtError_t BinaryMemAdvise(
     void* const devMem, const uint32_t devSize, rtAdviseMemType adviseType, const Device* const device,
     const bool readonly)
 {
